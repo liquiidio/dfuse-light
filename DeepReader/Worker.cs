@@ -63,13 +63,13 @@ namespace DeepReader
                     switch (data[1])
                     {
 						case "RAM_OP":
-                            ctx.ReadRAMOp(data[Range.StartAt(2)]);
+                            ctx.ReadRamOp(data[Range.StartAt(2)]);
 							break;
                         case "CREATION_OP":
                             ctx.ReadCreationOp(data[Range.StartAt(2)]);
                             break;
                         case "DB_OP":
-                            ctx.ReadDBOp(data[Range.StartAt(2)]);
+                            ctx.ReadDbOp(data[Range.StartAt(2)]);
 							break;
                         case "RLIMIT_OP":
                             ctx.ReadRlimitOp(data[Range.StartAt(2)]);
@@ -96,7 +96,7 @@ namespace DeepReader
                             ctx.ReadCreateOrCancelDTrxOp("MODIFY_CANCEL", data[Range.StartAt(2)]);
 							break;
                         case "RAM_CORRECTION_OP":
-                            ctx.ReadRAMCorrectionOp(data[Range.StartAt(2)]);
+                            ctx.ReadRamCorrectionOp(data[Range.StartAt(2)]);
 							break;
                         case "DTRX_OP PUSH_CREATE":
                             ctx.ReadCreateOrCancelDTrxOp("PUSH_CREATE", data[Range.StartAt(2)]);
@@ -129,10 +129,10 @@ namespace DeepReader
                             ctx.ResetBlock();
 							break;
                         case "ABIDUMP START":
-                            ctx.ReadABIStart(data[Range.StartAt(2)]);
+                            ctx.ReadAbiStart(data[Range.StartAt(2)]);
 							break;
                         case "ABIDUMP ABI":
-                            ctx.ReadABIDump(data[Range.StartAt(2)]);
+                            ctx.ReadAbiDump(data[Range.StartAt(2)]);
 							break;
                         case "ABIDUMP END":
 						//noop
