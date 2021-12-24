@@ -1,6 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeepReader", "DeepReader\DeepReader.csproj", "{3FADE896-3D80-4B87-9520-9543281AB33D}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeepReader", "DeepReader\DeepReader.csproj", "{AB6BD672-F8E4-4A17-AB80-95A252585FD5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3FADE896-3D80-4B87-9520-9543281AB33D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3FADE896-3D80-4B87-9520-9543281AB33D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3FADE896-3D80-4B87-9520-9543281AB33D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3FADE896-3D80-4B87-9520-9543281AB33D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB6BD672-F8E4-4A17-AB80-95A252585FD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB6BD672-F8E4-4A17-AB80-95A252585FD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB6BD672-F8E4-4A17-AB80-95A252585FD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB6BD672-F8E4-4A17-AB80-95A252585FD5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CD840B7B-87EF-400A-BAE9-B76AD41441D2}
 	EndGlobalSection
 EndGlobal

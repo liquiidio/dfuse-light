@@ -1,6 +1,4 @@
-using DeepReader.Types;
-
-namespace DeepReader;
+namespace DeepReader.Types;
 
 public class SignedBlock : SignedBlockHeader
 {

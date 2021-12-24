@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace DeepReader;
+namespace DeepReader.Classes;
 
 public static class StringExtensions
 {

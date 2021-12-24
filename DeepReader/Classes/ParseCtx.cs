@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.Json;
 using DeepReader.Types;
 
-namespace DeepReader;
+namespace DeepReader.Classes;
 
 public class ParseCtx
 {

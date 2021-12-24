@@ -1,6 +1,6 @@
 using DeepReader.Types;
 
-namespace DeepReader;
+namespace DeepReader.Classes;
 
 public static class CreationTree
 {

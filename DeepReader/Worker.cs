@@ -1,7 +1,10 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using DeepReader.Classes;
+using DeepReader.Types;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -11,9 +14,12 @@ namespace DeepReader
     {
         private readonly ILogger<Worker> _logger;
 
-        public Worker(ILogger<Worker> logger)
+        private readonly ChannelWriter<Block> _blocksChannel;
+
+        public Worker(ILogger<Worker> logger, ChannelWriter<Block> blocksChannel)
         {
             _logger = logger;
+            _blocksChannel = blocksChannel;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -27,21 +33,24 @@ namespace DeepReader
         
         private async Task StartNodeos(CancellationToken stoppingToken)
         {
+            // TODO check nodeos version, provide arguments-list
+
             using var process = Process.Start(
                 new ProcessStartInfo
                 {
                     // TOOD
-                    FileName = "echo",
-                    ArgumentList = { "hello world" },
+                    FileName = "nodeos",
+                    ArgumentList = { "", },
                     UseShellExecute = false,
                     RedirectStandardError = true,
                     RedirectStandardInput = true,
-                    RedirectStandardOutput = true
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true,
                 });
 
             if (process != null)
             {
-                process.OutputDataReceived += OnNodeosOutputDataReceived;
+                process.OutputDataReceived += async (sender, e) => await OnNodeosOutputDataReceived(sender, e, stoppingToken);
 
                 process.Start();
                 process.BeginOutputReadLine();
@@ -50,7 +59,7 @@ namespace DeepReader
             }
         }
         
-        private void OnNodeosOutputDataReceived(object sender, DataReceivedEventArgs e)
+        private async Task OnNodeosOutputDataReceived(object sender, DataReceivedEventArgs e, CancellationToken ctl)
         {
             if (e.Data != null)
             {
@@ -109,11 +118,11 @@ namespace DeepReader
 							break;
                         case "ACCEPTED_BLOCK":
 							var block = ctx.ReadAcceptedBlock(data[Range.StartAt(2)]);
-
-            			    /*if err != nil {
+                            await _blocksChannel.WriteAsync(block, ctl);
+                            /*if err != nil {
 							    return null;, l.formatError(line, err);
                             }*/
-//                            return block;
+                            //                            return block;
                             break;
                         case "START_BLOCK":
                             ctx.ReadStartBlock(data[Range.StartAt(2)]);
