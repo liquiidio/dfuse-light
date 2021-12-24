@@ -29,4 +29,4 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "DeepReader.dll"]
 
-
+EXPOSE 9876
