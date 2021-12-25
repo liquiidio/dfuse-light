@@ -3,3 +3,10 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+
+DeepReader/config/mindreader/data
+DeepReader/config/mindreader/protocol_features
+DeepReader/config/mindreader/snapshots
+DeepReader/config/producer/data
+DeepReader/config/producer/protocol_features
+DeepReader/config/producer/snapshots

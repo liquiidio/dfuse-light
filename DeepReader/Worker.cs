@@ -81,6 +81,7 @@ namespace DeepReader
             //        "--http-validate-host = false",
             //        "--verbose-http-errors >> nodeos.log 2 > &1 &"
             //    }, // { "--delete-all-blocks --deep-mind" },
+
             string producerDir = "/app/config/producer/";
             using var producer = new Process();
             producer.StartInfo = new ProcessStartInfo
@@ -91,14 +92,16 @@ namespace DeepReader
                     /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", /*"--deep-mind",*/ "--config-dir", $"{producerDir}", "--data-dir", $"{producerDir}data"
 //                    "-e -p eosio --delete-all-blocks --deep-mind --plugin eosio::producer_plugin --plugin eosio::producer_api_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --filter-on='*' --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors"// >> nodeos.log 2 > &1 &
                 }, // { "--delete-all-blocks --deep-mind" },
-                UseShellExecute = false,
-                RedirectStandardError = true,
+                UseShellExecute = true,
+                RedirectStandardError = false,
                 RedirectStandardInput = false,
-                RedirectStandardOutput = true,
+                RedirectStandardOutput = false,
                 CreateNoWindow = true,
                 //                WorkingDirectory = "/usr/bin",
             };
             producer.Start();
+
+            await Task.Delay(3000);
 
             string mindreaderDir = "/app/config/mindreader/";
             using var mindreader = new Process();
@@ -107,7 +110,7 @@ namespace DeepReader
                 FileName = "nodeos",
                 ArgumentList =
                 {
-                    /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", /*"--deep-mind",*/ "--config-dir", $"{mindreaderDir}", "--data-dir", $"{mindreaderDir}data"
+                    /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", "--config-dir", $"{mindreaderDir}", "--data-dir", $"{mindreaderDir}data"
 //                    "-e -p eosio --delete-all-blocks --deep-mind --plugin eosio::producer_plugin --plugin eosio::producer_api_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --filter-on='*' --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors"// >> nodeos.log 2 > &1 &
                 }, // { "--delete-all-blocks --deep-mind" },
                 UseShellExecute = false,
@@ -115,7 +118,7 @@ namespace DeepReader
                 RedirectStandardInput = false,
                 RedirectStandardOutput = true,
                 CreateNoWindow = true,
-//                WorkingDirectory = "/usr/bin",
+                //                WorkingDirectory = "/usr/bin",
             };
 
             if (mindreader != null)
@@ -133,6 +136,11 @@ namespace DeepReader
                     await Task.Delay(10000);
                     // do nothing
                     string test = "";
+
+                    if(mindreader.HasExited)
+                    {
+                        Console.WriteLine("MINDREADER EXITED!", ConsoleColor.Red);
+                    }
                 };
                 Console.WriteLine("EXITED 1");
             }
