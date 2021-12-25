@@ -2,7 +2,7 @@ namespace DeepReader.Types;
 
 public class DTrxOp
 {
-    public DTrxOp_Operation Operation;//            DTrxOp_Operation   `protobuf:"varint,1,opt,name=operation,proto3,enum=dfuse.eosio.codec.v1.DTrxOp_Operation" json:"operation,omitempty"`
+    public DTrxOpOperation Operation;//            DTrxOp_Operation   `protobuf:"varint,1,opt,name=operation,proto3,enum=dfuse.eosio.codec.v1.DTrxOp_Operation" json:"operation,omitempty"`
     public uint ActionIndex;//          uint32             `protobuf:"varint,2,opt,name=action_index,json=actionIndex,proto3" json:"action_index,omitempty"`
     public string Sender;//               string             `protobuf:"bytes,3,opt,name=sender,proto3" json:"sender,omitempty"`
     public string SenderId;//             string             `protobuf:"bytes,4,opt,name=sender_id,json=senderId,proto3" json:"sender_id,omitempty"`

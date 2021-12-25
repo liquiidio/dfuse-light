@@ -7,7 +7,7 @@ public static class CreationTree
     public static List<Node> ComputeCreationTree(List<CreationOp> creationOps)
     {
         if (creationOps.Count <= 0)
-            return null;
+            return new List<Node>();
 
         var actionIndex = -1;
         var opsMap = CreationOpsToMap(creationOps);

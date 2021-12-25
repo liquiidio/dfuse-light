@@ -3,7 +3,7 @@ namespace DeepReader.Types;
 
 public abstract class RlimitOp
 {
-    public RlimitOp_Operation Operation { get; set; } // RlimitOp_Operation; `protobuf:"varint,1,opt,name=operation,proto3,enum=dfuse.eosio.codec.v1.RlimitOp_Operation" json:"operation,omitempty"`
+    public RlimitOpOperation Operation { get; set; } // RlimitOp_Operation; `protobuf:"varint,1,opt,name=operation,proto3,enum=dfuse.eosio.codec.v1.RlimitOp_Operation" json:"operation,omitempty"`
     // Types that are valid to be assigned to Kind:
     //	*RlimitOp_State
     //	*RlimitOp_Config

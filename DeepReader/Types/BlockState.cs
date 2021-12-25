@@ -13,7 +13,7 @@ public class BlockState
     public byte[] ConfirmCount;//                     []uint8                        `json:"confirm_count,omitempty"`
 
     // From 'struct block_header_state'
-    public byte[] BlockID;//                   eos.Checksum256                   `json:"id"`
+    public byte[] BlockID { get; set; } = Array.Empty<byte>();//                   eos.Checksum256                   `json:"id"`
     public SignedBlockHeader Header;//                    *eos.SignedBlockHeader            `json:"header,omitempty"`
     public PendingSchedule PendingSchedule;//           *eos.PendingSchedule              `json:"pending_schedule"`
     public ProtocolFeatureActivationSet ActivatedProtocolFeatures;// *eos.ProtocolFeatureActivationSet `json:"activated_protocol_features,omitempty" eos:"optional"`

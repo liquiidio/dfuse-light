@@ -10,7 +10,7 @@ public class RAMOp
     // To eventually replace `operation`.
     public RAMOp_Namespace Namespace;//            RAMOp_Namespace `protobuf:"varint,6,opt,name=namespace,proto3,enum=dfuse.eosio.codec.v1.RAMOp_Namespace" json:"namespace,omitempty"`
     public string UniqueKey;//            string          `protobuf:"bytes,8,opt,name=unique_key,json=uniqueKey,proto3" json:"unique_key,omitempty"`
-    public RAMOp_Action Action;//               RAMOp_Action    `protobuf:"varint,7,opt,name=action,proto3,enum=dfuse.eosio.codec.v1.RAMOp_Action" json:"action,omitempty"`
+    public RAMOpAction Action;//               RAMOp_Action    `protobuf:"varint,7,opt,name=action,proto3,enum=dfuse.eosio.codec.v1.RAMOp_Action" json:"action,omitempty"`
     //XXX_NoUnkeyedLiteral struct{}        `json:"-"`
     //XXX_unrecognized     []byte          `json:"-"`
     //XXX_sizecache        int32           `json:"-"`

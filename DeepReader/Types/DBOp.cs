@@ -2,7 +2,7 @@ namespace DeepReader.Types;
 
 public class DBOp
 {
-    public DBOp_Operation Operation;//            DBOp_Operation `protobuf:"varint,1,opt,name=operation,proto3,enum=dfuse.eosio.codec.v1.DBOp_Operation" json:"operation,omitempty"`
+    public DBOpOperation Operation;//            DBOp_Operation `protobuf:"varint,1,opt,name=operation,proto3,enum=dfuse.eosio.codec.v1.DBOp_Operation" json:"operation,omitempty"`
     public uint ActionIndex;//          uint32         `protobuf:"varint,2,opt,name=action_index,json=actionIndex,proto3" json:"action_index,omitempty"`
     public string Code;//                 string         `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`
     public string Scope;//                string         `protobuf:"bytes,4,opt,name=scope,proto3" json:"scope,omitempty"`
