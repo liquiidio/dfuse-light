@@ -23,33 +23,53 @@ public class TransactionTrace
 	// nested actions.
 	public ActionTrace[] ActionTraces;// []*ActionTrace `protobuf:"bytes,9,rep,name=action_traces,json=actionTraces,proto3" json:"action_traces,omitempty"`
 	// Trace of a failed deferred transaction, if any.
-	public TransactionTrace FailedDtrxTrace;// *TransactionTrace `protobuf:"bytes,10,opt,name=failed_dtrx_trace,json=failedDtrxTrace,proto3" json:"failed_dtrx_trace,omitempty"`
+	public TransactionTrace? FailedDtrxTrace;// *TransactionTrace `protobuf:"bytes,10,opt,name=failed_dtrx_trace,json=failedDtrxTrace,proto3" json:"failed_dtrx_trace,omitempty"`
 	// Exception leading to the failed dtrx trace.
 	public Exception Exception;// *Exception `protobuf:"bytes,15,opt,name=exception,proto3" json:"exception,omitempty"`
 	public ulong ErrorCode;// uint64     `protobuf:"varint,16,opt,name=error_code,json=errorCode,proto3" json:"error_code,omitempty"`
 	// List of database operations this transaction entailed
-	public ICollection<DBOp> DbOps;// []*DBOp `protobuf:"bytes,17,rep,name=db_ops,json=dbOps,proto3" json:"db_ops,omitempty"`
+	public IList<DBOp> DbOps;// []*DBOp `protobuf:"bytes,17,rep,name=db_ops,json=dbOps,proto3" json:"db_ops,omitempty"`
 	// List of deferred transactions operations this transaction entailed
-	public ICollection<DTrxOp> DtrxOps;// []*DTrxOp `protobuf:"bytes,18,rep,name=dtrx_ops,json=dtrxOps,proto3" json:"dtrx_ops,omitempty"`
+	public IList<DTrxOp> DtrxOps;// []*DTrxOp `protobuf:"bytes,18,rep,name=dtrx_ops,json=dtrxOps,proto3" json:"dtrx_ops,omitempty"`
 	// List of feature switching operations (changes to feature switches in
 	// nodeos) this transaction entailed
-	public ICollection<FeatureOp> FeatureOps;// []*FeatureOp `protobuf:"bytes,19,rep,name=feature_ops,json=featureOps,proto3" json:"feature_ops,omitempty"`
+	public IList<FeatureOp> FeatureOps;// []*FeatureOp `protobuf:"bytes,19,rep,name=feature_ops,json=featureOps,proto3" json:"feature_ops,omitempty"`
 	// List of permission changes operations
-	public ICollection<PermOp> PermOps;// []*PermOp `protobuf:"bytes,20,rep,name=perm_ops,json=permOps,proto3" json:"perm_ops,omitempty"`
+	public IList<PermOp> PermOps;// []*PermOp `protobuf:"bytes,20,rep,name=perm_ops,json=permOps,proto3" json:"perm_ops,omitempty"`
 	// List of RAM consumption/redemption
-	public ICollection<RAMOp> RamOps;// []*RAMOp `protobuf:"bytes,21,rep,name=ram_ops,json=ramOps,proto3" json:"ram_ops,omitempty"`
+	public IList<RAMOp> RamOps;// []*RAMOp `protobuf:"bytes,21,rep,name=ram_ops,json=ramOps,proto3" json:"ram_ops,omitempty"`
 	// List of RAM correction operations (happens only once upon feature
 	// activation)
-	public ICollection<RAMCorrectionOp> RamCorrectionOps;// []*RAMCorrectionOp `protobuf:"bytes,22,rep,name=ram_correction_ops,json=ramCorrectionOps,proto3" json:"ram_correction_ops,omitempty"`
+	public IList<RAMCorrectionOp> RamCorrectionOps;// []*RAMCorrectionOp `protobuf:"bytes,22,rep,name=ram_correction_ops,json=ramCorrectionOps,proto3" json:"ram_correction_ops,omitempty"`
 	// List of changes to rate limiting values
-	public ICollection<RlimitOp> RlimitOps;// []*RlimitOp `protobuf:"bytes,23,rep,name=rlimit_ops,json=rlimitOps,proto3" json:"rlimit_ops,omitempty"`
+	public IList<RlimitOp> RlimitOps;// []*RlimitOp `protobuf:"bytes,23,rep,name=rlimit_ops,json=rlimitOps,proto3" json:"rlimit_ops,omitempty"`
 	// List of table creations/deletions
-	public ICollection<TableOp> TableOps;// []*TableOp `protobuf:"bytes,24,rep,name=table_ops,json=tableOps,proto3" json:"table_ops,omitempty"`
+	public IList<TableOp> TableOps;// []*TableOp `protobuf:"bytes,24,rep,name=table_ops,json=tableOps,proto3" json:"table_ops,omitempty"`
 	// Tree of creation, rather than execution
 	public CreationFlatNode[] CreationTree;//         []*CreationFlatNode `protobuf:"bytes,25,rep,name=creation_tree,json=creationTree,proto3" json:"creation_tree,omitempty"`
 	//XXX_NoUnkeyedLiteral struct{}            `json:"-"`
 	//XXX_unrecognized     []byte              `json:"-"`
 	//XXX_sizecache        int32               `json:"-"`
+
+	public TransactionTrace()
+    {
+		Id = "";
+		BlockTime = new Timestamp();
+		ProducerBlockId = "";
+		Receipt = new TransactionReceiptHeader();
+		ActionTraces = Array.Empty<ActionTrace>();
+		FailedDtrxTrace = null;
+		Exception = new Exception();
+		DbOps = new List<DBOp>();
+		DtrxOps = new List<DTrxOp>();
+		FeatureOps = new List<FeatureOp>();
+		PermOps = new List<PermOp>();
+		RamOps = new List<RAMOp>();
+		RamCorrectionOps = new List<RAMCorrectionOp>();
+		RlimitOps = new List<RlimitOp>();
+		TableOps = new List<TableOp>();
+		CreationTree = Array.Empty<CreationFlatNode>();
+    }
 }
 
 public class CreationFlatNode

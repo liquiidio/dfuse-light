@@ -153,8 +153,8 @@ namespace DeepReader
 
         private async Task OnNodeosDataReceived(object sender, DataReceivedEventArgs e, CancellationToken clt)
         {
-            try
-            {
+            //try
+            //{
                 if (e.Data != null)
                 {
                     if (e.Data.StartsWith("DMLOG"))
@@ -213,10 +213,6 @@ namespace DeepReader
                             case "ACCEPTED_BLOCK":
                                 var block = ctx.ReadAcceptedBlock(data[Range.StartAt(2)]);
                                 await _blocksChannel.WriteAsync(block, clt);
-                                /*if err != nil {
-							        return null;, l.formatError(line, err);
-                                }*/
-                                //                            return block;
                                 break;
                             case "START_BLOCK":
                                 ctx.ReadStartBlock(data[Range.StartAt(2)]);
@@ -254,12 +250,12 @@ namespace DeepReader
                 }
                 else
                     Console.WriteLine("data is null");
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
-            }
+            //}
+            //catch(Exception ex)
+            //{
+            //    Console.WriteLine(ex.Message);
+            //    Console.WriteLine(ex.StackTrace);
+            //}
         }
     }
 }

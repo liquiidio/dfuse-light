@@ -154,6 +154,34 @@ public class Block
 	//XXX_unrecognized                        []byte   `json:"-"`
 	//XXX_sizecache                           int32    `json:"-"`
 
+	public Block()
+    {
+		Id = "";
+		Header = new BlockHeader();
+		ProducerSignature = "";
+		BlockExtensions = Array.Empty<Extension>();
+		BlockrootMerkle = new BlockRootMerkle();
+		ProducerToLastProduced = Array.Empty<ProducerToLastProduced>();
+		ProducerToLastImpliedIrb = Array.Empty<ProducerToLastImpliedIRB>();
+		ConfirmCount = Array.Empty<uint>();
+		PendingSchedule = new PendingProducerSchedule();
+		ActivatedProtocolFeatures = new ActivatedProtocolFeatures();
+		RlimitOps = new List<RlimitOp>();
+		UnfilteredTransactions = new List<TransactionReceipt>();
+		FilteredTransactions = Array.Empty<TransactionReceipt>();
+		UnfilteredImplicitTransactionOps = new List<TrxOp>();
+		FilteredImplicitTransactionOps = Array.Empty<TrxOp>();
+		UnfilteredTransactionTraces = new List<TransactionTrace>();
+		FilteredTransactionTraces = Array.Empty<TransactionTrace>();
+		BlockSigningKey = "";
+		ActiveScheduleV1 = new ProducerSchedule();
+		ValidBlockSigningAuthorityV2 = new BlockSigningAuthority();
+		ActiveScheduleV2 = new ProducerAuthoritySchedule();
+		FilteringIncludeFilterExpr = "";
+		FilteringExcludeFilterExpr = "";
+		FilteringSystemActionsIncludeFilterExpr = "";
+    }
+
 // func (m *Block) Reset()         { *m = Block{} }
 // func (m *Block) String() string { return proto.CompactTextString(m) }
 // func (*Block) ProtoMessage()    {}

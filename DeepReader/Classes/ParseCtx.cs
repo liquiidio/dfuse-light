@@ -273,7 +273,7 @@ public class ParseCtx
     public Block ReadAcceptedBlock(string[] chunks) {
         if (chunks.Length != 3)
         {
-//                throw new Error($"expected 3 fields, got {chunks.Length}");
+                throw new Exception($"expected 3 fields, got {chunks.Length}");
         }
 
         var blockNum = Convert.ToInt64(chunks[1]);
@@ -809,23 +809,23 @@ public class ParseCtx
 	        return err
         }*/
 
-        var actionIndex = Convert.ToInt32(chunks[2]);
+        var actionIndex = Convert.ToInt32(chunks[1]);
         /*if err != nil {
 	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
         }*/
 
-        var opString = chunks[1];
-        var dataChunk = chunks[3];
+        var opString = chunks[0];
+        var dataChunk = chunks[2];
         ulong permissionID = 0;
 
         // A `PERM_OP` with 5 fields have ["permission_id"] field in index #3 set and data chunk is actually index #4
-        if (chunks.Length == 5)
+        if (chunks.Length == 4)
         {
-            permissionID = Convert.ToUInt64(chunks[3]);
+            permissionID = Convert.ToUInt64(chunks[2]);
 	        /*if err != nil {
 		        return fmt.Errorf("permission_id is not a valid number, got: %q", chunks[3])
 	        }*/
-            dataChunk = chunks[4];
+            dataChunk = chunks[3];
         }
 
         var op = PermOp_Operation.PermOp_OPERATION_UNKNOWN;
@@ -1072,13 +1072,13 @@ public class ParseCtx
     //   RLIMIT_OP ACCOUNT_USAGE  UPD ${data}
     public void ReadRlimitOp(string[] chunks)
     {
-        if (chunks.Length != 4)
+        if (chunks.Length != 3)
         {
-            throw new Exception($"expected 4 fields, got {chunks.Length}");
+            throw new Exception($"expected 3 fields, got {chunks.Length}");
         }
 
-        var kindString = chunks[1];
-        var operationString = chunks[2];
+        var kindString = chunks[0];
+        var operationString = chunks[1];
 
         var operation = RlimitOp_Operation.RlimitOp_OPERATION_UNKNOWN;
         switch (operationString) {
@@ -1093,7 +1093,7 @@ public class ParseCtx
         }
 
         RlimitOp op;
-        var data = chunks[3];
+        var data = chunks[2];
 
         switch (kindString) {
 	        case "CONFIG":
