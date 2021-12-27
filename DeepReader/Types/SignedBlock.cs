@@ -2,6 +2,6 @@ namespace DeepReader.Types;
 
 public class SignedBlock : SignedBlockHeader
 {
-    public TransactionReceipt[] Transactions;//    []TransactionReceipt `json:"transactions"`
-    public Extension[] BlockExtensions;// []*Extension         `json:"block_extensions"`
+    public TransactionReceipt[] Transactions = Array.Empty<TransactionReceipt>();//[]TransactionReceipt
+    public Extension[] BlockExtensions = Array.Empty<Extension>();//[]*Extension
 }

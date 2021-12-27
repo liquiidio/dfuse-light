@@ -2,6 +2,6 @@ namespace DeepReader.Types;
 
 public class PairAccountNameBlockNum
 {
-    public string AccountName;// AccountName
-    public uint BlockNum;//    uint32
+    public string AccountName = string.Empty;//AccountName
+    public uint BlockNum = 0;//uint32
 }

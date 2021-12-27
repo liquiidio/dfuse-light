@@ -6,6 +6,7 @@ public class AbiDecoder
 {
     public static void ProcessTransaction(TransactionTrace trace)
     {
+        Console.WriteLine(trace.ToString());
         return;
         throw new NotImplementedException();
     }
@@ -18,6 +19,7 @@ public class AbiDecoder
 
     public static void EndBlock(Block block)
     {
+        Console.WriteLine(block.ToString());
         return;
         throw new NotImplementedException();
     }

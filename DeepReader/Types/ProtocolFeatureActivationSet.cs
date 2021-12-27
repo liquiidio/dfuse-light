@@ -2,5 +2,5 @@ namespace DeepReader.Types;
 
 public class ProtocolFeatureActivationSet
 {
-    public byte[][] ProtocolFeatures;// []Checksum256 `json:"protocol_features"`
+    public byte[][] ProtocolFeatures = Array.Empty<byte[]>();//[]Checksum256
 }

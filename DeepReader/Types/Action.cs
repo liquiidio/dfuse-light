@@ -1,13 +1,37 @@
+using DeepReader.EosTypes;
+using System.Text.Json.Serialization;
+
 namespace DeepReader.Types;
 
+[Serializable()]
 public class Action
 {
-    public string Account;//              string             `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
-    public string Name;//                 string             `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-    public PermissionLevel[] Authorization;//        []*PermissionLevel `protobuf:"bytes,3,rep,name=authorization,proto3" json:"authorization,omitempty"`
-    public string JsonData;//             string             `protobuf:"bytes,4,opt,name=json_data,json=jsonData,proto3" json:"json_data,omitempty"`
-    public byte[] RawData;//              []byte             `protobuf:"bytes,5,opt,name=raw_data,json=rawData,proto3" json:"raw_data,omitempty"`
-    //XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-    //XXX_unrecognized     []byte             `json:"-"`
-    //XXX_sizecache        int32              `json:"-"`
+    // abi-field-name: account ,abi-field-type: name
+    [JsonPropertyName("account")]
+    public Name Account;
+
+    // abi-field-name: name ,abi-field-type: name
+    [JsonPropertyName("name")]
+    public Name Name;
+
+    // abi-field-name: authorization ,abi-field-type: permission_level[]
+    [JsonPropertyName("authorization")]
+    public PermissionLevel[] Authorization;
+
+    // abi-field-name: data ,abi-field-type: bytes
+    [JsonPropertyName("data")]
+    public byte [] Data;
+//    public ActionBytes Data;
+
+    public Action(Name account, Name name, PermissionLevel[] authorization, byte[] data)
+    {
+        this.Account = account;
+        this.Name = name;
+        this.Authorization = authorization;
+        this.Data = data;
+    }
+
+    public Action()
+    {
+    }
 }

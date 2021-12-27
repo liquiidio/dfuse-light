@@ -1,12 +1,33 @@
+using System.Text.Json.Serialization;
+
 namespace DeepReader.Types;
 
-public class Transaction
+[Serializable()]
+public class Transaction : TransactionHeader
 {
-    public TransactionHeader Header;//               *TransactionHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-    public Action[] ContextFreeActions;//   []*Action          `protobuf:"bytes,2,rep,name=context_free_actions,json=contextFreeActions,proto3" json:"context_free_actions,omitempty"`
-    public Action[] Actions;//              []*Action          `protobuf:"bytes,3,rep,name=actions,proto3" json:"actions,omitempty"`
-    public Extension[] Extensions;//           []*Extension       `protobuf:"bytes,4,rep,name=extensions,proto3" json:"extensions,omitempty"`
-    //XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-    //XXX_unrecognized     []byte             `json:"-"`
-    //XXX_sizecache        int32              `json:"-"`
+    // abi-field-name: context_free_actions ,abi-field-type: action[]
+    [SortOrder(7)]
+    [JsonPropertyName("context_free_actions")]
+    public Action[] ContextFreeActions;
+
+    // abi-field-name: actions ,abi-field-type: action[]
+    [SortOrder(8)]
+    [JsonPropertyName("actions")]
+    public Action[] Actions;
+
+    // abi-field-name: transaction_extensions ,abi-field-type: extension[]
+    [SortOrder(9)]
+    [JsonPropertyName("transaction_extensions")]
+    public Extension[] TransactionExtensions;
+
+    public Transaction(Action[] contextFreeActions, Action[] actions, Extension[] transactionExtensions)
+    {
+        this.ContextFreeActions = contextFreeActions;
+        this.Actions = actions;
+        this.TransactionExtensions = transactionExtensions;
+    }
+
+    public Transaction()
+    {
+    }
 }

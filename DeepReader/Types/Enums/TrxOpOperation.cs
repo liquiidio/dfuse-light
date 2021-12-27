@@ -1,7 +1,7 @@
-namespace DeepReader.Types;
+namespace DeepReader.Types.Enums;
 
 public enum TrxOpOperation
 {
     UNKNOWN = 0,
-    CREATE  = 1
+    CREATE = 1
 }

@@ -2,29 +2,28 @@ namespace DeepReader.Types;
 
 public class BlockState
 {
-    public uint BlockNum;//                         uint32                         `json:"block_num"`
-    public uint DPoSProposedIrreversibleBlockNum;// uint32                         `json:"dpos_proposed_irreversible_blocknum"`
-    public uint DPoSIrreversibleBlockNum;//         uint32                         `json:"dpos_irreversible_blocknum"`
-    public ProducerScheduleOrAuthoritySchedule ActiveSchedule;//                   *eos.ProducerAuthoritySchedule `json:"active_schedule"`
-    public MerkleRoot BlockrootMerkle;//                  *eos.MerkleRoot                `json:"blockroot_merkle,omitempty"`
-    public PairAccountNameBlockNum[] ProducerToLastProduced;//           []eos.PairAccountNameBlockNum  `json:"producer_to_last_produced,omitempty"`
-    public PairAccountNameBlockNum[] ProducerToLastImpliedIRB;//         []eos.PairAccountNameBlockNum  `json:"producer_to_last_implied_irb,omitempty"`
-    public BlockSigningAuthority ValidBlockSigningAuthorityV2;//     *eos.BlockSigningAuthority     `json:"valid_block_signing_authority,omitempty"`
-    public byte[] ConfirmCount;//                     []uint8                        `json:"confirm_count,omitempty"`
+    public uint BlockNum = 0;//uint32
+    public uint DPoSProposedIrreversibleBlockNum = 0;//uint32
+    public uint DPoSIrreversibleBlockNum = 0;//uint32
+    public ProducerScheduleOrAuthoritySchedule ActiveSchedule = new ProducerScheduleOrAuthoritySchedule();//*eos.ProducerAuthoritySchedule
+    public MerkleRoot BlockrootMerkle = new MerkleRoot();//*eos.MerkleRoot
+    public PairAccountNameBlockNum[] ProducerToLastProduced = Array.Empty<PairAccountNameBlockNum>();//[]eos.PairAccountNameBlockNum
+    public PairAccountNameBlockNum[] ProducerToLastImpliedIRB = Array.Empty<PairAccountNameBlockNum>();//[]eos.PairAccountNameBlockNum
+    public BlockSigningAuthority ValidBlockSigningAuthorityV2 = new BlockSigningAuthority();//*eos.BlockSigningAuthority
+    public byte[] ConfirmCount = Array.Empty<byte>();//[]uint8
 
     // From 'struct block_header_state'
-    public byte[] BlockID { get; set; } = Array.Empty<byte>();//                   eos.Checksum256                   `json:"id"`
-    public SignedBlockHeader Header;//                    *eos.SignedBlockHeader            `json:"header,omitempty"`
-    public PendingSchedule PendingSchedule;//           *eos.PendingSchedule              `json:"pending_schedule"`
-    public ProtocolFeatureActivationSet ActivatedProtocolFeatures;// *eos.ProtocolFeatureActivationSet `json:"activated_protocol_features,omitempty" eos:"optional"`
-    public byte[] AdditionalSignatures;//      []ecc.Signature                   `json:"additional_signatures"`
+    public byte[] BlockID = Array.Empty<byte>();//eos.Checksum256
+    public SignedBlockHeader Header = new SignedBlockHeader();//*eos.SignedBlockHeader
+    public PendingSchedule PendingSchedule = new PendingSchedule();//*eos.PendingSchedule
+    public ProtocolFeatureActivationSet ActivatedProtocolFeatures = new ProtocolFeatureActivationSet();//*eos.ProtocolFeatureActivationSet
+    public byte[] AdditionalSignatures = Array.Empty<byte>();//[]ecc.Signature
 
     // From 'struct block_state'
     // Type changed in v2.1.x
-    public SignedBlock SignedBlock;// *SignedBlock `json:"block,omitempty" eos:"optional"`
-    public bool Validated;//   bool         `json:"validated"`
+    public SignedBlock SignedBlock = new SignedBlock();//*SignedBlock
+    public bool Validated = false;//bool
     
     // EOSIO 1.x
-    public byte[] BlockSigningKeyV1;// *ecc.PublicKey `json:"block_signing_key,omitempty" eos:"-"`
-
+    //public byte[] BlockSigningKeyV1 = Array.Empty<byte>();//*ecc.PublicKey
 }

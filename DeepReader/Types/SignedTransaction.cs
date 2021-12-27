@@ -1,11 +1,16 @@
+using DeepReader.EosTypes;
+
 namespace DeepReader.Types;
 
-public class SignedTransaction
+public class SignedTransaction : Transaction
 {
-    public Transaction Transaction;//          *Transaction `protobuf:"bytes,1,opt,name=transaction,proto3" json:"transaction,omitempty"`
-    public string[] Signatures;//           []string     `protobuf:"bytes,2,rep,name=signatures,proto3" json:"signatures,omitempty"`
-    public byte[][] ContextFreeData;//      [][]byte     `protobuf:"bytes,3,rep,name=context_free_data,json=contextFreeData,proto3" json:"context_free_data,omitempty"`
-    //XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-    //XXX_unrecognized     []byte       `json:"-"`
-    //XXX_sizecache        int32        `json:"-"`s
+    //    public Transaction Transaction = new Transaction();//*Transaction
+    [SortOrder(10)]
+    public IList<Signature> Signatures;
+
+    [SortOrder(11)]
+    public IList<Bytes> ContextFreeData; ///< for each context-free action, there is an entry here
+
+    //public string[] Signatures = Array.Empty<string>();//[]string
+    //public byte[][] ContextFreeData = Array.Empty<byte[]>();//[][]byte
 }

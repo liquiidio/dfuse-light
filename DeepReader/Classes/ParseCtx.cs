@@ -1,6 +1,8 @@
 using System.Text;
 using System.Text.Json;
 using DeepReader.Types;
+using DeepReader.Types.Enums;
+using DeepReader.Deserializer;
 
 namespace DeepReader.Classes;
 
@@ -17,7 +19,13 @@ public class ParseCtx
     public bool TraceEnabled;
 
     public string[] SupportedVersions = new[] {"14"};
-    
+
+    JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions()
+    {
+        IncludeFields = true,
+        PropertyNameCaseInsensitive = true,
+    };
+
 //        public conversionOptions[] conversionOption;*/
 
     public ParseCtx()
@@ -210,7 +218,7 @@ public class ParseCtx
         // as well as the RLimitOps, which happens at a location that does not revert.
         var toRestoreRlimitOps = Trx.RlimitOps;
 
-        RAMOp deferredRemovalRAMOp = null;// = new RAMOp();
+        RAMOp? deferredRemovalRAMOp = null;// = new RAMOp();
 
         foreach (var trxRamOp in Trx.RamOps)
         {
@@ -282,18 +290,18 @@ public class ParseCtx
 
         if (ActiveBlockNum != blockNum)
         {
-            Console.WriteLine($"block_num {blockNum} doesn't match the active block num {ActiveBlockNum}", ConsoleColor.Red);
+            Console.WriteLine($"block_num {blockNum} doesn't match the active block num {ActiveBlockNum}");
 //            throw new Exception($"block_num {blockNum} doesn't match the active block num {ActiveBlockNum}");
         }
 
-        var blockStateHex = chunks[1].ToBytes();
+        var blockStateHex = chunks[1].HexStringToByteArray();
         /*
         if err != nil {
 	        return null;, fmt.Errorf("unable to decode block %d state hex: %w", blockNum, err)
         }
         */
 
-        var blockState = Deserializer.Deserialize<BlockState>(blockStateHex);
+        var blockState = Deserializer.Deserializer.Deserialize<BlockState>(blockStateHex);
 
         /*if err != nil {
 	        return null;, fmt.Errorf("unmarshalling binary block state: %w", err)
@@ -334,15 +342,15 @@ public class ParseCtx
 
         /// Specific versions handling
 
-        var blockSigningKey = blockState.BlockSigningKeyV1; 
+//        var blockSigningKey = blockState.BlockSigningKeyV1; 
         var schedule = blockState.ActiveSchedule;
         var signingAuthority = blockState.ValidBlockSigningAuthorityV2;
 
         // Only in EOSIO 1.x
-        if (blockSigningKey != null)
-        {
-            block.BlockSigningKey = Encoding.ASCII.GetString(blockSigningKey);
-        }
+        //if (blockSigningKey != null)
+        //{
+        //    block.BlockSigningKey = Encoding.ASCII.GetString(blockSigningKey);
+        //}
 
         if (schedule.V1 != null)
         {
@@ -371,7 +379,7 @@ public class ParseCtx
         {
             var el = block.UnfilteredTransactionTraces[idx];
             el.Index = (ulong)idx;
-            el.BlockTime = block.Header.Timestamp;
+            el.BlockTime = 0;// TODO block.Header.Timestamp;
             el.ProducerBlockId = block.Id;
             el.BlockNum = block.Number;
 
@@ -425,10 +433,11 @@ public class ParseCtx
 
     private ActivatedProtocolFeatures ActivatedProtocolFeaturesToDEOS(ProtocolFeatureActivationSet blockStateActivatedProtocolFeatures)
     {
+
         return new ActivatedProtocolFeatures()
         {
-	        // TODO !! ProtocolFeatures multi-dim array?
-	        ProtocolFeatures = checksumsToBytesSlices(blockStateActivatedProtocolFeatures.ProtocolFeatures[0])
+            // TODO !! ProtocolFeatures multi-dim array?
+            ProtocolFeatures = blockStateActivatedProtocolFeatures.ProtocolFeatures.Length > 0 ? checksumsToBytesSlices(blockStateActivatedProtocolFeatures.ProtocolFeatures[0]) : Array.Empty<byte[]>()
         };
     }
 
@@ -518,11 +527,11 @@ public class ParseCtx
         if (ActiveBlockNum != blockNum)
         {
 //            throw new Exception($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
-            Console.WriteLine($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}", ConsoleColor.Red);
+            Console.WriteLine($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
         }
 
         // TODO unmarshal?
-        var trxTrace = Deserializer.Deserialize<TransactionTrace>(chunks[1].ToBytes());
+        var trxTrace = Deserializer.Deserializer.Deserialize<TransactionTrace>(chunks[1].HexStringToByteArray());
 
         RecordTransaction(trxTrace);
     }
@@ -580,8 +589,8 @@ public class ParseCtx
         var opString = chunks[1];
 
         var op = DBOpOperation.UNKNOWN;
-        string oldData = null, newData = null;
-        string oldPayer = null, newPayer = null;
+        string oldData = string.Empty, newData = string.Empty;
+        string oldPayer = string.Empty, newPayer = string.Empty;
 
         switch (opString)
         {
@@ -679,7 +688,7 @@ public class ParseCtx
         }
         */
 
-        var trxHex = chunks[10].ToBytes();
+        var trxHex = chunks[10].HexStringToByteArray();
         /*if err != nil {
 	        return fmt.Errorf("unable to decode signed transaction hex: %w", err)
         }*/
@@ -688,7 +697,7 @@ public class ParseCtx
         if (op == DTrxOpOperation.PUSH_CREATE)
         {
             // TODO unmarshal
-            signedTrx = Deserializer.Deserialize<SignedTransaction>(trxHex);
+            signedTrx = Deserializer.Deserializer.Deserialize<SignedTransaction>(trxHex);
             /*if err != nil {
 		        return fmt.Errorf("unmarshal binary signed transaction: %w", err)
 	        }*/
@@ -696,16 +705,13 @@ public class ParseCtx
         else
         {
             // TODO unmarshal
-            var trx = Deserializer.Deserialize<Transaction>(trxHex);
-	        /*
+            var trx = Deserializer.Deserializer.Deserialize<Transaction>(trxHex);
+            /*
 	        if err != nil {
 		        return fmt.Errorf("unmarshal binary transaction: %w", err)
 	        }
 	        */
-            signedTrx = new SignedTransaction()
-            {
-                Transaction = trx,
-            };
+            signedTrx = (SignedTransaction)trx;
         }
 
         RecordDTrxOp(new DTrxOp()
@@ -753,7 +759,7 @@ public class ParseCtx
             throw new Exception($"expected 4 fields, got {chunks.Length}");
         }
 
-        var feature = JsonSerializer.Deserialize<Feature>(chunks[3]);
+        var feature = JsonSerializer.Deserialize<Feature>(chunks[3], jsonSerializerOptions);
         // TODO does this work?
         //err:= json.Unmarshal(json.RawMessage(chunks[3]), &feature)
         /*if err != nil {
@@ -782,7 +788,7 @@ public class ParseCtx
 	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
         }*/
 
-        var feature = JsonSerializer.Deserialize<Feature>(chunks[4]);
+        var feature = JsonSerializer.Deserialize<Feature>(chunks[4], jsonSerializerOptions);
         // TODO does this work?
         /*err = json.Unmarshal(json.RawMessage(chunks[4]), &feature)
         if err != nil {
@@ -830,17 +836,19 @@ public class ParseCtx
         }
 
         var op = PermOpOperation.UNKNOWN;
-        byte[] oldData = new byte[] { }, newData = new byte[] { };
+        string oldData = string.Empty, newData = string.Empty;
 
         switch (opString) {
 	        case "INS":
 		        op = PermOpOperation.INSERT;
-//		            newData = []byte(dataChunk)
-                newData = Encoding.ASCII.GetBytes(dataChunk);
+                //var feature = JsonSerializer.Deserialize<PermissionObject>(chunks[3]);
+                newData = dataChunk;
+                //                newData = Encoding.ASCII.GetBytes(dataChunk);
                 break;
             case "UPD":
                 op = PermOpOperation.UPDATE;
                 //   var oldJSONResult = gjson.Get(dataChunk, "old")
+                // TODO deserialize directly?
                 JsonDocument jsonDocument = JsonDocument.Parse(dataChunk);
                 if (!jsonDocument.RootElement.TryGetProperty("old", out var oldJsonResult))
                 {
@@ -854,12 +862,12 @@ public class ParseCtx
                         $"a PERM_OP UPD should JSON data should have an 'new' field, found none in: {dataChunk}");
                 }
 
-                oldData = Encoding.ASCII.GetBytes(oldJsonResult.GetRawText());
-    	        newData = Encoding.ASCII.GetBytes(newJsonResult.GetRawText());
+                oldData = oldJsonResult.GetRawText();
+    	        newData = newJsonResult.GetRawText();
                 break;
             case "REM":
                 op = PermOpOperation.REMOVE;
-                oldData = Encoding.ASCII.GetBytes(dataChunk);
+                oldData = dataChunk;
                 break;
             default:
                 throw new Exception($"unknown PERM_OP op: {opString}");
@@ -873,7 +881,7 @@ public class ParseCtx
 
         if (newData.Length > 0)
         {
-            var newPerm = Deserializer.Deserialize<PermissionObject>(newData);
+            var newPerm = JsonSerializer.Deserialize<PermissionObject>(newData, jsonSerializerOptions);
 	        /*
 	        err = json.Unmarshal(newData, &newPerm)
 	        if err != nil {
@@ -887,8 +895,7 @@ public class ParseCtx
 
         if (oldData.Length > 0)
         {
-            var oldPerm = new PermissionObject();
-            JsonSerializer.Deserialize<PermissionObject>(oldData);
+            var oldPerm = JsonSerializer.Deserialize<PermissionObject>(oldData, jsonSerializerOptions);
 	        /*err = json.Unmarshal(oldData, &oldPerm)
 	        if err != nil {
 		        return fmt.Errorf("unmashal old perm data: %s", err)
@@ -1018,7 +1025,7 @@ public class ParseCtx
     //    ABIDUMP ABI ${contract} ${base64_abi}
     public void ReadAbiDump(string[] chunks)
     {
-        string contract = null, rawABI = null;
+        string contract = string.Empty, rawABI = string.Empty;
         switch (chunks.Length) {
 	        case 5: // Version 12
                 contract = chunks[3];
@@ -1098,16 +1105,16 @@ public class ParseCtx
 
         switch (kindString) {
 	        case "CONFIG":
-                op = JsonSerializer.Deserialize<RlimitConfig>(data);
+                op = JsonSerializer.Deserialize<RlimitConfig>(data, jsonSerializerOptions);
                 break;
             case "STATE":
-                op = JsonSerializer.Deserialize<RlimitState>(data);
+                op = JsonSerializer.Deserialize<RlimitState>(data, jsonSerializerOptions);
                 break;
             case "ACCOUNT_LIMITS":
-                op = JsonSerializer.Deserialize<RlimitAccountLimits>(data);
+                op = JsonSerializer.Deserialize<RlimitAccountLimits>(data, jsonSerializerOptions);
                 break;
             case "ACCOUNT_USAGE":
-                op = JsonSerializer.Deserialize<RlimitAccountUsage>(data);
+                op = JsonSerializer.Deserialize<RlimitAccountUsage>(data, jsonSerializerOptions);
                 break;
             default:
                 throw new Exception($"unknown kind: {kindString}");
@@ -1176,9 +1183,9 @@ public class ParseCtx
         var name = chunks[1];
         var trxID = chunks[2];
 
-        var trxHex = chunks[3].ToBytes();
+        var trxHex = chunks[3].HexStringToByteArray();
 
-        var trx = Deserializer.Deserialize<SignedTransaction>(trxHex);
+        var trx = Deserializer.Deserializer.Deserialize<SignedTransaction>(trxHex);
 
         RecordTrxOp(new TrxOp()
         {

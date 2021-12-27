@@ -2,22 +2,22 @@ namespace DeepReader.Types;
 
 public class Block
 {
-	public string Id;//                               string                      `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	public uint Number;//                           uint32                      `protobuf:"varint,2,opt,name=number,proto3" json:"number,omitempty"`
-	public uint Version;//                          uint32                      `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`
-	public BlockHeader Header;//                    *BlockHeader                `protobuf:"bytes,4,opt,name=header,proto3" json:"header,omitempty"`
-	public string ProducerSignature;//                string                      `protobuf:"bytes,5,opt,name=producer_signature,json=producerSignature,proto3" json:"producer_signature,omitempty"`
-	public Extension[] BlockExtensions;//                  []*Extension                `protobuf:"bytes,7,rep,name=block_extensions,json=blockExtensions,proto3" json:"block_extensions,omitempty"`
-	public uint DposProposedIrreversibleBlocknum;// uint32                      `protobuf:"varint,8,opt,name=dpos_proposed_irreversible_blocknum,json=dposProposedIrreversibleBlocknum,proto3" json:"dpos_proposed_irreversible_blocknum,omitempty"`
-	public uint DposIrreversibleBlocknum;//         uint32                      `protobuf:"varint,9,opt,name=dpos_irreversible_blocknum,json=dposIrreversibleBlocknum,proto3" json:"dpos_irreversible_blocknum,omitempty"`
-	public BlockRootMerkle BlockrootMerkle;//                  *BlockRootMerkle            `protobuf:"bytes,11,opt,name=blockroot_merkle,json=blockrootMerkle,proto3" json:"blockroot_merkle,omitempty"`
-	public ProducerToLastProduced[] ProducerToLastProduced;//           []*ProducerToLastProduced   `protobuf:"bytes,12,rep,name=producer_to_last_produced,json=producerToLastProduced,proto3" json:"producer_to_last_produced,omitempty"`
-	public ProducerToLastImpliedIRB[] ProducerToLastImpliedIrb;//         []*ProducerToLastImpliedIRB `protobuf:"bytes,13,rep,name=producer_to_last_implied_irb,json=producerToLastImpliedIrb,proto3" json:"producer_to_last_implied_irb,omitempty"`
-	public uint[] ConfirmCount;//                     []uint32                    `protobuf:"varint,15,rep,packed,name=confirm_count,json=confirmCount,proto3" json:"confirm_count,omitempty"`
-	public PendingProducerSchedule PendingSchedule;//                  *PendingProducerSchedule    `protobuf:"bytes,16,opt,name=pending_schedule,json=pendingSchedule,proto3" json:"pending_schedule,omitempty"`
-	public ActivatedProtocolFeatures ActivatedProtocolFeatures;//        *ActivatedProtocolFeatures  `protobuf:"bytes,17,opt,name=activated_protocol_features,json=activatedProtocolFeatures,proto3" json:"activated_protocol_features,omitempty"`
-	public bool Validated;//                        bool                        `protobuf:"varint,18,opt,name=validated,proto3" json:"validated,omitempty"`
-	public IList<RlimitOp> RlimitOps;//                        []*RlimitOp                 `protobuf:"bytes,19,rep,name=rlimit_ops,json=rlimitOps,proto3" json:"rlimit_ops,omitempty"`
+	public string Id = string.Empty;//string
+	public uint Number = 0;//uint32
+	public uint Version = 0;//uint32
+	public BlockHeader Header = new BlockHeader();//*BlockHeader
+	public string ProducerSignature = string.Empty;//string
+	public Extension[] BlockExtensions = Array.Empty<Extension>();//[]*Extension
+	public uint DposProposedIrreversibleBlocknum = 0;//uint32
+	public uint DposIrreversibleBlocknum = 0;//uint32
+	public BlockRootMerkle BlockrootMerkle = new BlockRootMerkle();//*BlockRootMerkle
+	public ProducerToLastProduced[] ProducerToLastProduced = Array.Empty<ProducerToLastProduced>();//[]*ProducerToLastProduced
+	public ProducerToLastImpliedIRB[] ProducerToLastImpliedIrb = Array.Empty<ProducerToLastImpliedIRB>();//[]*ProducerToLastImpliedIRB
+	public uint[] ConfirmCount = Array.Empty<uint>();//[]uint32
+	public PendingProducerSchedule PendingSchedule = new PendingProducerSchedule();//*PendingProducerSchedule
+	public ActivatedProtocolFeatures ActivatedProtocolFeatures = new ActivatedProtocolFeatures();//*ActivatedProtocolFeatures
+	public bool Validated = false;//bool
+	public IList<RlimitOp> RlimitOps = new List<RlimitOp>();//[]*RlimitOp
 	// The unfiltered transactions in this block when NO filtering has been applied,
 	// (i.e. `filtering_applied = false`). When filtering has been applied on this block,
 	// (i.e. `filtering_applied = true`), this field will be set to `nil` and instead, the
@@ -26,7 +26,7 @@ public class Block
 	// Use the helper getter method `Transactions()` to automatically pick the correct
 	// field to use (`unfiltered_transactions` when `filtering_applied == false` and
 	// `filtered_transactions` when `filtering_applied == true`).
-	public IList<TransactionReceipt> UnfilteredTransactions;// []*TransactionReceipt `protobuf:"bytes,6,rep,name=unfiltered_transactions,json=unfilteredTransactions,proto3" json:"unfiltered_transactions,omitempty"`
+	public IList<TransactionReceipt> UnfilteredTransactions = new List<TransactionReceipt>();//[]*TransactionReceipt
 	// The filtered transactions in this block when filtering has been applied,
 	// (i.e. `filtering_applied = true`). This will be only the transactions
 	// that matched the include filter CEL expression and did NOT match the exclude
@@ -35,14 +35,14 @@ public class Block
 	// Use the helper getter method `Transactions()` to automatically the correct
 	// field (`unfiltered_transaction` when `filtering_applied == false` and
 	// `filtered_transactions` when `filtering_applied == true`).
-	public TransactionReceipt[] FilteredTransactions;// []*TransactionReceipt `protobuf:"bytes,47,rep,name=filtered_transactions,json=filteredTransactions,proto3" json:"filtered_transactions,omitempty"`
+	public TransactionReceipt[] FilteredTransactions = Array.Empty<TransactionReceipt>();//[]*TransactionReceipt
 	// Number of transaction executed within this block when no filtering
 	// is applied (`filtering_applied == false`).
-	public uint UnfilteredTransactionCount;// uint32 `protobuf:"varint,22,opt,name=unfiltered_transaction_count,json=unfilteredTransactionCount,proto3" json:"unfiltered_transaction_count,omitempty"`
+	public uint UnfilteredTransactionCount = 0;//uint32
 	// Number of transaction that were successfully executed within this block that are found in
 	// the `filtered_transactions` array. This field is populated only when the flag
 	// `filtering_applied` is `true`.
-	public uint FilteredTransactionCount;// uint32 `protobuf:"varint,48,opt,name=filtered_transaction_count,json=filteredTransactionCount,proto3" json:"filtered_transaction_count,omitempty"`
+	public uint FilteredTransactionCount = 0;//uint32
 	// The unfiltered implicit transaction ops in this block when NO filtering has been applied,
 	// (i.e. `filtering_applied = false`). When filtering has been applied on this block,
 	// (i.e. `filtering_applied = true`), this field will be set to `nil` and instead, the
@@ -52,7 +52,7 @@ public class Block
 	// Use the helper getter method `ImplicitTransactionOps()` to automatically pick the correct
 	// field to use (`unfiltered_implicit_transaction_ops` when `filtering_applied == false` and
 	// `filtered_implicit_transaction_ops` when `filtering_applied == true`).
-	public IList<TrxOp> UnfilteredImplicitTransactionOps;// []*TrxOp `protobuf:"bytes,20,rep,name=unfiltered_implicit_transaction_ops,json=unfilteredImplicitTransactionOps,proto3" json:"unfiltered_implicit_transaction_ops,omitempty"`
+	public IList<TrxOp> UnfilteredImplicitTransactionOps = new List<TrxOp>();//[]*TrxOp
 	// The filtered implicit transaction ops in this block when filtering has been applied,
 	// (i.e. `filtering_applied = true`). This will be only the implicit transaction ops
 	// that matched the include filter CEL expression and did NOT match the exclude
@@ -61,7 +61,7 @@ public class Block
 	// Use the helper getter method `ImplicitTransactionOps()` to automatically the correct
 	// field (`unfiltered_implicit_transaction_ops` when `filtering_applied == false` and
 	// `filtered_implicit_transaction_ops` when `filtering_applied == true`).
-	public TrxOp[] FilteredImplicitTransactionOps;// []*TrxOp `protobuf:"bytes,49,rep,name=filtered_implicit_transaction_ops,json=filteredImplicitTransactionOps,proto3" json:"filtered_implicit_transaction_ops,omitempty"`
+	public TrxOp[] FilteredImplicitTransactionOps = Array.Empty<TrxOp>();//[]*TrxOp
 	// The unfiltered transaction traces in this block when NO filtering has been applied,
 	// (i.e. `filtering_applied = false`). When filtering has been applied on this block,
 	// (i.e. `filtering_applied = true`), this field will be set to `nil` and instead, the
@@ -70,7 +70,7 @@ public class Block
 	// Use the helper getter method `TransactionTraces()` to automatically pick the correct
 	// field to use (`unfiltered_transaction_traces` when `filtering_applied == false` and
 	// `filtered_transaction_traces` when `filtering_applied == true`).
-	public IList<TransactionTrace> UnfilteredTransactionTraces;// []*TransactionTrace `protobuf:"bytes,21,rep,name=unfiltered_transaction_traces,json=unfilteredTransactionTraces,proto3" json:"unfiltered_transaction_traces,omitempty"`
+	public IList<TransactionTrace> UnfilteredTransactionTraces = new List<TransactionTrace>();//[]*TransactionTrace
 	// The filtered transaction traces in this block when filtering has been applied,
 	// (i.e. `filtering_applied = true`). This will be only the transaction trace
 	// that matched the include filter CEL expression and did NOT match the exclude
@@ -79,35 +79,35 @@ public class Block
 	// Use the helper getter method `TransactionTraces()` to automatically pick the correct
 	// field to use (`unfiltered_transaction_traces` when `filtering_applied == false` and
 	// `filtered_transaction_traces` when `filtering_applied == true`).
-	public TransactionTrace[] FilteredTransactionTraces;// []*TransactionTrace `protobuf:"bytes,46,rep,name=filtered_transaction_traces,json=filteredTransactionTraces,proto3" json:"filtered_transaction_traces,omitempty"`
+	public TransactionTrace[] FilteredTransactionTraces = Array.Empty<TransactionTrace>();//[]*TransactionTrace
 	// Number of transaction trace executed within this block when no filtering
 	// is applied (`filtering_applied == false`).
-	public uint UnfilteredTransactionTraceCount;// uint32 `protobuf:"varint,23,opt,name=unfiltered_transaction_trace_count,json=unfilteredTransactionTraceCount,proto3" json:"unfiltered_transaction_trace_count,omitempty"`
+	public uint UnfilteredTransactionTraceCount = 0;//uint32
 	// Number of transaction trace that were successfully executed within this block that are found in
 	// the `filtered_transaction_traces` array. This field is populated only when the flag
 	// `filtering_applied` is `true`.
-	public uint FilteredTransactionTraceCount;// uint32 `protobuf:"varint,43,opt,name=filtered_transaction_trace_count,json=filteredTransactionTraceCount,proto3" json:"filtered_transaction_trace_count,omitempty"`
+	public uint FilteredTransactionTraceCount = 0;//uint32
 	// Number of top-level actions that were successfully executed within this block when no filtering
 	// is applied (`filtering_applied == false`).
-	public uint UnfilteredExecutedInputActionCount;// uint32 `protobuf:"varint,24,opt,name=unfiltered_executed_input_action_count,json=unfilteredExecutedInputActionCount,proto3" json:"unfiltered_executed_input_action_count,omitempty"`
+	public uint UnfilteredExecutedInputActionCount = 0;//uint32
 	// Number of top-level actions that were successfully executed within this block that are found in
 	// the `filtered_transaction_traces` array. This field is populated only when the flag
 	// `filtering_applied` is `true`.
-	public uint FilteredExecutedInputActionCount;// uint32 `protobuf:"varint,44,opt,name=filtered_executed_input_action_count,json=filteredExecutedInputActionCount,proto3" json:"filtered_executed_input_action_count,omitempty"`
+	public uint FilteredExecutedInputActionCount = 0;//uint32
 	// Number of actions that were successfully executed within this block when no filtering
 	// is applied (`filtering_applied == false`).
-	public uint UnfilteredExecutedTotalActionCount;// uint32 `protobuf:"varint,25,opt,name=unfiltered_executed_total_action_count,json=unfilteredExecutedTotalActionCount,proto3" json:"unfiltered_executed_total_action_count,omitempty"`
+	public uint UnfilteredExecutedTotalActionCount = 0;//uint32
 	// Number of actions that were successfully executed within this block that are found in
 	// the `filtered_transaction_traces` array. This field is populated only when the flag
 	// `filtering_applied` is `true`.
-	public uint FilteredExecutedTotalActionCount;// uint32 `protobuf:"varint,45,opt,name=filtered_executed_total_action_count,json=filteredExecutedTotalActionCount,proto3" json:"filtered_executed_total_action_count,omitempty"`
+	public uint FilteredExecutedTotalActionCount = 0;//uint32
 	// This was a single string element representing a public key (eos-go#ecc.PublicKey).
 	// It has been replaced by `valid_block_signing_authority_v2`.
-	public string BlockSigningKey;// string `protobuf:"bytes,14,opt,name=block_signing_key,json=blockSigningKey,proto3" json:"block_signing_key,omitempty"`
+	public string BlockSigningKey = string.Empty;//string
 	// This was a list of `{name, publicKey}` elements, each block being signed by a single key,
 	// the schedule was simply a list of pair, each pair being the producer name and it's public key
 	// used to sign the block.
-	public ProducerSchedule ActiveScheduleV1;// *ProducerSchedule `protobuf:"bytes,10,opt,name=active_schedule_v1,json=activeScheduleV1,proto3" json:"active_schedule_v1,omitempty"`
+	public ProducerSchedule ActiveScheduleV1 = new ProducerSchedule();//*ProducerSchedule
 	// This replaces `block_signing_key` with a richer structure
 	// able to handle the weighted threshold multisig for block producers.
 	//
@@ -118,7 +118,7 @@ public class Block
 	// more than one key.
 	//
 	// See BlockSigningAuthority for further details
-	public BlockSigningAuthority ValidBlockSigningAuthorityV2;// *BlockSigningAuthority `protobuf:"bytes,30,opt,name=valid_block_signing_authority_v2,json=validBlockSigningAuthorityV2,proto3" json:"valid_block_signing_authority_v2,omitempty"`
+	public BlockSigningAuthority ValidBlockSigningAuthorityV2 = new BlockSigningAuthority();//*BlockSigningAuthority
 	// This repleaces the old type `ProducerSchedule` for the `active_schedule`
 	// field. This was only a type change in EOSIO 2.0, the field's name remained
 	// the same.
@@ -127,7 +127,7 @@ public class Block
 	// counterpart. The inner element for a producer can then be composed with
 	// multiple keys, each with their own weight and the threshold required to
 	// accept the block signature.
-	public ProducerAuthoritySchedule ActiveScheduleV2;// *ProducerAuthoritySchedule `protobuf:"bytes,31,opt,name=active_schedule_v2,json=activeScheduleV2,proto3" json:"active_schedule_v2,omitempty"`
+	public ProducerAuthoritySchedule ActiveScheduleV2 = new ProducerAuthoritySchedule();//*ProducerAuthoritySchedule
 	// Wheter or not a filtering process was run on this block. The filtering process sets to nil
 	// the `unfiltered_transaction_traces` to `nil` and populate the `filtered_transaction_traces`
 	// according to the `filtering_include_filter_expr` and `filtering_exclude_filter_expr` CEL
@@ -140,47 +140,16 @@ public class Block
 	//
 	// This flag controls all `filtered_*` and `unfiltered_*` elements on the Block structure and on
 	// substructures if present.
-	public bool FilteringApplied;// bool `protobuf:"varint,40,opt,name=filtering_applied,json=filteringApplied,proto3" json:"filtering_applied,omitempty"`
+	public bool FilteringApplied = false;//bool
 	// The CEL filter expression used to include transaction in `filtered_transaction_traces` array, works
 	// in combination with `filtering_exclude_filter_expr` value.
-	public string FilteringIncludeFilterExpr;// string `protobuf:"bytes,41,opt,name=filtering_include_filter_expr,json=filteringIncludeFilterExpr,proto3" json:"filtering_include_filter_expr,omitempty"`
+	public string FilteringIncludeFilterExpr = string.Empty;//string
 	// The CEL filter expression used to exclude transaction in `filtered_transaction_traces` array, works
 	// in combination with `filtering_include_filter_expr` value.
-	public string FilteringExcludeFilterExpr;// string `protobuf:"bytes,42,opt,name=filtering_exclude_filter_expr,json=filteringExcludeFilterExpr,proto3" json:"filtering_exclude_filter_expr,omitempty"`
+	public string FilteringExcludeFilterExpr = string.Empty;//string
 	// The CEL filter expression used to include system actions, required by some systems, works
 	// in combination with the two other filters above.
-	public string FilteringSystemActionsIncludeFilterExpr;// string   `protobuf:"bytes,50,opt,name=filtering_system_actions_include_filter_expr,json=filteringSystemActionsIncludeFilterExpr,proto3" json:"filtering_system_actions_include_filter_expr,omitempty"`
-	//XXX_NoUnkeyedLiteral                    struct{} `json:"-"`
-	//XXX_unrecognized                        []byte   `json:"-"`
-	//XXX_sizecache                           int32    `json:"-"`
-
-	public Block()
-    {
-		Id = "";
-		Header = new BlockHeader();
-		ProducerSignature = "";
-		BlockExtensions = Array.Empty<Extension>();
-		BlockrootMerkle = new BlockRootMerkle();
-		ProducerToLastProduced = Array.Empty<ProducerToLastProduced>();
-		ProducerToLastImpliedIrb = Array.Empty<ProducerToLastImpliedIRB>();
-		ConfirmCount = Array.Empty<uint>();
-		PendingSchedule = new PendingProducerSchedule();
-		ActivatedProtocolFeatures = new ActivatedProtocolFeatures();
-		RlimitOps = new List<RlimitOp>();
-		UnfilteredTransactions = new List<TransactionReceipt>();
-		FilteredTransactions = Array.Empty<TransactionReceipt>();
-		UnfilteredImplicitTransactionOps = new List<TrxOp>();
-		FilteredImplicitTransactionOps = Array.Empty<TrxOp>();
-		UnfilteredTransactionTraces = new List<TransactionTrace>();
-		FilteredTransactionTraces = Array.Empty<TransactionTrace>();
-		BlockSigningKey = "";
-		ActiveScheduleV1 = new ProducerSchedule();
-		ValidBlockSigningAuthorityV2 = new BlockSigningAuthority();
-		ActiveScheduleV2 = new ProducerAuthoritySchedule();
-		FilteringIncludeFilterExpr = "";
-		FilteringExcludeFilterExpr = "";
-		FilteringSystemActionsIncludeFilterExpr = "";
-    }
+	public string FilteringSystemActionsIncludeFilterExpr = string.Empty;//string
 
 // func (m *Block) Reset()         { *m = Block{} }
 // func (m *Block) String() string { return proto.CompactTextString(m) }

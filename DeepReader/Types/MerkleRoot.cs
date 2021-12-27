@@ -2,6 +2,6 @@ namespace DeepReader.Types;
 
 public class MerkleRoot
 {
-    public byte[] ActiveNodes;// []Checksum256 `json:"_active_nodes"`
-    public ulong NodeCount;//   uint64        `json:"_node_count"`
+    public byte[] ActiveNodes = Array.Empty<byte>();//[]Checksum256
+    public ulong NodeCount = 0;//uint64
 }

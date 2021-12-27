@@ -21,7 +21,7 @@ public static class CreationTree
                 // TODO return nil, fmt.Errorf("first exec op kind of execution start should be ROOT, got %s", opKinds[0])
             }
 
-            var root = new Node { Kind = "ROOT", ActionIndex = -1, Children = null };
+            var root = new Node { Kind = "ROOT", ActionIndex = -1, Children = new List<Node>() };
             roots.Add(root);
 
             ExecuteAction(ref actionIndex, root, opsMap);
@@ -91,7 +91,7 @@ public static class CreationTree
                 continue;
             }
 
-            var child = new Node() { Kind = opKind, ActionIndex = -1, Children = null };
+            var child = new Node() { Kind = opKind, ActionIndex = -1, Children = new List<Node>() };
             switch (opKind)
             {
                 case "NOTIFY":
