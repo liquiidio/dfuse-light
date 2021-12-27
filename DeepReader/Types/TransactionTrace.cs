@@ -46,30 +46,30 @@ public class TransactionTrace
 	public TransactionTrace? FailedDtrxTrace;//*TransactionTrace
 
 	// Exception leading to the failed dtrx trace.
-	public Exception? Exception = new Exception();// *Exception
+	public Except? Exception = new Except();// *Exception
 
 	public ulong? ErrorCode = 0;//uint64
 
 	// List of database operations this transaction entailed
-	public IList<DBOp> DbOps = new List<DBOp>();//[]*DBOp
+	public IList<DBOp> DbOps { get; set; } = new List<DBOp>();//[]*DBOp
 	// List of deferred transactions operations this transaction entailed
-	public IList<DTrxOp> DtrxOps = new List<DTrxOp>();//[]*DTrxOp
+	public IList<DTrxOp> DtrxOps { get; set; } = new List<DTrxOp>();//[]*DTrxOp
 	// List of feature switching operations (changes to feature switches in
 	// nodeos) this transaction entailed
-	public IList<FeatureOp> FeatureOps = new List<FeatureOp>();//[]*FeatureOp
+	public IList<FeatureOp> FeatureOps { get; set; } = new List<FeatureOp>();//[]*FeatureOp
 	// List of permission changes operations
-	public IList<PermOp> PermOps = new List<PermOp>();//[]*PermOp
+	public IList<PermOp> PermOps { get; set; } = new List<PermOp>();//[]*PermOp
 	// List of RAM consumption/redemption
-	public IList<RAMOp> RamOps = new List<RAMOp>();//[]*RAMOp
+	public IList<RAMOp> RamOps { get; set; } = new List<RAMOp>();//[]*RAMOp
 	// List of RAM correction operations (happens only once upon feature
 	// activation)
-	public IList<RAMCorrectionOp> RamCorrectionOps = new List<RAMCorrectionOp>();//[]*RAMCorrectionOp
+	public IList<RAMCorrectionOp> RamCorrectionOps { get; set; } = new List<RAMCorrectionOp>();//[]*RAMCorrectionOp
 	// List of changes to rate limiting values
-	public IList<RlimitOp> RlimitOps = new List<RlimitOp>();//[]*RlimitOp
+	public IList<RlimitOp> RlimitOps { get; set; } = new List<RlimitOp>();//[]*RlimitOp
 	// List of table creations/deletions
-	public IList<TableOp> TableOps = new List<TableOp>();//[]*TableOp
+	public IList<TableOp> TableOps { get; set; } = new List<TableOp>();//[]*TableOp
 	// Tree of creation, rather than execution
-	public CreationFlatNode[] CreationTree = Array.Empty<CreationFlatNode>();//[]*CreationFlatNode
+	public CreationFlatNode[] CreationTree { get; set; } = Array.Empty<CreationFlatNode>();//[]*CreationFlatNode
 
 
 	// Index within block's unfiltered execution traces
@@ -77,6 +77,29 @@ public class TransactionTrace
 
 }
 
+public class Except {
+	public long Code;
+	public string Name;
+	public string Message;
+	public IList<ExceptLogMessage> Stack;
+}
+
+public class ExceptLogMessage {
+	public ExceptLogContext Context;
+	public string Format;
+	public string Data;// json.RawMessage
+}
+
+public class ExceptLogContext {
+	public byte Level;//ExceptLogLevel
+	public string File;
+	public ulong Line;
+	public string Method;
+	public string Hostname;
+	public string ThreadName;
+	public uint Timestamp;//JSONTime
+	public ExceptLogContext? Context;
+}
 
 public class TransactionTracee
 {

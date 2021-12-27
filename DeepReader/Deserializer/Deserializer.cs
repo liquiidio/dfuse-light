@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using DeepReader.Types.Enums;
 using Salar.BinaryBuffers;
 using Serilog;
 
@@ -92,6 +93,11 @@ namespace DeepReader.Deserializer
                 {
                     continue;
                 }
+                else if (fieldType.IsEnum)
+                {
+                    var value = ReadEnum(binaryReader);
+                    fieldInfo.Key.SetValueDirect(objRef, Enum.ToObject(fieldType, value));
+                }
                 else
                 {
                     var typeReader = GetTypeReader(fieldType);
@@ -168,6 +174,11 @@ namespace DeepReader.Deserializer
         private delegate object ReaderDelegate(BinaryBufferReader binaryReader, Type fieldType);
         private delegate object VariantReaderDelegate(BinaryBufferReader binaryReader);
 
+
+        private static int ReadEnum(BinaryBufferReader binaryReader)
+        {
+            return (int)binaryReader.ReadByte();
+        }
 
         private static object ReadOptional(BinaryBufferReader binaryReader, Type fieldType, ReaderDelegate typeReader)
         {
