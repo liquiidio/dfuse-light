@@ -1,10 +1,6 @@
 ﻿using DeepReader.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 
 namespace DeepReader
 {
@@ -27,9 +23,17 @@ namespace DeepReader
 
         private async Task ProcessBlocks(CancellationToken clt)
         {
+            var jsonSerializerOptions = new JsonSerializerOptions()
+            {
+                IncludeFields = true,
+                IgnoreReadOnlyFields = false,
+                IgnoreReadOnlyProperties = false,
+                MaxDepth = 0
+            };
+
             await foreach (var block in _blocksChannel.ReadAllAsync(clt))
             {
-                Console.WriteLine($"got block {block.Number}");
+                Console.WriteLine($"got block {block.ToJsonString(jsonSerializerOptions)}");
             }
         }
     }

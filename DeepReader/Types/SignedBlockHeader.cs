@@ -1,6 +1,9 @@
+using DeepReader.EosTypes;
+
 namespace DeepReader.Types;
 
 public class SignedBlockHeader : BlockHeader
 {
-    public byte[] ProducerSignature = Array.Empty<byte>();// ecc.Signature // no pointer!!
+    [SortOrder(10)]
+    public Signature ProducerSignature = string.Empty;// ecc.Signature // no pointer!!
 }

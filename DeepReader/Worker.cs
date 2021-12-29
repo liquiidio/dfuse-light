@@ -1,12 +1,7 @@
-using System;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using DeepReader.Classes;
 using DeepReader.Types;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace DeepReader
 {
@@ -15,6 +10,8 @@ namespace DeepReader
         private readonly ILogger<Worker> _logger;
 
         private readonly ChannelWriter<Block> _blocksChannel;
+
+        ParseCtx Ctx = new ParseCtx();
 
         public Worker(ILogger<Worker> logger, ChannelWriter<Block> blocksChannel)
         {
@@ -157,85 +154,83 @@ namespace DeepReader
                 {
                     if (e.Data.StartsWith("DMLOG"))
                     {
-                        var ctx = new ParseCtx();
-
                         var data = e.Data.Split(' ');
 
                         switch (data[1])
                         {
                             case "RAM_OP":
-                                ctx.ReadRamOp(data[Range.StartAt(2)]);
+                                Ctx.ReadRamOp(data[Range.StartAt(2)]);
                                 break;
                             case "CREATION_OP":
-                                ctx.ReadCreationOp(data[Range.StartAt(2)]);
+                                Ctx.ReadCreationOp(data[Range.StartAt(2)]);
                                 break;
                             case "DB_OP":
-                                ctx.ReadDbOp(data[Range.StartAt(2)]);
+                                Ctx.ReadDbOp(data[Range.StartAt(2)]);
                                 break;
                             case "RLIMIT_OP":
-                                ctx.ReadRlimitOp(data[Range.StartAt(2)]);
+                                Ctx.ReadRlimitOp(data[Range.StartAt(2)]);
                                 break;
                             case "TRX_OP":
-                                ctx.ReadTrxOp(data[Range.StartAt(2)]);
+                                Ctx.ReadTrxOp(data[Range.StartAt(2)]);
                                 break;
                             case "APPLIED_TRANSACTION":
-                                ctx.ReadAppliedTransaction(data[Range.StartAt(2)]);
+                                Ctx.ReadAppliedTransaction(data[Range.StartAt(2)]);
                                 break;
                             case "TBL_OP":
-                                ctx.ReadTableOp(data[Range.StartAt(2)]);
+                                Ctx.ReadTableOp(data[Range.StartAt(2)]);
                                 break;
                             case "PERM_OP":
-                                ctx.ReadPermOp(data[Range.StartAt(2)]);
+                                Ctx.ReadPermOp(data[Range.StartAt(2)]);
                                 break;
                             case "DTRX_OP CREATE":
-                                ctx.ReadCreateOrCancelDTrxOp("CREATE", data[Range.StartAt(2)]);
+                                Ctx.ReadCreateOrCancelDTrxOp("CREATE", data[Range.StartAt(2)]);
                                 break;
                             case "DTRX_OP MODIFY_CREATE":
-                                ctx.ReadCreateOrCancelDTrxOp("MODIFY_CREATE", data[Range.StartAt(2)]);
+                                Ctx.ReadCreateOrCancelDTrxOp("MODIFY_CREATE", data[Range.StartAt(2)]);
                                 break;
                             case "DTRX_OP MODIFY_CANCEL":
-                                ctx.ReadCreateOrCancelDTrxOp("MODIFY_CANCEL", data[Range.StartAt(2)]);
+                                Ctx.ReadCreateOrCancelDTrxOp("MODIFY_CANCEL", data[Range.StartAt(2)]);
                                 break;
                             case "RAM_CORRECTION_OP":
-                                ctx.ReadRamCorrectionOp(data[Range.StartAt(2)]);
+                                Ctx.ReadRamCorrectionOp(data[Range.StartAt(2)]);
                                 break;
                             case "DTRX_OP PUSH_CREATE":
-                                ctx.ReadCreateOrCancelDTrxOp("PUSH_CREATE", data[Range.StartAt(2)]);
+                                Ctx.ReadCreateOrCancelDTrxOp("PUSH_CREATE", data[Range.StartAt(2)]);
                                 break;
                             case "DTRX_OP CANCEL":
-                                ctx.ReadCreateOrCancelDTrxOp("CANCEL", data[Range.StartAt(2)]);
+                                Ctx.ReadCreateOrCancelDTrxOp("CANCEL", data[Range.StartAt(2)]);
                                 break;
                             case "DTRX_OP FAILED":
-                                ctx.ReadFailedDTrxOp(data[Range.StartAt(2)]);
+                                Ctx.ReadFailedDTrxOp(data[Range.StartAt(2)]);
                                 break;
                             case "ACCEPTED_BLOCK":
-                                var block = ctx.ReadAcceptedBlock(data[Range.StartAt(2)]);
+                                var block = Ctx.ReadAcceptedBlock(data[Range.StartAt(2)]);
                                 await _blocksChannel.WriteAsync(block, clt);
                                 break;
                             case "START_BLOCK":
-                                ctx.ReadStartBlock(data[Range.StartAt(2)]);
+                                Ctx.ReadStartBlock(data[Range.StartAt(2)]);
                                 break;
                             case "FEATURE_OP ACTIVATE":
-                                ctx.ReadFeatureOpActivate(data[Range.StartAt(2)]);
+                                Ctx.ReadFeatureOpActivate(data[Range.StartAt(2)]);
                                 break;
                             case "FEATURE_OP PRE_ACTIVATE":
-                                ctx.ReadFeatureOpPreActivate(data[Range.StartAt(2)]);
+                                Ctx.ReadFeatureOpPreActivate(data[Range.StartAt(2)]);
                                 break;
                             case "SWITCH_FORK":
                                 //zlog.Info("fork signal, restarting state accumulation from beginning");
-                                ctx.ResetBlock();
+                                Ctx.ResetBlock();
                                 break;
                             case "ABIDUMP START":
-                                ctx.ReadAbiStart(data[Range.StartAt(2)]);
+                                Ctx.ReadAbiStart(data[Range.StartAt(2)]);
                                 break;
                             case "ABIDUMP ABI":
-                                ctx.ReadAbiDump(data[Range.StartAt(2)]);
+                                Ctx.ReadAbiDump(data[Range.StartAt(2)]);
                                 break;
                             case "ABIDUMP END":
                                 //noop
                                 break;
                             case "DEEP_MIND_VERSION":
-                                ctx.ReadDeepmindVersion(data[Range.StartAt(2)]);
+                                Ctx.ReadDeepmindVersion(data[Range.StartAt(2)]);
                                 break;
                             default:
                                 Console.WriteLine(e.Data);

@@ -11,7 +11,7 @@ public class Extension
 
     // abi-field-name: data ,abi-field-type: bytes
     [JsonPropertyName("data")]
-    public byte [] Data;
+    public byte[] Data;
 //    public Bytes Data;
 
     public Extension(ushort type, byte[] data)

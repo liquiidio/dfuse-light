@@ -1,15 +1,23 @@
+using DeepReader.EosTypes;
+
 namespace DeepReader.Types;
 
 public class BlockHeader
 {
-    public Timestamp Timestamp = new Timestamp();//*timestamp.Timestamp
-    public string Producer = string.Empty;//string
-    public uint Confirmed = 0;//uint32
-    public string Previous = string.Empty;//string
-    public byte[] TransactionMroot = Array.Empty<byte>();//[]byte
-    public byte[] ActionMroot = Array.Empty<byte>();//[]byte
+    [SortOrder(1)]
+    public Timestamp Timestamp = 0;//*timestamp.Timestamp
+    [SortOrder(2)]
+    public Name Producer = string.Empty;//string
+    [SortOrder(3)] 
+    public ushort Confirmed = 0;//uint32
+    [SortOrder(4)] 
+    public Checksum256 Previous = string.Empty;//string
+    [SortOrder(5)] 
+    public Checksum256 TransactionMroot = string.Empty;//[]byte
+    [SortOrder(6)] 
+    public Checksum256 ActionMroot = string.Empty;//[]byte
+    [SortOrder(7)] 
     public uint ScheduleVersion = 0;//uint32
-    public Extension[] HeaderExtensions = Array.Empty<Extension>();//[]*Extension
     // EOSIO 1.x only
     //
     // A change to producer schedule was reported as a `NewProducers` field on the
@@ -18,5 +26,8 @@ public class BlockHeader
     // is reported through a `BlockHeaderExtension` on the the `BlockHeader` struct.
     //
     // If you need to access the old value, you can
-    public ProducerSchedule NewProducersV1 = new ProducerSchedule();//*ProducerSchedule
+    [SortOrder(8)] 
+    public ProducerSchedule? NewProducers;//*ProducerSchedule // TODO
+    [SortOrder(9)]
+    public Extension[] HeaderExtensions = Array.Empty<Extension>();//[]*Extension
 }

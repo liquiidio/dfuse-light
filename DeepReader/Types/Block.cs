@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace DeepReader.Types;
 
 public class Block
@@ -5,17 +7,19 @@ public class Block
 	public string Id = string.Empty;//string
 	public uint Number = 0;//uint32
 	public uint Version = 0;//uint32
-	public BlockHeader Header = new BlockHeader();//*BlockHeader
+//	public BlockHeader Header = new BlockHeader();//*BlockHeader
+	public SignedBlockHeader Header = new SignedBlockHeader();//*BlockHeader
 	public string ProducerSignature = string.Empty;//string
 	public Extension[] BlockExtensions = Array.Empty<Extension>();//[]*Extension
 	public uint DposProposedIrreversibleBlocknum = 0;//uint32
 	public uint DposIrreversibleBlocknum = 0;//uint32
-	public BlockRootMerkle BlockrootMerkle = new BlockRootMerkle();//*BlockRootMerkle
-	public ProducerToLastProduced[] ProducerToLastProduced = Array.Empty<ProducerToLastProduced>();//[]*ProducerToLastProduced
-	public ProducerToLastImpliedIRB[] ProducerToLastImpliedIrb = Array.Empty<ProducerToLastImpliedIRB>();//[]*ProducerToLastImpliedIRB
+	public IncrementalMerkle BlockrootMerkle = new IncrementalMerkle();//*BlockRootMerkle
+	public PairAccountNameBlockNum[] ProducerToLastProduced = Array.Empty<PairAccountNameBlockNum>();//[]*ProducerToLastProduced
+	public PairAccountNameBlockNum[] ProducerToLastImpliedIrb = Array.Empty<PairAccountNameBlockNum>();//[]*ProducerToLastImpliedIRB
 	public uint[] ConfirmCount = Array.Empty<uint>();//[]uint32
-	public PendingProducerSchedule PendingSchedule = new PendingProducerSchedule();//*PendingProducerSchedule
-	public ActivatedProtocolFeatures ActivatedProtocolFeatures = new ActivatedProtocolFeatures();//*ActivatedProtocolFeatures
+
+    public PendingSchedule PendingSchedule = new PendingSchedule();//*PendingProducerSchedule
+	public ProtocolFeatureActivationSet? ActivatedProtocolFeatures;//*ActivatedProtocolFeatures
 	public bool Validated = false;//bool
 	public IList<RlimitOp> RlimitOps = new List<RlimitOp>();//[]*RlimitOp
 	// The unfiltered transactions in this block when NO filtering has been applied,
@@ -107,7 +111,7 @@ public class Block
 	// This was a list of `{name, publicKey}` elements, each block being signed by a single key,
 	// the schedule was simply a list of pair, each pair being the producer name and it's public key
 	// used to sign the block.
-	public ProducerSchedule ActiveScheduleV1 = new ProducerSchedule();//*ProducerSchedule
+//	public ProducerSchedule ActiveScheduleV1 = new ProducerSchedule();//*ProducerSchedule
 	// This replaces `block_signing_key` with a richer structure
 	// able to handle the weighted threshold multisig for block producers.
 	//
@@ -118,7 +122,7 @@ public class Block
 	// more than one key.
 	//
 	// See BlockSigningAuthority for further details
-	public BlockSigningAuthority ValidBlockSigningAuthorityV2 = new BlockSigningAuthority();//*BlockSigningAuthority
+	public BlockSigningAuthorityVariant? ValidBlockSigningAuthority;//*BlockSigningAuthority
 	// This repleaces the old type `ProducerSchedule` for the `active_schedule`
 	// field. This was only a type change in EOSIO 2.0, the field's name remained
 	// the same.
@@ -127,7 +131,7 @@ public class Block
 	// counterpart. The inner element for a producer can then be composed with
 	// multiple keys, each with their own weight and the threshold required to
 	// accept the block signature.
-	public ProducerAuthoritySchedule ActiveScheduleV2 = new ProducerAuthoritySchedule();//*ProducerAuthoritySchedule
+	public ProducerAuthoritySchedule ActiveSchedule = new ProducerAuthoritySchedule();//*ProducerAuthoritySchedule
 	// Wheter or not a filtering process was run on this block. The filtering process sets to nil
 	// the `unfiltered_transaction_traces` to `nil` and populate the `filtered_transaction_traces`
 	// according to the `filtering_include_filter_expr` and `filtering_exclude_filter_expr` CEL
@@ -151,294 +155,303 @@ public class Block
 	// in combination with the two other filters above.
 	public string FilteringSystemActionsIncludeFilterExpr = string.Empty;//string
 
-// func (m *Block) Reset()         { *m = Block{} }
-// func (m *Block) String() string { return proto.CompactTextString(m) }
-// func (*Block) ProtoMessage()    {}
-// func (*Block) Descriptor() ([]byte, []int) {
-// 	return fileDescriptor_3286b8d338e80dff, []int{0}
-// }
-//
-// func (m *Block) XXX_Unmarshal(b []byte) error {
-// 	return xxx_messageInfo_Block.Unmarshal(m, b)
-// }
-// func (m *Block) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-// 	return xxx_messageInfo_Block.Marshal(b, m, deterministic)
-// }
-// func (m *Block) XXX_Merge(src proto.Message) {
-// 	xxx_messageInfo_Block.Merge(m, src)
-// }
-// func (m *Block) XXX_Size() int {
-// 	return xxx_messageInfo_Block.Size(m)
-// }
-// func (m *Block) XXX_DiscardUnknown() {
-// 	xxx_messageInfo_Block.DiscardUnknown(m)
-// }
-//
-// var xxx_messageInfo_Block proto.InternalMessageInfo
-//
-// func (m *Block) GetId() string {
-// 	if m != nil {
-// 		return m.Id
-// 	}
-// 	return ""
-// }
-//
-// func (m *Block) GetNumber() uint32 {
-// 	if m != nil {
-// 		return m.Number
-// 	}
-// 	return 0
-// }
-//
-// func (m *Block) GetVersion() uint32 {
-// 	if m != nil {
-// 		return m.Version
-// 	}
-// 	return 0
-// }
-//
-// func (m *Block) GetHeader() *BlockHeader {
-// 	if m != nil {
-// 		return m.Header
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetProducerSignature() string {
-// 	if m != nil {
-// 		return m.ProducerSignature
-// 	}
-// 	return ""
-// }
-//
-// func (m *Block) GetBlockExtensions() []*Extension {
-// 	if m != nil {
-// 		return m.BlockExtensions
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetDposProposedIrreversibleBlocknum() uint32 {
-// 	if m != nil {
-// 		return m.DposProposedIrreversibleBlocknum
-// 	}
-// 	return 0
-// }
-//
-// func (m *Block) GetDposIrreversibleBlocknum() uint32 {
-// 	if m != nil {
-// 		return m.DposIrreversibleBlocknum
-// 	}
-// 	return 0
-// }
-//
-// func (m *Block) GetBlockrootMerkle() *BlockRootMerkle {
-// 	if m != nil {
-// 		return m.BlockrootMerkle
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetProducerToLastProduced() []*ProducerToLastProduced {
-// 	if m != nil {
-// 		return m.ProducerToLastProduced
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetProducerToLastImpliedIrb() []*ProducerToLastImpliedIRB {
-// 	if m != nil {
-// 		return m.ProducerToLastImpliedIrb
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetConfirmCount() []uint32 {
-// 	if m != nil {
-// 		return m.ConfirmCount
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetPendingSchedule() *PendingProducerSchedule {
-// 	if m != nil {
-// 		return m.PendingSchedule
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetActivatedProtocolFeatures() *ActivatedProtocolFeatures {
-// 	if m != nil {
-// 		return m.ActivatedProtocolFeatures
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetValidated() bool {
-// 	if m != nil {
-// 		return m.Validated
-// 	}
-// 	return false
-// }
-//
-// func (m *Block) GetRlimitOps() []*RlimitOp {
-// 	if m != nil {
-// 		return m.RlimitOps
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetUnfilteredTransactions() []*TransactionReceipt {
-// 	if m != nil {
-// 		return m.UnfilteredTransactions
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetFilteredTransactions() []*TransactionReceipt {
-// 	if m != nil {
-// 		return m.FilteredTransactions
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetUnfilteredTransactionCount() uint32 {
-// 	if m != nil {
-// 		return m.UnfilteredTransactionCount
-// 	}
-// 	return 0
-// }
-//
-// func (m *Block) GetFilteredTransactionCount() uint32 {
-// 	if m != nil {
-// 		return m.FilteredTransactionCount
-// 	}
-// 	return 0
-// }
-//
-// func (m *Block) GetUnfilteredImplicitTransactionOps() []*TrxOp {
-// 	if m != nil {
-// 		return m.UnfilteredImplicitTransactionOps
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetFilteredImplicitTransactionOps() []*TrxOp {
-// 	if m != nil {
-// 		return m.FilteredImplicitTransactionOps
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetUnfilteredTransactionTraces() []*TransactionTrace {
-// 	if m != nil {
-// 		return m.UnfilteredTransactionTraces
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetFilteredTransactionTraces() []*TransactionTrace {
-// 	if m != nil {
-// 		return m.FilteredTransactionTraces
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetUnfilteredTransactionTraceCount() uint32 {
-// 	if m != nil {
-// 		return m.UnfilteredTransactionTraceCount
-// 	}
-// 	return 0
-// }
-//
-// func (m *Block) GetFilteredTransactionTraceCount() uint32 {
-// 	if m != nil {
-// 		return m.FilteredTransactionTraceCount
-// 	}
-// 	return 0
-// }
-//
-// func (m *Block) GetUnfilteredExecutedInputActionCount() uint32 {
-// 	if m != nil {
-// 		return m.UnfilteredExecutedInputActionCount
-// 	}
-// 	return 0
-// }
-//
-// func (m *Block) GetFilteredExecutedInputActionCount() uint32 {
-// 	if m != nil {
-// 		return m.FilteredExecutedInputActionCount
-// 	}
-// 	return 0
-// }
-//
-// func (m *Block) GetUnfilteredExecutedTotalActionCount() uint32 {
-// 	if m != nil {
-// 		return m.UnfilteredExecutedTotalActionCount
-// 	}
-// 	return 0
-// }
-//
-// func (m *Block) GetFilteredExecutedTotalActionCount() uint32 {
-// 	if m != nil {
-// 		return m.FilteredExecutedTotalActionCount
-// 	}
-// 	return 0
-// }
-//
-// func (m *Block) GetBlockSigningKey() string {
-// 	if m != nil {
-// 		return m.BlockSigningKey
-// 	}
-// 	return ""
-// }
-//
-// func (m *Block) GetActiveScheduleV1() *ProducerSchedule {
-// 	if m != nil {
-// 		return m.ActiveScheduleV1
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetValidBlockSigningAuthorityV2() *BlockSigningAuthority {
-// 	if m != nil {
-// 		return m.ValidBlockSigningAuthorityV2
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetActiveScheduleV2() *ProducerAuthoritySchedule {
-// 	if m != nil {
-// 		return m.ActiveScheduleV2
-// 	}
-// 	return nil
-// }
-//
-// func (m *Block) GetFilteringApplied() bool {
-// 	if m != nil {
-// 		return m.FilteringApplied
-// 	}
-// 	return false
-// }
-//
-// func (m *Block) GetFilteringIncludeFilterExpr() string {
-// 	if m != nil {
-// 		return m.FilteringIncludeFilterExpr
-// 	}
-// 	return ""
-// }
-//
-// func (m *Block) GetFilteringExcludeFilterExpr() string {
-// 	if m != nil {
-// 		return m.FilteringExcludeFilterExpr
-// 	}
-// 	return ""
-// }
-//
-// func (m *Block) GetFilteringSystemActionsIncludeFilterExpr() string {
-// 	if m != nil {
-// 		return m.FilteringSystemActionsIncludeFilterExpr
-// 	}
-// 	return ""
-// }
+	internal object ToJsonString(JsonSerializerOptions? jsonSerializerOptions = null)
+	{
+		return JsonSerializer.Serialize(this, jsonSerializerOptions ?? new JsonSerializerOptions()
+		{
+			IncludeFields = true,
+			IgnoreReadOnlyFields = false
+		});
+	}
+
+	// func (m *Block) Reset()         { *m = Block{} }
+	// func (m *Block) String() string { return proto.CompactTextString(m) }
+	// func (*Block) ProtoMessage()    {}
+	// func (*Block) Descriptor() ([]byte, []int) {
+	// 	return fileDescriptor_3286b8d338e80dff, []int{0}
+	// }
+	//
+	// func (m *Block) XXX_Unmarshal(b []byte) error {
+	// 	return xxx_messageInfo_Block.Unmarshal(m, b)
+	// }
+	// func (m *Block) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	// 	return xxx_messageInfo_Block.Marshal(b, m, deterministic)
+	// }
+	// func (m *Block) XXX_Merge(src proto.Message) {
+	// 	xxx_messageInfo_Block.Merge(m, src)
+	// }
+	// func (m *Block) XXX_Size() int {
+	// 	return xxx_messageInfo_Block.Size(m)
+	// }
+	// func (m *Block) XXX_DiscardUnknown() {
+	// 	xxx_messageInfo_Block.DiscardUnknown(m)
+	// }
+	//
+	// var xxx_messageInfo_Block proto.InternalMessageInfo
+	//
+	// func (m *Block) GetId() string {
+	// 	if m != nil {
+	// 		return m.Id
+	// 	}
+	// 	return ""
+	// }
+	//
+	// func (m *Block) GetNumber() uint32 {
+	// 	if m != nil {
+	// 		return m.Number
+	// 	}
+	// 	return 0
+	// }
+	//
+	// func (m *Block) GetVersion() uint32 {
+	// 	if m != nil {
+	// 		return m.Version
+	// 	}
+	// 	return 0
+	// }
+	//
+	// func (m *Block) GetHeader() *BlockHeader {
+	// 	if m != nil {
+	// 		return m.Header
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetProducerSignature() string {
+	// 	if m != nil {
+	// 		return m.ProducerSignature
+	// 	}
+	// 	return ""
+	// }
+	//
+	// func (m *Block) GetBlockExtensions() []*Extension {
+	// 	if m != nil {
+	// 		return m.BlockExtensions
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetDposProposedIrreversibleBlocknum() uint32 {
+	// 	if m != nil {
+	// 		return m.DposProposedIrreversibleBlocknum
+	// 	}
+	// 	return 0
+	// }
+	//
+	// func (m *Block) GetDposIrreversibleBlocknum() uint32 {
+	// 	if m != nil {
+	// 		return m.DposIrreversibleBlocknum
+	// 	}
+	// 	return 0
+	// }
+	//
+	// func (m *Block) GetBlockrootMerkle() *BlockRootMerkle {
+	// 	if m != nil {
+	// 		return m.BlockrootMerkle
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetProducerToLastProduced() []*ProducerToLastProduced {
+	// 	if m != nil {
+	// 		return m.ProducerToLastProduced
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetProducerToLastImpliedIrb() []*ProducerToLastImpliedIRB {
+	// 	if m != nil {
+	// 		return m.ProducerToLastImpliedIrb
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetConfirmCount() []uint32 {
+	// 	if m != nil {
+	// 		return m.ConfirmCount
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetPendingSchedule() *PendingProducerSchedule {
+	// 	if m != nil {
+	// 		return m.PendingSchedule
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetActivatedProtocolFeatures() *ActivatedProtocolFeatures {
+	// 	if m != nil {
+	// 		return m.ActivatedProtocolFeatures
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetValidated() bool {
+	// 	if m != nil {
+	// 		return m.Validated
+	// 	}
+	// 	return false
+	// }
+	//
+	// func (m *Block) GetRlimitOps() []*RlimitOp {
+	// 	if m != nil {
+	// 		return m.RlimitOps
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetUnfilteredTransactions() []*TransactionReceipt {
+	// 	if m != nil {
+	// 		return m.UnfilteredTransactions
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetFilteredTransactions() []*TransactionReceipt {
+	// 	if m != nil {
+	// 		return m.FilteredTransactions
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetUnfilteredTransactionCount() uint32 {
+	// 	if m != nil {
+	// 		return m.UnfilteredTransactionCount
+	// 	}
+	// 	return 0
+	// }
+	//
+	// func (m *Block) GetFilteredTransactionCount() uint32 {
+	// 	if m != nil {
+	// 		return m.FilteredTransactionCount
+	// 	}
+	// 	return 0
+	// }
+	//
+	// func (m *Block) GetUnfilteredImplicitTransactionOps() []*TrxOp {
+	// 	if m != nil {
+	// 		return m.UnfilteredImplicitTransactionOps
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetFilteredImplicitTransactionOps() []*TrxOp {
+	// 	if m != nil {
+	// 		return m.FilteredImplicitTransactionOps
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetUnfilteredTransactionTraces() []*TransactionTrace {
+	// 	if m != nil {
+	// 		return m.UnfilteredTransactionTraces
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetFilteredTransactionTraces() []*TransactionTrace {
+	// 	if m != nil {
+	// 		return m.FilteredTransactionTraces
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetUnfilteredTransactionTraceCount() uint32 {
+	// 	if m != nil {
+	// 		return m.UnfilteredTransactionTraceCount
+	// 	}
+	// 	return 0
+	// }
+	//
+	// func (m *Block) GetFilteredTransactionTraceCount() uint32 {
+	// 	if m != nil {
+	// 		return m.FilteredTransactionTraceCount
+	// 	}
+	// 	return 0
+	// }
+	//
+	// func (m *Block) GetUnfilteredExecutedInputActionCount() uint32 {
+	// 	if m != nil {
+	// 		return m.UnfilteredExecutedInputActionCount
+	// 	}
+	// 	return 0
+	// }
+	//
+	// func (m *Block) GetFilteredExecutedInputActionCount() uint32 {
+	// 	if m != nil {
+	// 		return m.FilteredExecutedInputActionCount
+	// 	}
+	// 	return 0
+	// }
+	//
+	// func (m *Block) GetUnfilteredExecutedTotalActionCount() uint32 {
+	// 	if m != nil {
+	// 		return m.UnfilteredExecutedTotalActionCount
+	// 	}
+	// 	return 0
+	// }
+	//
+	// func (m *Block) GetFilteredExecutedTotalActionCount() uint32 {
+	// 	if m != nil {
+	// 		return m.FilteredExecutedTotalActionCount
+	// 	}
+	// 	return 0
+	// }
+	//
+	// func (m *Block) GetBlockSigningKey() string {
+	// 	if m != nil {
+	// 		return m.BlockSigningKey
+	// 	}
+	// 	return ""
+	// }
+	//
+	// func (m *Block) GetActiveScheduleV1() *ProducerSchedule {
+	// 	if m != nil {
+	// 		return m.ActiveScheduleV1
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetValidBlockSigningAuthorityV2() *BlockSigningAuthority {
+	// 	if m != nil {
+	// 		return m.ValidBlockSigningAuthorityV2
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetActiveScheduleV2() *ProducerAuthoritySchedule {
+	// 	if m != nil {
+	// 		return m.ActiveScheduleV2
+	// 	}
+	// 	return nil
+	// }
+	//
+	// func (m *Block) GetFilteringApplied() bool {
+	// 	if m != nil {
+	// 		return m.FilteringApplied
+	// 	}
+	// 	return false
+	// }
+	//
+	// func (m *Block) GetFilteringIncludeFilterExpr() string {
+	// 	if m != nil {
+	// 		return m.FilteringIncludeFilterExpr
+	// 	}
+	// 	return ""
+	// }
+	//
+	// func (m *Block) GetFilteringExcludeFilterExpr() string {
+	// 	if m != nil {
+	// 		return m.FilteringExcludeFilterExpr
+	// 	}
+	// 	return ""
+	// }
+	//
+	// func (m *Block) GetFilteringSystemActionsIncludeFilterExpr() string {
+	// 	if m != nil {
+	// 		return m.FilteringSystemActionsIncludeFilterExpr
+	// 	}
+	// 	return ""
+	// }
 }

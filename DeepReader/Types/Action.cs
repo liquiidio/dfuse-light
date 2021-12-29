@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace DeepReader.Types;
 
+
 [Serializable()]
 public class Action
 {

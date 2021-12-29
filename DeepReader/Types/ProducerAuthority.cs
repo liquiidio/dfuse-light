@@ -1,7 +1,9 @@
+using DeepReader.EosTypes;
+
 namespace DeepReader.Types;
 
 public class ProducerAuthority
 {
-    public string AccountName = string.Empty;//AccountName
-    public BlockSigningAuthority BlockSigningAuthority = new BlockSigningAuthority();//*BlockSigningAuthority
+    public Name AccountName = string.Empty;//AccountName
+    public BlockSigningAuthorityVariant BlockSigningAuthority = new BlockSigningAuthorityV0();//*BlockSigningAuthority
 }

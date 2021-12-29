@@ -1,7 +1,9 @@
+using DeepReader.EosTypes;
+
 namespace DeepReader.Types;
 
 public class PairAccountNameBlockNum
 {
-    public string AccountName = string.Empty;//AccountName
+    public Name AccountName = string.Empty;//AccountName
     public uint BlockNum = 0;//uint32
 }

@@ -1,17 +1,14 @@
-﻿namespace DeepReader.EosTypes
+﻿using System.Text.Json.Serialization;
+
+namespace DeepReader.EosTypes
 {
+    [JsonConverter(typeof(NameJsonConverter))]
     public class Name
     {
         private readonly ulong _binary;
 
         private readonly string _value;
 
-        /*
-        public static implicit operator Name(string value, ulong )
-        {
-            return new() { _value = value };
-        }
-        */
 
         public static implicit operator string(Name value)
         {
@@ -23,9 +20,24 @@
             return value._binary;
         }
 
+        public static implicit operator Name(string value)
+        {
+            return new Name(0, value);  // TODO string to ulong
+        }
         public string ToJson()
         {
             return _value;
+        }
+
+        public override string ToString()
+        {
+            return _value;
+        }
+
+        public Name(string value)
+        {
+            _value = value;
+            _binary = 0;// todo string to ulong
         }
 
         public Name(ulong binary, string value)
