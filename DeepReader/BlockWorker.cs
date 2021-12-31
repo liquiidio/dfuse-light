@@ -6,11 +6,11 @@ namespace DeepReader
 {
     public class BlockWorker : BackgroundService
     {
-        private readonly ILogger<Worker> _logger;
+        private readonly ILogger<BlockWorker> _logger;
 
         private readonly ChannelReader<Block> _blocksChannel;
 
-        public BlockWorker(ILogger<Worker> logger, ChannelReader<Block> blocksChannel)
+        public BlockWorker(ILogger<BlockWorker> logger, ChannelReader<Block> blocksChannel)
         {
             _logger = logger;
             _blocksChannel = blocksChannel;
