@@ -25,7 +25,7 @@ public class TransactionTrace
 	// Reference to the block number in which this transaction was executed.
 	public uint BlockNum = 0;//uint64
 	// Reference to the block time this transaction was executed in
-	public uint BlockTime = 0;//*timestamp.Timestamp
+	public Timestamp BlockTime = 0;//*timestamp.Timestamp
 	// Reference to the block ID this transaction was executed in
 	public Checksum256? ProducerBlockId = string.Empty;//string
 	// Receipt of execution of this transaction
@@ -46,9 +46,9 @@ public class TransactionTrace
 	public TransactionTrace? FailedDtrxTrace;//*TransactionTrace
 
 	// Exception leading to the failed dtrx trace.
-	public Except? Exception = new Except();// *Exception
+	public Except? Exception;// *Exception
 
-	public ulong? ErrorCode = 0;//uint64
+	public ulong? ErrorCode;//uint64
 
 	// List of database operations this transaction entailed
 	public IList<DBOp> DbOps { get; set; } = new List<DBOp>();//[]*DBOp
@@ -97,7 +97,7 @@ public class ExceptLogContext {
 	public string Method;
 	public string Hostname;
 	public string ThreadName;
-	public uint Timestamp;//JSONTime
+	public Timestamp Timestamp;//JSONTime
 	public ExceptLogContext? Context;
 }
 
@@ -110,7 +110,7 @@ public class TransactionTracee
 	// Index within block's unfiltered execution traces
 	public ulong Index = 0;//uint64
 	// Reference to the block time this transaction was executed in
-	public Timestamp BlockTime = new Timestamp();//*timestamp.Timestamp
+	public Timestamp BlockTime = 0;//*timestamp.Timestamp
 	// Reference to the block ID this transaction was executed in
 	public string ProducerBlockId = string.Empty;//string
 	// Receipt of execution of this transaction
@@ -157,7 +157,76 @@ public class CreationFlatNode
 	public int ExecutionActionIndex = 0;//uint32
 }
 
-public class ActionTrace
+public class  ActionTrace {
+	public VarUint32 ActionOrdinal = 0;
+
+	public VarUint32 CreatorActionOrdinal = 0;
+
+	public VarUint32 ClosestUnnotifiedAncestorActionOrdinal = 0;
+
+	public ActionTraceReceipt? Receipt;
+
+	public Name Receiver = string.Empty;
+
+	public Action Action = new Action();
+
+	public bool ContextFree = false;
+
+	public long ElapsedUs = 0;
+
+	public string Console = string.Empty;// eos.SafeString          `json:"console"`
+
+	public Checksum256 TransactionID = string.Empty;
+
+	public uint BlockNum = 0;
+
+	public Timestamp BlockTime = 0;
+
+	public Checksum256? ProducerBlockID;
+
+	public AccountDelta[] AccountRAMDeltas = Array.Empty<AccountDelta>();
+
+	// Added in 2.1.x
+	public AccountDelta[] AccountDiskDeltas = Array.Empty<AccountDelta>();
+
+	public Except? Except;
+
+	public ulong? ErrorCode;
+		// Added in 2.1.x
+	public string ReturnValue = string.Empty;// eos.HexBytes `json:"return_value"`
+
+	public bool IsInput()
+	{
+		return GetCreatorActionOrdinal() == 0;
+	}
+
+	private uint GetCreatorActionOrdinal()
+	{
+		return CreatorActionOrdinal;
+	}
+}
+
+public class AccountDelta {
+	public Name Account = string.Empty;
+	public long Delta = 0;
+}
+
+public class ActionTraceReceipt {
+	public Name Receiver = string.Empty;//                    `json:"receiver"`
+	public Checksum256 ActionDigest = string.Empty;//                    `json:"act_digest"`
+	public ulong GlobalSequence = 0;// Uint64                         `json:"global_sequence"`
+	public ulong ReceiveSequence = 0;// Uint64                         `json:"recv_sequence"`
+	public TransactionTraceAuthSequence[] AuthSequence = Array.Empty<TransactionTraceAuthSequence>();// []  `json:"auth_sequence"` // [["account", sequence], ["account", sequence]]
+	public VarUint32 CodeSequence = 0;// Varuint32                      `json:"code_sequence"`
+	public VarUint32 ABISequence = 0;// Varuint32                      `json:"abi_sequence"`
+}
+
+public class TransactionTraceAuthSequence {
+	public Name Account = string.Empty;
+	public ulong Sequence = 0;
+}
+
+public class ActionTracee
 {
 	public string Receiver = string.Empty;//string
 	public ActionReceipt Receipt = new ActionReceipt();//*ActionReceipt
@@ -168,7 +237,7 @@ public class ActionTrace
 	public string TransactionId = string.Empty;//string
 	public ulong BlockNum = 0;//uint64
 	public string ProducerBlockId = string.Empty;//string
-	public Timestamp BlockTime = new Timestamp();//*timestamp.Timestamp
+	public Timestamp BlockTime = 0;//*timestamp.Timestamp
 	public AccountRAMDelta[] AccountRamDeltas = Array.Empty<AccountRAMDelta>();//[]*AccountRAMDelta
 	public Exception Exception = new Exception();//*Exception
 	public ulong ErrorCode = 0;//uint64

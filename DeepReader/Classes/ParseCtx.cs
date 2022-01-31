@@ -1,8 +1,6 @@
-using System.Text;
 using System.Text.Json;
 using DeepReader.Types;
 using DeepReader.Types.Enums;
-using DeepReader.Deserializer;
 
 namespace DeepReader.Classes;
 
@@ -10,7 +8,7 @@ public class ParseCtx
 {
     public Block Block;
 
-    public long ActiveBlockNum;
+    public long ActiveBlockNum = 1;
 
     public TransactionTrace Trx;
 
@@ -174,9 +172,6 @@ public class ParseCtx
 
         // All this stiching of ops into trace must be performed after `if` because the if can revert them all
         var creationTreeRoots = CreationTree.ComputeCreationTree(CreationOps);
-        /* TODO if err != nil {
-            return fmt.Errorf("compute creation tree: %s", err)
-        }*/
 
         trace.CreationTree = CreationTree.ToFlatTree(creationTreeRoots).ToArray();
         trace.DtrxOps = Trx.DtrxOps;
@@ -268,11 +263,7 @@ public class ParseCtx
         ResetBlock();
         ActiveBlockNum = blockNum;
 
-        // TODO
         AbiDecoder.StartBlock(blockNum);
-        /*if err := ctx.abiDecoder.startBlock(uint64(blockNum)); err != nil {
-	        return fmt.Errorf("abi decoder: %w", err)
-        }*/
     }
 
 	// Line format:
@@ -280,10 +271,14 @@ public class ParseCtx
     public Block ReadAcceptedBlock(string[] chunks) {
         if (chunks.Length != 2)
         {
-                throw new Exception($"expected 2 fields, got {chunks.Length}");
+            throw new Exception($"expected 2 fields, got {chunks.Length}");
         }
 
         var blockNum = Convert.ToInt64(chunks[0]);
+        if(blockNum == ActiveBlockNum + 1)
+        {
+            ActiveBlockNum++;
+        }
         /*if err != nil {
 	        return null;, fmt.Errorf("block_num not a valid string, got: %q", chunks[1])
         }*/
@@ -307,71 +302,89 @@ public class ParseCtx
 	        return null;, fmt.Errorf("unmarshalling binary block state: %w", err)
         }*/
 
-        var signedBlock = blockState.SignedBlock;
-
-        var block = new Block();
+        var block = new Block()
+        {
+            Id = blockState.BlockID,
+            Number = blockState.BlockNum,
+            Version = 1,
+            Header = blockState.Header,
+            DposIrreversibleBlocknum = blockState.DPoSIrreversibleBlockNum,
+            DposProposedIrreversibleBlocknum = blockState.DPoSProposedIrreversibleBlockNum,
+            Validated = blockState.Validated,
+            BlockrootMerkle = blockState.BlockrootMerkle,
+            ProducerToLastProduced = blockState.ProducerToLastProduced,
+            ProducerToLastImpliedIrb = blockState.ProducerToLastImpliedIRB,
+            ActivatedProtocolFeatures = blockState.ActivatedProtocolFeatures,
+            PendingSchedule = blockState.PendingSchedule,
+            ActiveSchedule = blockState.ActiveSchedule,
+            ValidBlockSigningAuthority = blockState.ValidBlockSigningAuthority,
+            BlockSigningKey = blockState.ValidBlockSigningAuthority.PublicKey,            
+        };
 
         // this is hydrator.hydrateblock ... 
         
-        block.Id = Encoding.ASCII.GetString(blockState.BlockID);
-        block.Number = blockState.BlockNum;
+        //block.Id = blockState.BlockID;
+        //block.Number = blockState.BlockNum;
         // Version 1: Added the total counts (ExecutedInputActionCount, ExecutedTotalActionCount,
         // TransactionCount, TransactionTraceCount)
-        block.Version = 1;
-        block.Header = BlockHeaderToDEOS(signedBlock);
-        block.BlockExtensions = ExtensionsToDEOS(signedBlock.BlockExtensions);
-        block.DposIrreversibleBlocknum = blockState.DPoSIrreversibleBlockNum;
-        block.DposProposedIrreversibleBlocknum = blockState.DPoSProposedIrreversibleBlockNum;
-        block.Validated = blockState.Validated;
-        block.BlockrootMerkle = BlockrootMerkleToDEOS(blockState.BlockrootMerkle);
-        block.ProducerToLastProduced = ProducerToLastProducedToDEOS(blockState.ProducerToLastProduced);
-        block.ProducerToLastImpliedIrb = ProducerToLastImpliedIrbToDEOS(blockState.ProducerToLastImpliedIRB);
-        block.ActivatedProtocolFeatures = ActivatedProtocolFeaturesToDEOS(blockState.ActivatedProtocolFeatures);
-        block.ProducerSignature = Encoding.ASCII.GetString(signedBlock.ProducerSignature, 0, signedBlock.ProducerSignature.Length);
-
-        block.ConfirmCount = new uint[blockState.ConfirmCount.Length];
-        for (int i = 0; i < blockState.ConfirmCount.Length; i++)
+        //block.Version = 1;
+        //block.Header = blockState.Header;
+        if (blockState.SignedBlock != null)
         {
-            block.ConfirmCount[i] = blockState.ConfirmCount[i];
+            block.BlockExtensions = blockState.SignedBlock.BlockExtensions;
+            block.ProducerSignature = blockState.SignedBlock.ProducerSignature;
+        }
+        //block.DposIrreversibleBlocknum = blockState.DPoSIrreversibleBlockNum;
+        //block.DposProposedIrreversibleBlocknum = blockState.DPoSProposedIrreversibleBlockNum;
+        //block.Validated = blockState.Validated;
+        //block.BlockrootMerkle = blockState.BlockrootMerkle;
+        //block.ProducerToLastProduced = blockState.ProducerToLastProduced;
+        //block.ProducerToLastImpliedIrb = blockState.ProducerToLastImpliedIRB;
+        //block.ActivatedProtocolFeatures = blockState.ActivatedProtocolFeatures;
+
+        if(blockState.ConfirmCount != null)
+        {
+            block.ConfirmCount = new uint[blockState.ConfirmCount.Length];
+            for (int i = 0; i < blockState.ConfirmCount.Length; i++)
+            {
+                block.ConfirmCount[i] = blockState.ConfirmCount[i];
+            }
         }
 
-        if (blockState.PendingSchedule != null)
-        {
-            block.PendingSchedule = PendingScheduleToDEOS(blockState.PendingSchedule);
-        }
+        //block.PendingSchedule = blockState.PendingSchedule;
 
         /// Specific versions handling
 
 //        var blockSigningKey = blockState.BlockSigningKeyV1; 
-        var schedule = blockState.ActiveSchedule;
-        var signingAuthority = blockState.ValidBlockSigningAuthorityV2;
-
         // Only in EOSIO 1.x
         //if (blockSigningKey != null)
         //{
         //    block.BlockSigningKey = Encoding.ASCII.GetString(blockSigningKey);
         //}
 
-        if (schedule.V1 != null)
-        {
-            block.ActiveScheduleV1 = schedule.V1;
-        }
+        /*block.ActiveSchedule = blockState.ActiveSchedule*/;// TODO below comments where used instead of this
+
+        //if (schedule.V1 != null)
+        //{
+        //    block.ActiveScheduleV1 = schedule.V1;
+        //}
 
         // Only in EOSIO 2.x
-        if (signingAuthority != null)
-        {
-            block.ValidBlockSigningAuthorityV2 = signingAuthority;
-        }
 
-        if (schedule.V2 != null)
-        {
-            block.ActiveScheduleV2 = schedule.V2;
-        }
+        //block.ValidBlockSigningAuthority = blockState.ValidBlockSigningAuthority;
+
+        //if (schedule.V2 != null)
+        //{
+        //    block.ActiveScheduleV2 = schedule.V2;
+        //}
 
         // End (versions)
 
-        block.UnfilteredTransactionCount = (uint)signedBlock.Transactions.Length;
-        block.UnfilteredTransactions = signedBlock.Transactions;
+        if(blockState.SignedBlock != null)
+        {
+            block.UnfilteredTransactionCount = (uint)blockState.SignedBlock.Transactions.Length;
+            block.UnfilteredTransactions = blockState.SignedBlock.Transactions;
+        }
 
         block.UnfilteredTransactionTraceCount = (uint) block.UnfilteredTransactionTraces.Count;
 
@@ -394,90 +407,84 @@ public class ParseCtx
 
 //	        zlog.Debug("blocking until abi decoder has decoded every transaction pushed to it")
 
-// TODO
         AbiDecoder.EndBlock(block);
-        /*if err != nil {
-	        return null;, fmt.Errorf("abi decoding post-process failed: %w", err)
-        }*/
-
-//	        zlog.Debug("abi decoder terminated all decoding operations, resetting block")
         ResetBlock();
         return block;
     }
 
-    private PendingProducerSchedule PendingScheduleToDEOS(PendingSchedule blockStatePendingSchedule)
-    {
-        var pendingProducerSchedule = new PendingProducerSchedule()
-        {
-	        ScheduleLibNum = blockStatePendingSchedule.ScheduleLIBNum,
-	        ScheduleHash = blockStatePendingSchedule.ScheduleHash,
-        };
+    //private PendingProducerSchedule PendingScheduleToDEOS(PendingSchedule blockStatePendingSchedule)
+    //{
+    //    var pendingProducerSchedule = new PendingProducerSchedule()
+    //    {
+	   //     ScheduleLibNum = blockStatePendingSchedule.ScheduleLIBNum,
+	   //     ScheduleHash = blockStatePendingSchedule.ScheduleHash,
+    //    };
 
-        /// Specific versions handling
+    //    /// Specific versions handling
 
-        // Only in EOSIO 1.x
-        if (blockStatePendingSchedule.Schedule.V1 != null)
-        {
-	        pendingProducerSchedule.ScheduleV1 = blockStatePendingSchedule.Schedule.V1;
-        }
+    //    // Only in EOSIO 1.x
+    //    if (blockStatePendingSchedule.Schedule.V1 != null)
+    //    {
+	   //     pendingProducerSchedule.ScheduleV1 = blockStatePendingSchedule.Schedule.V1;
+    //    }
 
-        // Only in EOSIO 2.x
-        if (blockStatePendingSchedule.Schedule.V2 != null)
-        {
-	        pendingProducerSchedule.ScheduleV2 = blockStatePendingSchedule.Schedule.V2;
-        }
+    //    // Only in EOSIO 2.x
+    //    if (blockStatePendingSchedule.Schedule.V2 != null)
+    //    {
+	   //     pendingProducerSchedule.ScheduleV2 = blockStatePendingSchedule.Schedule.V2;
+    //    }
 
-        // End (versions)
-        return pendingProducerSchedule;
-    }
+    //    // End (versions)
+    //    return pendingProducerSchedule;
+    //}
 
-    private ActivatedProtocolFeatures ActivatedProtocolFeaturesToDEOS(ProtocolFeatureActivationSet blockStateActivatedProtocolFeatures)
-    {
+    //private ActivatedProtocolFeatures ActivatedProtocolFeaturesToDEOS(ProtocolFeatureActivationSet blockStateActivatedProtocolFeatures)
+    //{
 
-        return new ActivatedProtocolFeatures()
-        {
-            // TODO !! ProtocolFeatures multi-dim array?
-            ProtocolFeatures = blockStateActivatedProtocolFeatures.ProtocolFeatures.Length > 0 ? checksumsToBytesSlices(blockStateActivatedProtocolFeatures.ProtocolFeatures[0]) : Array.Empty<byte[]>()
-        };
-    }
+    //    return new ActivatedProtocolFeatures()
+    //    {
+    //        // TODO !! ProtocolFeatures multi-dim array?
+    //        ProtocolFeatures = blockStateActivatedProtocolFeatures.ProtocolFeatures.Length > 0 ? checksumsToBytesSlices(blockStateActivatedProtocolFeatures.ProtocolFeatures[0]) : Array.Empty<byte[]>()
+    //    };
+    //}
 
-    private ProducerToLastImpliedIRB[] ProducerToLastImpliedIrbToDEOS(PairAccountNameBlockNum[] blockStateProducerToLastImpliedIrb)
-    {
-        var producerToLastImpliedIRB = new ProducerToLastImpliedIRB[blockStateProducerToLastImpliedIrb.Length];
-        for (int i = 0; i < blockStateProducerToLastImpliedIrb.Length; i++)
-        {
-	        producerToLastImpliedIRB[i] = new ProducerToLastImpliedIRB()
-	        {
-		        Name = blockStateProducerToLastImpliedIrb[i].AccountName,
-		        LastBlockNumProduced = blockStateProducerToLastImpliedIrb[i].BlockNum
-	        };
-        }
-        return producerToLastImpliedIRB;
-    }
+    //private ProducerToLastImpliedIRB[] ProducerToLastImpliedIrbToDEOS(PairAccountNameBlockNum[] blockStateProducerToLastImpliedIrb)
+    //{
+    //    var producerToLastImpliedIRB = new ProducerToLastImpliedIRB[blockStateProducerToLastImpliedIrb.Length];
+    //    for (int i = 0; i < blockStateProducerToLastImpliedIrb.Length; i++)
+    //    {
+	   //     producerToLastImpliedIRB[i] = new ProducerToLastImpliedIRB()
+	   //     {
+		  //      Name = blockStateProducerToLastImpliedIrb[i].AccountName,
+		  //      LastBlockNumProduced = blockStateProducerToLastImpliedIrb[i].BlockNum
+	   //     };
+    //    }
+    //    return producerToLastImpliedIRB;
+    //}
 
-    private ProducerToLastProduced[] ProducerToLastProducedToDEOS(PairAccountNameBlockNum[] blockStateProducerToLastProduced)
-    {
-        var producerToLastProduced = new ProducerToLastProduced[blockStateProducerToLastProduced.Length];
-        for (int i = 0; i < blockStateProducerToLastProduced.Length; i++)
-        {
-	        producerToLastProduced[i] = new ProducerToLastProduced()
-	        {
-		        Name = blockStateProducerToLastProduced[i].AccountName,
-		        LastBlockNumProduced = blockStateProducerToLastProduced[i].BlockNum
-	        };
-        }
+    //private ProducerToLastProduced[] ProducerToLastProducedToDEOS(PairAccountNameBlockNum[] blockStateProducerToLastProduced)
+    //{
+    //    var producerToLastProduced = new ProducerToLastProduced[blockStateProducerToLastProduced.Length];
+    //    for (int i = 0; i < blockStateProducerToLastProduced.Length; i++)
+    //    {
+	   //     producerToLastProduced[i] = new ProducerToLastProduced()
+	   //     {
+		  //      Name = blockStateProducerToLastProduced[i].AccountName,
+		  //      LastBlockNumProduced = blockStateProducerToLastProduced[i].BlockNum
+	   //     };
+    //    }
 
-        return producerToLastProduced;
-    }
+    //    return producerToLastProduced;
+    //}
 
-    private BlockRootMerkle BlockrootMerkleToDEOS(MerkleRoot merkle)
-    {
-        return new BlockRootMerkle()
-        {
-	        NodeCount = (uint)merkle.NodeCount,
-	        ActiveNodes = checksumsToBytesSlices(merkle.ActiveNodes)
-        };
-    }
+    //private BlockRootMerkle BlockrootMerkleToDEOS(IncrementalMerkle merkle)
+    //{
+    //    return new BlockRootMerkle()
+    //    {
+	   //     NodeCount = (uint)merkle.NodeCount,
+	   //     ActiveNodes = checksumsToBytesSlices(merkle.ActiveNodes)
+    //    };
+    //}
 
     private byte[][] checksumsToBytesSlices(byte[] merkleActiveNodes)
     {
@@ -485,33 +492,33 @@ public class ParseCtx
         return new[] { merkleActiveNodes };
     }
 
-    private Extension[] ExtensionsToDEOS(Extension[] signedBlockBlockExtensions)
-    {
-        // ?! TODO
-        return signedBlockBlockExtensions;
-    }
+    //private Extension[] ExtensionsToDEOS(Extension[] signedBlockBlockExtensions)
+    //{
+    //    // ?! TODO
+    //    return signedBlockBlockExtensions;
+    //}
 
-    private BlockHeader BlockHeaderToDEOS(SignedBlock signedBlock)
-    {
-        var blockHeader = new BlockHeader()
-        {
-	        Timestamp = signedBlock.Timestamp,
-	        Producer = signedBlock.Producer,
-	        Confirmed = signedBlock.Confirmed,
-	        Previous = signedBlock.Previous,
-	        TransactionMroot = signedBlock.TransactionMroot,
-	        ActionMroot = signedBlock.ActionMroot,
-	        ScheduleVersion = signedBlock.ScheduleVersion,
-	        HeaderExtensions = ExtensionsToDEOS(signedBlock.HeaderExtensions),
-        };
+    //private BlockHeader BlockHeaderToDEOS(SignedBlock signedBlock)
+    //{
+    //    var blockHeader = new BlockHeader()
+    //    {
+	   //     Timestamp = signedBlock.Timestamp,
+	   //     Producer = signedBlock.Producer,
+	   //     Confirmed = signedBlock.Confirmed,
+	   //     Previous = signedBlock.Previous,
+	   //     TransactionMroot = signedBlock.TransactionMroot,
+	   //     ActionMroot = signedBlock.ActionMroot,
+	   //     ScheduleVersion = signedBlock.ScheduleVersion,
+	   //     HeaderExtensions = ExtensionsToDEOS(signedBlock.HeaderExtensions),
+    //    };
 
-        if (blockHeader.NewProducersV1 != null)
-        {
-	        blockHeader.NewProducersV1 = blockHeader.NewProducersV1;
-        }
+    //    if (blockHeader.NewProducers != null)
+    //    {
+	   //     blockHeader.NewProducers = blockHeader.NewProducers;
+    //    }
         
-        return blockHeader;
-    }
+    //    return blockHeader;
+    //}
 
     // Line format:
     //   APPLIED_TRANSACTION ${block_num} ${trace_hex}
@@ -530,7 +537,6 @@ public class ParseCtx
             Console.WriteLine($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
         }
 
-        // TODO unmarshal?
         var trxTrace = Deserializer.Deserializer.Deserialize<TransactionTrace>(chunks[1].HexStringToByteArray());
 
         RecordTransaction(trxTrace);
@@ -675,42 +681,21 @@ public class ParseCtx
 
         var opString = chunks[1];
         var rawOp = Enum.Parse<DTrxOpOperation>(opString, true);//pbcodec.DTrxOp_Operation_value["OPERATION_" + opString]);
-        /*if !ok {
-	        return fmt.Errorf("operation %q unknown", opString)
-        }*/
 
         var op = rawOp; //pbcodec.DTrxOp_Operation(rawOp);
 
         var actionIndex = Convert.ToInt32(chunks[2]);
-        /*
-        if err != nil {
-	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
-        }
-        */
 
         var trxHex = chunks[10].HexStringToByteArray();
-        /*if err != nil {
-	        return fmt.Errorf("unable to decode signed transaction hex: %w", err)
-        }*/
 
         SignedTransaction signedTrx;// = new SignedTransaction();
         if (op == DTrxOpOperation.PUSH_CREATE)
         {
-            // TODO unmarshal
             signedTrx = Deserializer.Deserializer.Deserialize<SignedTransaction>(trxHex);
-            /*if err != nil {
-		        return fmt.Errorf("unmarshal binary signed transaction: %w", err)
-	        }*/
         }
         else
         {
-            // TODO unmarshal
             var trx = Deserializer.Deserializer.Deserialize<Transaction>(trxHex);
-            /*
-	        if err != nil {
-		        return fmt.Errorf("unmarshal binary transaction: %w", err)
-	        }
-	        */
             signedTrx = (SignedTransaction)trx;
         }
 
@@ -810,16 +795,7 @@ public class ParseCtx
     //   PERM_OP REM ${action_id} [${permission_id}] ${data} <-- {"old": <old>, "new": <new>}
     public void ReadPermOp(string[] chunks)
     {
-        // TODO
-        /*chunks, err:= splitNToM(line, 4, 5)
-        if err != nil {
-	        return err
-        }*/
-
         var actionIndex = Convert.ToInt32(chunks[1]);
-        /*if err != nil {
-	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
-        }*/
 
         var opString = chunks[0];
         var dataChunk = chunks[2];
@@ -829,9 +805,6 @@ public class ParseCtx
         if (chunks.Length == 4)
         {
             permissionID = Convert.ToUInt64(chunks[2]);
-	        /*if err != nil {
-		        return fmt.Errorf("permission_id is not a valid number, got: %q", chunks[3])
-	        }*/
             dataChunk = chunks[3];
         }
 

@@ -1,20 +1,16 @@
 ﻿using DeepReader.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 
 namespace DeepReader
 {
     public class BlockWorker : BackgroundService
     {
-        private readonly ILogger<Worker> _logger;
+        private readonly ILogger<BlockWorker> _logger;
 
         private readonly ChannelReader<Block> _blocksChannel;
 
-        public BlockWorker(ILogger<Worker> logger, ChannelReader<Block> blocksChannel)
+        public BlockWorker(ILogger<BlockWorker> logger, ChannelReader<Block> blocksChannel)
         {
             _logger = logger;
             _blocksChannel = blocksChannel;
@@ -27,9 +23,17 @@ namespace DeepReader
 
         private async Task ProcessBlocks(CancellationToken clt)
         {
+            var jsonSerializerOptions = new JsonSerializerOptions()
+            {
+                IncludeFields = true,
+                IgnoreReadOnlyFields = false,
+                IgnoreReadOnlyProperties = false,
+                MaxDepth = 0
+            };
+
             await foreach (var block in _blocksChannel.ReadAllAsync(clt))
             {
-                Console.WriteLine($"got block {block.Number}");
+                Console.WriteLine($"got block {block.ToJsonString(jsonSerializerOptions)}");
             }
         }
     }

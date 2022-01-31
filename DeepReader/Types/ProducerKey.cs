@@ -1,7 +1,9 @@
+using DeepReader.EosTypes;
+
 namespace DeepReader.Types;
 
 public class ProducerKey
 {
     public string AccountName = string.Empty;//AccountName
-    public byte[] BlockSigningKey = Array.Empty<byte>();//ecc.PublicKey
+    public PublicKey[] BlockSigningKey = Array.Empty<PublicKey>();//ecc.PublicKey
 }

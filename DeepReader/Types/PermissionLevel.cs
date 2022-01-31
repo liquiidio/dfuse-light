@@ -1,7 +1,9 @@
+using DeepReader.EosTypes;
+
 namespace DeepReader.Types;
 
 public class PermissionLevel
 {
-    public string Actor = string.Empty;//string
-    public string Permission = string.Empty;//string
+    public Name Actor = string.Empty;//string
+    public Name Permission = string.Empty;//string
 }

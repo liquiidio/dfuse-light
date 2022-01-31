@@ -302,6 +302,11 @@ namespace DeepReader.Deserializer
             return new SymbolCode() { Value = string.Join("", a.Take(len)) };
         }
 
+        public static Timestamp ReadTimestamp(this BinaryBufferReader reader)
+        {
+            return new Timestamp(reader.ReadUInt32());
+        }        
+
         public static int Read7BitEncodedInt(this BinaryBufferReader reader)
         {
             /*

@@ -125,10 +125,15 @@ namespace DeepReader.Deserializer
         //internal static readonly Type TypeOfResourceLimitsConfigV0 = typeof(ResourceLimitsConfigV0);
         //internal static readonly Type TypeOfBlockSigningAuthorityV0 = typeof(BlockSigningAuthorityV0);
         //internal static readonly Type TypeOfPackedTransaction = typeof(PackedTransactionVariant);
+        internal static readonly Type TypeOfTimestamp = typeof(Timestamp);
+
 
         internal static readonly Type TypeOfSortOrderAttribute = typeof(SortOrderAttribute);
         internal static readonly Type TypeOfAbi = typeof(Abi);
 
-//        internal static readonly Type TypeOfTransaction = typeof(Transaction);
+        internal static Type TypeOfBlockSigningAuthorityVariant = typeof(BlockSigningAuthorityVariant);
+        internal static Type TypeOfBlockSigningAuthorityV0 = typeof(BlockSigningAuthorityV0);
+
+        //        internal static readonly Type TypeOfTransaction = typeof(Transaction);
     }
 }

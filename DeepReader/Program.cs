@@ -9,7 +9,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingleton(Channel.CreateUnbounded<Block>(new UnboundedChannelOptions() { SingleReader = false, SingleWriter = true }));
         services.AddSingleton(svc => svc.GetRequiredService<Channel<Block>>().Reader);
         services.AddSingleton(svc => svc.GetRequiredService<Channel<Block>>().Writer);
-        services.AddHostedService<Worker>();
+        services.AddHostedService<DlogReaderWorker>();
         services.AddHostedService<BlockWorker>();
     })
     .Build();

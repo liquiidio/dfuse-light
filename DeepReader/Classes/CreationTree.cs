@@ -15,7 +15,7 @@ public static class CreationTree
         var roots = new List<Node>();
         var opKinds = opsMap[actionIndex + 1];
 
-        foreach (var ok in opsMap)
+        foreach (var ok in opKinds)
         {
             if (opKinds[0] != "ROOT") {
                 // TODO return nil, fmt.Errorf("first exec op kind of execution start should be ROOT, got %s", opKinds[0])
@@ -24,7 +24,7 @@ public static class CreationTree
             var root = new Node { Kind = "ROOT", ActionIndex = -1, Children = new List<Node>() };
             roots.Add(root);
 
-            ExecuteAction(ref actionIndex, root, opsMap);
+            ExecuteAction(actionIndex, root, opsMap);
 
             opKinds = opsMap[actionIndex + 1];
 
@@ -39,7 +39,7 @@ public static class CreationTree
         return roots;
     }
 
-    private static void ExecuteAction(ref int actionIndex, Node root, Dictionary<int, string[]> opsMap)
+    private static void ExecuteAction(int actionIndex, Node root, Dictionary<int, string[]> opsMap)
     {
         actionIndex++;
         root.ActionIndex = actionIndex;
@@ -65,12 +65,12 @@ public static class CreationTree
 
         foreach (var cfa in cfas)
         {
-            ExecuteAction(ref actionIndex, cfa, opsMap);
+            ExecuteAction(actionIndex, cfa, opsMap);
         }
 
         foreach (var inline in inlines)
         {
-            ExecuteAction(ref actionIndex, inline, opsMap);
+            ExecuteAction(actionIndex, inline, opsMap);
         }
     }
 

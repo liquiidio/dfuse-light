@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using DeepReader.Types.Enums;
+using DeepReader.Types;
 using Salar.BinaryBuffers;
 using Serilog;
 
@@ -41,25 +35,25 @@ namespace DeepReader.Deserializer
                 {
                     obj = variantReader(reader);
                     if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
-                        Log.Error(type.Name + " : reader has not read until end " + reader.Position + " of " + data.Length);
+                        Console.WriteLine(type.Name + " : reader has not read until end " + reader.Position + " of " + data.Length);
                     return obj;
                 }
                 else
                 {
                     obj = GetTypeReader(type)(reader, type);
                     if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
-                        Log.Error(type.Name + " : reader has not read until end " + reader.Position + " of " + data.Length);
+                        Console.WriteLine(type.Name + " : reader has not read until end " + reader.Position + " of " + data.Length);
                     return obj;
                 }
             }
             catch (EndOfStreamException)
             {
-                Log.Error("[" + type.Name + "] End of stream ", "");
+                Console.WriteLine("[" + type.Name + "] End of stream ", "");
             }
             catch (Exception e)
             {
-                Log.Error(type.Name + " | " + e);
-                Log.Error(e, "");
+                Console.WriteLine(type.Name + " | " + e);
+                Console.WriteLine(e);
             }
             Console.WriteLine("obj: " + obj?.ToString());
             return null;
@@ -309,11 +303,13 @@ namespace DeepReader.Deserializer
             { CommonTypes.TypeOfAsset, (reader, _) => reader.ReadAsset() },
             { CommonTypes.TypeOfSymbol, (reader, _) => reader.ReadSymbol() },
             { CommonTypes.TypeOfSymbolCode, (reader, _) => reader.ReadSymbolCode() },
+            { CommonTypes.TypeOfTimestamp, (reader, _) => reader.ReadTimestamp() },
             //            {CommonTypes.TypeOfRowData, (reader, _) => reader.ReadRowData()}
         };
 
         private static readonly Dictionary<Type, VariantReaderDelegate> VariantReaders = new()
         {
+            { CommonTypes.TypeOfBlockSigningAuthorityVariant, ReadBlockSigningAuthorityVariant },
             //{ CommonTypes.TypeOfTransactionVariant, ReadTransactionVariant },
             //{ CommonTypes.TypeOfTransactionTraceVariant, ReadTransactionTraceVariant },
             //{ CommonTypes.TypeOfTableDeltaVariant, ReadTableDeltaVariant },
@@ -351,6 +347,16 @@ namespace DeepReader.Deserializer
 
 
         #region Variants
+
+        public static BlockSigningAuthorityVariant ReadBlockSigningAuthorityVariant(BinaryBufferReader reader)
+        {
+            var i = Convert.ToInt32(reader.ReadVarUint32());
+            return i switch
+            {
+                0 => (BlockSigningAuthorityVariant)ReadReferenceType(reader, CommonTypes.TypeOfBlockSigningAuthorityV0),
+                _ => throw new Exception($"TransactionVariant VariantType {i} unknown")
+            };
+        }
 
         //public static TransactionVariant ReadTransactionVariant(BinaryBufferReader reader)
         //{
