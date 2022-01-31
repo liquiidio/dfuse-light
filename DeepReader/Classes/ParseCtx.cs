@@ -185,7 +185,7 @@ public class ParseCtx
 
         Block.UnfilteredTransactionTraces.Add(trace);
 
-        AbiDecoder.ProcessTransaction(trace);
+        AbiDecoder.ProcessTransactionTrace(trace);
 
         ResetTrx();
     }
@@ -712,6 +712,8 @@ public class ParseCtx
             TransactionId = chunks[9],
             Transaction = signedTrx,
         });
+
+        _ = Task.Run(() => AbiDecoder.ProcessSignedTransaction(signedTrx));
     }
 
     // Line format:

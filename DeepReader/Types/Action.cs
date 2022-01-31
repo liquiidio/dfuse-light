@@ -21,7 +21,7 @@ public class Action
 
     // abi-field-name: data ,abi-field-type: bytes
     [JsonPropertyName("data")]
-    public byte [] Data;
+    public ActionBytes Data;
 //    public ActionBytes Data;
 
     public Action(Name account, Name name, PermissionLevel[] authorization, byte[] data)
@@ -34,5 +34,74 @@ public class Action
 
     public Action()
     {
+    }
+}
+
+public class Bytes<T> : Bytes
+{
+    public T Instance;
+
+    [JsonIgnore]
+    public bool IsDeserialized => Instance != null;
+
+    public T GetInstance()
+    {
+        return Instance;
+    }
+
+    public async Task DeserializeAsync(CancellationToken cancellationToken)
+    {
+        if (IsDeserialized)
+            return;
+
+        Instance = await Deserializer.Deserializer.DeserializeAsync<T>(_value, cancellationToken);
+    }
+
+    public void Deserialize()
+    {
+        if (IsDeserialized)
+            return;
+
+        Instance = Deserializer.Deserializer.Deserialize<T>(_value);
+    }
+
+    public static implicit operator Bytes<T>(byte[] value)
+    {
+        return new() { _value = value };
+    }
+
+    public static implicit operator byte[](Bytes<T> value)
+    {
+        return value._value;
+    }
+}
+
+public class ActionBytes : Bytes<object>
+{
+    public ActionBytes(Bytes bytes)
+    {
+        this._value = bytes._value;
+    }
+
+    public static implicit operator ActionBytes(byte[] value)
+    {
+        return new(value);
+        ;
+    }
+
+    public static implicit operator byte[](ActionBytes value)
+    {
+        return value._value;
+    }
+
+    public async Task DeserializeAsync(Type targetType, CancellationToken cancellationToken)
+    {
+        Instance = await Deserializer.Deserializer.DeserializeAsync(_value, targetType, cancellationToken);
+    }
+
+    public void Deserialize(Type targetType)
+    {
+        Instance = Deserializer.Deserializer.Deserialize(_value, targetType);
+
     }
 }
