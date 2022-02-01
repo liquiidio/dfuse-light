@@ -3,21 +3,48 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0-focal AS build
 # Install required packages
 RUN apt-get update \
         && apt-get install -y \ 
-            libusb-1.0-0 \
             libcurl3-gnutls \
             libpq5 \
-            git \
-            build-essential
+            git  \
+            binaryen                    \
+            build-essential             \
+            ccache                      \
+            cmake                       \
+            curl                        \
+            git                         \
+            jq                          \
+            libboost-all-dev            \
+            libcurl4-openssl-dev        \
+            libgmp-dev                  \
+            libssl-dev                  \
+            libtinfo5                   \
+            libusb-1.0-0-dev            \
+            libzstd-dev                 \
+            llvm-11-dev                 \
+            ninja-build                 \
+            npm                         \
+            pkg-config                  \
+            time
 
-#RUN git clone https://github.com/dfuse-io/eos.git && cd eos && git checkout tags/v2.0.5wax01-dm-12.0 && git submodule update --init --recursive && ./scripts/eosio_build.sh -y
-#RUN git clone https://github.com/EOSIO/eos.git && cd eos && git checkout tags/v2.2.0-rc1 && git submodule update --init --recursive && ./scripts/eosio_build.sh -y
-RUN git clone https://github.com/Duncan-Ultra/eos.git && cd eos && git checkout update_fc_dmlog_fix_2.2.x && git submodule update --init --recursive && ./scripts/eosio_build.sh -y /usr/bin && ./scripts/eosio_install.sh
-RUN ln -s /root/eosio/2.2/bin/nodeos /bin/nodeos
-RUN ln -s /root/eosio/2.2/bin/cleos /bin/cleos
-RUN ln -s /root/eosio/2.2/bin/keosd /bin/keosd
-RUN ln -s /root/eosio/2.2/bin/eosio-launcher /bin/eosio-launcher
-RUN ln -s /root/eosio/2.2/bin/trace_api_util /bin/trace_api_util
-#RUN ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet todo nodeos
+RUN git clone https://github.com/eosnetworkfoundation/mandel.git --branch v3.0.0-rc1 \
+        && cd mandel                \
+        && git submodule update     \
+            --init                  \
+            --recursive             \
+        && mkdir build              \
+        && cd build                 \
+        && cmake -DCMAKE_BUILD_TYPE=Release             \
+            -DDISABLE_WASM_SPEC_TESTS=yes               \
+            -DCMAKE_INSTALL_PREFIX=/root/mandel/3.0 ..  \
+        && make -j $(nproc)                             \
+        && make install
+
+RUN ln -s /root/mandel/3.0/bin/nodeos /bin/nodeos
+RUN ln -s /root/mandel/3.0/bin/cleos /bin/cleos
+RUN ln -s /root/mandel/3.0/bin/keosd /bin/keosd
+RUN ln -s /root/mandel/3.0/bin/eosio-launcher /bin/eosio-launcher
+RUN ln -s /root/mandel/3.0/bin/trace_api_util /bin/trace_api_util
+#RUN ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
 
 #RUN wget http://security.ubuntu.com/ubuntu/pool/main/i/icu/libicu60_60.2-3ubuntu3.2_amd64.deb
 #RUN apt install -y ./libicu60_60.2-3ubuntu3.2_amd64.deb
