@@ -26,7 +26,7 @@ RUN apt-get update \
             pkg-config                  \
             time
 
-RUN git clone https://github.com/eosnetworkfoundation/mandel.git --branch v3.0.0-rc1 \
+RUN git clone https://github.com/eosnetworkfoundation/mandel.git --branch dfuse \
         && cd mandel                \
         && git submodule update     \
             --init                  \
