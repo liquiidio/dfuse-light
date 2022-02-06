@@ -10,6 +10,11 @@ namespace DeepReader.EosTypes
     {
         internal byte[] _value = Array.Empty<byte>();
 
+        public Bytes()
+        {
+
+        }
+
         public static implicit operator Bytes(byte[] value)
         {
             return new() { _value = value };

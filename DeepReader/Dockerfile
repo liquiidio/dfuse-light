@@ -24,15 +24,17 @@ RUN apt-get update \
             ninja-build                 \
             npm                         \
             pkg-config                  \
-            time
+            time                        \
+            wget
 
-RUN git clone https://github.com/eosnetworkfoundation/mandel.git --branch dfuse \
-        && cd mandel                \
-        && git submodule update     \
-            --init                  \
-            --recursive             \
-        && mkdir build              \
-        && cd build                 \
+RUN git clone https://github.com/cmadh/mandel.git \
+        && cd mandel                                    \
+        && git checkout fix_deepmind_log_3.0.x          \
+        && git submodule update                         \
+            --init                                      \
+            --recursive                                 \
+        && mkdir build                                  \
+        && cd build                                     \
         && cmake -DCMAKE_BUILD_TYPE=Release             \
             -DDISABLE_WASM_SPEC_TESTS=yes               \
             -DCMAKE_INSTALL_PREFIX=/root/mandel/3.0 ..  \

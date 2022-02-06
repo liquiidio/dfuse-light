@@ -1,4 +1,5 @@
 ﻿using DeepReader.Types;
+using Serilog;
 using System.Text.Json;
 using System.Threading.Channels;
 
@@ -33,7 +34,7 @@ namespace DeepReader
 
             await foreach (var block in _blocksChannel.ReadAllAsync(clt))
             {
-                Console.WriteLine($"got block {block.ToJsonString(jsonSerializerOptions)}");
+                Log.Information($"got block {block.ToJsonString(jsonSerializerOptions)}");
             }
         }
     }

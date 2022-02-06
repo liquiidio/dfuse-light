@@ -2,21 +2,6 @@ using DeepReader.EosTypes;
 
 namespace DeepReader.Types;
 
-//public class BlockState : BlockHeaderState
-//{
-
-//}
-
-//public class BlockHeaderState : BlockHeaderStateCommon
-//{
-
-//}
-
-//public class BlockHeaderStateCommon
-//{
-
-//}
-
 public class BlockState
 {
     // From 'struct block_header_state_common'

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DeepReader.Types;
 using DeepReader.Types.Enums;
+using Serilog;
 
 namespace DeepReader.Classes;
 
@@ -16,7 +17,7 @@ public class ParseCtx
 
     public bool TraceEnabled;
 
-    public string[] SupportedVersions = new[] {"14"};
+    public string[] SupportedVersions = new[] {"13","14"};
 
     JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions()
     {
@@ -61,7 +62,6 @@ public class ParseCtx
 	public void ResetTrx()
     {
         Trx = new TransactionTrace();
-//            creationOps = null;
     }
 
 	public void RecordCreationOp(CreationOp operation)
@@ -285,8 +285,7 @@ public class ParseCtx
 
         if (ActiveBlockNum != blockNum)
         {
-            Console.WriteLine($"block_num {blockNum} doesn't match the active block num {ActiveBlockNum}");
-//            throw new Exception($"block_num {blockNum} doesn't match the active block num {ActiveBlockNum}");
+            Log.Information($"block_num {blockNum} doesn't match the active block num {ActiveBlockNum}");
         }
 
         var blockStateHex = chunks[1].HexStringToByteArray();
@@ -534,7 +533,7 @@ public class ParseCtx
         if (ActiveBlockNum != blockNum)
         {
 //            throw new Exception($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
-            Console.WriteLine($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
+            Log.Information($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
         }
 
         var trxTrace = Deserializer.Deserializer.Deserialize<TransactionTrace>(chunks[1].HexStringToByteArray());

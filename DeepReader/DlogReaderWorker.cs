@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Threading.Channels;
 using DeepReader.Classes;
 using DeepReader.Types;
+using Serilog;
 
 namespace DeepReader
 {
@@ -93,9 +94,10 @@ namespace DeepReader
                 RedirectStandardError = false,
                 RedirectStandardInput = false,
                 RedirectStandardOutput = false,
-                CreateNoWindow = true
-                //                WorkingDirectory = "/usr/bin",
-            };
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            //                WorkingDirectory = "/usr/bin",
+        };
             producer.Start();
 
             await Task.Delay(3000);
@@ -115,6 +117,7 @@ namespace DeepReader
                 RedirectStandardInput = false,
                 RedirectStandardOutput = true,
                 CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden
                 //                WorkingDirectory = "/usr/bin",
             };
 
@@ -134,22 +137,22 @@ namespace DeepReader
 
                     if(mindreader.HasExited)
                     {
-                        Console.WriteLine("MINDREADER EXITED!");
+                        Log.Warning("MINDREADER EXITED!");
                     }
                 };
-                Console.WriteLine("EXITED 1");
+                Log.Warning("EXITED 1");
             }
         }
 
         private void OnNodeosExited(object? sender, EventArgs e)
         {
-            Console.WriteLine($"Nodeos exited2");
+            Log.Warning($"Nodeos exited2");
         }
 
         private async Task OnNodeosDataReceived(object sender, DataReceivedEventArgs e, CancellationToken clt)
         {
-            //try
-            //{
+            try
+            {
                 if (e.Data != null)
                 {
                     if (e.Data.StartsWith("DMLOG"))
@@ -233,22 +236,21 @@ namespace DeepReader
                                 Ctx.ReadDeepmindVersion(data[Range.StartAt(2)]);
                                 break;
                             default:
-                                Console.WriteLine(e.Data);
+                                Log.Information(e.Data);
                                 break;
                                 //zlog.Info("unknown log line", zap.String("line", data));
                         }
                     }
-                    else
-                        Console.WriteLine($"{e.Data}");
+                    //else
+                        //Log.Information(e.Data);
                 }
                 else
-                    Console.WriteLine("data is null");
-            //}
-            //catch(Exception ex)
-            //{
-            //    Console.WriteLine(ex.Message);
-            //    Console.WriteLine(ex.StackTrace);
-            //}
-        }
+                    Log.Warning("data is null");
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, "");
+            }
+}
     }
 }

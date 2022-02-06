@@ -8,9 +8,8 @@ public class AbiDecoder
 {
     public static void ProcessTransactionTrace(TransactionTrace trace)
     {
-        //        Console.WriteLine(trace.ToString());
+        // TODO
         return;
-        throw new NotImplementedException();
     }
 
     public static async void ProcessSignedTransaction(SignedTransaction signedTransaction)
@@ -36,26 +35,25 @@ public class AbiDecoder
 
     public static void StartBlock(long blockNum)
     {
+        // TODO
         return;
-        throw new NotImplementedException();
     }
 
     public static void EndBlock(Block block)
     {
-//        Console.WriteLine(block.ToString());
+        // TODO
         return;
-        throw new NotImplementedException();
     }
 
     public static void ResetCache()
     {
+        // TODO
         return;
-        throw new NotImplementedException();
     }
 
     public static void AddInitialABI(string contract, string rawAbi)
     {
+        // TODO
         return;
-        throw new NotImplementedException();
     }
 }

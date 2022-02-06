@@ -7,6 +7,18 @@ namespace DeepReader.Types;
 [Serializable()]
 public class Action
 {
+    public Action()
+    {
+    }
+
+    public Action(Name account, Name name, PermissionLevel[] authorization, byte[] data)
+    {
+        this.Account = account;
+        this.Name = name;
+        this.Authorization = authorization;
+        this.Data = data;
+    }
+
     // abi-field-name: account ,abi-field-type: name
     [JsonPropertyName("account")]
     public Name Account;
@@ -22,19 +34,6 @@ public class Action
     // abi-field-name: data ,abi-field-type: bytes
     [JsonPropertyName("data")]
     public ActionBytes Data;
-//    public ActionBytes Data;
-
-    public Action(Name account, Name name, PermissionLevel[] authorization, byte[] data)
-    {
-        this.Account = account;
-        this.Name = name;
-        this.Authorization = authorization;
-        this.Data = data;
-    }
-
-    public Action()
-    {
-    }
 }
 
 public class Bytes<T> : Bytes
@@ -43,6 +42,16 @@ public class Bytes<T> : Bytes
 
     [JsonIgnore]
     public bool IsDeserialized => Instance != null;
+
+    public Bytes()
+    {
+
+    }
+
+    public Bytes(T instance)
+    {
+        Instance = instance;
+    }
 
     public T GetInstance()
     {
@@ -78,6 +87,11 @@ public class Bytes<T> : Bytes
 
 public class ActionBytes : Bytes<object>
 {
+    public ActionBytes()
+    {
+
+    }
+
     public ActionBytes(Bytes bytes)
     {
         this._value = bytes._value;
@@ -86,7 +100,6 @@ public class ActionBytes : Bytes<object>
     public static implicit operator ActionBytes(byte[] value)
     {
         return new(value);
-        ;
     }
 
     public static implicit operator byte[](ActionBytes value)

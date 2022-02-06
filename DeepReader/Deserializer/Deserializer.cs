@@ -35,28 +35,28 @@ namespace DeepReader.Deserializer
                 {
                     obj = variantReader(reader);
                     if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
-                        Console.WriteLine(type.Name + " : reader has not read until end " + reader.Position + " of " + data.Length);
+                        Log.Error($"{type.Name} : reader has not read until end {reader.Position} of {data.Length}");
                     return obj;
                 }
                 else
                 {
                     obj = GetTypeReader(type)(reader, type);
                     if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
-                        Console.WriteLine(type.Name + " : reader has not read until end " + reader.Position + " of " + data.Length);
+                        Log.Error($"{type.Name} : reader has not read until end {reader.Position} of {data.Length}");
                     return obj;
                 }
             }
             catch (EndOfStreamException)
             {
-                Console.WriteLine("[" + type.Name + "] End of stream ", "");
+                Log.Error($"[{type.Name}] End of stream ", "");
+                if(obj != null)
+                    Log.Information($"obj: {obj}");
             }
             catch (Exception e)
             {
-                Console.WriteLine(type.Name + " | " + e);
-                Console.WriteLine(e);
+                Log.Error(e,"");
             }
-            Console.WriteLine("obj: " + obj?.ToString());
-            return null;
+            return Activator.CreateInstance(type);
         }
 
         public static object ReadReferenceType(BinaryBufferReader binaryReader, Type type)
