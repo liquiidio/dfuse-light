@@ -2,11 +2,15 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using DeepReader.Types;
+using DeepReader.Types.Eosio.Chain;
 using Salar.BinaryBuffers;
 using Serilog;
 
 namespace DeepReader.Deserializer
 {
+    // TODO, micro-optimization with Dynamic Methods, DynamicMethods-Cache (Dict<type,dynMethod>) and ILGenerator ?
+    // https://andrewlock.net/benchmarking-4-reflection-methods-for-calling-a-constructor-in-dotnet/
+
     public static class Deserializer
     {
         public static async Task<T> DeserializeAsync<T>(byte[] data, CancellationToken cancellationToken) // where T : BaseClass
@@ -35,14 +39,16 @@ namespace DeepReader.Deserializer
                 {
                     obj = variantReader(reader);
                     if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
-                        Log.Error($"{type.Name} : reader has not read until end {reader.Position} of {data.Length}");
+                    {
+                        Log.Error($"[{type.Name}] : reader has not read until end {reader.Position} of {data.Length} obj: {obj}");
+                    }
                     return obj;
                 }
                 else
                 {
                     obj = GetTypeReader(type)(reader, type);
                     if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
-                        Log.Error($"{type.Name} : reader has not read until end {reader.Position} of {data.Length}");
+                        Log.Error($"[{type.Name}] : reader has not read until end {reader.Position} of {data.Length} obj: {obj}");
                     return obj;
                 }
             }
@@ -79,9 +85,8 @@ namespace DeepReader.Deserializer
                     var value = fieldInfo.Value
                         ? ReadOptional(binaryReader, variantReader)
                         : variantReader(binaryReader);
-
-                    //                    fieldInfo.Key.SetValue(obj, value);
-                    fieldInfo.Key.SetValueDirect(objRef, value);
+                    if(value != null)
+                        fieldInfo.Key.SetValueDirect(objRef, value);
                 }
                 else if (fieldType.IsAbstract)
                 {
@@ -100,7 +105,8 @@ namespace DeepReader.Deserializer
                         ? ReadOptional(binaryReader, fieldType, typeReader)
                         : typeReader(binaryReader, fieldType);
 
-                    fieldInfo.Key.SetValueDirect(objRef, value);
+                    if(value != null)
+                        fieldInfo.Key.SetValueDirect(objRef, value);
                 }
             }
 
@@ -174,13 +180,13 @@ namespace DeepReader.Deserializer
             return (int)binaryReader.ReadByte();
         }
 
-        private static object ReadOptional(BinaryBufferReader binaryReader, Type fieldType, ReaderDelegate typeReader)
+        private static object? ReadOptional(BinaryBufferReader binaryReader, Type fieldType, ReaderDelegate typeReader)
         {
             var isValue = binaryReader.ReadByte();
             return isValue == 0 ? null : typeReader(binaryReader, fieldType);
         }
 
-        private static object ReadOptional(BinaryBufferReader binaryReader, VariantReaderDelegate variantReader)
+        private static object? ReadOptional(BinaryBufferReader binaryReader, VariantReaderDelegate variantReader)
         {
             var isValue = binaryReader.ReadByte();
             return isValue == 0 ? null : variantReader(binaryReader);
@@ -191,10 +197,9 @@ namespace DeepReader.Deserializer
             var elementType = fieldType.GetElementType();
             var size = Convert.ToInt32(binaryReader.ReadVarUint32());
 
+            var items = (Array)Activator.CreateInstance(fieldType, new object[] { size });
             if (size > 0)
             {
-                var items = (Array)Activator.CreateInstance(fieldType, new object[] { size });
-
                 if (VariantReaders.TryGetValue(elementType!, out var variantReader))
                 {
                     for (var i = 0; i < size; i++)
@@ -212,10 +217,9 @@ namespace DeepReader.Deserializer
                         items?.SetValue(typeReader(binaryReader, elementType), i);
                     }
                 }
-                return items;
             }
 
-            return null;
+            return items;
         }
 
         private static object ReadGeneric(BinaryBufferReader binaryReader, Type fieldType)
@@ -288,13 +292,14 @@ namespace DeepReader.Deserializer
             { CommonTypes.TypeOfChecksum160, (reader, _) => reader.ReadChecksum160() },
             { CommonTypes.TypeOfChecksum256, (reader, _) => reader.ReadChecksum256() },
             { CommonTypes.TypeOfChecksum512, (reader, _) => reader.ReadChecksum512() },
-            { CommonTypes.TypeOfSignature, (reader, _) => reader.ReadSignature() },
+            { CommonTypes.TypeOfSignature, (reader, _) => reader.ReadSignature() },//TODO 
             { CommonTypes.TypeOfUint128, (reader, _) => reader.ReadUInt128() },
             { CommonTypes.TypeOfInt128, (reader, _) => reader.ReadInt128() },
             { CommonTypes.TypeOfName, (reader, _) => reader.ReadName() },
             { CommonTypes.TypeOfBytes, (reader, _) => reader.ReadBytes() },
             { CommonTypes.TypeOfPublicKey, (reader, _) => reader.ReadPublicKey() },
-            //{ CommonTypes.TypeOfTracesBytes, (reader, _) => reader.ReadTracesBytes() },
+            { CommonTypes.TypeOfActionDataBytes, (reader, _) => reader.ReadActionDataBytes() },
+            { CommonTypes.TypeOfTransactionId, (reader, _) => reader.ReadTransactionId() },
             //{ CommonTypes.TypeOfDeltasBytes, (reader, _) => reader.ReadDeltasBytes() },
             //{ CommonTypes.TypeOfBlockBytes, (reader, _) => reader.ReadBlockBytes() },
             //{ CommonTypes.TypeOfContractRowBytes, (reader, _) => reader.ReadContractRowBytes() },
@@ -310,6 +315,7 @@ namespace DeepReader.Deserializer
         private static readonly Dictionary<Type, VariantReaderDelegate> VariantReaders = new()
         {
             { CommonTypes.TypeOfBlockSigningAuthorityVariant, ReadBlockSigningAuthorityVariant },
+            { CommonTypes.TypeOfTransactionVariant, ReadTransactionVariant },
             //{ CommonTypes.TypeOfTransactionVariant, ReadTransactionVariant },
             //{ CommonTypes.TypeOfTransactionTraceVariant, ReadTransactionTraceVariant },
             //{ CommonTypes.TypeOfTableDeltaVariant, ReadTableDeltaVariant },
@@ -354,9 +360,22 @@ namespace DeepReader.Deserializer
             return i switch
             {
                 0 => (BlockSigningAuthorityVariant)ReadReferenceType(reader, CommonTypes.TypeOfBlockSigningAuthorityV0),
+                _ => throw new Exception($"BlockSigningAuthorityVariant VariantType {i} unknown")
+            };
+        }
+
+        public static TransactionVariant ReadTransactionVariant(BinaryBufferReader reader)
+        {
+            var i = Convert.ToInt32(reader.ReadVarUint32());
+            return i switch
+            {
+                0 => (TransactionVariant)ReadReferenceType(reader, CommonTypes.TypeOfTransactionId),
+                1 => (TransactionVariant)ReadReferenceType(reader, CommonTypes.TypeOfPackedTransaction),
                 _ => throw new Exception($"TransactionVariant VariantType {i} unknown")
             };
         }
+
+        
 
         //public static TransactionVariant ReadTransactionVariant(BinaryBufferReader reader)
         //{

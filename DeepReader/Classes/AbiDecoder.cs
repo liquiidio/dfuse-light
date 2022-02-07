@@ -1,5 +1,6 @@
 using DeepReader.AssemblyGenerator;
 using DeepReader.Types;
+using DeepReader.Types.Eosio.Chain;
 using Serilog;
 
 namespace DeepReader.Classes;

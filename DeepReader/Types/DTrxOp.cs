@@ -1,4 +1,5 @@
 using DeepReader.Types.Enums;
+using DeepReader.Types.Eosio.Chain;
 
 namespace DeepReader.Types;
 

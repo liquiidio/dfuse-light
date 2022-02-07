@@ -32,5 +32,7 @@ namespace DeepReader.EosTypes
         {
             _value = value;
         }
+
+        public static Checksum256 Empty => new("");
     }
 }

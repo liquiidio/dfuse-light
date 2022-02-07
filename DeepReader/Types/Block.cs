@@ -1,27 +1,29 @@
 using System.Text.Json;
+using DeepReader.EosTypes;
+using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.Eosio.Chain.Detail;
+using DeepReader.Types.Eosio.Chain.Legacy;
 
 namespace DeepReader.Types;
 
 public class Block
 {
-	public string Id = string.Empty;//string
-	public uint Number = 0;//uint32
-	public uint Version = 0;//uint32
-//	public BlockHeader Header = new BlockHeader();//*BlockHeader
-	public SignedBlockHeader Header = new SignedBlockHeader();//*BlockHeader
-	public string ProducerSignature = string.Empty;//string
-	public Extension[] BlockExtensions = Array.Empty<Extension>();//[]*Extension
-	public uint DposProposedIrreversibleBlocknum = 0;//uint32
-	public uint DposIrreversibleBlocknum = 0;//uint32
-	public IncrementalMerkle BlockrootMerkle = new IncrementalMerkle();//*BlockRootMerkle
-	public PairAccountNameBlockNum[] ProducerToLastProduced = Array.Empty<PairAccountNameBlockNum>();//[]*ProducerToLastProduced
-	public PairAccountNameBlockNum[] ProducerToLastImpliedIrb = Array.Empty<PairAccountNameBlockNum>();//[]*ProducerToLastImpliedIRB
-	public uint[] ConfirmCount = Array.Empty<uint>();//[]uint32
-
-    public PendingSchedule PendingSchedule = new PendingSchedule();//*PendingProducerSchedule
-	public ProtocolFeatureActivationSet? ActivatedProtocolFeatures;//*ActivatedProtocolFeatures
-	public bool Validated = false;//bool
-	public IList<RlimitOp> RlimitOps = new List<RlimitOp>();//[]*RlimitOp
+	public BlockId Id = Checksum256.Empty;
+	public uint Number = 0;
+	public uint Version = 0;
+	public SignedBlockHeader Header = new();
+	public string ProducerSignature = string.Empty;
+	public Extension[] BlockExtensions = Array.Empty<Extension>();
+	public uint DposProposedIrreversibleBlocknum = 0;
+	public uint DposIrreversibleBlocknum = 0;
+	public IncrementalMerkle BlockrootMerkle = new();
+	public PairAccountNameBlockNum[] ProducerToLastProduced = Array.Empty<PairAccountNameBlockNum>();
+	public PairAccountNameBlockNum[] ProducerToLastImpliedIrb = Array.Empty<PairAccountNameBlockNum>();
+	public uint[] ConfirmCount = Array.Empty<uint>();
+    public ScheduleInfo PendingSchedule = new();
+	public ProtocolFeatureActivationSet? ActivatedProtocolFeatures;
+	public bool Validated = false;
+	public IList<RlimitOp> RlimitOps = new List<RlimitOp>();
 	// The unfiltered transactions in this block when NO filtering has been applied,
 	// (i.e. `filtering_applied = false`). When filtering has been applied on this block,
 	// (i.e. `filtering_applied = true`), this field will be set to `nil` and instead, the
@@ -42,11 +44,11 @@ public class Block
 	public TransactionReceipt[] FilteredTransactions = Array.Empty<TransactionReceipt>();//[]*TransactionReceipt
 	// Number of transaction executed within this block when no filtering
 	// is applied (`filtering_applied == false`).
-	public uint UnfilteredTransactionCount = 0;//uint32
+//	public uint UnfilteredTransactionCount = 0;
 	// Number of transaction that were successfully executed within this block that are found in
 	// the `filtered_transactions` array. This field is populated only when the flag
 	// `filtering_applied` is `true`.
-	public uint FilteredTransactionCount = 0;//uint32
+//	public uint FilteredTransactionCount = 0;
 	// The unfiltered implicit transaction ops in this block when NO filtering has been applied,
 	// (i.e. `filtering_applied = false`). When filtering has been applied on this block,
 	// (i.e. `filtering_applied = true`), this field will be set to `nil` and instead, the
@@ -86,28 +88,28 @@ public class Block
 	public TransactionTrace[] FilteredTransactionTraces = Array.Empty<TransactionTrace>();//[]*TransactionTrace
 	// Number of transaction trace executed within this block when no filtering
 	// is applied (`filtering_applied == false`).
-	public uint UnfilteredTransactionTraceCount = 0;//uint32
+//	public uint UnfilteredTransactionTraceCount = 0;
 	// Number of transaction trace that were successfully executed within this block that are found in
 	// the `filtered_transaction_traces` array. This field is populated only when the flag
 	// `filtering_applied` is `true`.
-	public uint FilteredTransactionTraceCount = 0;//uint32
+//	public uint FilteredTransactionTraceCount = 0;
 	// Number of top-level actions that were successfully executed within this block when no filtering
 	// is applied (`filtering_applied == false`).
-	public uint UnfilteredExecutedInputActionCount = 0;//uint32
+//	public uint UnfilteredExecutedInputActionCount = 0;
 	// Number of top-level actions that were successfully executed within this block that are found in
 	// the `filtered_transaction_traces` array. This field is populated only when the flag
 	// `filtering_applied` is `true`.
-	public uint FilteredExecutedInputActionCount = 0;//uint32
+//	public uint FilteredExecutedInputActionCount = 0;
 	// Number of actions that were successfully executed within this block when no filtering
 	// is applied (`filtering_applied == false`).
-	public uint UnfilteredExecutedTotalActionCount = 0;//uint32
+//	public uint UnfilteredExecutedTotalActionCount = 0;
 	// Number of actions that were successfully executed within this block that are found in
 	// the `filtered_transaction_traces` array. This field is populated only when the flag
 	// `filtering_applied` is `true`.
-	public uint FilteredExecutedTotalActionCount = 0;//uint32
+//	public uint FilteredExecutedTotalActionCount = 0;
 	// This was a single string element representing a public key (eos-go#ecc.PublicKey).
 	// It has been replaced by `valid_block_signing_authority_v2`.
-	public string BlockSigningKey = string.Empty;//string
+	public PublicKey BlockSigningKey = PublicKey.Empty;//string
 	// This was a list of `{name, publicKey}` elements, each block being signed by a single key,
 	// the schedule was simply a list of pair, each pair being the producer name and it's public key
 	// used to sign the block.
@@ -144,16 +146,16 @@ public class Block
 	//
 	// This flag controls all `filtered_*` and `unfiltered_*` elements on the Block structure and on
 	// substructures if present.
-	public bool FilteringApplied = false;//bool
+//	public bool FilteringApplied = false;//bool
 	// The CEL filter expression used to include transaction in `filtered_transaction_traces` array, works
 	// in combination with `filtering_exclude_filter_expr` value.
-	public string FilteringIncludeFilterExpr = string.Empty;//string
+//	public string FilteringIncludeFilterExpr = string.Empty;//string
 	// The CEL filter expression used to exclude transaction in `filtered_transaction_traces` array, works
 	// in combination with `filtering_include_filter_expr` value.
-	public string FilteringExcludeFilterExpr = string.Empty;//string
+//	public string FilteringExcludeFilterExpr = string.Empty;//string
 	// The CEL filter expression used to include system actions, required by some systems, works
 	// in combination with the two other filters above.
-	public string FilteringSystemActionsIncludeFilterExpr = string.Empty;//string
+//	public string FilteringSystemActionsIncludeFilterExpr = string.Empty;//string
 
 	internal object ToJsonString(JsonSerializerOptions? jsonSerializerOptions = null)
 	{

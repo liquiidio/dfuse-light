@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using DeepReader.Types.Eosio.Chain;
 
 namespace DeepReader.JsonConverters
 {

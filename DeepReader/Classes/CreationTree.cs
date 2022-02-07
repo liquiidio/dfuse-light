@@ -1,4 +1,5 @@
 using DeepReader.Types;
+using DeepReader.Types.Eosio.Chain;
 
 namespace DeepReader.Classes;
 
@@ -155,7 +156,7 @@ public static class CreationTree
             tree.AddRange(_ToFlatTree(root, -1, ref walkIndex));
         }
         
-        return tree;
+        return tree.ToArray();
     }
 
     private static IList<CreationFlatNode> _ToFlatTree(Node root, int parentIndex, ref int walkIndex)

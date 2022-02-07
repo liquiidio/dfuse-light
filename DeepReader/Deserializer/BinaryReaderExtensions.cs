@@ -4,6 +4,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.Fc;
+using DeepReader.Types.Fc.Crypto;
 using Salar.BinaryBuffers;
 using Serilog;
 
@@ -50,6 +53,11 @@ namespace DeepReader.Deserializer
         }
 
         public static Checksum256 ReadChecksum256(this BinaryBufferReader reader)
+        {
+            return ByteArrayToHexString(reader.ReadBytes(32));
+        }
+
+        public static TransactionId ReadTransactionId(this BinaryBufferReader reader)
         {
             return ByteArrayToHexString(reader.ReadBytes(32));
         }
@@ -191,6 +199,13 @@ namespace DeepReader.Deserializer
             }
         }
         #endregion EosTypes
+
+        
+        public static ActionDataBytes ReadActionDataBytes(this BinaryBufferReader reader)
+        {
+            var length = Convert.ToInt32(reader.ReadVarUint32());
+            return new ActionDataBytes(reader.ReadBytes(length));
+        }
 
         //public static TracesBytes ReadTracesBytes(this BinaryBufferReader reader)
         //{

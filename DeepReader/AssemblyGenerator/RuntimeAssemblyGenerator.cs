@@ -10,6 +10,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using DeepReader.EosTypes;
 using DeepReader.Types;
+using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.Eosio.Chain.Legacy;
+using DeepReader.Types.Fc;
+using DeepReader.Types.Fc.Crypto;
 using Serilog;
 
 

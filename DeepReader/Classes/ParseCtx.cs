@@ -1,8 +1,10 @@
 using System.Text.Json;
+using DeepReader.EosTypes;
 using DeepReader.Types;
 using DeepReader.Types.Enums;
+using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.Fc.Crypto;
 using Serilog;
-
 namespace DeepReader.Classes;
 
 public class ParseCtx
@@ -143,7 +145,7 @@ public class ParseCtx
             {
                 failedTrace.Receipt = new TransactionReceiptHeader()
                 {
-                    Status = TransactionStatus.SOFTFAIL
+                    Status = (byte)TransactionStatus.SOFTFAIL
                 };
             }
 
@@ -164,7 +166,7 @@ public class ParseCtx
             // defined failed to execute properly. So in the `hard_fail` case, let's reset all ops.
             // However, we do keep `RLimitOps` as they seems to be billed regardeless of transaction
             // execution status
-            if (trace.Receipt == null || trace.Receipt.Status == TransactionStatus.HARDFAIL)
+            if (trace.Receipt == null || trace.Receipt.Status == (byte)TransactionStatus.HARDFAIL)
             {
                 RevertOpsDueToFailedTransaction();
             }
@@ -266,8 +268,14 @@ public class ParseCtx
         AbiDecoder.StartBlock(blockNum);
     }
 
-	// Line format:
-	//   ACCEPTED_BLOCK ${block_num} ${block_state_hex}
+    /// <summary>
+    /// plugins/chain_plugin/chain_plugin.cpp:1162
+    /// [ACCEPTED_BLOCK ${block_num} ${block_state_hex}]
+    /// </summary>
+    /// <param name="chunks"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+
     public Block ReadAcceptedBlock(string[] chunks) {
         if (chunks.Length != 2)
         {
@@ -279,9 +287,6 @@ public class ParseCtx
         {
             ActiveBlockNum++;
         }
-        /*if err != nil {
-	        return null;, fmt.Errorf("block_num not a valid string, got: %q", chunks[1])
-        }*/
 
         if (ActiveBlockNum != blockNum)
         {
@@ -289,21 +294,12 @@ public class ParseCtx
         }
 
         var blockStateHex = chunks[1].HexStringToByteArray();
-        /*
-        if err != nil {
-	        return null;, fmt.Errorf("unable to decode block %d state hex: %w", blockNum, err)
-        }
-        */
 
         var blockState = Deserializer.Deserializer.Deserialize<BlockState>(blockStateHex);
 
-        /*if err != nil {
-	        return null;, fmt.Errorf("unmarshalling binary block state: %w", err)
-        }*/
-
         var block = new Block()
         {
-            Id = blockState.BlockID,
+            Id = blockState.Id,
             Number = blockState.BlockNum,
             Version = 1,
             Header = blockState.Header,
@@ -317,7 +313,15 @@ public class ParseCtx
             PendingSchedule = blockState.PendingSchedule,
             ActiveSchedule = blockState.ActiveSchedule,
             ValidBlockSigningAuthority = blockState.ValidBlockSigningAuthority,
-            BlockSigningKey = blockState.ValidBlockSigningAuthority.PublicKey,            
+            BlockSigningKey = blockState.ValidBlockSigningAuthority is BlockSigningAuthorityV0 blockSigningAuthority ? blockSigningAuthority.Keys.FirstOrDefault()?.Key ?? PublicKey.Empty : PublicKey.Empty,
+            RlimitOps = Block.RlimitOps,
+            UnfilteredImplicitTransactionOps = Block.UnfilteredImplicitTransactionOps,
+            UnfilteredTransactionTraces = Block.UnfilteredTransactionTraces,
+            ConfirmCount = new uint[blockState.ConfirmCount.Length],
+            BlockExtensions = blockState.Block?.BlockExtensions ?? Array.Empty<KeyValuePair<ushort, char[]>>(),
+            ProducerSignature = blockState.Block?.ProducerSignature ?? Signature.Empty,
+            UnfilteredTransactions = blockState.Block?.Transactions.ToList() ?? new List<TransactionReceipt>(),
+
         };
 
         // this is hydrator.hydrateblock ... 
@@ -328,11 +332,11 @@ public class ParseCtx
         // TransactionCount, TransactionTraceCount)
         //block.Version = 1;
         //block.Header = blockState.Header;
-        if (blockState.SignedBlock != null)
-        {
-            block.BlockExtensions = blockState.SignedBlock.BlockExtensions;
-            block.ProducerSignature = blockState.SignedBlock.ProducerSignature;
-        }
+        //if (blockState.Block != null)
+        //{
+        //    block.BlockExtensions = blockState.Block.BlockExtensions;
+        //    block.ProducerSignature = blockState.Block.ProducerSignature;
+        //}
         //block.DposIrreversibleBlocknum = blockState.DPoSIrreversibleBlockNum;
         //block.DposProposedIrreversibleBlocknum = blockState.DPoSProposedIrreversibleBlockNum;
         //block.Validated = blockState.Validated;
@@ -341,13 +345,9 @@ public class ParseCtx
         //block.ProducerToLastImpliedIrb = blockState.ProducerToLastImpliedIRB;
         //block.ActivatedProtocolFeatures = blockState.ActivatedProtocolFeatures;
 
-        if(blockState.ConfirmCount != null)
+        for (int i = 0; i < blockState.ConfirmCount.Length; i++)
         {
-            block.ConfirmCount = new uint[blockState.ConfirmCount.Length];
-            for (int i = 0; i < blockState.ConfirmCount.Length; i++)
-            {
-                block.ConfirmCount[i] = blockState.ConfirmCount[i];
-            }
+            block.ConfirmCount[i] = blockState.ConfirmCount[i];
         }
 
         //block.PendingSchedule = blockState.PendingSchedule;
@@ -379,15 +379,15 @@ public class ParseCtx
 
         // End (versions)
 
-        if(blockState.SignedBlock != null)
-        {
-            block.UnfilteredTransactionCount = (uint)blockState.SignedBlock.Transactions.Length;
-            block.UnfilteredTransactions = blockState.SignedBlock.Transactions;
-        }
+//        if(blockState.Block != null)
+//        {
+////            block.UnfilteredTransactionCount = (uint)blockState.Block.Transactions.Length;
+//            block.UnfilteredTransactions = blockState.Block.Transactions;
+//        }
 
-        block.UnfilteredTransactionTraceCount = (uint) block.UnfilteredTransactionTraces.Count;
+//        block.UnfilteredTransactionTraceCount = (uint) block.UnfilteredTransactionTraces.Count;
 
-        for (int idx = 0; idx < block.UnfilteredTransactionTraceCount; idx++)
+        for (int idx = 0; idx < block.UnfilteredTransactionTraces.Count; idx++)
         {
             var el = block.UnfilteredTransactionTraces[idx];
             el.Index = (ulong)idx;
@@ -395,13 +395,13 @@ public class ParseCtx
             el.ProducerBlockId = block.Id;
             el.BlockNum = block.Number;
 
-            foreach (var actionTrace in el.ActionTraces)
-            {
-	            if (actionTrace.IsInput())
-	            {
-		            block.UnfilteredExecutedInputActionCount++;
-	            }
-            }
+            //foreach (var actionTrace in el.ActionTraces)
+            //{
+	           // if (actionTrace.IsInput())
+	           // {
+		          //  block.UnfilteredExecutedInputActionCount++;
+	           // }
+            //}
         }
 
 //	        zlog.Debug("blocking until abi decoder has decoded every transaction pushed to it")
@@ -856,12 +856,6 @@ public class ParseCtx
         if (newData.Length > 0)
         {
             var newPerm = JsonSerializer.Deserialize<PermissionObject>(newData, jsonSerializerOptions);
-	        /*
-	        err = json.Unmarshal(newData, &newPerm)
-	        if err != nil {
-		        return fmt.Errorf("unmashal new perm data: %s", err)
-	        }
-	        */
 
             permOp.NewPerm = newPerm;
             permOp.NewPerm.Id = permissionID;

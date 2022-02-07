@@ -5,6 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.Fc;
+using DeepReader.Types.Fc.Crypto;
+using PackedTransaction = DeepReader.Types.PackedTransaction;
 
 namespace DeepReader.Deserializer
 {
@@ -47,6 +51,7 @@ namespace DeepReader.Deserializer
         public static readonly Type TypeOfSymbol = typeof(Symbol);
         public static readonly Type TypeOfSymbolCode = typeof(SymbolCode);
 
+        public static readonly Type TypeOfActionDataBytes = typeof(ActionDataBytes);
         //public static readonly Type TypeOfTracesBytes = typeof(TracesBytes);
         //public static readonly Type TypeOfDeltasBytes = typeof(DeltasBytes);
         //public static readonly Type TypeOfBlockBytes = typeof(BlockBytes);
@@ -125,14 +130,19 @@ namespace DeepReader.Deserializer
         //internal static readonly Type TypeOfResourceLimitsConfigV0 = typeof(ResourceLimitsConfigV0);
         //internal static readonly Type TypeOfBlockSigningAuthorityV0 = typeof(BlockSigningAuthorityV0);
         //internal static readonly Type TypeOfPackedTransaction = typeof(PackedTransactionVariant);
-        internal static readonly Type TypeOfTimestamp = typeof(Timestamp);
 
+        internal static readonly Type TypeOfTransactionVariant = typeof(TransactionVariant);
+        internal static readonly Type TypeOfPackedTransaction = typeof(PackedTransaction);
+        internal static readonly Type TypeOfTransactionId = typeof(TransactionId);
+
+        internal static readonly Type TypeOfBlockSigningAuthorityVariant = typeof(BlockSigningAuthorityVariant);
+        internal static readonly Type TypeOfBlockSigningAuthorityV0 = typeof(BlockSigningAuthorityV0);
+
+
+        internal static readonly Type TypeOfTimestamp = typeof(Timestamp);
 
         internal static readonly Type TypeOfSortOrderAttribute = typeof(SortOrderAttribute);
         internal static readonly Type TypeOfAbi = typeof(Abi);
-
-        internal static Type TypeOfBlockSigningAuthorityVariant = typeof(BlockSigningAuthorityVariant);
-        internal static Type TypeOfBlockSigningAuthorityV0 = typeof(BlockSigningAuthorityV0);
 
         //        internal static readonly Type TypeOfTransaction = typeof(Transaction);
     }

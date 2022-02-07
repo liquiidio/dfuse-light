@@ -71,6 +71,6 @@ namespace DeepReader.EosTypes
             return _binary.GetHashCode();
         }
 
-
+        public static Name Empty => new(0, string.Empty);
     }
 }

@@ -1,3 +1,5 @@
+using DeepReader.Types.Eosio.Chain.Legacy;
+
 namespace DeepReader.Types;
 
 public class ProducerScheduleOrAuthoritySchedule
