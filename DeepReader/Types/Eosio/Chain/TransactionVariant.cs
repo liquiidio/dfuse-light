@@ -1,4 +1,4 @@
-using DeepReader.EosTypes;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -17,7 +17,7 @@ public abstract class TransactionVariant
 /// </summary>
 public class TransactionId : TransactionVariant
 {
-    private string _value = string.Empty;
+    private readonly string _value = string.Empty;
 
     public TransactionId()
     {
@@ -31,7 +31,7 @@ public class TransactionId : TransactionVariant
 
     public static implicit operator TransactionId(string value)
     {
-        return new(value);
+        return new TransactionId(value);
     }
 
     public static implicit operator string(TransactionId value)

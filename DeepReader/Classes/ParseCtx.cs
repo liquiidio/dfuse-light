@@ -1,8 +1,8 @@
 using System.Text.Json;
-using DeepReader.EosTypes;
 using DeepReader.Types;
 using DeepReader.Types.Enums;
 using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
 using Serilog;
 namespace DeepReader.Classes;
@@ -19,15 +19,13 @@ public class ParseCtx
 
     public bool TraceEnabled;
 
-    public string[] SupportedVersions = new[] {"13","14"};
+    public string[] SupportedVersions = new[] {"13"};
 
-    JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions()
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         IncludeFields = true,
         PropertyNameCaseInsensitive = true,
     };
-
-//        public conversionOptions[] conversionOption;*/
 
     public ParseCtx()
     {
@@ -71,7 +69,7 @@ public class ParseCtx
         CreationOps.Add(operation);
     }
 
-	public void RecordDbOp(DBOp operation)
+	public void RecordDbOp(DbOp operation)
     {
         Trx.DbOps.Add(operation);
     }
@@ -96,12 +94,12 @@ public class ParseCtx
         Trx.PermOps.Add(operation);
     }
 
-    public void RecordRamOp(RAMOp operation)
+    public void RecordRamOp(RamOp operation)
     {
         Trx.RamOps.Add(operation);
     }
 
-    public void RecordRamCorrectionOp(RAMCorrectionOp operation)
+    public void RecordRamCorrectionOp(RamCorrectionOp operation)
     {
         Trx.RamCorrectionOps.Add(operation);
     }
@@ -136,18 +134,15 @@ public class ParseCtx
 	        // handler trace and the actual deferred transaction trace that failed.
 
 	        // The deferred transaction removal RAM op needs to be attached to the failed trace, not the onerror handler
-            Trx.RamOps = TransferDeferredRemovedRAMOp(Trx.RamOps, failedTrace);
+            Trx.RamOps = TransferDeferredRemovedRamOp(Trx.RamOps, failedTrace);
 
 	        // The only possibilty to have failed deferred trace, is when the deferred execution
 	        // resulted in a subjetive failure, which is really a soft fail. So, when the receipt is
 	        // not set, let's re-create it here with soft fail status only.
-	        if (failedTrace.Receipt == null)
+	        failedTrace.Receipt ??= new TransactionReceiptHeader()
             {
-                failedTrace.Receipt = new TransactionReceiptHeader()
-                {
-                    Status = (byte)TransactionStatus.SOFTFAIL
-                };
-            }
+                Status = (byte) TransactionStatus.SOFTFAIL
+            };
 
             // We add the failed deferred trace first, before the "real" trace (the `onerror` handler)
             // since it was ultimetaly ran first. There is no ops possible on the trace expect the
@@ -192,21 +187,21 @@ public class ParseCtx
         ResetTrx();
     }
 
-    private IList<RAMOp> TransferDeferredRemovedRAMOp(ICollection<RAMOp> initialRAMOps, TransactionTrace target)
+    private IList<RamOp> TransferDeferredRemovedRamOp(ICollection<RamOp> initialRamOps, TransactionTrace target)
     {
-        IList<RAMOp> filteredRAMOps = new List<RAMOp>();
-        foreach (var ramOp in initialRAMOps)
+        IList<RamOp> filteredRamOps = new List<RamOp>();
+        foreach (var ramOp in initialRamOps)
         {
-            if (ramOp.Namespace == RAMOp_Namespace.DEFERRED_TRX && ramOp.Action == RAMOpAction.REMOVE)
+            if (ramOp.Namespace == RamOpNamespace.DEFERRED_TRX && ramOp.Action == RamOpAction.REMOVE)
             {
                 target.RamOps.Add(ramOp);
             } else
             {
-                filteredRAMOps.Add(ramOp);
+                filteredRamOps.Add(ramOp);
             }            
         }
 
-        return filteredRAMOps;
+        return filteredRamOps;
     }
 
     public void RevertOpsDueToFailedTransaction() 
@@ -215,40 +210,40 @@ public class ParseCtx
         // as well as the RLimitOps, which happens at a location that does not revert.
         var toRestoreRlimitOps = Trx.RlimitOps;
 
-        RAMOp? deferredRemovalRAMOp = null;// = new RAMOp();
+        RamOp? deferredRemovalRamOp = null;// = new RAMOp();
 
         foreach (var trxRamOp in Trx.RamOps)
         {
-            if (trxRamOp.Namespace == RAMOp_Namespace.DEFERRED_TRX && trxRamOp.Action == RAMOpAction.REMOVE)
+            if (trxRamOp.Namespace == RamOpNamespace.DEFERRED_TRX && trxRamOp.Action == RamOpAction.REMOVE)
             {
-                deferredRemovalRAMOp = trxRamOp;
+                deferredRemovalRamOp = trxRamOp;
                 break;
             }
         }
 
         ResetTrx();
         Trx.RlimitOps = toRestoreRlimitOps;
-        if (deferredRemovalRAMOp != null)
+        if (deferredRemovalRamOp != null)
         {
-            Trx.RamOps = new List<RAMOp>() { deferredRemovalRAMOp };
+            Trx.RamOps = new List<RamOp>() { deferredRemovalRamOp };
         }
     }
 
-    public RAMOp[] TransferDeferredRemovedRamOp(RAMOp[] initialRAMOps, TransactionTrace target)
+    public RamOp[] TransferDeferredRemovedRamOp(RamOp[] initialRamOps, TransactionTrace target)
     {
-        List<RAMOp> filteredRAMOps = new List<RAMOp>();
-        foreach (var initialRamOp in initialRAMOps)
+        List<RamOp> filteredRamOps = new List<RamOp>();
+        foreach (var initialRamOp in initialRamOps)
         {
-			if (initialRamOp.Namespace == RAMOp_Namespace.DEFERRED_TRX && initialRamOp.Action == RAMOpAction.REMOVE)
+			if (initialRamOp.Namespace == RamOpNamespace.DEFERRED_TRX && initialRamOp.Action == RamOpAction.REMOVE)
             {
                 target.RamOps.Add(initialRamOp);
             }
             else
             {
-                filteredRAMOps.Add(initialRamOp);
+                filteredRamOps.Add(initialRamOp);
             }
 		}
-        return filteredRAMOps.ToArray();
+        return filteredRamOps.ToArray();
     }
 
 	// Line format:
@@ -308,7 +303,7 @@ public class ParseCtx
             Validated = blockState.Validated,
             BlockrootMerkle = blockState.BlockrootMerkle,
             ProducerToLastProduced = blockState.ProducerToLastProduced,
-            ProducerToLastImpliedIrb = blockState.ProducerToLastImpliedIRB,
+            ProducerToLastImpliedIrb = blockState.ProducerToLastImpliedIrb,
             ActivatedProtocolFeatures = blockState.ActivatedProtocolFeatures,
             PendingSchedule = blockState.PendingSchedule,
             ActiveSchedule = blockState.ActiveSchedule,
@@ -352,7 +347,7 @@ public class ParseCtx
 
         //block.PendingSchedule = blockState.PendingSchedule;
 
-        /// Specific versions handling
+        // Specific versions handling
 
 //        var blockSigningKey = blockState.BlockSigningKeyV1; 
         // Only in EOSIO 1.x
@@ -361,7 +356,7 @@ public class ParseCtx
         //    block.BlockSigningKey = Encoding.ASCII.GetString(blockSigningKey);
         //}
 
-        /*block.ActiveSchedule = blockState.ActiveSchedule*/;// TODO below comments where used instead of this
+        /*block.ActiveSchedule = blockState.ActiveSchedule*/ // TODO below comments where used instead of this
 
         //if (schedule.V1 != null)
         //{
@@ -485,7 +480,7 @@ public class ParseCtx
     //    };
     //}
 
-    private byte[][] checksumsToBytesSlices(byte[] merkleActiveNodes)
+    private byte[][] ChecksumsToBytesSlices(byte[] merkleActiveNodes)
     {
         // TODO
         return new[] { merkleActiveNodes };
@@ -593,19 +588,19 @@ public class ParseCtx
 
         var opString = chunks[0];
 
-        var op = DBOpOperation.UNKNOWN;
+        var op = DbOpOperation.UNKNOWN;
         string oldData = string.Empty, newData = string.Empty;
         string oldPayer = string.Empty, newPayer = string.Empty;
 
         switch (opString)
         {
 	        case "INS":
-                op = DBOpOperation.INSERT;
+                op = DbOpOperation.INSERT;
                 newData = chunks[7];
                 newPayer = chunks[2];
 				break;
             case "UPD":
-                op = DBOpOperation.UPDATE;
+                op = DbOpOperation.UPDATE;
                 var dataChunks = chunks[7].Split(':');
 	            if (dataChunks.Length != 2)
                 {
@@ -625,7 +620,7 @@ public class ParseCtx
                 newPayer = payerChunks[1];
 				break;
             case "REM":
-                op = DBOpOperation.REMOVE;
+                op = DbOpOperation.REMOVE;
                 oldData = chunks[7];
                 oldPayer = chunks[2];
 				break;
@@ -650,7 +645,7 @@ public class ParseCtx
 	        }*/
         }
 
-        RecordDbOp(new DBOp()
+        RecordDbOp(new DbOp()
         {
             Operation = op,
             ActionIndex = (uint) actionIndex,
@@ -745,7 +740,7 @@ public class ParseCtx
             throw new Exception($"expected 4 fields, got {chunks.Length}");
         }
 
-        var feature = JsonSerializer.Deserialize<Feature>(chunks[3], jsonSerializerOptions)!;
+        var feature = JsonSerializer.Deserialize<Feature>(chunks[3], _jsonSerializerOptions)!;
         // TODO does this work?
         //err:= json.Unmarshal(json.RawMessage(chunks[3]), &feature)
         /*if err != nil {
@@ -774,7 +769,7 @@ public class ParseCtx
 	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
         }*/
 
-        var feature = JsonSerializer.Deserialize<Feature>(chunks[4], jsonSerializerOptions)!;
+        var feature = JsonSerializer.Deserialize<Feature>(chunks[4], _jsonSerializerOptions)!;
         // TODO does this work?
         /*err = json.Unmarshal(json.RawMessage(chunks[4]), &feature)
         if err != nil {
@@ -800,12 +795,12 @@ public class ParseCtx
 
         var opString = chunks[0];
         var dataChunk = chunks[2];
-        ulong permissionID = 0;
+        ulong permissionId = 0;
 
         // A `PERM_OP` with 5 fields have ["permission_id"] field in index #3 set and data chunk is actually index #4
         if (chunks.Length == 4)
         {
-            permissionID = Convert.ToUInt64(chunks[2]);
+            permissionId = Convert.ToUInt64(chunks[2]);
             dataChunk = chunks[3];
         }
 
@@ -855,21 +850,21 @@ public class ParseCtx
 
         if (newData.Length > 0)
         {
-            var newPerm = JsonSerializer.Deserialize<PermissionObject>(newData, jsonSerializerOptions)!;
+            var newPerm = JsonSerializer.Deserialize<PermissionObject>(newData, _jsonSerializerOptions)!;
 
             permOp.NewPerm = newPerm;
-            permOp.NewPerm.Id = permissionID;
+            permOp.NewPerm.Id = permissionId;
         }
 
         if (oldData.Length > 0)
         {
-            var oldPerm = JsonSerializer.Deserialize<PermissionObject>(oldData, jsonSerializerOptions)!;
+            var oldPerm = JsonSerializer.Deserialize<PermissionObject>(oldData, _jsonSerializerOptions)!;
 	        /*err = json.Unmarshal(oldData, &oldPerm)
 	        if err != nil {
 		        return fmt.Errorf("unmashal old perm data: %s", err)
 	        }*/
             permOp.OldPerm = oldPerm;
-            permOp.OldPerm.Id = permissionID;
+            permOp.OldPerm.Id = permissionId;
         }
 
         RecordPermOp(permOp);
@@ -887,16 +882,16 @@ public class ParseCtx
         var actionIndex = Convert.ToInt32(chunks[0]);
 
         var namespaceString = chunks[2];
-        var @namespace = Enum.Parse<RAMOp_Namespace>(namespaceString, true);
+        var @namespace = Enum.Parse<RamOpNamespace>(namespaceString, true);
 
         var actionString = chunks[3];
-        var action = Enum.Parse<RAMOpAction>(actionString, true);
+        var action = Enum.Parse<RamOpAction>(actionString, true);
         /*if !ok {
         return fmt.Errorf("action %q unknown", actionString)
         }*/
 
         var operationString = chunks[4];
-        var operation = Enum.Parse<RAMOp_Operation>(operationString, true);
+        var operation = Enum.Parse<RamOpOperation>(operationString, true);
         /*if !ok {
         return fmt.Errorf("operation %q unknown", operationString)
         }*/
@@ -911,7 +906,7 @@ public class ParseCtx
         return fmt.Errorf("delta is not a valid number, got: %q", chunks[5])
         }*/
 
-        RecordRamOp(new RAMOp()
+        RecordRamOp(new RamOp()
         {
             ActionIndex = (uint) actionIndex,
             UniqueKey = chunks[1],
@@ -933,7 +928,7 @@ public class ParseCtx
     public void ReadDeepmindVersion(string[] chunks)
     {
         var majorVersion = chunks[0];
-        if (!inSupportedVersion(majorVersion)) {
+        if (!InSupportedVersion(majorVersion)) {
             throw new Exception(
                 $"deep mind reported version {majorVersion}, but this reader supports only {string.Join(", ", SupportedVersions)}");
         }
@@ -941,7 +936,7 @@ public class ParseCtx
 //	        zlog.Info("read deep mind version", zap.String("major_version", majorVersion))
     }
 
-    public bool inSupportedVersion(string majorVersion)
+    public bool InSupportedVersion(string majorVersion)
     {
         foreach (var supportedVersion in SupportedVersions)
         {
@@ -961,6 +956,7 @@ public class ParseCtx
     //    ABIDUMP START ${block_num} ${global_sequence_num}
     public void ReadAbiStart(string[] chunks)
     {
+        // TODO
         switch (chunks.Length) {
 	        case 2: // Version 12
                 break;
@@ -993,15 +989,15 @@ public class ParseCtx
     //    ABIDUMP ABI ${contract} ${base64_abi}
     public void ReadAbiDump(string[] chunks)
     {
-        string contract = string.Empty, rawABI = string.Empty;
+        string contract = string.Empty, rawAbi = string.Empty;
         switch (chunks.Length) {
 	        case 5: // Version 12
                 contract = chunks[3];
-                rawABI = chunks[4];
+                rawAbi = chunks[4];
                 break;
             case 4: // Version 13
                 contract = chunks[2];
-                rawABI = chunks[3];
+                rawAbi = chunks[3];
                 break;
         }
 
@@ -1009,7 +1005,7 @@ public class ParseCtx
 //		        zlog.Debug("read initial ABI for contract", zap.String("contract", contract))
         }
 
-        AbiDecoder.AddInitialABI(contract, rawABI);
+        AbiDecoder.AddInitialAbi(contract, rawAbi);
     }
 
     // Line format:
@@ -1028,7 +1024,7 @@ public class ParseCtx
 	        return fmt.Errorf("delta not a valid number, got: %q", chunks[5])
         }*/
 
-        RecordRamCorrectionOp(new RAMCorrectionOp()
+        RecordRamCorrectionOp(new RamCorrectionOp()
         {
             CorrectionId = chunks[2],
             UniqueKey = chunks[3],
@@ -1073,16 +1069,16 @@ public class ParseCtx
 
         switch (kindString) {
 	        case "CONFIG":
-                op = JsonSerializer.Deserialize<RlimitConfig>(data, jsonSerializerOptions)!;
+                op = JsonSerializer.Deserialize<RlimitConfig>(data, _jsonSerializerOptions)!;
                 break;
             case "STATE":
-                op = JsonSerializer.Deserialize<RlimitState>(data, jsonSerializerOptions)!;
+                op = JsonSerializer.Deserialize<RlimitState>(data, _jsonSerializerOptions)!;
                 break;
             case "ACCOUNT_LIMITS":
-                op = JsonSerializer.Deserialize<RlimitAccountLimits>(data, jsonSerializerOptions)!;
+                op = JsonSerializer.Deserialize<RlimitAccountLimits>(data, _jsonSerializerOptions)!;
                 break;
             case "ACCOUNT_USAGE":
-                op = JsonSerializer.Deserialize<RlimitAccountUsage>(data, jsonSerializerOptions)!;
+                op = JsonSerializer.Deserialize<RlimitAccountUsage>(data, _jsonSerializerOptions)!;
                 break;
             default:
                 throw new Exception($"unknown kind: {kindString}");
@@ -1149,7 +1145,7 @@ public class ParseCtx
         }
 
         var name = chunks[1];
-        var trxID = chunks[2];
+        var trxId = chunks[2];
 
         var trxHex = chunks[3].HexStringToByteArray();
 
@@ -1159,7 +1155,7 @@ public class ParseCtx
         {
             Operation = op,
             Name = name, // "onblock" or "onerror"
-            TransactionId = trxID, // the hash of the transaction
+            TransactionId = trxId, // the hash of the transaction
             Transaction = trx,
         });
     }

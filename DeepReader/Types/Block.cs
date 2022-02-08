@@ -1,8 +1,8 @@
 using System.Text.Json;
-using DeepReader.EosTypes;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.Eosio.Chain.Detail;
 using DeepReader.Types.Eosio.Chain.Legacy;
+using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types;
 
@@ -133,7 +133,7 @@ public class Block
 	// counterpart. The inner element for a producer can then be composed with
 	// multiple keys, each with their own weight and the threshold required to
 	// accept the block signature.
-	public ProducerAuthoritySchedule ActiveSchedule = new ProducerAuthoritySchedule();//*ProducerAuthoritySchedule
+	public ProducerAuthoritySchedule ActiveSchedule = new();//*ProducerAuthoritySchedule
 	// Wheter or not a filtering process was run on this block. The filtering process sets to nil
 	// the `unfiltered_transaction_traces` to `nil` and populate the `filtered_transaction_traces`
 	// according to the `filtering_include_filter_expr` and `filtering_exclude_filter_expr` CEL

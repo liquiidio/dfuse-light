@@ -7,6 +7,8 @@ public static class CreationTree
 {
     public static List<Node> ComputeCreationTree(List<CreationOp> creationOps)
     {
+        // TODO, not sure if this is converted correctly from dfuse-code
+
         if (creationOps.Count <= 0)
             return new List<Node>();
 
@@ -161,7 +163,7 @@ public static class CreationTree
 
     private static IList<CreationFlatNode> _ToFlatTree(Node root, int parentIndex, ref int walkIndex)
     {
-        var tree = new List<CreationFlatNode>(){ new CreationFlatNode(){ WalkIndex = walkIndex, CreatorActionIndex = parentIndex, ExecutionActionIndex = root.ActionIndex}};
+        var tree = new List<CreationFlatNode>(){ new(){ WalkIndex = walkIndex, CreatorActionIndex = parentIndex, ExecutionActionIndex = root.ActionIndex}};
         var childRootIndex = walkIndex;
 
         foreach (var child in root.Children)

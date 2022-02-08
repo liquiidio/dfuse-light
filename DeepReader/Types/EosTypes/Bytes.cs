@@ -1,83 +1,78 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
+using DeepReader.Helpers;
 
-namespace DeepReader.EosTypes
+namespace DeepReader.Types.EosTypes;
+
+public class Bytes
 {
-    public class Bytes
+    internal byte[] Value = Array.Empty<byte>();
+
+    public Bytes()
     {
-        internal byte[] _value = Array.Empty<byte>();
 
-        public Bytes()
-        {
-
-        }
-
-        public static implicit operator Bytes(byte[] value)
-        {
-            return new() { _value = value };
-        }
-
-        public static implicit operator byte[](Bytes value)
-        {
-            return value._value;
-        }
-
-        public string ToJson()
-        {
-            return SerializationHelper.ByteArrayToHexString(_value);
-        }
     }
 
-    public class Bytes<T> : Bytes
+    public static implicit operator Bytes(byte[] value)
     {
-        public T? Instance;
+        return new Bytes { Value = value };
+    }
 
-        [JsonIgnore]
-        public bool IsDeserialized => Instance != null;
+    public static implicit operator byte[](Bytes value)
+    {
+        return value.Value;
+    }
 
-        public Bytes()
-        {
-            Instance = default(T);
-        }
+    public string ToJson()
+    {
+        return SerializationHelper.ByteArrayToHexString(Value);
+    }
+}
 
-        public Bytes(T instance)
-        {
-            Instance = instance;
-        }
+public class Bytes<T> : Bytes
+{
+    public T? Instance;
 
-        public T? GetInstance()
-        {
-            return Instance;
-        }
+    [JsonIgnore]
+    public bool IsDeserialized => Instance != null;
 
-        public async Task DeserializeAsync(CancellationToken cancellationToken)
-        {
-            if (IsDeserialized)
-                return;
+    public Bytes()
+    {
+        Instance = default(T);
+    }
 
-            Instance = await Deserializer.Deserializer.DeserializeAsync<T>(_value, cancellationToken);
-        }
+    public Bytes(T instance)
+    {
+        Instance = instance;
+    }
 
-        public void Deserialize()
-        {
-            if (IsDeserialized)
-                return;
+    public T? GetInstance()
+    {
+        return Instance;
+    }
 
-            Instance = Deserializer.Deserializer.Deserialize<T>(_value);
-        }
+    public async Task DeserializeAsync(CancellationToken cancellationToken)
+    {
+        if (IsDeserialized)
+            return;
 
-        public static implicit operator Bytes<T>(byte[] value)
-        {
-            return new() { _value = value };
-        }
+        Instance = await Deserializer.Deserializer.DeserializeAsync<T>(Value, cancellationToken);
+    }
 
-        public static implicit operator byte[](Bytes<T> value)
-        {
-            return value._value;
-        }
+    public void Deserialize()
+    {
+        if (IsDeserialized)
+            return;
+
+        Instance = Deserializer.Deserializer.Deserialize<T>(Value);
+    }
+
+    public static implicit operator Bytes<T>(byte[] value)
+    {
+        return new Bytes<T> { Value = value };
+    }
+
+    public static implicit operator byte[](Bytes<T> value)
+    {
+        return value.Value;
     }
 }

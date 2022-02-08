@@ -5,8 +5,8 @@ namespace DeepReader.Types.Eosio.Chain.Legacy;
 /// <summary>
 /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public class ProducerAuthority
+public class ProducerKey
 {
     public Name AccountName = Name.Empty;
-    public BlockSigningAuthorityVariant BlockSigningAuthority = new BlockSigningAuthorityV0();
+    public PublicKey[] BlockSigningKey = Array.Empty<PublicKey>();//ecc.PublicKey
 }

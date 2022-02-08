@@ -1,4 +1,4 @@
-using DeepReader.EosTypes;
+using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -14,27 +14,27 @@ public class ActionDataBytes : Bytes<object>
 
     public ActionDataBytes(Bytes bytes)
     {
-        this._value = bytes._value;
+        this.Value = bytes.Value;
     }
 
     public static implicit operator ActionDataBytes(byte[] value)
     {
-        return new(value);
+        return new ActionDataBytes(value);
     }
 
     public static implicit operator byte[](ActionDataBytes value)
     {
-        return value._value;
+        return value.Value;
     }
 
     public async Task DeserializeAsync(Type targetType, CancellationToken cancellationToken)
     {
-        Instance = await Deserializer.Deserializer.DeserializeAsync(_value, targetType, cancellationToken);
+        Instance = await Deserializer.Deserializer.DeserializeAsync(Value, targetType, cancellationToken);
     }
 
     public void Deserialize(Type targetType)
     {
-        Instance = Deserializer.Deserializer.Deserialize(_value, targetType);
+        Instance = Deserializer.Deserializer.Deserialize(Value, targetType);
 
     }
 }

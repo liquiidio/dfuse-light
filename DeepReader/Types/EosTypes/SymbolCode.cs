@@ -1,7 +1,6 @@
-﻿namespace DeepReader.EosTypes
+﻿namespace DeepReader.Types.EosTypes;
+
+public struct SymbolCode
 {
-    public struct SymbolCode
-    {
-        public string Value;
-    }
+    public string Value;
 }

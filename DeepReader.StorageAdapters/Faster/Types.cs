@@ -9,7 +9,7 @@ namespace DeepReader.StorageAdapters.Faster
 {
     public class CacheKey : IFasterEqualityComparer<CacheKey>
     {
-        public long key;
+        public long Key;
 
         public CacheKey()
         {
@@ -18,16 +18,16 @@ namespace DeepReader.StorageAdapters.Faster
 
         public CacheKey(long first)
         {
-            key = first;
+            Key = first;
         }
 
         public long GetHashCode64(ref CacheKey key)
         {
-            return Utility.GetHashCode(key.key);
+            return Utility.GetHashCode(key.Key);
         }
         public bool Equals(ref CacheKey k1, ref CacheKey k2)
         {
-            return k1.key == k2.key;
+            return k1.Key == k2.Key;
         }
     }
 
@@ -40,13 +40,13 @@ namespace DeepReader.StorageAdapters.Faster
 
         public override void Serialize(ref CacheKey obj)
         {
-            writer.Write(obj.key);
+            writer.Write(obj.Key);
         }
     }
 
     public class CacheValue
     {
-        public long value;
+        public long Value;
 
         public CacheValue()
         {
@@ -55,7 +55,7 @@ namespace DeepReader.StorageAdapters.Faster
 
         public CacheValue(long first)
         {
-            value = first;
+            Value = first;
         }
     }
 
@@ -68,7 +68,7 @@ namespace DeepReader.StorageAdapters.Faster
 
         public override void Serialize(ref CacheValue obj)
         {
-            writer.Write(obj.value);
+            writer.Write(obj.Value);
         }
     }
 
@@ -78,20 +78,20 @@ namespace DeepReader.StorageAdapters.Faster
 
     public struct CacheOutput
     {
-        public CacheValue value;
+        public CacheValue Value;
     }
 
     public struct CacheContext
     {
-        public int type;
-        public long ticks;
+        public int Type;
+        public long Ticks;
     }
 
     public sealed class CacheFunctions : FunctionsBase<CacheKey, CacheValue, CacheInput, CacheOutput, CacheContext>
     {
         public override void ConcurrentReader(ref CacheKey key, ref CacheInput input, ref CacheValue value, ref CacheOutput dst)
         {
-            dst.value = value;
+            dst.Value = value;
         }
 
         public override void CheckpointCompletionCallback(string sessionId, CommitPoint commitPoint)
@@ -101,28 +101,28 @@ namespace DeepReader.StorageAdapters.Faster
 
         public override void ReadCompletionCallback(ref CacheKey key, ref CacheInput input, ref CacheOutput output, CacheContext ctx, Status status)
         {
-            if (ctx.type == 0)
+            if (ctx.Type == 0)
             {
-                if (output.value.value != key.key)
+                if (output.Value.Value != key.Key)
                     throw new Exception("Read error!");
             }
             else
             {
-                long ticks = DateTime.Now.Ticks - ctx.ticks;
+                long ticks = DateTime.Now.Ticks - ctx.Ticks;
 
                 if (status == Status.NOTFOUND)
                     Console.WriteLine("Async: Value not found, latency = {0}ms", new TimeSpan(ticks).TotalMilliseconds);
 
-                if (output.value.value != key.key)
-                    Console.WriteLine("Async: Incorrect value {0} found, latency = {1}ms", output.value.value, new TimeSpan(ticks).TotalMilliseconds);
+                if (output.Value.Value != key.Key)
+                    Console.WriteLine("Async: Incorrect value {0} found, latency = {1}ms", output.Value.Value, new TimeSpan(ticks).TotalMilliseconds);
                 else
-                    Console.WriteLine("Async: Correct value {0} found, latency = {1}ms", output.value.value, new TimeSpan(ticks).TotalMilliseconds);
+                    Console.WriteLine("Async: Correct value {0} found, latency = {1}ms", output.Value.Value, new TimeSpan(ticks).TotalMilliseconds);
             }
         }
 
         public override void SingleReader(ref CacheKey key, ref CacheInput input, ref CacheValue value, ref CacheOutput dst)
         {
-            dst.value = value;
+            dst.Value = value;
         }
     }
 }

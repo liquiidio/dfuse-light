@@ -1,4 +1,4 @@
-using DeepReader.EosTypes;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -32,9 +32,9 @@ public class ActionTrace {
 
     public Timestamp BlockTime = 0;
 
-    public BlockId? ProducerBlockID;
+    public BlockId? ProducerBlockId;
 
-    public AccountDelta[] AccountRAMDeltas = Array.Empty<AccountDelta>();
+    public AccountDelta[] AccountRamDeltas = Array.Empty<AccountDelta>();
 
     // TODO Added in 2.1.x - this seems to be wrong with Mandel
     //	public AccountDelta[] AccountDiskDeltas = Array.Empty<AccountDelta>();

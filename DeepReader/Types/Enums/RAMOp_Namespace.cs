@@ -1,6 +1,6 @@
 namespace DeepReader.Types.Enums;
 
-public enum RAMOp_Namespace
+public enum RamOpNamespace
 {
     UNKNOWN = 0,
     ABI = 1,

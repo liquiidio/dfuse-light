@@ -1,5 +1,5 @@
-using DeepReader.EosTypes;
-using DeepReader.Types.Eosio.Chain.Legacy;
+using DeepReader.Helpers;
+using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.Eosio.Chain;
 

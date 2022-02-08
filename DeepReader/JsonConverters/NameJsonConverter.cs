@@ -1,19 +1,18 @@
-﻿using DeepReader.EosTypes;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using DeepReader.Types.EosTypes;
 
-namespace DeepReader
+namespace DeepReader.JsonConverters;
+
+internal class NameJsonConverter : JsonConverter<Name>
 {
-    internal class NameJsonConverter : JsonConverter<Name>
+    public override Name Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        public override Name? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            return new Name(reader.GetString() ?? "");
-        }
+        return new Name(reader.GetString() ?? "");
+    }
 
-        public override void Write(Utf8JsonWriter writer, Name value, JsonSerializerOptions options)
-        {
-            writer.WriteStringValue(value.ToString());
-        }
+    public override void Write(Utf8JsonWriter writer, Name value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString());
     }
 }

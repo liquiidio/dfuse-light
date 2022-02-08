@@ -2,9 +2,9 @@ using DeepReader.Types.Enums;
 
 namespace DeepReader.Types;
 
-public class DBOp
+public class DbOp
 {
-    public DBOpOperation Operation = DBOpOperation.UNKNOWN;//DBOp_Operation
+    public DbOpOperation Operation = DbOpOperation.UNKNOWN;//DBOp_Operation
     public uint ActionIndex = 0;//uint32
     public string Code = string.Empty;//string
     public string Scope = string.Empty;//string

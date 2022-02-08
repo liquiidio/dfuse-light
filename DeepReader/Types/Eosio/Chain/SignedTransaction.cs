@@ -1,4 +1,5 @@
-using DeepReader.EosTypes;
+using DeepReader.Helpers;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -12,5 +13,5 @@ public class SignedTransaction : Transaction
     public Signature[] Signatures = Array.Empty<Signature>();
 
     [SortOrder(11)]
-    public Bytes[] ContextFreeData = Array.Empty<Bytes>(); ///< for each context-free action, there is an entry here
+    public Bytes[] ContextFreeData = Array.Empty<Bytes>(); //< for each context-free action, there is an entry here
 }

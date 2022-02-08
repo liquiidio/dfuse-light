@@ -1,6 +1,6 @@
 namespace DeepReader.Types.Enums;
 
-public enum RAMOp_Operation
+public enum RamOpOperation
 {
     UNKNOWN = 0,
     CREATE_TABLE = 1,

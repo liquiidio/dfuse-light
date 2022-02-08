@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using DeepReader.Helpers;
 
 namespace DeepReader.Types.Eosio.Chain;
 

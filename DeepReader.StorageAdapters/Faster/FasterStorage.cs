@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DeepReader.StorageAdapters
+﻿namespace DeepReader.StorageAdapters.Faster
 {
     internal class FasterStorage : IStorageAdapter
     {
@@ -13,7 +7,7 @@ namespace DeepReader.StorageAdapters
             throw new NotImplementedException();
         }
 
-        public void StoreTransation()
+        public void StoreTransaction()
         {
             throw new NotImplementedException();
         }

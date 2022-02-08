@@ -1,9 +1,8 @@
-﻿namespace DeepReader.EosTypes
-{
-    public struct Symbol
-    {
-        public string Name;
+﻿namespace DeepReader.Types.EosTypes;
 
-        public byte Precision;
-    }
+public struct Symbol
+{
+    public string Name;
+
+    public byte Precision;
 }

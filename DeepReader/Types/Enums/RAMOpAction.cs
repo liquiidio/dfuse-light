@@ -1,6 +1,6 @@
 namespace DeepReader.Types.Enums;
 
-public enum RAMOpAction
+public enum RamOpAction
 {
     UNKNOWN = 0,
     ADD = 1,

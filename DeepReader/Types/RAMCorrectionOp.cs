@@ -1,6 +1,6 @@
 namespace DeepReader.Types;
 
-public class RAMCorrectionOp
+public class RamCorrectionOp
 {
     public string CorrectionId = string.Empty;//string
     public string UniqueKey = string.Empty;//string

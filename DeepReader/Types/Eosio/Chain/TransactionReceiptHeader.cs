@@ -1,3 +1,4 @@
+using DeepReader.Helpers;
 using DeepReader.Types.Fc;
 
 namespace DeepReader.Types.Eosio.Chain;

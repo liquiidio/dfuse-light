@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace DeepReader.Types.EosTypes;
 
-namespace DeepReader.EosTypes
+public struct Asset
 {
-    public struct Asset
-    {
-        public string Amount;
+    public string Amount;
 
-        public Symbol Symbol;
-        //        public long MaxAmount;
-    }
+    public Symbol Symbol;
+    //        public long MaxAmount;
 }

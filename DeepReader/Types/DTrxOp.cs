@@ -14,5 +14,5 @@ public class DTrxOp
     public string DelayUntil = string.Empty;//string
     public string ExpirationAt = string.Empty;//string
     public string TransactionId = string.Empty;//string
-    public SignedTransaction Transaction = new SignedTransaction();//*SignedTransaction
+    public SignedTransaction Transaction = new();//*SignedTransaction
 }

@@ -52,7 +52,7 @@ public class AbiDecoder
         return;
     }
 
-    public static void AddInitialABI(string contract, string rawAbi)
+    public static void AddInitialAbi(string contract, string rawAbi)
     {
         // TODO
         return;

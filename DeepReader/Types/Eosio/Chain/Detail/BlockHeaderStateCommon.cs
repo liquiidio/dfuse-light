@@ -1,3 +1,4 @@
+using DeepReader.Helpers;
 using DeepReader.Types.Eosio.Chain.Legacy;
 
 namespace DeepReader.Types.Eosio.Chain.Detail;
@@ -20,7 +21,7 @@ public class BlockHeaderStateCommon
     [SortOrder(6)]
     public PairAccountNameBlockNum[] ProducerToLastProduced = Array.Empty<PairAccountNameBlockNum>();   //flat_map<account_name,uint32_t>
     [SortOrder(7)]
-    public PairAccountNameBlockNum[] ProducerToLastImpliedIRB = Array.Empty<PairAccountNameBlockNum>(); // flat_map<account_name,uint32_t>
+    public PairAccountNameBlockNum[] ProducerToLastImpliedIrb = Array.Empty<PairAccountNameBlockNum>(); // flat_map<account_name,uint32_t>
     [SortOrder(8)]
     public BlockSigningAuthorityVariant ValidBlockSigningAuthority = new BlockSigningAuthorityV0();
     [SortOrder(9)]

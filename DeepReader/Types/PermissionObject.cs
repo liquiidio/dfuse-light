@@ -10,6 +10,6 @@ public class PermissionObject
     public string Owner = string.Empty;//string
     // Name is the permission's name this permission object is known as.
     public string Name = string.Empty;//string
-    public DateTime LastUpdated = new DateTime();//*timestamp.Timestamp
-    public Authority Auth = new Authority();//*Authority
+    public DateTime LastUpdated = new();//*timestamp.Timestamp
+    public Authority Auth = new();//*Authority
 }

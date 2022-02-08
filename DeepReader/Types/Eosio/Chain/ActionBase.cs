@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
-using DeepReader.EosTypes;
+using DeepReader.Helpers;
+using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.Eosio.Chain;
 

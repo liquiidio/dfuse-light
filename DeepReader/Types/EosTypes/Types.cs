@@ -1,5 +1,5 @@
-﻿global using BlockId = DeepReader.EosTypes.Checksum256;
-global using DigestType = DeepReader.EosTypes.Checksum256;
+﻿global using BlockId = DeepReader.Types.EosTypes.Checksum256;
+global using DigestType = DeepReader.Types.EosTypes.Checksum256;
 global using WeightType = System.UInt16;
 global using BlockNumType = System.UInt32;
 global using ShareType = System.Int64;

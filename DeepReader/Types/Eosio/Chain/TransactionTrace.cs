@@ -1,4 +1,4 @@
-using DeepReader.EosTypes;
+using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -27,7 +27,7 @@ public class TransactionTrace
 	public ActionTrace[] ActionTraces = Array.Empty<ActionTrace>();
 
 	// Account RAM Delta - ignored in dfuse
-	public AccountRAMDelta? AccountRAMDelta;
+	public AccountRamDelta? AccountRamDelta;
 
 	// Trace of a failed deferred transaction, if any.
 	public TransactionTrace? FailedDtrxTrace;
@@ -38,7 +38,7 @@ public class TransactionTrace
 	public ulong? ErrorCode;
 
 	// List of database operations this transaction entailed
-	public IList<DBOp> DbOps { get; set; } = new List<DBOp>();//[]*DBOp
+	public IList<DbOp> DbOps { get; set; } = new List<DbOp>();//[]*DBOp
 	// List of deferred transactions operations this transaction entailed
 	public IList<DTrxOp> DtrxOps { get; set; } = new List<DTrxOp>();//[]*DTrxOp
 	// List of feature switching operations (changes to feature switches in
@@ -47,10 +47,10 @@ public class TransactionTrace
 	// List of permission changes operations
 	public IList<PermOp> PermOps { get; set; } = new List<PermOp>();//[]*PermOp
 	// List of RAM consumption/redemption
-	public IList<RAMOp> RamOps { get; set; } = new List<RAMOp>();//[]*RAMOp
+	public IList<RamOp> RamOps { get; set; } = new List<RamOp>();//[]*RAMOp
 	// List of RAM correction operations (happens only once upon feature
 	// activation)
-	public IList<RAMCorrectionOp> RamCorrectionOps { get; set; } = new List<RAMCorrectionOp>();//[]*RAMCorrectionOp
+	public IList<RamCorrectionOp> RamCorrectionOps { get; set; } = new List<RamCorrectionOp>();//[]*RAMCorrectionOp
 	// List of changes to rate limiting values
 	public IList<RlimitOp> RlimitOps { get; set; } = new List<RlimitOp>();//[]*RlimitOp
 	// List of table creations/deletions
@@ -71,7 +71,7 @@ public class Except {
 }
 
 public class ExceptLogMessage {
-	public ExceptLogContext Context = new ExceptLogContext();
+	public ExceptLogContext Context = new();
 	public string Format = string.Empty;
 	public string Data = string.Empty;// json.RawMessage
 }

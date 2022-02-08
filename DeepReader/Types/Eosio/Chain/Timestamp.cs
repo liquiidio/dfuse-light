@@ -10,7 +10,7 @@ public class Timestamp
 
     public static implicit operator Timestamp(uint value)
     {
-        return new (value);
+        return new Timestamp(value);
     }
 
     public DateTime ToDateTime()

@@ -10,6 +10,6 @@ namespace DeepReader.StorageAdapters
     {
         void StoreBlock();
 
-        void StoreTransation();
+        void StoreTransaction();
     }
 }

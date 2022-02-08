@@ -6,6 +6,6 @@ public class ElasticLimitParameters
     public ulong Max = 0;//uint64
     public uint Periods = 0;//uint32
     public uint MaxMultiplier = 0;//uint32
-    public Ratio ContractRate = new Ratio();//*Ratio
-    public Ratio ExpandRate = new Ratio();//*Ratio
+    public Ratio ContractRate = new();//*Ratio
+    public Ratio ExpandRate = new();//*Ratio
 }

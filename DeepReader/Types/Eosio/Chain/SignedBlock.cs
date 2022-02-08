@@ -1,3 +1,5 @@
+using DeepReader.Helpers;
+
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>

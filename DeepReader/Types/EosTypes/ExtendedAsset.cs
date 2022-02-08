@@ -1,9 +1,8 @@
-﻿namespace DeepReader.EosTypes
-{
-    public struct ExtendedAsset
-    {
-        public Asset Quantity;
+﻿namespace DeepReader.Types.EosTypes;
 
-        public Name Contract;
-    }
+public struct ExtendedAsset
+{
+    public Asset Quantity;
+
+    public Name Contract;
 }
