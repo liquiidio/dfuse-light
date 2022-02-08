@@ -331,31 +331,4 @@ namespace DeepReader.AssemblyGenerator
         //    }
         //}
     }
-
-    public struct Asset
-    {
-        public string Amount;
-
-        public Symbol Symbol;
-//        public long MaxAmount;
-    }
-
-    public struct ExtendedAsset
-    {
-        public Asset Quantity;
-
-        public Name Contract;
-    }
-
-    public struct Symbol
-    {
-        public string Name;
-
-        public byte Precision;
-    }
-
-    public struct SymbolCode
-    {
-        public string Value;
-    }
 }

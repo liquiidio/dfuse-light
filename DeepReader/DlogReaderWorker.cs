@@ -87,7 +87,7 @@ namespace DeepReader
                 FileName = "nodeos",
                 ArgumentList =
                 {
-                    /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", /*"--deep-mind",*/ "--config-dir", $"{producerDir}", "--data-dir", $"{producerDir}data"
+                    /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", /*"--deep-mind",*/ "--config-dir", $"{producerDir}", "--data-dir", $"{producerDir}data", "--genesis-json", $"{producerDir}genesis.json",
 //                    "-e -p eosio --delete-all-blocks --deep-mind --plugin eosio::producer_plugin --plugin eosio::producer_api_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --filter-on='*' --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors"// >> nodeos.log 2 > &1 &
                 }, // { "--delete-all-blocks --deep-mind" },
                 UseShellExecute = false,
@@ -109,7 +109,7 @@ namespace DeepReader
                 FileName = "nodeos",
                 ArgumentList =
                 {
-                    /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", "--config-dir", $"{mindreaderDir}", "--data-dir", $"{mindreaderDir}data"
+                    /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", "--config-dir", $"{mindreaderDir}", "--data-dir", $"{mindreaderDir}data", "--genesis-json", $"{producerDir}genesis.json",
 //                    "-e -p eosio --delete-all-blocks --deep-mind --plugin eosio::producer_plugin --plugin eosio::producer_api_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --filter-on='*' --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors"// >> nodeos.log 2 > &1 &
                 }, // { "--delete-all-blocks --deep-mind" },
                 UseShellExecute = false,
@@ -251,6 +251,6 @@ namespace DeepReader
             {
                 Log.Error(ex, "");
             }
-}
+        }
     }
 }

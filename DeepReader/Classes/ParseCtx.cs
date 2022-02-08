@@ -581,17 +581,17 @@ public class ParseCtx
     //   DB_OP REM ${action_id} ${payer} ${table_code} ${scope} ${table_name} ${primkey} ${odata}
     public void ReadDbOp(string[] chunks)
     {
-        if (chunks.Length != 9)
+        if (chunks.Length != 8)
         {
-            throw new Exception($"expected 9 fields, got {chunks.Length}");
+            throw new Exception($"expected 8 fields, got {chunks.Length}");
         }
 
-        var actionIndex = Convert.ToInt32(chunks[2]);
+        var actionIndex = Convert.ToInt32(chunks[1]);
         /*if err != nil {
 	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
         }*/
 
-        var opString = chunks[1];
+        var opString = chunks[0];
 
         var op = DBOpOperation.UNKNOWN;
         string oldData = string.Empty, newData = string.Empty;
@@ -601,12 +601,12 @@ public class ParseCtx
         {
 	        case "INS":
                 op = DBOpOperation.INSERT;
-                newData = chunks[8];
-                newPayer = chunks[3];
+                newData = chunks[7];
+                newPayer = chunks[2];
 				break;
             case "UPD":
                 op = DBOpOperation.UPDATE;
-                var dataChunks = chunks[8].Split(':');
+                var dataChunks = chunks[7].Split(':');
 	            if (dataChunks.Length != 2)
                 {
                     throw new Exception("should have old and new data in field 8, found only one");
@@ -615,7 +615,7 @@ public class ParseCtx
                 oldData = dataChunks[0];
                 newData = dataChunks[1];
 
-                var payerChunks = chunks[3].Split(':');
+                var payerChunks = chunks[2].Split(':');
 	            if (payerChunks.Length != 2)
                 {
                     throw new Exception("should have two payers in field 3, separated by a ':', found only one");
@@ -626,8 +626,8 @@ public class ParseCtx
 				break;
             case "REM":
                 op = DBOpOperation.REMOVE;
-                oldData = chunks[8];
-                oldPayer = chunks[3];
+                oldData = chunks[7];
+                oldPayer = chunks[2];
 				break;
             default:
                 throw new Exception($"unknown operation: {opString}");
@@ -656,10 +656,10 @@ public class ParseCtx
             ActionIndex = (uint) actionIndex,
             OldPayer = oldPayer,
             NewPayer = newPayer,
-            Code = chunks[4],
-            Scope = chunks[5],
-            TableName = chunks[6],
-            PrimaryKey = chunks[7],
+            Code = chunks[3],
+            Scope = chunks[4],
+            TableName = chunks[5],
+            PrimaryKey = chunks[6],
             OldData = oldBytes,
             NewData = newBytes,
         });
@@ -1098,14 +1098,14 @@ public class ParseCtx
     //   TBL_OP REM ${action_id} ${code} ${scope} ${table} ${payer}
     public void ReadTableOp(string[] chunks)
     {
-        if (chunks.Length != 7)
+        if (chunks.Length != 6)
         {
-            throw new Exception($"expected 7 fields, got {chunks.Length}");
+            throw new Exception($"expected 6 fields, got {chunks.Length}");
         }
 
-        var actionIndex = Convert.ToInt32(chunks[2]);
+        var actionIndex = Convert.ToInt32(chunks[1]);
 
-        var opString = chunks[1];
+        var opString = chunks[0];
         var op = TableOpOperation.UNKNOWN;
         switch (opString) {
 	        case "INS":
@@ -1122,10 +1122,10 @@ public class ParseCtx
         {
             Operation = op,
             ActionIndex = (uint) actionIndex,
-            Payer = chunks[6],
-            Code = chunks[3],
-            Scope = chunks[4],
-            TableName = chunks[5],
+            Payer = chunks[5],
+            Code = chunks[2],
+            Scope = chunks[3],
+            TableName = chunks[4],
         });
     }
 
