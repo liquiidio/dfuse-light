@@ -34,14 +34,14 @@ namespace DeepReader.EosTypes
 
     public class Bytes<T> : Bytes
     {
-        public T Instance;
+        public T? Instance;
 
         [JsonIgnore]
         public bool IsDeserialized => Instance != null;
 
         public Bytes()
         {
-
+            Instance = default(T);
         }
 
         public Bytes(T instance)
@@ -49,7 +49,7 @@ namespace DeepReader.EosTypes
             Instance = instance;
         }
 
-        public T GetInstance()
+        public T? GetInstance()
         {
             return Instance;
         }

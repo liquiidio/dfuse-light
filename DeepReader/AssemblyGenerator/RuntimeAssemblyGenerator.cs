@@ -8,10 +8,12 @@ using System.Reflection.Emit;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using DeepReader.Deserializer;
 using DeepReader.EosTypes;
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.Eosio.Chain.Legacy;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc;
 using DeepReader.Types.Fc.Crypto;
 using Serilog;
@@ -44,52 +46,50 @@ namespace DeepReader.AssemblyGenerator
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
             var moduleBuilder = assemblyBuilder.DefineDynamicModule("Main");
 
-            if (abi.AbiTypes != null)
-                foreach (var abiType in abi.AbiTypes)
+            foreach (var abiType in abi.AbiTypes)
+            {
+                abiTypeCacheEntry.AbiTypeTypes.TryAdd(abiType.NewTypeName, abiType.Type);
+            }
+            foreach (var abiStruct in abi.AbiStructs)
+            {
+                var recursions = 0;
+                Type? type;
+
+                if (!string.IsNullOrWhiteSpace(abiStruct.Base)) // TODO multi-inheritance
                 {
-                    abiTypeCacheEntry.AbiTypeTypes.TryAdd(abiType.NewTypeName, abiType.Type);
+                    var abiStructWithBase = new AbiStruct()
+                    {
+                        Name = abiStruct.Name
+                    };
+                    var baseStruct = abi.AbiStructs.SingleOrDefault(a => a.Name == abiStruct.Base, new AbiStruct());
+                    abiStructWithBase.Fields = new AbiField[baseStruct.Fields.Length + abiStruct.Fields.Length];
+                    var i = 0;
+                    foreach (var baseStructField in baseStruct.Fields)
+                    {
+                        abiStructWithBase.Fields[i] = baseStructField;
+                        i++;
+                    }
+
+                    foreach (var abiStructField in abiStruct.Fields)
+                    {
+                        abiStructWithBase.Fields[i] = abiStructField;
+                        i++;
+                    }
+
+                    type = moduleBuilder.AddTypeFromStruct(abiStructWithBase, abi, contractName,
+                        ref abiTypeCacheEntry.AbiStructTypes, ref recursions);
                 }
-            if (abi.AbiStructs != null)
-                foreach (var abiStruct in abi.AbiStructs)
+                else
                 {
-                    var recursions = 0;
-                    Type type;
-
-                    if (!string.IsNullOrWhiteSpace(abiStruct.Base)) // TODO multi-inheritance
-                    {
-                        var abiStructWithBase = new AbiStruct()
-                        {
-                            Name = abiStruct.Name
-                        };
-                        var baseStruct = abi.AbiStructs.SingleOrDefault(a => a.Name == abiStruct.Base);
-                        abiStructWithBase.Fields = new AbiField[baseStruct.Fields.Length + abiStruct.Fields.Length];
-                        var i = 0;
-                        foreach (var baseStructField in baseStruct.Fields)
-                        {
-                            abiStructWithBase.Fields[i] = baseStructField;
-                            i++;
-                        }
-
-                        foreach (var abiStructField in abiStruct.Fields)
-                        {
-                            abiStructWithBase.Fields[i] = abiStructField;
-                            i++;
-                        }
-
-                        type = moduleBuilder.AddTypeFromStruct(abiStructWithBase, abi, contractName,
-                            ref abiTypeCacheEntry.AbiStructTypes, ref recursions);
-                    }
-                    else
-                    {
-                        type = moduleBuilder.AddTypeFromStruct(abiStruct, abi, contractName,
-                            ref abiTypeCacheEntry.AbiStructTypes, ref recursions);
-                    }
-
-                    if (type != null)
-                    {
-                        abiTypeCacheEntry.AbiStructTypes.TryAdd(abiStruct.Name, type);
-                    }
+                    type = moduleBuilder.AddTypeFromStruct(abiStruct, abi, contractName,
+                        ref abiTypeCacheEntry.AbiStructTypes, ref recursions);
                 }
+
+                if (type != null)
+                {
+                    abiTypeCacheEntry.AbiStructTypes.TryAdd(abiStruct.Name, type);
+                }
+            }
 
             if (abi.AbiActions != null)
                 foreach (var abiAction in abi.AbiActions)
@@ -127,7 +127,7 @@ namespace DeepReader.AssemblyGenerator
         }
 
         // TODO max-nesting?
-        private static Type AddTypeFromStruct(this ModuleBuilder moduleBuilder, AbiStruct abiStruct, Abi abi,
+        private static Type? AddTypeFromStruct(this ModuleBuilder moduleBuilder, AbiStruct abiStruct, Abi abi,
             string contractName, ref ConcurrentDictionary<string, Type> abiStructTypes, ref int recursions)
         {
             if (recursions == 4)
@@ -136,14 +136,13 @@ namespace DeepReader.AssemblyGenerator
 
             var fields = new List<Tuple<string, Type, bool>>();
 
-            Type structType;
+            Type? structType;
 
-            if ((structType = moduleBuilder?.GetType(contractName + "." + abiStruct.Name)) == null &&
-                abiStruct.Fields != null)
+            if ((structType = moduleBuilder.GetType(contractName + "." + abiStruct.Name)) == null)
             {
                 foreach (var field in abiStruct.Fields)
                 {
-                    Type type;
+                    Type? type;
 
                     var isArrayType = false;
                     var isOptional = false;
@@ -185,12 +184,18 @@ namespace DeepReader.AssemblyGenerator
                         {
                             var abiStructType = abi.AbiStructs.SingleOrDefault(s => s.Name == fieldTypeName);
                             if (abiStructType == null)
-                                Log.Error("CONTRACT:" + contractName + "abistruct-type not found: " +
-                                          fieldTypeName);
-                            type = AddTypeFromStruct(moduleBuilder, abiStructType, abi, contractName,
-                                ref abiStructTypes, ref recursions);
-                            if (type != null)
-                                abiStructTypes.TryAdd(abiStructType.Name, type);
+                            {       
+                                Log.Error("CONTRACT:" + contractName + "abiStruct-type not found: " + fieldTypeName);
+                            }
+                            else
+                            {
+                                type = AddTypeFromStruct(moduleBuilder, abiStructType, abi, contractName,
+                                    ref abiStructTypes, ref recursions);
+                                if (type != null)
+                                {
+                                    abiStructTypes.TryAdd(abiStructType.Name, type);
+                                }
+                            }
                         }
                     }
 
@@ -229,15 +234,14 @@ namespace DeepReader.AssemblyGenerator
                 TypeAttributes.SequentialLayout |
                 TypeAttributes.Serializable,
                 typeof(ValueType));
-            if (fields != null)
-                foreach (var (name, type, isOptionalReferenceType) in fields)
-                {
-                    var fieldBuilder = dynamicType.DefineField(name, type, FieldAttributes.Public);
-                    if (isOptionalReferenceType)
-                        fieldBuilder.SetCustomAttribute(NullableHelper.NullableAttributeBuilder);
-                }
+            foreach (var (name, type, isOptionalReferenceType) in fields)
+            {
+                var fieldBuilder = dynamicType.DefineField(name, type, FieldAttributes.Public);
+                if (isOptionalReferenceType)
+                    fieldBuilder.SetCustomAttribute(NullableHelper.NullableAttributeBuilder);
+            }
 
-            return dynamicType.CreateType();
+            return dynamicType.CreateType()!;
         }
 
         public static Dictionary<string, Type> EosTypes = new()
@@ -295,37 +299,37 @@ namespace DeepReader.AssemblyGenerator
             // TODO pair/tuple-types
         };
 
-        public class NullableHelper
-        {
-            public static object? Helper;
+        //public class NullableHelper
+        //{
+        //    public static object? Helper;
 
-            private static CustomAttributeData _nullableAttribute;
+        //    private static CustomAttributeData _nullableAttribute;
 
-            public static CustomAttributeData NullableAttribute = _nullableAttribute ?? GetNullableAttribute();
+        //    public static CustomAttributeData NullableAttribute = _nullableAttribute ?? GetNullableAttribute();
 
-            private static CustomAttributeData GetNullableAttribute()
-            {
-                _nullableAttribute = typeof(NullableHelper).GetFields()[0].CustomAttributes.FirstOrDefault(x =>
-                    x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
-                return _nullableAttribute;
-            }
+        //    private static CustomAttributeData GetNullableAttribute()
+        //    {
+        //        _nullableAttribute = typeof(NullableHelper).GetFields()[0].CustomAttributes.FirstOrDefault(x =>
+        //            x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
+        //        return _nullableAttribute;
+        //    }
 
-            private static CustomAttributeBuilder _nullableAttributeBuilder;
+        //    private static CustomAttributeBuilder _nullableAttributeBuilder;
 
-            public static CustomAttributeBuilder NullableAttributeBuilder =
-                _nullableAttributeBuilder ?? GetNullableAttributeBuilder();
+        //    public static CustomAttributeBuilder NullableAttributeBuilder =
+        //        _nullableAttributeBuilder ?? GetNullableAttributeBuilder();
 
-            public static CustomAttributeBuilder GetNullableAttributeBuilder()
-            {
-                _nullableAttribute = typeof(NullableHelper).GetFields()[0].CustomAttributes.FirstOrDefault(x =>
-                    x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
+        //    public static CustomAttributeBuilder GetNullableAttributeBuilder()
+        //    {
+        //        _nullableAttribute = typeof(NullableHelper).GetFields()[0].CustomAttributes.FirstOrDefault(x =>
+        //            x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
 
-                var nullableAttr = NullableAttribute;
-                var constructorAttributes = nullableAttr.ConstructorArguments.Select(m => m.Value).ToArray();
-                _nullableAttributeBuilder = new CustomAttributeBuilder(nullableAttr.Constructor, constructorAttributes);
-                return _nullableAttributeBuilder;
-            }
-        }
+        //        var nullableAttr = NullableAttribute;
+        //        var constructorAttributes = nullableAttr.ConstructorArguments.Select(m => m.Value).ToArray();
+        //        _nullableAttributeBuilder = new CustomAttributeBuilder(nullableAttr.Constructor, constructorAttributes);
+        //        return _nullableAttributeBuilder;
+        //    }
+        //}
     }
 
     public struct Asset

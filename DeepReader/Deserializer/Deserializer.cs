@@ -30,7 +30,7 @@ namespace DeepReader.Deserializer
 
         public static object Deserialize(byte[] data, Type type)
         {
-            object obj = null;
+            object obj = null!;
             try
             {
                 var reader = new BinaryBufferReader(data);
@@ -62,12 +62,12 @@ namespace DeepReader.Deserializer
             {
                 Log.Error(e,"");
             }
-            return Activator.CreateInstance(type);
+            return Activator.CreateInstance(type)!;
         }
 
         public static object ReadReferenceType(BinaryBufferReader binaryReader, Type type)
         {
-            var obj = Activator.CreateInstance(type);
+            var obj = Activator.CreateInstance(type)!;
             var objRef = __makeref(obj);
 
             /*var fields = type.GetFields().All(f => Attribute.IsDefined(f, CommonTypes.TypeOfSortOrderAttribute))
@@ -76,7 +76,7 @@ namespace DeepReader.Deserializer
                     ((SortOrderAttribute) f.GetCustomAttribute(CommonTypes.TypeOfSortOrderAttribute, true)).Order).ToList()
                 : type.GetFields().ToList();*/
 
-            foreach (var fieldInfo in TryCachedFieldInfos(type))
+            foreach (var fieldInfo in TryGetCachedFieldInfos(type))
             {
                 var fieldType = fieldInfo.Key.FieldType;
 
@@ -115,7 +115,7 @@ namespace DeepReader.Deserializer
 
         private static readonly ConcurrentDictionary<Type, List<KeyValuePair<FieldInfo, bool>>> CachedFieldInfos = new();
 
-        private static List<KeyValuePair<FieldInfo, bool>> TryCachedFieldInfos(Type type)
+        private static List<KeyValuePair<FieldInfo, bool>> TryGetCachedFieldInfos(Type type)
         {
             if (CachedFieldInfos.TryGetValue(type, out var fields))
                 return fields;
@@ -123,7 +123,7 @@ namespace DeepReader.Deserializer
             fields = type.GetFields().All(f => Attribute.IsDefined(f, CommonTypes.TypeOfSortOrderAttribute))
                 ? type.GetFields().OrderBy(f =>
                     // ReSharper disable once PossibleNullReferenceException
-                    ((SortOrderAttribute)f.GetCustomAttribute(CommonTypes.TypeOfSortOrderAttribute, true)).Order).Select(f => new KeyValuePair<FieldInfo, bool>(f, NullableHelper.IsNullable(f))).ToList()
+                    ((SortOrderAttribute)f.GetCustomAttribute(CommonTypes.TypeOfSortOrderAttribute, true)!).Order).Select(f => new KeyValuePair<FieldInfo, bool>(f, NullableHelper.IsNullable(f))).ToList()
                 : type.GetFields().Select(f => new KeyValuePair<FieldInfo, bool>(f, NullableHelper.IsNullable(f))).ToList();
 
             CachedFieldInfos.TryAdd(type, fields);
@@ -194,32 +194,31 @@ namespace DeepReader.Deserializer
 
         private static object ReadArray(BinaryBufferReader binaryReader, Type fieldType)
         {
-            var elementType = fieldType.GetElementType();
+            var elementType = fieldType.GetElementType()!;
             var size = Convert.ToInt32(binaryReader.ReadVarUint32());
 
-            var items = (Array)Activator.CreateInstance(fieldType, new object[] { size });
+            var items = (Array)Activator.CreateInstance(fieldType, new object[] { size })!;
             if (size > 0)
             {
                 if (VariantReaders.TryGetValue(elementType!, out var variantReader))
                 {
                     for (var i = 0; i < size; i++)
                     {
-                        items?.SetValue(variantReader(binaryReader), i);
+                        items.SetValue(variantReader(binaryReader), i);
                     }
                 }
                 else
                 {
-
                     var typeReader = GetTypeReader(elementType);
 
                     for (var i = 0; i < size; i++)
                     {
-                        items?.SetValue(typeReader(binaryReader, elementType), i);
+                        items.SetValue(typeReader(binaryReader, elementType), i);
                     }
                 }
             }
 
-            return items;
+            return items!;
         }
 
         private static object ReadGeneric(BinaryBufferReader binaryReader, Type fieldType)
@@ -230,11 +229,12 @@ namespace DeepReader.Deserializer
 
             if (VariantReaders.TryGetValue(fieldType, out var genTypeReader))
             {
-                genTypeReader(binaryReader);
+                var generic = genTypeReader(binaryReader);
+                return generic;
             }
             else if (genericType == typeof(IDictionary))
             {
-                var items = (IDictionary)Activator.CreateInstance(fieldType);
+                var items = (IDictionary)Activator.CreateInstance(fieldType)!;
                 if (genericArgs.Length == 2)
                 {
                     var typeReader1 = GetTypeReader(genericArgs[0]);
@@ -245,10 +245,11 @@ namespace DeepReader.Deserializer
                             typeReader2(binaryReader, genericArgs[1]));
                     }
                 }
+                return items!;
             }
             else if (genericType == typeof(IList))
             {
-                var items = (IList)Activator.CreateInstance(fieldType);
+                var items = (IList)Activator.CreateInstance(fieldType)!;
                 if (genericArgs.Length == 1)
                 {
                     var typeReader = GetTypeReader(genericArgs[0]);
@@ -257,12 +258,13 @@ namespace DeepReader.Deserializer
                         items?.Add(typeReader(binaryReader, genericArgs[0]));
                     }
                 }
+                return items!;
             }
             else
             {
                 Log.Information($"Generic Type {fieldType.Name} not allowed");
             }
-            return null;
+            return null!;
         }
 
         private static readonly Dictionary<Type, ReaderDelegate> PrimitiveReaders = new()

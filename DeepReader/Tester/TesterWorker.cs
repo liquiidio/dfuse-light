@@ -23,7 +23,7 @@ namespace DeepReader.Tester
 
         private async Task RunTests(CancellationToken clt)
         {
-
+            await Task.Delay(0, clt);
         }
 
         private void PushTransactionViaCleos()

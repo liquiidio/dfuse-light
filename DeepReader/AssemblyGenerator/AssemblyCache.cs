@@ -37,28 +37,28 @@ namespace DeepReader.AssemblyGenerator
         public bool TryGetTypeType(string name, out Type type)
         {
             if (AbiTypeTypes.TryGetValue(name, out var typeName))
-                if (AbiStructTypes.TryGetValue(typeName, out type))
+                if (AbiStructTypes.TryGetValue(typeName, out type!))
                     return true;
-            return RuntimeAssemblyGenerator.EosTypes.TryGetValue(name, out type);
+            return RuntimeAssemblyGenerator.EosTypes.TryGetValue(name, out type!);
         }
 
         public bool TryGetStructType(string name, out Type type)
         {
-            return AbiStructTypes.TryGetValue(name, out type);
+            return AbiStructTypes.TryGetValue(name, out type!);
         }
 
         public bool TryGetActionType(string name, out Type type)
         {
             if (AbiActionTypes.TryGetValue(name, out var actionTypeName))
-                return AbiStructTypes.TryGetValue(actionTypeName, out type);
-            return RuntimeAssemblyGenerator.EosTypes.TryGetValue(name, out type);
+                return AbiStructTypes.TryGetValue(actionTypeName, out type!);
+            return RuntimeAssemblyGenerator.EosTypes.TryGetValue(name, out type!);
         }
 
         public bool TryGetTableType(string name, out Type type)
         {
             if (AbiTableTypes.TryGetValue(name, out var tableTypeName))
-                return AbiStructTypes.TryGetValue(tableTypeName, out type);
-            return RuntimeAssemblyGenerator.EosTypes.TryGetValue(name, out type);
+                return AbiStructTypes.TryGetValue(tableTypeName, out type!);
+            return RuntimeAssemblyGenerator.EosTypes.TryGetValue(name, out type!);
         }
     }
 

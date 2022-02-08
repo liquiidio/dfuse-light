@@ -1,8 +1,8 @@
-﻿namespace DeepReader.EosTypes
+﻿namespace DeepReader.Types.EosTypes
 {
     public class Float128
     {
-        private byte[] _value;
+        private byte[] _value = Array.Empty<byte>();
 
         public static implicit operator Float128(byte[] value)
         {

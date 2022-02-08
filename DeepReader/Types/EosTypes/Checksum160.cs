@@ -1,8 +1,8 @@
-﻿namespace DeepReader.EosTypes
+﻿namespace DeepReader.Types.EosTypes
 {
     public class Checksum160
     {
-        private string _value;
+        private string _value = string.Empty;
 
         public static implicit operator Checksum160(string value)
         {
@@ -13,5 +13,7 @@
         {
             return value._value;
         }
+
+        public static Checksum160 Empty => new();
     }
 }

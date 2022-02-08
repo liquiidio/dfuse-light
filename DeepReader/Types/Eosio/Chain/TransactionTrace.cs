@@ -65,25 +65,25 @@ public class TransactionTrace
 
 public class Except {
 	public long Code;
-	public string Name;
-	public string Message;
-	public IList<ExceptLogMessage> Stack;
+	public string Name = string.Empty;
+	public string Message = string.Empty;
+	public ExceptLogMessage[] Stack = Array.Empty<ExceptLogMessage>();
 }
 
 public class ExceptLogMessage {
-	public ExceptLogContext Context;
-	public string Format;
-	public string Data;// json.RawMessage
+	public ExceptLogContext Context = new ExceptLogContext();
+	public string Format = string.Empty;
+	public string Data = string.Empty;// json.RawMessage
 }
 
 public class ExceptLogContext {
 	public byte Level;//ExceptLogLevel
-	public string File;
+	public string File = string.Empty;
 	public ulong Line;
-	public string Method;
-	public string Hostname;
-	public string ThreadName;
-	public Timestamp Timestamp;//JSONTime
+	public string Method = string.Empty;
+	public string Hostname = string.Empty;
+	public string ThreadName = string.Empty;
+	public Timestamp Timestamp = Timestamp.Zero;//JSONTime
 	public ExceptLogContext? Context;
 }
 

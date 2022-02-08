@@ -11,7 +11,7 @@ public class TransactionHeader
     // abi-field-name: expiration ,abi-field-type: time_point_sec
     [SortOrder(1)]
     [JsonPropertyName("expiration")]
-    public Timestamp Expiration;
+    public Timestamp Expiration = Timestamp.Zero;
 
     // abi-field-name: ref_block_num ,abi-field-type: uint16
     [SortOrder(2)]
@@ -26,7 +26,7 @@ public class TransactionHeader
     // abi-field-name: max_net_usage_words ,abi-field-type: varuint32
     [SortOrder(4)]
     [JsonPropertyName("max_net_usage_words")]
-    public VarUint32 MaxNetUsageWords;
+    public VarUint32 MaxNetUsageWords = 0;
 
     // abi-field-name: max_cpu_usage_ms ,abi-field-type: uint8
     [SortOrder(5)]
@@ -36,7 +36,7 @@ public class TransactionHeader
     // abi-field-name: delay_sec ,abi-field-type: varuint32
     [SortOrder(6)]
     [JsonPropertyName("delay_sec")]
-    public VarUint32 DelaySec;
+    public VarUint32 DelaySec = 0;
 
     public TransactionHeader()
     {

@@ -18,13 +18,13 @@ public class ActionTrace {
 
     public Name Receiver = Name.Empty;
 
-    public Action Act = new();//
+    public Action Act = new();
 
     public bool ContextFree = false;
 
-    public long ElapsedUs = 0;//
+    public long ElapsedUs = 0;
 
-    public string Console = string.Empty;// eos.SafeString          `json:"console"`//
+    public string Console = string.Empty;
 
     public TransactionId TransactionId = string.Empty;
 

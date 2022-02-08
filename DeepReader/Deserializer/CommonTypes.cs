@@ -5,10 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DeepReader.AssemblyGenerator;
 using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc;
 using DeepReader.Types.Fc.Crypto;
+using Asset = DeepReader.EosTypes.Asset;
+using ExtendedAsset = DeepReader.EosTypes.ExtendedAsset;
 using PackedTransaction = DeepReader.Types.PackedTransaction;
+using Symbol = DeepReader.EosTypes.Symbol;
+using SymbolCode = DeepReader.EosTypes.SymbolCode;
 
 namespace DeepReader.Deserializer
 {

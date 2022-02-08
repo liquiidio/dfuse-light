@@ -11,7 +11,10 @@ namespace DeepReader.StorageAdapters.Faster
     {
         public long key;
 
-        public CacheKey() { }
+        public CacheKey()
+        {
+
+        }
 
         public CacheKey(long first)
         {
@@ -45,7 +48,10 @@ namespace DeepReader.StorageAdapters.Faster
     {
         public long value;
 
-        public CacheValue() { }
+        public CacheValue()
+        {
+
+        }
 
         public CacheValue(long first)
         {

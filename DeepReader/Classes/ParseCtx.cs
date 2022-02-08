@@ -745,7 +745,7 @@ public class ParseCtx
             throw new Exception($"expected 4 fields, got {chunks.Length}");
         }
 
-        var feature = JsonSerializer.Deserialize<Feature>(chunks[3], jsonSerializerOptions);
+        var feature = JsonSerializer.Deserialize<Feature>(chunks[3], jsonSerializerOptions)!;
         // TODO does this work?
         //err:= json.Unmarshal(json.RawMessage(chunks[3]), &feature)
         /*if err != nil {
@@ -774,7 +774,7 @@ public class ParseCtx
 	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
         }*/
 
-        var feature = JsonSerializer.Deserialize<Feature>(chunks[4], jsonSerializerOptions);
+        var feature = JsonSerializer.Deserialize<Feature>(chunks[4], jsonSerializerOptions)!;
         // TODO does this work?
         /*err = json.Unmarshal(json.RawMessage(chunks[4]), &feature)
         if err != nil {
@@ -855,7 +855,7 @@ public class ParseCtx
 
         if (newData.Length > 0)
         {
-            var newPerm = JsonSerializer.Deserialize<PermissionObject>(newData, jsonSerializerOptions);
+            var newPerm = JsonSerializer.Deserialize<PermissionObject>(newData, jsonSerializerOptions)!;
 
             permOp.NewPerm = newPerm;
             permOp.NewPerm.Id = permissionID;
@@ -863,7 +863,7 @@ public class ParseCtx
 
         if (oldData.Length > 0)
         {
-            var oldPerm = JsonSerializer.Deserialize<PermissionObject>(oldData, jsonSerializerOptions);
+            var oldPerm = JsonSerializer.Deserialize<PermissionObject>(oldData, jsonSerializerOptions)!;
 	        /*err = json.Unmarshal(oldData, &oldPerm)
 	        if err != nil {
 		        return fmt.Errorf("unmashal old perm data: %s", err)
@@ -1073,16 +1073,16 @@ public class ParseCtx
 
         switch (kindString) {
 	        case "CONFIG":
-                op = JsonSerializer.Deserialize<RlimitConfig>(data, jsonSerializerOptions);
+                op = JsonSerializer.Deserialize<RlimitConfig>(data, jsonSerializerOptions)!;
                 break;
             case "STATE":
-                op = JsonSerializer.Deserialize<RlimitState>(data, jsonSerializerOptions);
+                op = JsonSerializer.Deserialize<RlimitState>(data, jsonSerializerOptions)!;
                 break;
             case "ACCOUNT_LIMITS":
-                op = JsonSerializer.Deserialize<RlimitAccountLimits>(data, jsonSerializerOptions);
+                op = JsonSerializer.Deserialize<RlimitAccountLimits>(data, jsonSerializerOptions)!;
                 break;
             case "ACCOUNT_USAGE":
-                op = JsonSerializer.Deserialize<RlimitAccountUsage>(data, jsonSerializerOptions);
+                op = JsonSerializer.Deserialize<RlimitAccountUsage>(data, jsonSerializerOptions)!;
                 break;
             default:
                 throw new Exception($"unknown kind: {kindString}");

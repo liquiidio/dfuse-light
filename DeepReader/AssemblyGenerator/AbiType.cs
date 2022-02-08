@@ -7,75 +7,75 @@ namespace DeepReader.AssemblyGenerator
     [Serializable]
     public class Abi
     {
-        public string Version;
-        public AbiType[] AbiTypes;
-        public AbiStruct[] AbiStructs;
-        public AbiAction[] AbiActions;
-        public AbiTable[] AbiTables;
+        public string Version = string.Empty;
+        public AbiType[] AbiTypes = Array.Empty<AbiType>();
+        public AbiStruct[] AbiStructs = Array.Empty<AbiStruct>();
+        public AbiAction[] AbiActions = Array.Empty<AbiAction>();
+        public AbiTable[] AbiTables = Array.Empty<AbiTable>();
     }
 
     [Serializable]
     public class AbiType
     {
         [JsonPropertyName("new_type_name")]
-        public string NewTypeName;
+        public string NewTypeName = string.Empty;
         
         [JsonPropertyName("type")]
-        public string Type;
+        public string Type = string.Empty;
     }
 
     [Serializable]
     public class AbiStruct
     {
         [JsonPropertyName("name")]
-        public string Name;
+        public string Name = string.Empty;
 
         [JsonPropertyName("base")]
-        public string Base;
+        public string Base = string.Empty;
 
         [JsonPropertyName("fields")]
-        public AbiField[] Fields;
+        public AbiField[] Fields = Array.Empty<AbiField>();
     }
 
     [Serializable]
     public class AbiField
     {
         [JsonPropertyName("name")]
-        public string Name;
+        public string Name = string.Empty;
 
         [JsonPropertyName("type")]
-        public string Type;
+        public string Type = string.Empty;
     }
 
     [Serializable]
     public class AbiAction
     {
         [JsonPropertyName("name")]
-        public Name Name;
+        public Name Name = Name.Empty;
 
         [JsonPropertyName("type")]
-        public string Type;
+        public string Type = string.Empty;
 
         [JsonPropertyName("ricardian_contract")]
-        public string RicardianContract;
+        public string RicardianContract = string.Empty;
     }
 
     [Serializable]
     public class AbiTable
     {
         [JsonPropertyName("name")]
-        public Name Name;
+        public Name Name = Name.Empty;
 
         [JsonPropertyName("index_type")] 
-        public string IndexType;
+        public string IndexType = string.Empty;
 
         [JsonPropertyName("key_names")] 
-        public string[] KeyNames;
+        public string[] KeyNames = Array.Empty<string>();
 
         [JsonPropertyName("key_types")] 
-        public string[] KeyTypes;
+        public string[] KeyTypes = Array.Empty<string>();
 
         [JsonPropertyName("type")] 
-        public string Type;
+        public string Type = string.Empty;
     }
 }

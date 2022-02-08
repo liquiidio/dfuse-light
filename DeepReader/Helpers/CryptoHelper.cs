@@ -16,7 +16,7 @@ namespace DeepReader
         /// <param name="keyType">Optional key type. (sha256x2, R1, K1)</param>
         /// <param name="prefix">Optional prefix to public key</param>
         /// <returns>encoded public key</returns>
-        public static string PubKeyBytesToString(byte[] keyBytes, string keyType = null, string prefix = "EOS")
+        public static string PubKeyBytesToString(byte[] keyBytes, string? keyType = null, string prefix = "EOS")
         {
             return KeyToString(keyBytes, keyType, prefix);
         }
@@ -28,9 +28,9 @@ namespace DeepReader
         /// <param name="keyType">Key type. (sha256x2, R1, K1)</param>
         /// <param name="prefix">Optional prefix</param>
         /// <returns></returns>
-        public static string KeyToString(byte[] key, string keyType, string prefix = null)
+        public static string KeyToString(byte[] key, string? keyType, string? prefix = null)
         {
-            byte[] digest = null;
+            byte[] digest;
 
             if (keyType == "sha256x2")
             {

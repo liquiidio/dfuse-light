@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc;
 using DeepReader.Types.Fc.Crypto;
 using Salar.BinaryBuffers;

@@ -46,7 +46,7 @@ namespace DeepReader.EosTypes
             _binary = binary;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is not Name item)
             {
