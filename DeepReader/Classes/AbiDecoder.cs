@@ -1,3 +1,4 @@
+using System.Text.Json;
 using DeepReader.AssemblyGenerator;
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
@@ -7,6 +8,12 @@ namespace DeepReader.Classes;
 
 public class AbiDecoder
 {
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        IncludeFields = true,
+        PropertyNameCaseInsensitive = true,
+    };
+
     public static void ProcessTransactionTrace(TransactionTrace trace)
     {
         // TODO
@@ -52,8 +59,10 @@ public class AbiDecoder
         return;
     }
 
-    public static void AddInitialAbi(string contract, string rawAbi)
+    public static void AddInitialAbi(string contract, string rawAbiBase64)
     {
+        var abi = Deserializer.Deserializer.Deserialize<Abi>(rawAbiBase64.Base64StringToByteArray());
+        Log.Information($"Deserialized Abi for {contract} : {JsonSerializer.Serialize(abi, _jsonSerializerOptions)}");
         // TODO
         return;
     }

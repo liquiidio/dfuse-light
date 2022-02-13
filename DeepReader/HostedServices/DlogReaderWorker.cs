@@ -77,25 +77,25 @@ public class DlogReaderWorker : BackgroundService
         //        "--verbose-http-errors >> nodeos.log 2 > &1 &"
         //    }, // { "--delete-all-blocks --deep-mind" },
 
-        string producerDir = "/app/config/producer/";
-        using var producer = new Process();
-        producer.StartInfo = new ProcessStartInfo
-        {
-            FileName = "nodeos",
-            ArgumentList =
-            {
-                /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", /*"--deep-mind",*/ "--config-dir", $"{producerDir}", "--data-dir", $"{producerDir}data", "--genesis-json", $"{producerDir}genesis.json",
-//                    "-e -p eosio --delete-all-blocks --deep-mind --plugin eosio::producer_plugin --plugin eosio::producer_api_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --filter-on='*' --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors"// >> nodeos.log 2 > &1 &
-            }, // { "--delete-all-blocks --deep-mind" },
-            UseShellExecute = false,
-            RedirectStandardError = false,
-            RedirectStandardInput = false,
-            RedirectStandardOutput = false,
-            CreateNoWindow = true,
-            WindowStyle = ProcessWindowStyle.Hidden
-            //                WorkingDirectory = "/usr/bin",
-        };
-        producer.Start();
+//        string producerDir = "/app/config/producer/";
+//        using var producer = new Process();
+//        producer.StartInfo = new ProcessStartInfo
+//        {
+//            FileName = "nodeos",
+//            ArgumentList =
+//            {
+//                /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", /*"--deep-mind",*/ "--config-dir", $"{producerDir}", "--data-dir", $"{producerDir}data", "--genesis-json", $"{producerDir}genesis.json",
+////                    "-e -p eosio --delete-all-blocks --deep-mind --plugin eosio::producer_plugin --plugin eosio::producer_api_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --filter-on='*' --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors"// >> nodeos.log 2 > &1 &
+//            }, // { "--delete-all-blocks --deep-mind" },
+//            UseShellExecute = false,
+//            RedirectStandardError = false,
+//            RedirectStandardInput = false,
+//            RedirectStandardOutput = false,
+//            CreateNoWindow = true,
+//            WindowStyle = ProcessWindowStyle.Hidden
+//            //                WorkingDirectory = "/usr/bin",
+//        };
+//        producer.Start();
 
         await Task.Delay(3000, clt);
 
@@ -106,7 +106,7 @@ public class DlogReaderWorker : BackgroundService
             FileName = "nodeos",
             ArgumentList =
             {
-                /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", "--config-dir", $"{mindreaderDir}", "--data-dir", $"{mindreaderDir}data", "--genesis-json", $"{producerDir}genesis.json",
+                /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", "--config-dir", $"{mindreaderDir}", "--data-dir", $"{mindreaderDir}data", "--genesis-json", $"{mindreaderDir}genesis.json",
 //                    "-e -p eosio --delete-all-blocks --deep-mind --plugin eosio::producer_plugin --plugin eosio::producer_api_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --filter-on='*' --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors"// >> nodeos.log 2 > &1 &
             }, // { "--delete-all-blocks --deep-mind" },
             UseShellExecute = false,
@@ -128,7 +128,7 @@ public class DlogReaderWorker : BackgroundService
             mindreader.BeginErrorReadLine();
             mindreader.BeginOutputReadLine();
             //await process.WaitForExitAsync(stoppingToken);
-            while (!mindreader.HasExited || !producer.HasExited)
+            while (!mindreader.HasExited)
             {
                 await Task.Delay(10000, clt);
 
@@ -213,21 +213,31 @@ public class DlogReaderWorker : BackgroundService
                         case "FEATURE_OP ACTIVATE":
                             _ctx.ReadFeatureOpActivate(data[Range.StartAt(2)]);
                             break;
-                        case "FEATURE_OP PRE_ACTIVATE":
-                            _ctx.ReadFeatureOpPreActivate(data[Range.StartAt(2)]);
+                        case "FEATURE_OP":
+                            switch (data[2])
+                            {
+                                case "PRE_ACTIVATE":
+                                    _ctx.ReadFeatureOpPreActivate(data[Range.StartAt(2)]);
+                                    break;
+                            }
                             break;
                         case "SWITCH_FORK":
-                            //zlog.Info("fork signal, restarting state accumulation from beginning");
+                            Log.Warning("fork signal, restarting state accumulation from beginning");
                             _ctx.ResetBlock();
                             break;
-                        case "ABIDUMP START":
-                            _ctx.ReadAbiStart(data[Range.StartAt(2)]);
-                            break;
-                        case "ABIDUMP ABI":
-                            _ctx.ReadAbiDump(data[Range.StartAt(2)]);
-                            break;
-                        case "ABIDUMP END":
-                            //noop
+                        case "ABIDUMP":
+                            switch (data[2])
+                            {
+                                case "START":
+                                    _ctx.ReadAbiStart(data[Range.StartAt(3)]);
+                                    break;
+                                case "ABI":
+                                    _ctx.ReadAbiDump(data[Range.StartAt(3)]);
+                                    break;
+                                case "END":
+                                    // noop
+                                    break;
+                            }
                             break;
                         case "DEEP_MIND_VERSION":
                             _ctx.ReadDeepmindVersion(data[Range.StartAt(2)]);
@@ -236,7 +246,7 @@ public class DlogReaderWorker : BackgroundService
                             Log.Information(e.Data);
                             break;
                         //zlog.Info("unknown log line", zap.String("line", data));
-                    }
+                    } 
                 }
                 //else
                 //Log.Information(e.Data);

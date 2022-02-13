@@ -10,7 +10,6 @@ public class Name
 
     private readonly string _value;
 
-
     public static implicit operator string(Name value)
     {
         return value._value;
@@ -65,6 +64,26 @@ public class Name
     public static bool operator !=(Name obj1, Name obj2)
     {
         return obj1._binary != obj2._binary;
+    }
+
+    public static bool operator == (string name1, Name obj2)
+    {
+        return name1 == obj2._value;
+    }
+
+    public static bool operator !=(string name1, Name obj2)
+    {
+        return name1 != obj2._value;
+    }
+
+    public static bool operator ==(Name name1, string name2)
+    {
+        return name1._value == name2;
+    }
+
+    public static bool operator !=(Name name1, string name2)
+    {
+        return name1._value != name2;
     }
 
     public override int GetHashCode()

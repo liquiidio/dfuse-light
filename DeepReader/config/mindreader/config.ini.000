@@ -1,0 +1,62 @@
+# Plugins
+plugin = eosio::chain_plugin
+plugin = eosio::chain_api_plugin
+plugin = eosio::http_plugin
+plugin = eosio::db_size_api_plugin
+plugin = eosio::net_api_plugin
+
+## Required for state snapshots API call to work
+plugin = eosio::producer_plugin
+plugin = eosio::producer_api_plugin
+
+# Chain
+chain-state-db-size-mb = 16384
+reversible-blocks-db-size-mb = 512
+max-transaction-time = 5000
+
+## Read-only Mode
+#
+# **Important**
+# The dfuse Mindreader 'nodeos' process cannot be used as API node for transactions, it must not receive
+# P2P transactions nor API transactions, that will create conflicts within 'nodeos' that will
+# cause blocks to be mixed and will stop the dfuse for EOSIO process. It's also recommended to not use
+# it for other API purposes even if it could work.
+#
+# If you require an API node, use dfuse Node Manager which is our 'nodeos' manager (dfuse Mindreader
+# is actually a Node Manager with extra capabilities).
+#
+# You must **not** change those parameters for proper functionning of dfude Mindreader
+ # Nodeos < 2.0.4
+#read-mode = read-only
+# Nodeos >= 2.0.4
+#read-mode = head
+
+read-mode = head
+p2p-accept-transactions = false
+api-accept-transactions = false
+
+# P2P
+agent-name = dfuse for EOSIO (mindreader)
+p2p-server-address = 127.0.0.1:9877
+p2p-listen-endpoint = 127.0.0.1:9877
+p2p-max-nodes-per-host = 2
+connection-cleanup-period = 60
+
+# HTTP
+access-control-allow-origin = *
+http-server-address = 127.0.0.1:9888
+http-max-response-time-ms = 3000
+http-validate-host = false
+verbose-http-errors = true
+
+# EOS VM
+wasm-runtime = eos-vm-jit
+eos-vm-oc-enable = true
+eos-vm-oc-compile-threads = 4
+
+# Enable deep mind
+deep-mind = true
+contracts-console = true
+
+## Peers
+p2p-peer-address = 127.0.0.1:9876

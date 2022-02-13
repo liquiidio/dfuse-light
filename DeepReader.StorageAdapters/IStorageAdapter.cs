@@ -8,8 +8,8 @@ namespace DeepReader.StorageAdapters
 {
     public interface IStorageAdapter
     {
-        void StoreBlock();
+        void StoreBlock();  // key = BlockId, val = FlattenedBlock
 
-        void StoreTransaction();
+        void StoreTransaction();    // key = TransactionId, val = FlattenedTransaction
     }
 }

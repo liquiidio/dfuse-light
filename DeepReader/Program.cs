@@ -16,3 +16,6 @@ var host = Host.CreateDefaultBuilder(args)
     .Build();
 
 await host.RunAsync();
+
+// Notes:
+// interesting thread on AutoRegisteringGraphTypes and other stuff with graphql-dotnet https://github.com/graphql-dotnet/graphql-dotnet/issues/576

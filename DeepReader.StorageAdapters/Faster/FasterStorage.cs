@@ -2,12 +2,12 @@
 {
     internal class FasterStorage : IStorageAdapter
     {
-        public void StoreBlock()
+        public void StoreBlock() // compress, store, index
         {
             throw new NotImplementedException();
         }
 
-        public void StoreTransaction()
+        public void StoreTransaction()  // compress, store, index
         {
             throw new NotImplementedException();
         }

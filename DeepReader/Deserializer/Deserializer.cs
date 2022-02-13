@@ -9,7 +9,8 @@ using Serilog;
 namespace DeepReader.Deserializer;
 // TODO, micro-optimization with Dynamic Methods, DynamicMethods-Cache (Dict<type,dynMethod>) and ILGenerator ?
 // https://andrewlock.net/benchmarking-4-reflection-methods-for-calling-a-constructor-in-dotnet/
-
+//
+// TODO Can we use ReadOnlySpan<byte> or ReadOnlyMemory<byte> instead of byte[] and would it bring a benefit?
 public static class Deserializer
 {
     public static async Task<T> DeserializeAsync<T>(byte[] data, CancellationToken cancellationToken) // where T : BaseClass
@@ -29,6 +30,10 @@ public static class Deserializer
 
     public static object Deserialize(byte[] data, Type type)
     {
+#if DEBUG
+        try
+        {
+#endif
         object obj = null!;
         try
         {
@@ -60,12 +65,25 @@ public static class Deserializer
         catch (Exception e)
         {
             Log.Error(e,"");
+            throw;
         }
         return Activator.CreateInstance(type)!;
+#if DEBUG
+        }
+        catch (Exception e)
+        {
+            Log.Debug($"type: {type.Name}");
+            throw;
+        }
+#endif
     }
 
     public static object ReadReferenceType(BinaryBufferReader binaryReader, Type type)
     {
+#if DEBUG
+        try
+        {
+#endif
         var obj = Activator.CreateInstance(type)!;
         var objRef = __makeref(obj);
 
@@ -110,6 +128,14 @@ public static class Deserializer
         }
 
         return obj;
+#if DEBUG
+        }
+        catch (Exception e)
+        {
+            Log.Debug($"type: {type.Name} {binaryReader.Position}");
+            throw;
+        }
+#endif
     }
 
     private static readonly ConcurrentDictionary<Type, List<KeyValuePair<FieldInfo, bool>>> CachedFieldInfos = new();
@@ -137,7 +163,7 @@ public static class Deserializer
         {
             typeReader = ValueTypeReaders[fieldType];
         }
-        /*else if (fieldType.IsValueType && !fieldType.IsEnum && !fieldType.IsPrimitive)
+        /*else if (type.IsValueType && !type.IsEnum && !type.IsPrimitive)
         {
             typeReader = ReadReferenceType;
         }*/
@@ -191,13 +217,17 @@ public static class Deserializer
         return isValue == 0 ? null : variantReader(binaryReader);
     }
 
-    private static object ReadArray(BinaryBufferReader binaryReader, Type fieldType)
+    private static object ReadArray(BinaryBufferReader binaryReader, Type type)
     {
-        var elementType = fieldType.GetElementType()!;
+#if DEBUG
+        try
+        {
+#endif
+        var elementType = type.GetElementType()!;
         var size = Convert.ToInt32(binaryReader.ReadVarUint32());
 
-        var items = (Array)Activator.CreateInstance(fieldType, size)!;
-//        var items = (Array)Activator.CreateInstance(fieldType, new object[] { size })!;
+        var items = (Array)Activator.CreateInstance(type, size)!;
+//        var items = (Array)Activator.CreateInstance(type, new object[] { size })!;
         if (size > 0)
         {
             if (VariantReaders.TryGetValue(elementType, out var variantReader))
@@ -219,22 +249,34 @@ public static class Deserializer
         }
 
         return items;
+#if DEBUG
+        }
+        catch (Exception e)
+        {
+            Log.Debug($"type: {type.Name} {binaryReader.Position}");
+            throw;
+        }
+#endif
     }
 
-    private static object ReadGeneric(BinaryBufferReader binaryReader, Type fieldType)
+    private static object ReadGeneric(BinaryBufferReader binaryReader, Type type)
     {
-        var genericType = fieldType.GetGenericTypeDefinition();
-        var genericArgs = fieldType.GetGenericArguments();
+#if DEBUG
+        try
+        {
+#endif
+        var genericType = type.GetGenericTypeDefinition();
+        var genericArgs = type.GetGenericArguments();
         var size = Convert.ToInt32(binaryReader.ReadVarUint32());
 
-        if (VariantReaders.TryGetValue(fieldType, out var genTypeReader))
+        if (VariantReaders.TryGetValue(type, out var genTypeReader))
         {
             var generic = genTypeReader(binaryReader);
             return generic;
         }
         else if (genericType == typeof(IDictionary))
         {
-            var items = (IDictionary)Activator.CreateInstance(fieldType)!;
+            var items = (IDictionary)Activator.CreateInstance(type)!;
             if (genericArgs.Length == 2)
             {
                 var typeReader1 = GetTypeReader(genericArgs[0]);
@@ -249,7 +291,7 @@ public static class Deserializer
         }
         else if (genericType == typeof(IList))
         {
-            var items = (IList)Activator.CreateInstance(fieldType)!;
+            var items = (IList)Activator.CreateInstance(type)!;
             if (genericArgs.Length == 1)
             {
                 var typeReader = GetTypeReader(genericArgs[0]);
@@ -262,9 +304,17 @@ public static class Deserializer
         }
         else
         {
-            Log.Information($"Generic Type {fieldType.Name} not allowed");
+            Log.Information($"Generic Type {type.Name} not allowed");
         }
         return null!;
+#if DEBUG
+        }
+        catch (Exception e)
+        {
+            Log.Debug($"type: {type.Name} {binaryReader.Position}");
+            throw;
+        }
+#endif
     }
 
     private static readonly Dictionary<Type, ReaderDelegate> PrimitiveReaders = new()

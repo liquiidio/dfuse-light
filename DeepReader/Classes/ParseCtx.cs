@@ -33,7 +33,7 @@ public class ParseCtx
         ActiveBlockNum = 0;
         Trx = new TransactionTrace();
         CreationOps = new List<CreationOp>();
-        TraceEnabled = false;
+        TraceEnabled = true;
     }
 
     public ParseCtx(Block block, long activeBlockNum, TransactionTrace trx, List<CreationOp> creationOps, bool traceEnabled, string[] supportedVersions)
@@ -901,7 +901,7 @@ public class ParseCtx
         return fmt.Errorf("usage is not a valid number, got: %q", chunks[4])
         }*/
 
-        var delta = Convert.ToUInt64(chunks[7]);
+        var delta = Convert.ToInt64(chunks[7]);
         /*if err != nil {
         return fmt.Errorf("delta is not a valid number, got: %q", chunks[5])
         }*/
@@ -932,8 +932,7 @@ public class ParseCtx
             throw new Exception(
                 $"deep mind reported version {majorVersion}, but this reader supports only {string.Join(", ", SupportedVersions)}");
         }
-
-//	        zlog.Info("read deep mind version", zap.String("major_version", majorVersion))
+        Log.Information($"read deep mind version {majorVersion}");
     }
 
     public bool InSupportedVersion(string majorVersion)
@@ -958,23 +957,13 @@ public class ParseCtx
     {
         // TODO
         switch (chunks.Length) {
-	        case 2: // Version 12
-                break;
-            case 4: // Version 13
-                var blockNum = Convert.ToInt32(chunks[2]);
-	            /*if err != nil {
-			            return fmt.Errorf("block_num is not a valid number, got: %q", chunks[2])
-	            }*/
-
-                var globalSequence = Convert.ToInt32(chunks[3]);
-	            /*if err != nil {
-			            return fmt.Errorf("global_sequence_num is not a valid number, got: %q", chunks[3])
-	            }*/
-
+            case 2: // Version > 12 ?
+                var blockNum = Convert.ToInt32(chunks[0]);
+                var globalSequence = Convert.ToInt32(chunks[1]);
 //                    logFields.Add(zap.Int("block_num", blockNum), zap.Int("global_sequence", globalSequence));
                 break;
             default:
-                throw new Exception($"expected to have either {{2}} or {{4}} fields, got {chunks.Length}");
+                throw new Exception($"expected to have either {{0}} or {{2}} fields, got {chunks.Length}");
             }
 
 //	        zlog.Info("read ABI start marker", logFields...)
@@ -991,18 +980,19 @@ public class ParseCtx
     {
         string contract = string.Empty, rawAbi = string.Empty;
         switch (chunks.Length) {
-	        case 5: // Version 12
-                contract = chunks[3];
-                rawAbi = chunks[4];
+            case 0: // Version < 14?
                 break;
-            case 4: // Version 13
-                contract = chunks[2];
-                rawAbi = chunks[3];
+	        case 2: // Version 14?
+                contract = chunks[0];
+                rawAbi = chunks[1];
                 break;
+            default:
+                throw new Exception($"expected to have either {{0}} or {{2}} fields, got {chunks.Length}");
         }
 
-        if (TraceEnabled) {
-//		        zlog.Debug("read initial ABI for contract", zap.String("contract", contract))
+        if (TraceEnabled)
+        {
+            Log.Information($"read initial ABI for contract {contract}");
         }
 
         AbiDecoder.AddInitialAbi(contract, rawAbi);
