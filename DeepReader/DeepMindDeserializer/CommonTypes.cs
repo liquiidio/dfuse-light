@@ -5,7 +5,7 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc;
 using DeepReader.Types.Fc.Crypto;
 
-namespace DeepReader.Deserializer;
+namespace DeepReader.DeepMindDeserializer;
 
 public static class CommonTypes
 {

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Threading.Channels;
 using DeepReader.AssemblyGenerator;
+using DeepReader.DeepMindDeserializer;
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
 using Serilog;
@@ -40,7 +41,7 @@ public class BlockWorker : BackgroundService
             {
                 Log.Information($"got abi for {setAbiAction.Act.Account} at {block.Number}");
 
-                var abi = Deserializer.Deserializer.Deserialize<Abi>(setAbiAction.Act.Data);
+                var abi = Deserializer.Deserialize<Abi>(setAbiAction.Act.Data);
                 if (abi != null && abi.AbiActions.Length > 0 || abi.AbiStructs.Length > 0)
                 {
                     Log.Information(JsonSerializer.Serialize(abi, jsonSerializerOptions));

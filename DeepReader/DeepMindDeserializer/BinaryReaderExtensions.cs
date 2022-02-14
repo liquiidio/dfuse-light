@@ -7,7 +7,7 @@ using DeepReader.Types.Fc.Crypto;
 using Salar.BinaryBuffers;
 using Serilog;
 
-namespace DeepReader.Deserializer;
+namespace DeepReader.DeepMindDeserializer;
 
 public static class BinaryBufferReaderExtensions
 {

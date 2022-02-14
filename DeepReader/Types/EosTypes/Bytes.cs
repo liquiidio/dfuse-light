@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using DeepReader.DeepMindDeserializer;
 using DeepReader.Helpers;
 
 namespace DeepReader.Types.EosTypes;
@@ -55,7 +56,7 @@ public class Bytes<T> : Bytes
         if (IsDeserialized)
             return;
 
-        Instance = await Deserializer.Deserializer.DeserializeAsync<T>(Value, cancellationToken);
+        Instance = await Deserializer.DeserializeAsync<T>(Value, cancellationToken);
     }
 
     public void Deserialize()
@@ -63,7 +64,7 @@ public class Bytes<T> : Bytes
         if (IsDeserialized)
             return;
 
-        Instance = Deserializer.Deserializer.Deserialize<T>(Value);
+        Instance = Deserializer.Deserialize<T>(Value);
     }
 
     public static implicit operator Bytes<T>(byte[] value)

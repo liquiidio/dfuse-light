@@ -1,3 +1,4 @@
+using DeepReader.DeepMindDeserializer;
 using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -29,12 +30,12 @@ public class ActionDataBytes : Bytes<object>
 
     public async Task DeserializeAsync(Type targetType, CancellationToken cancellationToken)
     {
-        Instance = await Deserializer.Deserializer.DeserializeAsync(Value, targetType, cancellationToken);
+        Instance = await Deserializer.DeserializeAsync(Value, targetType, cancellationToken);
     }
 
     public void Deserialize(Type targetType)
     {
-        Instance = Deserializer.Deserializer.Deserialize(Value, targetType);
+        Instance = Deserializer.Deserialize(Value, targetType);
 
     }
 }

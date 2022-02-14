@@ -6,7 +6,7 @@ using DeepReader.Types.Eosio.Chain;
 using Salar.BinaryBuffers;
 using Serilog;
 
-namespace DeepReader.Deserializer;
+namespace DeepReader.DeepMindDeserializer;
 // TODO, micro-optimization with Dynamic Methods, DynamicMethods-Cache (Dict<type,dynMethod>) and ILGenerator ?
 // https://andrewlock.net/benchmarking-4-reflection-methods-for-calling-a-constructor-in-dotnet/
 //

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using DeepReader.DeepMindDeserializer;
 using DeepReader.Types;
 using DeepReader.Types.Enums;
 using DeepReader.Types.Eosio.Chain;
@@ -290,7 +291,7 @@ public class ParseCtx
 
         var blockStateHex = chunks[1].HexStringToByteArray();
 
-        var blockState = Deserializer.Deserializer.Deserialize<BlockState>(blockStateHex);
+        var blockState = Deserializer.Deserialize<BlockState>(blockStateHex);
 
         var block = new Block()
         {
@@ -531,7 +532,7 @@ public class ParseCtx
             Log.Information($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
         }
 
-        var trxTrace = Deserializer.Deserializer.Deserialize<TransactionTrace>(chunks[1].HexStringToByteArray());
+        var trxTrace = Deserializer.Deserialize<TransactionTrace>(chunks[1].HexStringToByteArray());
 
         RecordTransaction(trxTrace);
     }
@@ -685,11 +686,11 @@ public class ParseCtx
         SignedTransaction signedTrx;// = new SignedTransaction();
         if (op == DTrxOpOperation.PUSH_CREATE)
         {
-            signedTrx = Deserializer.Deserializer.Deserialize<SignedTransaction>(trxHex);
+            signedTrx = Deserializer.Deserialize<SignedTransaction>(trxHex);
         }
         else
         {
-            var trx = Deserializer.Deserializer.Deserialize<Transaction>(trxHex);
+            var trx = Deserializer.Deserialize<Transaction>(trxHex);
             signedTrx = (SignedTransaction)trx;
         }
 
@@ -1139,7 +1140,7 @@ public class ParseCtx
 
         var trxHex = chunks[3].HexStringToByteArray();
 
-        var trx = Deserializer.Deserializer.Deserialize<SignedTransaction>(trxHex);
+        var trx = Deserializer.Deserialize<SignedTransaction>(trxHex);
 
         RecordTrxOp(new TrxOp()
         {

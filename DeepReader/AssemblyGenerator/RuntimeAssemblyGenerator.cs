@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.Json;
+using DeepReader.DeepMindDeserializer;
 using DeepReader.Helpers;
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
@@ -26,7 +27,7 @@ public static class RuntimeAssemblyGenerator
     public static void CreateAbiAndAssembly(Name contractName, byte[] abiBytes, uint blockNum)
     {
 
-        var abi = Deserializer.Deserializer.Deserialize<Abi>(abiBytes);
+        var abi = Deserializer.Deserialize<Abi>(abiBytes);
         CreateAssembly(contractName, abi, blockNum);
     }
 
