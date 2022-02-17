@@ -2,15 +2,14 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.Json;
-using DeepReader.DeepMindDeserializer;
-using DeepReader.Helpers;
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc;
 using DeepReader.Types.Fc.Crypto;
+using DeepReader.Types.Helpers;
 using Serilog;
-
+using Path = System.IO.Path;
 
 namespace DeepReader.AssemblyGenerator;
 
@@ -27,7 +26,7 @@ public static class RuntimeAssemblyGenerator
     public static void CreateAbiAndAssembly(Name contractName, byte[] abiBytes, uint blockNum)
     {
 
-        var abi = Deserializer.Deserialize<Abi>(abiBytes);
+        var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(abiBytes);
         CreateAssembly(contractName, abi, blockNum);
     }
 
@@ -318,7 +317,7 @@ public static class RuntimeAssemblyGenerator
     //            x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
 
     //        var nullableAttr = NullableAttribute;
-    //        var constructorAttributes = nullableAttr.ConstructorArguments.Select(m => m.Value).ToArray();
+    //        var constructorAttributes = nullableAttr.ConstructorArguments.Select(m => m.StringVal).ToArray();
     //        _nullableAttributeBuilder = new CustomAttributeBuilder(nullableAttr.Constructor, constructorAttributes);
     //        return _nullableAttributeBuilder;
     //    }

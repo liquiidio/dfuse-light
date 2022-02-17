@@ -1,9 +1,9 @@
 ﻿using System.Text;
-using DeepReader.Helpers;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc;
 using DeepReader.Types.Fc.Crypto;
+using DeepReader.Types.Helpers;
 using Salar.BinaryBuffers;
 using Serilog;
 
@@ -21,6 +21,7 @@ public static class BinaryBufferReaderExtensions
     {
         K1 = 0,
         R1 = 1,
+        WA = 2,
     };
 
     #region EosTypes
@@ -46,25 +47,55 @@ public static class BinaryBufferReaderExtensions
 
     public static Checksum160 ReadChecksum160(this BinaryBufferReader reader)
     {
-        return ByteArrayToHexString(reader.ReadBytes(20));
+        return SerializationHelper.ByteArrayToHexString(reader.ReadBytes(20));
     }
 
     public static Checksum256 ReadChecksum256(this BinaryBufferReader reader)
     {
-        return ByteArrayToHexString(reader.ReadBytes(32));
+        return SerializationHelper.ByteArrayToHexString(reader.ReadBytes(32));
     }
 
     public static TransactionId ReadTransactionId(this BinaryBufferReader reader)
     {
-        return ByteArrayToHexString(reader.ReadBytes(32));
+        return SerializationHelper.ByteArrayToHexString(reader.ReadBytes(32));
     }
 
     public static Checksum512 ReadChecksum512(this BinaryBufferReader reader)
     {
-        return ByteArrayToHexString(reader.ReadBytes(64));
+        return SerializationHelper.ByteArrayToHexString(reader.ReadBytes(64));
     }
 
-    public static VarUint32 ReadVarUint32(this BinaryBufferReader reader)
+    public static ushort ReadVarUint16(this BinaryBufferReader reader)
+    {
+        ushort v = 0;
+        var bit = 0;
+        while (true)
+        {
+            var b = reader.ReadByte();
+            v |= (ushort)((b & 0x7f) << bit);
+            bit += 7;
+            if ((b & 0x80) == 0)
+                break;
+        }
+        return (ushort)(v >> 0);
+    }
+
+    public static short ReadVarInt16(this BinaryBufferReader reader)
+    {
+        short v = 0;
+        var bit = 0;
+        while (true)
+        {
+            var b = reader.ReadByte();
+            v |= (short)((b & 0x7f) << bit);
+            bit += 7;
+            if ((b & 0x80) == 0)
+                break;
+        }
+        return (short)(v >> 0);
+    }
+
+    public static uint ReadVarUint32(this BinaryBufferReader reader)
     {
         uint v = 0;
         var bit = 0;
@@ -77,23 +108,72 @@ public static class BinaryBufferReaderExtensions
                 break;
         }
         return v >> 0;
-
-        //            return Convert.ToUInt32(reader.Read7BitEncodedInt());
     }
 
-    public static VarInt32 ReadVarInt32(this BinaryBufferReader reader)
+    public static int ReadVarInt32(this BinaryBufferReader reader)
     {
-        return reader.Read7BitEncodedInt();
+        int v = 0;
+        var bit = 0;
+        while (true)
+        {
+            var b = reader.ReadByte();
+            v |= (int)((b & 0x7f) << bit);
+            bit += 7;
+            if ((b & 0x80) == 0)
+                break;
+        }
+        return v >> 0;
     }
 
-    public static VarUint64 ReadVarUint64(this BinaryBufferReader reader)
+    public static ulong ReadVarUint64(this BinaryBufferReader reader)
     {
-        return (ulong)reader.Read7BitEncodedInt64();
+        ulong v = 0;
+        var bit = 0;
+        while (true)
+        {
+            var b = reader.ReadByte();
+            ulong v1 = (ulong)((b & 0x7f) << bit);
+            v |= v1;
+            bit += 7;
+            if ((b & 0x80) == 0)
+                break;
+        }
+        return v >> 0;
     }
 
-    public static VarInt64 ReadVarInt64(this BinaryBufferReader reader)
+    public static long ReadVarInt64(this BinaryBufferReader reader)
     {
-        return reader.Read7BitEncodedInt64();
+        long v = 0;
+        var bit = 0;
+        while (true)
+        {
+            var b = reader.ReadByte();
+            v |= (long)((b & 0x7f) << bit);
+            bit += 7;
+            if ((b & 0x80) == 0)
+                break;
+        }
+        return v >> 0;
+    }
+
+    public static VarUint32 ReadVarUint32Obj(this BinaryBufferReader reader)
+    {
+        return reader.ReadVarUint32();
+    }
+
+    public static VarInt32 ReadVarInt32Obj(this BinaryBufferReader reader)
+    {
+        return reader.ReadVarInt32();
+    }
+
+    public static VarUint64 ReadVarUint64Obj(this BinaryBufferReader reader)
+    {
+        return reader.ReadVarUint64();
+    }
+
+    public static VarInt64 ReadVarInt64Obj(this BinaryBufferReader reader)
+    {
+        return reader.ReadVarInt64();
     }
 
     public static Uint128 ReadUInt128(this BinaryBufferReader reader)
@@ -103,7 +183,7 @@ public static class BinaryBufferReaderExtensions
 
     public static Int128 ReadInt128(this BinaryBufferReader reader)
     {
-        return reader.ReadBytes(8);
+        return reader.ReadBytes(16);
     }
 
     /// <summary>
@@ -143,35 +223,17 @@ public static class BinaryBufferReaderExtensions
     //    return new Name(Convert.ToUInt64(a), result);
     //}
 
-    private static readonly char[] CharMap = new[] { '.', '1', '2', '3', '4', '5', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
     public static Name ReadName(this BinaryBufferReader reader)
     {
-        var binary = reader.ReadUInt64();
+        var binary = reader.ReadBytes(8);
 
-        var str = new[] { '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.' };
-
-        try
-        {
-            var tmp = binary;
-            for (uint i = 0; i <= 12; ++i)
-            {
-                var c = CharMap[tmp & (ulong)(i == 0 ? 0x0f : 0x1f)];
-                str[(int)(12 - i)] = c;
-                tmp >>= i == 0 ? 4 : 5;
-            }
-        }
-        catch (Exception e)
-        {
-            Log.Error(e, "");
-        }
-
-        return new Name(binary, new string(str).TrimEnd('.'));
+        return SerializationHelper.ByteArrayToName(binary);
     }
 
-    public static string ReadEosString(this BinaryBufferReader reader)
+    public static string ReadString(this BinaryBufferReader reader)
     {
-        var length = Convert.ToInt32(reader.ReadVarUint32());
+        var length = Convert.ToInt32(reader.ReadVarLength<int>());
         return length > 0 ? Encoding.UTF8.GetString(reader.ReadBytes(length)) : string.Empty;
     }
 
@@ -192,6 +254,8 @@ public static class BinaryBufferReaderExtensions
                 return CryptoHelper.PubKeyBytesToString(keyBytes, "K1");
             case (int)KeyType.R1:
                 return CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_");
+            case (int)KeyType.WA:
+                return CryptoHelper.PubKeyBytesToString(keyBytes, "WA", "PUB_WA_");
             default:
                 Log.Error(new Exception($"public key type {type} not supported"), "");
                 Log.Error(CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_"));
@@ -243,21 +307,6 @@ public static class BinaryBufferReaderExtensions
     //    return new PackedTransactionBytes(reader.ReadBytes(length));
     //}
 
-
-    /// <summary>
-    /// Encode byte array to hexadecimal string
-    /// </summary>
-    /// <param name="ba">byte array to convert</param>
-    /// <returns></returns>
-    private static string ByteArrayToHexString(byte[] ba)
-    {
-        var hex = new StringBuilder(ba.Length * 2);
-        foreach (var b in ba)
-            hex.AppendFormat("{0:x2}", b);
-
-        return hex.ToString();
-    }
-
     public static float ReadFloat32(this BinaryBufferReader reader)
     {
         return BitConverter.ToSingle(reader.ReadBytes(4));
@@ -270,7 +319,8 @@ public static class BinaryBufferReaderExtensions
 
     public static Float128 ReadFloat128(this BinaryBufferReader reader)
     {
-        return reader.ReadBytes(16);
+        var bytes = reader.ReadBytes(16);
+        return bytes;
     }
 
     public static Asset ReadAsset(this BinaryBufferReader reader)
@@ -288,21 +338,9 @@ public static class BinaryBufferReaderExtensions
 
     public static Symbol ReadSymbol(this BinaryBufferReader reader)
     {
-        var value = new Symbol()
-        {
-            Precision = reader.ReadByte()
-        };
+        var precision = reader.ReadByte();
 
-        var a = reader.ReadBytes(7);
-
-        int len;
-        for (len = 0; len < a.Length; ++len)
-            if (a[len] == 0)
-                break;
-
-        value.Name = string.Join("", a.Take(len).Select(b => (char)b));
-
-        return value;
+        return new Symbol(reader.ReadSymbolCode(), precision);
     }
 
     public static SymbolCode ReadSymbolCode(this BinaryBufferReader reader)
@@ -314,12 +352,12 @@ public static class BinaryBufferReaderExtensions
             if (a[len] == 0)
                 break;
 
-        return new SymbolCode() { Value = string.Join("", a.Take(len)) };
+        return new SymbolCode(a, string.Join("", a.Take(len)));
     }
 
     public static Timestamp ReadTimestamp(this BinaryBufferReader reader)
     {
-        return new Timestamp(reader.ReadUInt32());
+        return reader.ReadUInt32();
     }        
 
     public static int Read7BitEncodedInt(this BinaryBufferReader reader)
@@ -414,5 +452,27 @@ public static class BinaryBufferReaderExtensions
         result |= (ulong)byteReadJustNow << maxBytesWithoutOverflow * 7;
         return (long)result;
 
+    }
+
+    public static T ReadVarLength<T>(this BinaryBufferReader reader)
+    {
+        return (T)reader.ReadVarLength(typeof(T));
+    }
+
+    public static object ReadVarLength(this BinaryBufferReader reader, Type type)
+    {
+        if (type == CommonTypes.TypeOfShort)
+            return reader.ReadVarInt16();
+        else if (type == CommonTypes.TypeOfUshort)
+            return reader.ReadVarUint16();
+        else if (type == CommonTypes.TypeOfInt)
+            return reader.ReadVarInt32();
+        else if (type == CommonTypes.TypeOfUint)
+            return reader.ReadVarUint32();
+        else if (type == CommonTypes.TypeOfLong)
+            return reader.ReadVarInt64();
+        else if (type == CommonTypes.TypeOfUlong)
+            return reader.ReadVarUint64();
+        return null;
     }
 }

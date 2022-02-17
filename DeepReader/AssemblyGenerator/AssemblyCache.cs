@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
-using DeepReader.Helpers;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Helpers;
 using Serilog;
 
 namespace DeepReader.AssemblyGenerator;

@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DeepReader.HostedServices;
-using DeepReader.Types;
+﻿using DeepReader.Types;
+using DeepReader.Types.Enums;
 using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.EosTypes;
+using DeepReader.Types.Fc;
+using DeepReader.Types.Fc.Crypto;
+using DeepReader.Types.FlattenedTypes;
+using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.Classes
 {
@@ -17,7 +17,7 @@ namespace DeepReader.Classes
             foreach (var unflattenedTransactionTrace in block.UnfilteredTransactionTraces)
             {
                 var flattenedTransactionTrace = new FlattenedTransactionTrace();
-                flattenedTransactionTrace.FlattenedActionTraces = new FlattenedActionTrace[unflattenedTransactionTrace.ActionTraces.Length];
+                flattenedTransactionTrace.ActionTraces = new FlattenedActionTrace[unflattenedTransactionTrace.ActionTraces.Length];
                 for (int i = 0; i < unflattenedTransactionTrace.ActionTraces.Length; i++)
                 {
                     var unflattenedActionTrace = unflattenedTransactionTrace.ActionTraces[i];
@@ -25,7 +25,7 @@ namespace DeepReader.Classes
 
 
 
-                    flattenedTransactionTrace.FlattenedActionTraces[i] = new FlattenedActionTrace();
+                    flattenedTransactionTrace.ActionTraces[i] = new FlattenedActionTrace();
                 }
 
                 //unflattenedTransactionTrace.
@@ -34,21 +34,6 @@ namespace DeepReader.Classes
             
             
             return flattenedTransactionTraces;
-        }
-
-        public struct FlattenedTransactionTrace
-        {
-            public FlattenedActionTrace[] FlattenedActionTraces = Array.Empty<FlattenedActionTrace>();
-        }
-
-        public struct FlattenedActionTrace
-        {
-
-        }
-
-        public struct FlattenedBlock
-        {
-            public TransactionId[] TransactionIds = Array.Empty<TransactionId>();
         }
     }
 }

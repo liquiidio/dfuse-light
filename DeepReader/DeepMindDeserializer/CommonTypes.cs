@@ -1,9 +1,9 @@
-﻿using DeepReader.AssemblyGenerator;
-using DeepReader.Helpers;
+﻿using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc;
 using DeepReader.Types.Fc.Crypto;
+using DeepReader.Types.Helpers;
 
 namespace DeepReader.DeepMindDeserializer;
 

@@ -1,6 +1,5 @@
 using System.Text.Json;
 using DeepReader.AssemblyGenerator;
-using DeepReader.DeepMindDeserializer;
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
 using Serilog;
@@ -62,7 +61,7 @@ public class AbiDecoder
 
     public static void AddInitialAbi(string contract, string rawAbiBase64)
     {
-        var abi = Deserializer.Deserialize<Abi>(rawAbiBase64.Base64StringToByteArray());
+        var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(rawAbiBase64.Base64StringToByteArray());
         Log.Information($"Deserialized Abi for {contract} : {JsonSerializer.Serialize(abi, _jsonSerializerOptions)}");
         // TODO
         return;
