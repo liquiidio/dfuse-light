@@ -10,7 +10,42 @@
       "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
       "DisplayName": "Sonstige Dateien",
       "ColorIndex": -1
+    },
+    "a73d003b-f8b0-435a-b5f6-4f7576bd71a7": {
+      "ProjectGuid": "a73d003b-f8b0-435a-b5f6-4f7576bd71a7",
+      "DisplayName": "DeepReader.StorageAdapters",
+      "ColorIndex": 1
+    },
+    "ac82d578-155a-43ea-887b-a6dedca54d7a": {
+      "ProjectGuid": "ac82d578-155a-43ea-887b-a6dedca54d7a",
+      "DisplayName": "DeepReader.Apis",
+      "ColorIndex": 2
+    },
+    "76503162-8e21-4396-8cb5-fad37f93823c": {
+      "ProjectGuid": "76503162-8e21-4396-8cb5-fad37f93823c",
+      "DisplayName": "DeepReader.Types",
+      "ColorIndex": 3
+    },
+    "671134c2-ccf2-4654-ba20-d2ad6bbafc1a": {
+      "ProjectGuid": "671134c2-ccf2-4654-ba20-d2ad6bbafc1a",
+      "DisplayName": "DeepReader.Helpers",
+      "ColorIndex": 4
+    },
+    "84cc48a6-f568-4c35-a4c4-9feac99cc641": {
+      "ProjectGuid": "84cc48a6-f568-4c35-a4c4-9feac99cc641",
+      "DisplayName": "DeepReader.Storage",
+      "ColorIndex": 5
+    },
+    "55e233e9-2844-4076-b3d7-652f2a761f08": {
+      "ProjectGuid": "55e233e9-2844-4076-b3d7-652f2a761f08",
+      "DisplayName": "DeepReader.Types",
+      "ColorIndex": 6
+    },
+    "6a932385-8a15-4cd4-8114-40ca660ab6e6": {
+      "ProjectGuid": "6a932385-8a15-4cd4-8114-40ca660ab6e6",
+      "DisplayName": "DeepReader.Apis",
+      "ColorIndex": 7
     }
   },
-  "NextColorIndex": 1
+  "NextColorIndex": 8
 }

@@ -1,38 +1,69 @@
+using System.Text.Json;
+using DeepReader.AssemblyGenerator;
 using DeepReader.Types;
+using DeepReader.Types.Eosio.Chain;
+using Serilog;
 
 namespace DeepReader.Classes;
 
 public class AbiDecoder
 {
-    public static void ProcessTransaction(TransactionTrace trace)
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
-        //        Console.WriteLine(trace.ToString());
+        IncludeFields = true,
+        PropertyNameCaseInsensitive = true,
+    };
+
+    public static void ProcessTransactionTrace(TransactionTrace trace)
+    {
+        // TODO
         return;
-        throw new NotImplementedException();
+    }
+
+    public static async void ProcessSignedTransaction(SignedTransaction signedTransaction)
+    {
+        await Parallel.ForEachAsync(signedTransaction.Actions, async (action, token) => 
+        {
+            if (AssemblyCache.ContractAssemblyCache.TryGetValue(action.Account, out var contractTypes) &&
+                contractTypes.Last().Value.TryGetActionType(action.Name, out var actionType))
+            {
+                try
+                {
+                    await action.Data.DeserializeAsync(actionType, token);
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "");
+                    if (AssemblyCache.ContractAssemblyCache.TryRemove(action.Account, out contractTypes))
+                        Log.Information(action.Account + " removed from AssemblyCache");
+                }
+            }
+        });
     }
 
     public static void StartBlock(long blockNum)
     {
+        // TODO
         return;
-        throw new NotImplementedException();
     }
 
     public static void EndBlock(Block block)
     {
-//        Console.WriteLine(block.ToString());
+        // TODO
         return;
-        throw new NotImplementedException();
     }
 
     public static void ResetCache()
     {
+        // TODO
         return;
-        throw new NotImplementedException();
     }
 
-    public static void AddInitialABI(string contract, string rawAbi)
+    public static void AddInitialAbi(string contract, string rawAbiBase64)
     {
+        var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(rawAbiBase64.Base64StringToByteArray());
+        Log.Information($"Deserialized Abi for {contract} : {JsonSerializer.Serialize(abi, _jsonSerializerOptions)}");
+        // TODO
         return;
-        throw new NotImplementedException();
     }
 }

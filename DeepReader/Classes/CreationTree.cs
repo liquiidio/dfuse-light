@@ -1,4 +1,5 @@
 using DeepReader.Types;
+using DeepReader.Types.Eosio.Chain;
 
 namespace DeepReader.Classes;
 
@@ -6,6 +7,8 @@ public static class CreationTree
 {
     public static List<Node> ComputeCreationTree(List<CreationOp> creationOps)
     {
+        // TODO, not sure if this is converted correctly from dfuse-code
+
         if (creationOps.Count <= 0)
             return new List<Node>();
 
@@ -155,12 +158,12 @@ public static class CreationTree
             tree.AddRange(_ToFlatTree(root, -1, ref walkIndex));
         }
         
-        return tree;
+        return tree.ToArray();
     }
 
     private static IList<CreationFlatNode> _ToFlatTree(Node root, int parentIndex, ref int walkIndex)
     {
-        var tree = new List<CreationFlatNode>(){ new CreationFlatNode(){ WalkIndex = walkIndex, CreatorActionIndex = parentIndex, ExecutionActionIndex = root.ActionIndex}};
+        var tree = new List<CreationFlatNode>(){ new(){ WalkIndex = walkIndex, CreatorActionIndex = parentIndex, ExecutionActionIndex = root.ActionIndex}};
         var childRootIndex = walkIndex;
 
         foreach (var child in root.Children)
