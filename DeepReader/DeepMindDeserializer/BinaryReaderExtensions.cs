@@ -47,22 +47,22 @@ public static class BinaryBufferReaderExtensions
 
     public static Checksum160 ReadChecksum160(this BinaryBufferReader reader)
     {
-        return SerializationHelper.ByteArrayToHexString(reader.ReadBytes(20));
+        return reader.ReadBytes(20);
     }
 
     public static Checksum256 ReadChecksum256(this BinaryBufferReader reader)
     {
-        return SerializationHelper.ByteArrayToHexString(reader.ReadBytes(32));
+        return reader.ReadBytes(32);
     }
 
     public static TransactionId ReadTransactionId(this BinaryBufferReader reader)
     {
-        return SerializationHelper.ByteArrayToHexString(reader.ReadBytes(32));
+        return reader.ReadBytes(32);
     }
 
     public static Checksum512 ReadChecksum512(this BinaryBufferReader reader)
     {
-        return SerializationHelper.ByteArrayToHexString(reader.ReadBytes(64));
+        return reader.ReadBytes(64);
     }
 
     public static ushort ReadVarUint16(this BinaryBufferReader reader)

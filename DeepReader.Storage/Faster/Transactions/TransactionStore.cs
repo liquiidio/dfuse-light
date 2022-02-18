@@ -56,10 +56,10 @@ namespace DeepReader.Storage.Faster.Transactions
             _transactionStoreSession = store.For(new TransactionFunctions()).NewSession<TransactionFunctions>();
         }
 
-        public async Task WriteTransaction(FlattenedTransactionTrace transaction)
+        public async Task<Status> WriteTransaction(FlattenedTransactionTrace transaction)
         {
             var transactionId = new TransactionId(transaction.Id);
-            var result = await _transactionStoreSession.UpsertAsync(ref transactionId, ref transaction);
+            return (await _transactionStoreSession.UpsertAsync(ref transactionId, ref transaction)).Complete();
         }
 
     }

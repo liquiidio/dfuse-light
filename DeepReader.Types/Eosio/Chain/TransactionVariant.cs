@@ -1,5 +1,6 @@
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
+using DeepReader.Types.Helpers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -19,21 +20,21 @@ public class TransactionId : TransactionVariant
 {
     public byte[] Binary = Array.Empty<byte>();
 
-    public string Value = string.Empty; // TODO StringVal etc. BinaryType?!
-
-    public TransactionId()
+    private string? _stringVal;
+    public string StringVal
     {
-        Value = string.Empty;
+        get => _stringVal ??= SerializationHelper.ByteArrayToHexString(Binary);
+        set => _stringVal = value;
     }
 
     public static implicit operator TransactionId(string value)
     {
-        return new TransactionId(){ Value = value };
+        return new TransactionId(){ StringVal = value };
     }
 
     public static implicit operator string(TransactionId value)
     {
-        return value.Value;
+        return value.StringVal;
     }
 
     public static implicit operator TransactionId(byte[] binary)
@@ -48,7 +49,7 @@ public class TransactionId : TransactionVariant
 
     public override string ToString()
     {
-        return Value;
+        return StringVal;
     }
 
     public static TransactionId Empty => new();

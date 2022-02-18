@@ -28,4 +28,9 @@ public class Action : ActionBase
     {
         throw new NotImplementedException();
     }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        throw new NotImplementedException();
+    }
 }

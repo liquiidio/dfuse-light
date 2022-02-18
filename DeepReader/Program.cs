@@ -18,8 +18,8 @@ var host = Host.CreateDefaultBuilder(args)
         loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration)
     )
     .UseDeepReaderGraphQl()
-    .UseElasticStorage()
-//    .UseFasterStorage()
+//    .UseElasticStorage()
+    .UseFasterStorage()
     .Build();
 
 await host.RunAsync();
