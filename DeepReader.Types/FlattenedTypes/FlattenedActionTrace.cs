@@ -24,7 +24,7 @@ namespace DeepReader.Types.FlattenedTypes
 
         public FlattenedTableOp[] TableOps;
 
-        public char[] ReturnValue = Array.Empty<char>();    // TODO, string?
+        public char[] ReturnValue = Array.Empty<char>(); // TODO, string?
 
         public static FlattenedActionTrace ReadFromBinaryReader(BinaryReader reader)
         {
@@ -61,12 +61,52 @@ namespace DeepReader.Types.FlattenedTypes
                 obj.TableOps[i] = FlattenedTableOp.ReadFromBinaryReader(reader);
             }
 
+            obj.ReturnValue = new char[reader.ReadInt32()];
+            for (int i = 0; i < obj.TableOps.Length; i++)
+            {
+                obj.ReturnValue[i] = reader.ReadChar();
+            }
+
             return obj;
         }
 
         public void WriteToBinaryWriter(BinaryWriter writer)
         {
-            throw new NotImplementedException();
+            writer.Write(Receiver.Binary);
+            Act.WriteToBinaryWriter(writer);
+            writer.Write(ContextFree);
+            writer.Write(ElapsedUs);
+            writer.Write(Console);
+
+            writer.Write(AccountRamDeltas.Length);
+            foreach (var accountRamDelta in AccountRamDeltas)
+            {
+                accountRamDelta.WriteToBinaryWriter(writer);
+            }
+
+            writer.Write(RamOps.Length);
+            foreach (var ramOp in RamOps)
+            {
+                ramOp.WriteToBinaryWriter(writer);
+            }
+
+            writer.Write(DbOps.Length);
+            foreach (var dbOp in DbOps)
+            {
+                dbOp.WriteToBinaryWriter(writer);
+            }
+
+            writer.Write(TableOps.Length);
+            foreach (var tableOp in TableOps)
+            {
+                tableOp.WriteToBinaryWriter(writer);
+            }
+
+            writer.Write(ReturnValue.Length);
+            foreach (var returnVal in ReturnValue)
+            {
+                writer.Write(returnVal);
+            }
         }
     }
 }

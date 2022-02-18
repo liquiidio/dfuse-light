@@ -56,10 +56,10 @@ namespace DeepReader.Storage.Faster.Blocks
             _blockStoreSession = store.For(new BlockFunctions()).NewSession<BlockFunctions>();
         }
 
-        public async Task WriteBlock(FlattenedBlock block)
+        public async Task<Status> WriteBlock(FlattenedBlock block)
         {
             var blockId = new BlockId(block.Number);
-            var result = await _blockStoreSession.UpsertAsync(ref blockId, ref block);
+            return (await _blockStoreSession.UpsertAsync(ref blockId, ref block)).Complete();
         }
 
     }

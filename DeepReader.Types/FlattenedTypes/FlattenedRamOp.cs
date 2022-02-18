@@ -15,6 +15,26 @@ public struct FlattenedRamOp
 
     public static FlattenedRamOp ReadFromBinaryReader(BinaryReader reader)
     {
-        throw new NotImplementedException();
+        var obj = new FlattenedRamOp()
+        {
+            Operation = (RamOpOperation) reader.ReadByte(),
+            Payer = reader.ReadUInt64(),
+            Delta = reader.ReadInt64(),
+            Usage = reader.ReadUInt64(),
+            Namespace = (RamOpNamespace) reader.ReadByte(),
+            Action = (RamOpAction) reader.ReadByte()
+        };
+
+        return obj;
+    }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.Write((byte)Operation);
+        writer.Write(Payer.Binary);
+        writer.Write(Delta);
+        writer.Write(Usage);
+        writer.Write((byte)Namespace);
+        writer.Write((byte)Action);
     }
 }

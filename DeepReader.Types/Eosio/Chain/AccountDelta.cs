@@ -11,6 +11,18 @@ public class AccountDelta {
 
     public static AccountDelta ReadFromBinaryReader(BinaryReader reader)
     {
-        throw new NotImplementedException();
+        var obj = new AccountDelta()
+        {
+            Account = reader.ReadUInt64(),
+            Delta = reader.ReadInt64(),
+        };
+
+        return obj;
+    }
+
+    internal void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.Write(Account.Binary);
+        writer.Write(Delta);
     }
 }

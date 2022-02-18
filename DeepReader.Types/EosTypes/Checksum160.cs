@@ -16,5 +16,15 @@ public class Checksum160 : BinaryType
         return value._value;
     }
 
+    public static implicit operator Checksum160(byte[] binary)
+    {
+        return new Checksum160 { Binary = binary };
+    }
+
+    public static implicit operator byte[](Checksum160 value)
+    {
+        return value.Binary;
+    }
+
     public static Checksum160 Empty => new();
 }

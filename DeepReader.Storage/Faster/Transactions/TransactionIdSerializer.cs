@@ -11,6 +11,6 @@ public class TransactionIdSerializer : BinaryObjectSerializer<TransactionId>
 
     public override void Serialize(ref TransactionId obj)
     {
-        writer.Write(obj.Id);
+        writer.Write(obj.Id.Binary);
     }
 }

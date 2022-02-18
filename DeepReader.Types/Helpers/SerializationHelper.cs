@@ -114,6 +114,12 @@ public class SerializationHelper
         return a;
     }
 
+    public static byte[] PrimaryKeyToBytes(string primaryKey)
+    {
+        // TODO name can be number or eosname and 64 or 128bits ?!
+        return Encoding.UTF8.GetBytes(primaryKey);
+    }
+
     /// <summary>
     /// Convert ascii char to symbol value
     /// </summary>

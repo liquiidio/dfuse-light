@@ -13,6 +13,24 @@ public struct FlattenedTableOp
 
     public static FlattenedTableOp ReadFromBinaryReader(BinaryReader reader)
     {
-        throw new NotImplementedException();
+        var obj = new FlattenedTableOp()
+        {
+            Operation = (TableOpOperation) reader.ReadByte(),
+            Payer = reader.ReadUInt64(),
+            Code = reader.ReadUInt64(),
+            Scope = reader.ReadUInt64(),
+            TableName = reader.ReadUInt64()
+        };
+
+        return obj;
+    }
+
+    internal void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.Write((byte)Operation);
+        writer.Write(Payer.Binary);
+        writer.Write(Code.Binary);
+        writer.Write(Scope.Binary);
+        writer.Write(TableName.Binary);
     }
 }

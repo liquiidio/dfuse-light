@@ -1,9 +1,11 @@
-﻿namespace DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Types.Eosio.Chain;
+
+namespace DeepReader.Types.FlattenedTypes;
 
 public struct FlattenedTransactionTrace
 {
     // SHA-256 (FIPS 180-4) of the FCBUFFER-encoded packed transaction
-    public byte[] Id = Array.Empty<byte>();
+    public TransactionId Id = Array.Empty<byte>();
 
     public uint BlockNum = 0;
 
@@ -50,7 +52,7 @@ public struct FlattenedTransactionTrace
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        writer.Write(Id);
+        writer.Write(Id.Binary);
         writer.Write(BlockNum);
         writer.Write(Elapsed);
         writer.Write(NetUsage);

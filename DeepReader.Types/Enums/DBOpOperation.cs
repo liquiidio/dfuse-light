@@ -1,6 +1,6 @@
 namespace DeepReader.Types.Enums;
 
-public enum DbOpOperation
+public enum DbOpOperation : byte
 {
     UNKNOWN = 0,
     INSERT = 1,
