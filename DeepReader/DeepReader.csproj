@@ -10,6 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="config\mindreader\genesis.json.000" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="config\mindreader\genesis.json.000" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Cryptography.ECDSA.Secp256K1" Version="1.1.3" />
     <PackageReference Include="HotChocolate.AspNetCore" Version="12.6.0" />
     <PackageReference Include="HotChocolate.Subscriptions.InMemory" Version="12.6.0" />

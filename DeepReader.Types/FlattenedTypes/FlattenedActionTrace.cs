@@ -18,13 +18,19 @@ namespace DeepReader.Types.FlattenedTypes
 
         public AccountDelta[] AccountRamDeltas = Array.Empty<AccountDelta>();
 
-        public FlattenedRamOp[] RamOps;
+        public FlattenedRamOp[] RamOps = Array.Empty<FlattenedRamOp>();
 
-        public FlattenedDbOp[] DbOps;
+        public FlattenedDbOp[] DbOps = Array.Empty<FlattenedDbOp>();
 
-        public FlattenedTableOp[] TableOps;
+        public FlattenedTableOp[] TableOps = Array.Empty<FlattenedTableOp>();
 
         public char[] ReturnValue = Array.Empty<char>(); // TODO, string?
+
+
+        public FlattenedActionTrace()
+        {
+
+        }
 
         public static FlattenedActionTrace ReadFromBinaryReader(BinaryReader reader)
         {

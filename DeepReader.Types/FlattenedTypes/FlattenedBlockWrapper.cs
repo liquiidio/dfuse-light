@@ -2,5 +2,5 @@
 
 public class FlattenedBlockWrapper
 {
-    public FlattenedBlock Block;
+    public FlattenedBlock Block = new FlattenedBlock();
 }

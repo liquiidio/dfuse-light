@@ -19,6 +19,11 @@ public struct FlattenedTransactionTrace
 
     public TableOp[] TableOps = Array.Empty<TableOp>();
 
+    public FlattenedTransactionTrace()
+    {
+
+    }
+
     public static FlattenedTransactionTrace ReadFromBinaryReader(BinaryReader reader)
     {
         var obj = new FlattenedTransactionTrace()

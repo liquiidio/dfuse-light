@@ -15,6 +15,11 @@ public struct FlattenedDbOp
     public byte[] OldData = Array.Empty<byte>();//[]byte
     public byte[] NewData = Array.Empty<byte>();//[]byte
 
+    public FlattenedDbOp()
+    {
+
+    }
+
     public static FlattenedDbOp ReadFromBinaryReader(BinaryReader reader)
     {
         var obj = new FlattenedDbOp()

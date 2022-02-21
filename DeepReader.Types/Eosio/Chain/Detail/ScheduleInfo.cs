@@ -11,4 +11,9 @@ public struct ScheduleInfo
     public uint ScheduleLibNum = 0; /// last irr block num
     public Checksum256 ScheduleHash = Checksum256.Empty;
     public ProducerAuthoritySchedule Schedule = new();
+
+    public ScheduleInfo()
+    {
+
+    }
 };
