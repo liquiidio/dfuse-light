@@ -14,6 +14,11 @@ public struct FlattenedBlock
 
     public TransactionId[] TransactionIds = Array.Empty<TransactionId>();
 
+    public FlattenedBlock()
+    {
+
+    }
+
     public static FlattenedBlock ReadFromBinaryReader(BinaryReader reader)
     {
         var obj = new FlattenedBlock

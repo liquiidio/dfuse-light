@@ -27,18 +27,25 @@ RUN apt-get update \
             time                        \
             wget
 
+# clone repo and submodules
 RUN git clone https://github.com/cmadh/mandel.git \
         && cd mandel                                    \
         && git checkout fix_deepmind_log_3.0.x          \
         && git submodule update                         \
             --init                                      \
-            --recursive                                 \
+            --recursive                                 
+# start build
+RUN cd mandel \
         && mkdir build                                  \
         && cd build                                     \
         && cmake -DCMAKE_BUILD_TYPE=Release             \
             -DDISABLE_WASM_SPEC_TESTS=yes               \
             -DCMAKE_INSTALL_PREFIX=/root/mandel/3.0 ..  \
-        && make -j $(nproc)                             \
+        && make -j $(nproc)                             
+
+# install
+RUN cd mandel \
+        && cd build \
         && make install
 
 RUN ln -s /root/mandel/3.0/bin/nodeos /bin/nodeos

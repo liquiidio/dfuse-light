@@ -13,6 +13,11 @@ public struct FlattenedRamOp
     public RamOpNamespace Namespace = RamOpNamespace.UNKNOWN;//RAMOp_Namespace
     public RamOpAction Action = RamOpAction.UNKNOWN;//RAMOp_Action
 
+    public FlattenedRamOp()
+    {
+
+    }
+
     public static FlattenedRamOp ReadFromBinaryReader(BinaryReader reader)
     {
         var obj = new FlattenedRamOp()

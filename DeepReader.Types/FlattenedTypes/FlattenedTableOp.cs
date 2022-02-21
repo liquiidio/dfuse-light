@@ -11,6 +11,11 @@ public struct FlattenedTableOp
     public Name Scope = string.Empty;//string
     public Name TableName = string.Empty;//string
 
+    public FlattenedTableOp()
+    {
+
+    }
+
     public static FlattenedTableOp ReadFromBinaryReader(BinaryReader reader)
     {
         var obj = new FlattenedTableOp()

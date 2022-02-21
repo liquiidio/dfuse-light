@@ -2,5 +2,5 @@
 
 public class FlattenedTransactionTraceWrapper
 {
-    public FlattenedTransactionTrace TransactionTrace;
+    public FlattenedTransactionTrace TransactionTrace = new FlattenedTransactionTrace();
 }
