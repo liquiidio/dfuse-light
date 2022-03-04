@@ -10,4 +10,14 @@ public class SignedBlockHeader : BlockHeader
 {
     [SortOrder(10)]
     public Signature ProducerSignature = Signature.Empty;// ecc.Signature // no pointer!!
+
+    public static SignedBlockHeader ReadFromBinaryReader(BinaryReader reader)
+    {
+        var obj = new SignedBlockHeader()
+        {
+
+        };
+
+        return obj;
+    }
 }

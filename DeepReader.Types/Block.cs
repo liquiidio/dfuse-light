@@ -157,6 +157,93 @@ public class Block
 	// in combination with the two other filters above.
 //	public string FilteringSystemActionsIncludeFilterExpr = string.Empty;//string
 
+	// Todo: @corvin, this is the method I made that you should look at
+	public static Block ReadFromBinaryReader(BinaryReader reader)
+    {
+		var obj = new Block();
+
+		// I am not sure about this
+		obj.Id = reader.ReadBytes(reader.ReadInt32());
+
+		obj.Number = reader.ReadUInt32();
+		obj.Version = reader.ReadUInt32();
+		obj.Header = SignedBlockHeader.ReadFromBinaryReader(reader);
+		obj.ProducerSignature = reader.ReadString();
+		
+		obj.BlockExtensions = new Extension[reader.ReadInt32()];
+		for (int i = 0; i < obj.BlockExtensions.Length; i++)
+        {
+			// I am not sure how I am supposed to read this
+			//obj.BlockExtensions[i].Value = reader.ReadChars(reader.ReadInt32());
+			obj.BlockExtensions[i] = default;
+        }
+
+		obj.DposProposedIrreversibleBlocknum = reader.ReadUInt32();
+		obj.DposIrreversibleBlocknum = reader.ReadUInt32();
+		obj.BlockrootMerkle = IncrementalMerkle.ReadFromBinaryReader(reader);
+
+		obj.ProducerToLastProduced = new PairAccountNameBlockNum[reader.ReadInt32()];
+		for (int i = 0; i < obj.ProducerToLastProduced.Length; i++)
+        {
+			obj.ProducerToLastProduced[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
+		}
+
+		obj.ProducerToLastImpliedIrb = new PairAccountNameBlockNum[reader.ReadInt32()];
+		for (int i = 0; i < obj.ProducerToLastImpliedIrb.Length; i++)
+        {
+			obj.ProducerToLastImpliedIrb[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
+		}
+
+		obj.ConfirmCount = new uint[reader.ReadInt32()];
+		for (int i = 0; i < obj.ConfirmCount.Length; i++)
+        {
+			obj.ConfirmCount[i] = reader.ReadUInt32();
+		}
+
+		obj.PendingSchedule = ScheduleInfo.ReadFromBinaryReader(reader);
+		
+		// This was declared as a nullable, I'm not sure if the implementation is right.
+		obj.ActivatedProtocolFeatures = ProtocolFeatureActivationSet.ReadFromBinaryReader(reader);
+		obj.Validated = reader.ReadBoolean();
+
+
+		// This is an abstract class
+		// We are also adding to a list
+		var rlimitOpsCount = reader.ReadInt32();
+		for (int i = 0; i < rlimitOpsCount; i++)
+        {
+			obj.RlimitOps.Add(RlimitOp.ReadFromBinaryReader(reader));
+        }
+
+		var unfilteredTransactionsCount = reader.ReadInt32();
+		for (int i = 0; i < unfilteredTransactionsCount; i++)
+        {
+			obj.UnfilteredTransactions.Add(TransactionReceipt.ReadFromBinaryReader(reader));
+        }
+
+		var unfilteredImplicitTransactionOpsCount = reader.ReadInt32();
+		for (int i = 0; i < unfilteredImplicitTransactionOpsCount; i++)
+        {
+			obj.UnfilteredImplicitTransactionOps.Add(TrxOp.ReadFromBinaryReader(reader));
+        }
+
+		var unfilteredTransactionTracesCount = reader.ReadInt32();
+		for (int i = 0; i < unfilteredTransactionTracesCount; i++)
+        {
+			obj.UnfilteredTransactionTraces.Add(TransactionTrace.ReadFromBinaryReader(reader));
+        }
+
+		// I am not sure about this
+		obj.BlockSigningKey = reader.ReadString();
+
+		// This is an abstract class, not sure how I am supposed to add ReadFromBinaryReader to it
+		obj.ValidBlockSigningAuthority = default;
+
+		obj.ActiveSchedule = ProducerAuthoritySchedule.ReadFromBinaryReader(reader);
+
+		return obj;
+    }
+
 	internal object ToJsonString(JsonSerializerOptions? jsonSerializerOptions = null)
 	{
 		return JsonSerializer.Serialize(this, jsonSerializerOptions ?? new JsonSerializerOptions()

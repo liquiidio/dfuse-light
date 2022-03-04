@@ -10,4 +10,10 @@ public class PairAccountNameBlockNum
 {
     public Name AccountName = string.Empty;
     public uint BlockNum = 0;
+
+    public static PairAccountNameBlockNum ReadFromBinaryReader(BinaryReader reader)
+    {
+        // Todo(Haron): PairAccountNameBlockNum.ReadFromBinaryReader
+        return new();
+    }
 }

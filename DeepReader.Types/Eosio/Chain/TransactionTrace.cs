@@ -61,6 +61,12 @@ public class TransactionTrace
     // Index within block's unfiltered execution traces
 	public ulong Index { get; set; } = 0;
 
+	public static TransactionTrace ReadFromBinaryReader(BinaryReader reader)
+    {
+		// Todo(Haron): Complete this
+		return new();
+    }
+
 }
 
 public class Except {

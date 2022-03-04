@@ -16,4 +16,10 @@ public struct ScheduleInfo
     {
 
     }
+
+    public static ScheduleInfo ReadFromBinaryReader(BinaryReader reader)
+    {
+        // Todo(Haron): ScheduleInfo.ReadFromBinaryReader()
+        return new();
+    }
 };
