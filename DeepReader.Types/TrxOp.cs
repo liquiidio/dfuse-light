@@ -9,10 +9,4 @@ public class TrxOp
     public string Name = string.Empty;//string
     public string TransactionId = string.Empty;//string
     public SignedTransaction Transaction = new();//*SignedTransaction
-
-    public static TrxOp ReadFromBinaryReader(BinaryReader reader)
-    {
-        // Todo(Haron): Complete this
-        return new();
-    }
 }

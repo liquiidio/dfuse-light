@@ -7,10 +7,4 @@ public class ProducerAuthoritySchedule
 {
     public uint Version = 0;
     public ProducerAuthority[] Producers = Array.Empty<ProducerAuthority>();
-
-    public static ProducerAuthoritySchedule ReadFromBinaryReader(BinaryReader reader)
-    {
-        // Todo(Haron): Complete this
-        return new();
-    }
 }

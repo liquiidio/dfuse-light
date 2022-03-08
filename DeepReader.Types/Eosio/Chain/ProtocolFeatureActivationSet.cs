@@ -8,10 +8,4 @@ namespace DeepReader.Types.Eosio.Chain;
 public class ProtocolFeatureActivationSet
 {
     public Checksum256[] ProtocolFeatures = Array.Empty<Checksum256>();
-
-    public static ProtocolFeatureActivationSet ReadFromBinaryReader(BinaryReader reader)
-    {
-        // Todo(Haron): Complete this
-        return new();
-    }
 }

@@ -13,9 +13,4 @@ public abstract class RlimitOp
     //	*RlimitOp_AccountUsage
     //  public isRlimitOp_Kind Kind;//isRlimitOp_Kind
 
-    public static RlimitOp ReadFromBinaryReader(BinaryReader reader)
-    {
-        // Todo(Haron): complete this
-        return default;
-    }
 }
