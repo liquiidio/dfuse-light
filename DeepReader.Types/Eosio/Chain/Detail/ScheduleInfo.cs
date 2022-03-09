@@ -16,4 +16,13 @@ public struct ScheduleInfo
     {
 
     }
+
+    public static ScheduleInfo ReadFromBinaryReader(BinaryReader reader)
+    {
+        ScheduleInfo info = new ScheduleInfo();
+        info.ScheduleLibNum = reader.ReadUInt32();
+        info.ScheduleHash = reader.ReadString();
+        info.Schedule = ProducerAuthoritySchedule.ReadFromBinaryReader(reader);
+        return info;
+    }
 };

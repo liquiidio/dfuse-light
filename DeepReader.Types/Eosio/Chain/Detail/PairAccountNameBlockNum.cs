@@ -10,4 +10,14 @@ public class PairAccountNameBlockNum
 {
     public Name AccountName = string.Empty;
     public uint BlockNum = 0;
+
+    public static PairAccountNameBlockNum ReadFromBinaryReader(BinaryReader reader)
+    {
+        var obj = new PairAccountNameBlockNum()
+        {
+            AccountName = reader.ReadUInt64(),
+            BlockNum = reader.ReadUInt32()
+        };
+        return obj;
+    }
 }

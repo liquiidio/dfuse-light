@@ -26,4 +26,29 @@ public class BlockHeader
     public ProducerSchedule? NewProducers;
     [SortOrder(9)]
     public Extension[] HeaderExtensions = Array.Empty<Extension>();
+
+    // Todo: @corvin start from here
+    public static BlockHeader ReadFromBinaryReader(BinaryReader reader)
+    {
+        var obj = new BlockHeader()
+        {
+            Timestamp = reader.ReadUInt32(),
+            Producer = reader.ReadUInt64(),
+            Confirmed = reader.ReadUInt16(),
+            Previous = reader.ReadString(),
+            TransactionMroot = reader.ReadString(),
+            ActionMroot = reader.ReadString(),
+            ScheduleVersion = reader.ReadUInt32(),
+            NewProducers = ProducerSchedule.ReadFromBinaryReader(reader)
+        };
+
+        obj.HeaderExtensions = new Extension[reader.ReadInt32()];
+        for (int i = 0; i < obj.HeaderExtensions.Length; i++)
+        {
+            // Todo: @corvin I am interested to see how I did at this implementation
+            obj.HeaderExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.ReadInt32()));
+        }
+
+        return obj;
+    }
 }

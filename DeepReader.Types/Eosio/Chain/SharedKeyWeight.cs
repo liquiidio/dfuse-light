@@ -9,4 +9,14 @@ public class SharedKeyWeight
 {
     public PublicKey Key = PublicKey.Empty;   // for now public key, is SharedPublicKey in EOSIO (see below)
     public WeightType Weight;
+
+    public static SharedKeyWeight ReadFromBinaryReader(BinaryReader reader)
+    {
+        var obj = new SharedKeyWeight()
+        {
+            Key = reader.ReadString(),
+            Weight = reader.ReadUInt16()
+        };
+        return obj;
+    }
 }
