@@ -11,11 +11,6 @@ namespace DeepReader.DeepMindDeserializer;
 
 public static class BinaryBufferReaderExtensions
 {
-    internal static class Constants
-    {
-        public const int PubKeyDataSize = 33;
-        public const int SignKeyDataSize = 64;
-    }
 
     public enum KeyType
     {
