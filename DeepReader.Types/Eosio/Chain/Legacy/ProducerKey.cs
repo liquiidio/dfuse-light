@@ -19,10 +19,10 @@ public class ProducerKey
             AccountName = reader.ReadUInt64(),
         };
 
-        obj.BlockSigningKey = new PublicKey[reader.ReadInt32()];
+        obj.BlockSigningKey = new PublicKey[reader.Read7BitEncodedInt()];
         for (int i = 0; i < obj.BlockSigningKey.Length; i++)
         {
-            obj.BlockSigningKey[i] = reader.ReadString();
+            obj.BlockSigningKey[i] = reader.ReadBytes(Constants.PubKeyDataSize + 1); //PubKeyDataSize + 1 byte for type
         }
         return obj;
     }

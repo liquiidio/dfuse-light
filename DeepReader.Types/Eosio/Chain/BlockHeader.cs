@@ -35,17 +35,16 @@ public class BlockHeader
             Timestamp = reader.ReadUInt32(),
             Producer = reader.ReadUInt64(),
             Confirmed = reader.ReadUInt16(),
-            Previous = reader.ReadString(),
-            TransactionMroot = reader.ReadString(),
-            ActionMroot = reader.ReadString(),
+            Previous = reader.ReadBytes(32),
+            TransactionMroot = reader.ReadBytes(32),
+            ActionMroot = reader.ReadBytes(32),
             ScheduleVersion = reader.ReadUInt32(),
             NewProducers = ProducerSchedule.ReadFromBinaryReader(reader)
         };
 
-        obj.HeaderExtensions = new Extension[reader.ReadInt32()];
+        obj.HeaderExtensions = new Extension[reader.Read7BitEncodedInt()];
         for (int i = 0; i < obj.HeaderExtensions.Length; i++)
         {
-            // Todo: @corvin I am interested to see how I did at this implementation
             obj.HeaderExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.ReadInt32()));
         }
 
