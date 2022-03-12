@@ -10,9 +10,14 @@ public class TransactionReceipt : TransactionReceiptHeader
     [SortOrder(4)]
     public TransactionVariant Trx = TransactionId.Empty;
 
-    public static TransactionReceipt ReadFromBinaryReader(BinaryReader reader)
+    public new static TransactionReceipt ReadFromBinaryReader(BinaryReader reader)
     {
-        // Todo: (Haron)
-        return new();
+        // Todo: (Haron) Finish here once I test casting
+        var transactionReceipt = new TransactionReceipt()
+        {
+            // Todo: @corvin confirm this
+            Trx = reader.ReadTransactionId()
+        };
+        return transactionReceipt;
     }
 }

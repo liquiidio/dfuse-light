@@ -14,4 +14,15 @@ public class TransactionReceiptHeader
     public uint CpuUsageUs;
     [SortOrder(3)]
     public VarUint32 NetUsageWords = 0;
+
+    public static TransactionReceiptHeader ReadFromBinaryReader(BinaryReader reader)
+    {
+        var transactionReceiptHeader = new TransactionReceiptHeader()
+        {
+            Status = reader.ReadByte(),
+            CpuUsageUs = reader.ReadUInt32(),
+            NetUsageWords = reader.ReadVarUint32Obj()
+        };
+        return transactionReceiptHeader;
+    }
 }

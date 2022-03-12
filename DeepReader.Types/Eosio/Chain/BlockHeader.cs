@@ -27,27 +27,32 @@ public class BlockHeader
     [SortOrder(9)]
     public Extension[] HeaderExtensions = Array.Empty<Extension>();
 
-    // Todo: @corvin start from here
     public static BlockHeader ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new BlockHeader()
+        var blockHeader = new BlockHeader()
         {
-            Timestamp = reader.ReadUInt32(),
-            Producer = reader.ReadUInt64(),
+            Timestamp = reader.ReadTimestamp(),
+            Producer = reader.ReadName(),
             Confirmed = reader.ReadUInt16(),
-            Previous = reader.ReadBytes(32),
-            TransactionMroot = reader.ReadBytes(32),
-            ActionMroot = reader.ReadBytes(32),
+            Previous = reader.ReadChecksum256(),
+            TransactionMroot = reader.ReadChecksum256(),
+            ActionMroot = reader.ReadChecksum256(),
             ScheduleVersion = reader.ReadUInt32(),
-            NewProducers = ProducerSchedule.ReadFromBinaryReader(reader)
         };
 
-        obj.HeaderExtensions = new Extension[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < obj.HeaderExtensions.Length; i++)
+        var readProducer = reader.ReadBoolean();
+
+        if (readProducer)
+            blockHeader.NewProducers = ProducerSchedule.ReadFromBinaryReader(reader);
+
+
+        blockHeader.HeaderExtensions = new Extension[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < blockHeader.HeaderExtensions.Length; i++)
         {
-            obj.HeaderExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.ReadInt32()));
+            // Todo: (Haron) confirm this is how we read extension
+            blockHeader.HeaderExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
         }
 
-        return obj;
+        return blockHeader;
     }
 }

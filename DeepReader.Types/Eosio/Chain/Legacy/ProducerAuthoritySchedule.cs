@@ -10,17 +10,17 @@ public class ProducerAuthoritySchedule
 
     public static ProducerAuthoritySchedule ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new ProducerAuthoritySchedule()
+        var producerAuthoritySchedule = new ProducerAuthoritySchedule()
         {
             Version = reader.ReadUInt32()
         };
 
-        obj.Producers = new ProducerAuthority[reader.ReadInt32()];
-        for (int i = 0; i < obj.Producers.Length; i++)
+        producerAuthoritySchedule.Producers = new ProducerAuthority[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < producerAuthoritySchedule.Producers.Length; i++)
         {
-            obj.Producers[i] = ProducerAuthority.ReadFromBinaryReader(reader);
+            producerAuthoritySchedule.Producers[i] = ProducerAuthority.ReadFromBinaryReader(reader);
         }
 
-        return obj;
+        return producerAuthoritySchedule;
     }
 }

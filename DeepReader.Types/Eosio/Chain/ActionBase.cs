@@ -36,4 +36,20 @@ public class ActionBase
         this.Name = name;
         this.Authorization = authorization;
     }
+
+    public static ActionBase ReadFromBinaryReader(BinaryReader reader)
+    {
+        var actionBase = new ActionBase()
+        {
+            Account = reader.ReadName(),
+            Name = reader.ReadName()
+        };
+
+        actionBase.Authorization = new PermissionLevel[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < actionBase.Authorization.Length; i++)
+        {
+            actionBase.Authorization[i] = PermissionLevel.ReadFromBinaryReader(reader);
+        }
+        return actionBase;
+    }
 }

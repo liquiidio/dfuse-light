@@ -15,9 +15,15 @@ public class BlockState : BlockHeaderState
 
     public new static BlockState ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = (BlockState)BlockHeaderState.ReadFromBinaryReader(reader);
-        obj.Block = SignedBlock.ReadFromBinaryReader(reader);
-        obj.Validated = reader.ReadBoolean();
-        return obj;
+        // Todo: (Haron) Confirm this type cast
+        var blockState = (BlockState)BlockHeaderState.ReadFromBinaryReader(reader);
+
+        var readBlock = reader.ReadBoolean();
+
+        if (readBlock)
+            blockState.Block = SignedBlock.ReadFromBinaryReader(reader);
+        
+        blockState.Validated = reader.ReadBoolean();
+        return blockState;
     }
 }

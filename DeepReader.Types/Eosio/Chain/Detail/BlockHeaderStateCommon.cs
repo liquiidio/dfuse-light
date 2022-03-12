@@ -29,7 +29,7 @@ public class BlockHeaderStateCommon
 
     public static BlockHeaderStateCommon ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new BlockHeaderStateCommon() 
+        var blockStateHeaderCommon = new BlockHeaderStateCommon() 
         {
             BlockNum = reader.ReadUInt32(),
             DPoSProposedIrreversibleBlockNum = reader.ReadUInt32(),
@@ -38,21 +38,24 @@ public class BlockHeaderStateCommon
             BlockrootMerkle = IncrementalMerkle.ReadFromBinaryReader(reader)
         };
 
-        obj.ProducerToLastProduced = new PairAccountNameBlockNum[reader.ReadInt32()];
-        for (int i = 0; i < obj.ProducerToLastProduced.Length; i++)
+        blockStateHeaderCommon.ProducerToLastProduced = new PairAccountNameBlockNum[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < blockStateHeaderCommon.ProducerToLastProduced.Length; i++)
         {
-            obj.ProducerToLastProduced[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
+            blockStateHeaderCommon.ProducerToLastProduced[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
         }
 
-        obj.ProducerToLastImpliedIrb = new PairAccountNameBlockNum[reader.ReadInt32()];
-        for (int i = 0; i < obj.ProducerToLastImpliedIrb.Length; i++)
+        blockStateHeaderCommon.ProducerToLastImpliedIrb = new PairAccountNameBlockNum[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < blockStateHeaderCommon.ProducerToLastImpliedIrb.Length; i++)
         {
-            obj.ProducerToLastImpliedIrb[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
+            blockStateHeaderCommon.ProducerToLastImpliedIrb[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
         }
 
-        obj.ValidBlockSigningAuthority = BlockSigningAuthorityV0.ReadFromBinaryReader(reader);
-        obj.ConfirmCount = reader.ReadBytes(reader.ReadInt32());
+        // Todo: (Haron) Check on this variant (abstract class)
+        blockStateHeaderCommon.ValidBlockSigningAuthority = BlockSigningAuthorityV0.ReadFromBinaryReader(reader);
 
-        return obj;
+        // Todo: @corvin confirm this implementation
+        blockStateHeaderCommon.ConfirmCount = reader.ReadBytes(reader.Read7BitEncodedInt());
+
+        return blockStateHeaderCommon;
     }
 }

@@ -21,7 +21,7 @@ public struct ScheduleInfo
     {
         ScheduleInfo info = new ScheduleInfo();
         info.ScheduleLibNum = reader.ReadUInt32();
-        info.ScheduleHash = reader.ReadString();
+        info.ScheduleHash = reader.ReadChecksum256();
         info.Schedule = ProducerAuthoritySchedule.ReadFromBinaryReader(reader);
         return info;
     }

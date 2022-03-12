@@ -12,11 +12,11 @@ public class SharedKeyWeight
 
     public static SharedKeyWeight ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new SharedKeyWeight()
+        var sharedKeyWeight = new SharedKeyWeight()
         {
-            Key = reader.ReadString(),
+            Key = reader.ReadPublicKey(),
             Weight = reader.ReadUInt16()
         };
-        return obj;
+        return sharedKeyWeight;
     }
 }

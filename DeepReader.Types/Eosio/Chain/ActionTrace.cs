@@ -54,4 +54,54 @@ public class ActionTrace {
     {
         return CreatorActionOrdinal;
     }
+
+    public static ActionTrace ReadFromBinaryReader(BinaryReader reader)
+    {
+        var actionTrace = new ActionTrace()
+        {
+            ActionOrdinal = reader.ReadVarUint32Obj(),
+            CreatorActionOrdinal = reader.ReadVarUint32Obj(),
+            ClosestUnnotifiedAncestorActionOrdinal = reader.ReadVarUint32Obj(),
+        };
+
+        var readActionReceipt = reader.ReadBoolean();
+
+        if (readActionReceipt)
+            actionTrace.Receipt = ActionReceipt.ReadFromBinaryReader(reader);
+
+        actionTrace.Receiver = reader.ReadName();
+        actionTrace.Act = Action.ReadFromBinaryReader(reader);
+        actionTrace.ContextFree = reader.ReadBoolean();
+        actionTrace.ElapsedUs = reader.ReadInt64();
+        actionTrace.Console = reader.ReadString();
+        actionTrace.TransactionId = reader.ReadTransactionId();
+        actionTrace.BlockNum = reader.ReadUInt32();
+        actionTrace.BlockTime = reader.ReadTimestamp();
+
+        var readProducerBlockId = reader.ReadBoolean();
+
+        if (readProducerBlockId)
+            actionTrace.ProducerBlockId = reader.ReadChecksum256();
+
+        actionTrace.AccountRamDeltas = new AccountDelta[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < actionTrace.AccountRamDeltas.Length; i++)
+        {
+            actionTrace.AccountRamDeltas[i] = AccountDelta.ReadFromBinaryReader(reader);
+        }
+
+        var readExcept = reader.ReadBoolean();
+
+        if (readExcept)
+            actionTrace.Except = Except.ReadFromBinaryReader(reader);
+
+        var readErrorCode = reader.ReadBoolean();
+
+        if (readErrorCode)
+            actionTrace.ErrorCode = reader.ReadUInt64();
+
+        // Todo: @corvin confirm this
+        actionTrace.ReturnValue = reader.ReadChars(reader.Read7BitEncodedInt());
+
+        return actionTrace;
+    }
 }

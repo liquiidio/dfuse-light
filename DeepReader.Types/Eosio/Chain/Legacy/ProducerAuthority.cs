@@ -12,11 +12,13 @@ public class ProducerAuthority
 
     public static ProducerAuthority ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new ProducerAuthority()
+        var producerAuthority = new ProducerAuthority()
         {
-            AccountName = reader.ReadUInt64(),
+            AccountName = reader.ReadName(),
+
+            // Todo: (Haron) Check on this variant
             BlockSigningAuthority = BlockSigningAuthorityV0.ReadFromBinaryReader(reader)
         };
-        return obj;
+        return producerAuthority;
     }
 }

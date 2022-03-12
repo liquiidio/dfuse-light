@@ -13,11 +13,11 @@ public class PairAccountNameBlockNum
 
     public static PairAccountNameBlockNum ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new PairAccountNameBlockNum()
+        var pairAccountNameBlockNum = new PairAccountNameBlockNum()
         {
-            AccountName = reader.ReadUInt64(),
+            AccountName = reader.ReadName(),
             BlockNum = reader.ReadUInt32()
         };
-        return obj;
+        return pairAccountNameBlockNum;
     }
 }

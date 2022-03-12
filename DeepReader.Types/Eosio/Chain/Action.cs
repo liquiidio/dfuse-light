@@ -24,9 +24,14 @@ public class Action : ActionBase
         this.Data = data;
     }
 
-    public static Action ReadFromBinaryReader(BinaryReader reader)
+    public new static Action ReadFromBinaryReader(BinaryReader reader)
     {
-        throw new NotImplementedException();
+        // Todo: (Haron) Type cast might be added here if we confirm it works
+        var action = new Action()
+        {
+            Data = reader.ReadActionDataBytes()
+        };
+        return action;
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)

@@ -68,6 +68,12 @@ public class Except {
 	public string Name = string.Empty;
 	public string Message = string.Empty;
 	public ExceptLogMessage[] Stack = Array.Empty<ExceptLogMessage>();
+
+	public static Except ReadFromBinaryReader(BinaryReader reader)
+    {
+		// Todo: (Haron) Complete this and ask about the strings
+		return new();
+    }
 }
 
 public class ExceptLogMessage {

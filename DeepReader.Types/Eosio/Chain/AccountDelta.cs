@@ -11,13 +11,13 @@ public class AccountDelta {
 
     public static AccountDelta ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new AccountDelta()
+        var accountDelta = new AccountDelta()
         {
-            Account = reader.ReadUInt64(),
+            Account = reader.ReadName(),
             Delta = reader.ReadInt64(),
         };
 
-        return obj;
+        return accountDelta;
     }
 
     internal void WriteToBinaryWriter(BinaryWriter writer)

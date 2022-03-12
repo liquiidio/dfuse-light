@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using DeepReader.Classes;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc;

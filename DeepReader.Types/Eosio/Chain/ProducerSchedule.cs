@@ -12,17 +12,17 @@ public class ProducerSchedule
 
     public static ProducerSchedule ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new ProducerSchedule()
+        var producerSchedule = new ProducerSchedule()
         {
             Version = reader.ReadUInt32()
         };
 
-        obj.Producers = new ProducerKey[reader.ReadInt32()];
-        for (int i = 0; i < obj.Producers.Length; i++)
+        producerSchedule.Producers = new ProducerKey[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < producerSchedule.Producers.Length; i++)
         {
-            obj.Producers[i] = ProducerKey.ReadFromBinaryReader(reader);
+            producerSchedule.Producers[i] = ProducerKey.ReadFromBinaryReader(reader);
         }
 
-        return obj;
+        return producerSchedule;
     }
 }

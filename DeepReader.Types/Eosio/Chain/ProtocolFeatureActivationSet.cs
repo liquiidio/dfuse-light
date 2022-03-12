@@ -11,15 +11,15 @@ public class ProtocolFeatureActivationSet
 
     public static ProtocolFeatureActivationSet ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new ProtocolFeatureActivationSet()
+        var protocolFeatureActivationSet = new ProtocolFeatureActivationSet()
         {
-            ProtocolFeatures = new Checksum256[reader.ReadInt32()]
+            ProtocolFeatures = new Checksum256[reader.Read7BitEncodedInt()]
         };
 
-        for (int i = 0; i < obj.ProtocolFeatures.Length; i++)
+        for (int i = 0; i < protocolFeatureActivationSet.ProtocolFeatures.Length; i++)
         {
-            obj.ProtocolFeatures[i] = reader.ReadString();
+            protocolFeatureActivationSet.ProtocolFeatures[i] = reader.ReadChecksum256();
         }
-        return obj;
+        return protocolFeatureActivationSet;
     }
 }

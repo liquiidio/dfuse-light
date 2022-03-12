@@ -12,32 +12,34 @@ public class BlockHeaderState : BlockHeaderStateCommon
 {
     [SortOrder(10)]
     public Checksum256 Id = Checksum256.Empty;
-    [SortOrder(11)] 
+    [SortOrder(11)]
     public SignedBlockHeader Header = new();
-    [SortOrder(12)] 
+    [SortOrder(12)]
     public ScheduleInfo PendingSchedule = new();
-    [SortOrder(13)] 
+    [SortOrder(13)]
     public ProtocolFeatureActivationSet? ActivatedProtocolFeatures;
-    [SortOrder(14)] 
+    [SortOrder(14)]
     public Signature[] AdditionalSignatures = Array.Empty<Signature>();
 
-    // Todo: (Haron)
     public new static BlockHeaderState ReadFromBinaryReader(BinaryReader reader)
     {
-        // Todo: @corvin does this work.
-        // We call the static method the base class and cast it to this type and fill the remaining fields.
-        var obj = (BlockHeaderState)BlockHeaderStateCommon.ReadFromBinaryReader(reader);
-        obj.Id = reader.ReadString();
-        obj.Header = SignedBlockHeader.ReadFromBinaryReader(reader);
-        obj.PendingSchedule = ScheduleInfo.ReadFromBinaryReader(reader);
-        obj.ActivatedProtocolFeatures = ProtocolFeatureActivationSet.ReadFromBinaryReader(reader);
+        // Todo: (Haron) We might replace here once we confirm the cast does not work
+        var blockHeaderState = (BlockHeaderState)BlockHeaderStateCommon.ReadFromBinaryReader(reader);
+        blockHeaderState.Id = reader.ReadChecksum256();
+        blockHeaderState.Header = SignedBlockHeader.ReadFromBinaryReader(reader);
+        blockHeaderState.PendingSchedule = ScheduleInfo.ReadFromBinaryReader(reader);
 
-        obj.AdditionalSignatures = new Signature[reader.ReadInt32()];
-        for (int i = 0; i < obj.AdditionalSignatures.Length; i++)
+        var readActivatedProtocolFeatures = reader.ReadBoolean();
+
+        if (readActivatedProtocolFeatures)
+            blockHeaderState.ActivatedProtocolFeatures = ProtocolFeatureActivationSet.ReadFromBinaryReader(reader);
+
+        blockHeaderState.AdditionalSignatures = new Signature[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < blockHeaderState.AdditionalSignatures.Length; i++)
         {
-            obj.AdditionalSignatures[i] = reader.ReadString();
+            blockHeaderState.AdditionalSignatures[i] = reader.ReadSignature();
         }
 
-        return obj;
+        return blockHeaderState;
     }
 }

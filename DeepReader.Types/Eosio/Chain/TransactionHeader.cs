@@ -52,4 +52,18 @@ public class TransactionHeader
         this.MaxCpuUsageMs = maxCpuUsageMs;
         this.DelaySec = delaySec;
     }
+
+    public static TransactionHeader ReadFromBinaryReader(BinaryReader reader)
+    {
+        var header = new TransactionHeader()
+        {
+            Expiration = reader.ReadTimestamp(),
+            RefBlockNum = reader.ReadUInt16(),
+            RefBlockPrefix = reader.ReadUInt32(),
+            MaxNetUsageWords = reader.ReadVarUint32Obj(),
+            MaxCpuUsageMs = reader.ReadByte(),
+            DelaySec = reader.ReadVarUint32Obj()
+        };
+        return header;
+    }
 }

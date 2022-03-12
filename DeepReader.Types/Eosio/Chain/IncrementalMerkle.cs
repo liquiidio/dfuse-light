@@ -12,14 +12,14 @@ public class IncrementalMerkle
 
     public static IncrementalMerkle ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new IncrementalMerkle();
-        obj.ActiveNodes = new Checksum256[reader.ReadInt32()];
-        for (int i = 0; i < obj.ActiveNodes.Length; i++)
+        var incrementalMerkle = new IncrementalMerkle();
+        incrementalMerkle.ActiveNodes = new Checksum256[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < incrementalMerkle.ActiveNodes.Length; i++)
         {
-            obj.ActiveNodes[i] = reader.ReadString();
+            incrementalMerkle.ActiveNodes[i] = reader.ReadChecksum256();
         }
 
-        obj.NodeCount = reader.ReadUInt64();
-        return obj;
+        incrementalMerkle.NodeCount = reader.ReadUInt64();
+        return incrementalMerkle;
     }
 }

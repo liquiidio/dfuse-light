@@ -33,4 +33,31 @@ public class Transaction : TransactionHeader
         this.Actions = actions;
         this.TransactionExtensions = transactionExtensions;
     }
+
+    public new static Transaction ReadFromBinaryReader(BinaryReader reader)
+    {
+        // Todo: (Haron) add type cast here and the parent class
+        var transaction = new Transaction();
+
+        transaction.ContextFreeActions = new Action[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < transaction.ContextFreeActions.Length; i++)
+        {
+            transaction.ContextFreeActions[i] = Action.ReadFromBinaryReader(reader);
+        }
+
+        transaction.Actions = new Action[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < transaction.Actions.Length; i++)
+        {
+            transaction.Actions[i] = Action.ReadFromBinaryReader(reader);
+        }
+
+        transaction.TransactionExtensions = new Extension[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < transaction.TransactionExtensions.Length; i++)
+        {
+            // Todo: @corvin confirm this is how we read Extension
+            transaction.TransactionExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
+        }
+
+        return transaction;
+    }
 }
