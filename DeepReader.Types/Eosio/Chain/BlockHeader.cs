@@ -50,6 +50,7 @@ public class BlockHeader
         for (int i = 0; i < blockHeader.HeaderExtensions.Length; i++)
         {
             // Todo: (Haron) confirm this is how we read extension
+            // Corvin: "Looks good to me"
             blockHeader.HeaderExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
         }
 

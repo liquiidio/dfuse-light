@@ -15,6 +15,7 @@ public class SignedBlock : SignedBlockHeader
     public new static SignedBlock ReadFromBinaryReader(BinaryReader reader)
     {
         // Todo: (Haron) Confirm this type cast
+        // Corvin: "Looks good to me"
         var signedBlock = (SignedBlock)SignedBlockHeader.ReadFromBinaryReader(reader);
         
         signedBlock.Transactions = new TransactionReceipt[reader.Read7BitEncodedInt()];

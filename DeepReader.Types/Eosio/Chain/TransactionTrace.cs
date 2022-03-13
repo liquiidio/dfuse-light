@@ -69,10 +69,14 @@ public class Except {
 	public string Message = string.Empty;
 	public ExceptLogMessage[] Stack = Array.Empty<ExceptLogMessage>();
 
-	public static Except ReadFromBinaryReader(BinaryReader reader)
+	public static Except? ReadFromBinaryReader(BinaryReader reader)
     {
 		// Todo: (Haron) Complete this and ask about the strings
-		return new();
+		// TODO: (Corvin) 
+		// Corvin: "This is something that was missing my version as well, need to do some research to understand how it's serialized"
+		// Exceptions (Except) are only written to the dlog when we are in synch and receiving the Head-Block
+		// - as long as we "replay" very old blocks Except? should always just be Null so returning Null should work here for now
+		return null;
     }
 }
 

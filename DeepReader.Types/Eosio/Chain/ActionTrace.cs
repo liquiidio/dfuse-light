@@ -99,7 +99,6 @@ public class ActionTrace {
         if (readErrorCode)
             actionTrace.ErrorCode = reader.ReadUInt64();
 
-        // Todo: @corvin confirm this
         actionTrace.ReturnValue = reader.ReadChars(reader.Read7BitEncodedInt());
 
         return actionTrace;

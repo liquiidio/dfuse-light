@@ -9,7 +9,19 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public abstract class TransactionVariant
 {
-
+    public static TransactionVariant ReadFromBinaryReader(BinaryReader reader)
+    {
+        var type = reader.ReadByte();
+        switch (type)
+        {
+            case 0:
+                return reader.ReadTransactionId();
+            case 1:
+                return PackedTransaction.ReadFromBinaryReader(reader);
+            default:
+                throw new Exception("BlockSigningAuthorityVariant {type} unknown");
+        }
+    }
 }
 
 
@@ -61,7 +73,26 @@ public class TransactionId : TransactionVariant
 public class PackedTransaction : TransactionVariant
 {
     public Signature[] Signatures = Array.Empty<Signature>();
+    // TODO @corvin Compression to enum
     public byte Compression = 0; //fc::enum_type<uint8_t, compression>
     public Bytes PackedContextFreeData = new();
     public Bytes PackedTrx = new ();
+
+    public new static PackedTransaction ReadFromBinaryReader(BinaryReader reader)
+    {
+        var obj = new PackedTransaction();
+
+        obj.Signatures = new Signature[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < obj.Signatures.Length; i++)
+        {
+            obj.Signatures[i] = reader.ReadSignature();
+        }
+
+        obj.Compression = reader.ReadByte();
+
+        obj.PackedContextFreeData = reader.ReadBytes(reader.Read7BitEncodedInt());
+        obj.PackedTrx = reader.ReadBytes(reader.Read7BitEncodedInt());
+
+        return obj;
+    }
 }
