@@ -12,11 +12,8 @@ public class TransactionReceipt : TransactionReceiptHeader
 
     public new static TransactionReceipt ReadFromBinaryReader(BinaryReader reader)
     {
-        // Todo: (Haron) Finish here once I test casting
-        var transactionReceipt = new TransactionReceipt()
-        {
-            Trx = TransactionVariant.ReadFromBinaryReader(reader)
-        };
+        var transactionReceipt = (TransactionReceipt)TransactionReceiptHeader.ReadFromBinaryReader(reader);
+        transactionReceipt.Trx = TransactionVariant.ReadFromBinaryReader(reader);
         return transactionReceipt;
     }
 }

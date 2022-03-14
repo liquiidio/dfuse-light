@@ -36,8 +36,7 @@ public class Transaction : TransactionHeader
 
     public new static Transaction ReadFromBinaryReader(BinaryReader reader)
     {
-        // Todo: (Haron) add type cast here and the parent class
-        var transaction = new Transaction();
+        var transaction = (Transaction)TransactionHeader.ReadFromBinaryReader(reader);
 
         transaction.ContextFreeActions = new Action[reader.Read7BitEncodedInt()];
         for (int i = 0; i < transaction.ContextFreeActions.Length; i++)

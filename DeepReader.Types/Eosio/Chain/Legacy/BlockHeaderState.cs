@@ -23,7 +23,6 @@ public class BlockHeaderState : BlockHeaderStateCommon
 
     public new static BlockHeaderState ReadFromBinaryReader(BinaryReader reader)
     {
-        // Todo: (Haron) We might replace here once we confirm the cast does not work
         var blockHeaderState = (BlockHeaderState)BlockHeaderStateCommon.ReadFromBinaryReader(reader);
         blockHeaderState.Id = reader.ReadChecksum256();
         blockHeaderState.Header = SignedBlockHeader.ReadFromBinaryReader(reader);

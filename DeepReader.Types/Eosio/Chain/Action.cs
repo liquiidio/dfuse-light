@@ -26,14 +26,8 @@ public class Action : ActionBase
 
     public new static Action ReadFromBinaryReader(BinaryReader reader)
     {
-        // Todo: (Haron) Type cast might be added here if we confirm it works
-        // Corvin: "Yeah, Type cast here should be needed and should work. e.g.
-        // var obj = ActionBase.ReadFromBinaryReader(reader);
-        // ob.Data = reader.ReadActionDataBytes()
-        var action = new Action()
-        {
-            Data = reader.ReadActionDataBytes()
-        };
+        var action = (Action)ActionBase.ReadFromBinaryReader(reader);
+        action.Data = reader.ReadActionDataBytes();
         return action;
     }
 

@@ -28,8 +28,6 @@ public class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant
 
     public new static BlockSigningAuthorityV0 ReadFromBinaryReader(BinaryReader reader)
     {
-        // Todo: (Haron) Review this - BlockSigningAuthority with an abstract class
-        // Corvin: "Already did this"
         var obj = new BlockSigningAuthorityV0()
         {
             Threshold = reader.ReadUInt32()

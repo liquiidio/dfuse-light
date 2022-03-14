@@ -17,8 +17,7 @@ public class SignedTransaction : Transaction
 
     public new static SignedTransaction ReadFromBinaryReader(BinaryReader reader)
     {
-        // Todo: (Haron) Type cast is needed to be added here once confirmed
-        var signedTransaction = new SignedTransaction();
+        var signedTransaction = (SignedTransaction)Transaction.ReadFromBinaryReader(reader);
 
         signedTransaction.Signatures = new Signature[reader.Read7BitEncodedInt()];
         for (int i = 0; i < signedTransaction.Signatures.Length; i++)

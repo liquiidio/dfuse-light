@@ -13,8 +13,6 @@ public class SignedBlockHeader : BlockHeader
 
     public new static SignedBlockHeader ReadFromBinaryReader(BinaryReader reader)
     {
-        // Todo: (Haron) Confirm this type cast
-        // Corvin: "Looks good to me"
         var signedBloackHeader = (SignedBlockHeader)BlockHeader.ReadFromBinaryReader(reader);
         signedBloackHeader.ProducerSignature = reader.ReadSignature();
         return signedBloackHeader;

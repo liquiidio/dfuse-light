@@ -14,8 +14,6 @@ public class SignedBlock : SignedBlockHeader
 
     public new static SignedBlock ReadFromBinaryReader(BinaryReader reader)
     {
-        // Todo: (Haron) Confirm this type cast
-        // Corvin: "Looks good to me"
         var signedBlock = (SignedBlock)SignedBlockHeader.ReadFromBinaryReader(reader);
         
         signedBlock.Transactions = new TransactionReceipt[reader.Read7BitEncodedInt()];
@@ -27,7 +25,6 @@ public class SignedBlock : SignedBlockHeader
         signedBlock.BlockExtensions = new Extension[reader.Read7BitEncodedInt()];
         for (int i = 0; i != signedBlock.BlockExtensions.Length; i++)
         {
-            // Todo: (Haron) KeyValuePair
             signedBlock.BlockExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
         }
 
