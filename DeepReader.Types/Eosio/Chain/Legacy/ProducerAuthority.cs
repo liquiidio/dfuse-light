@@ -17,7 +17,8 @@ public class ProducerAuthority
             AccountName = reader.ReadName(),
 
             // Todo: (Haron) Check on this variant
-            BlockSigningAuthority = BlockSigningAuthorityV0.ReadFromBinaryReader(reader)
+            // Corvin: "Already did that and changed BlockSigningAuthorityV0.ReadFromBinaryReader to BlockSigningAuthorityVariant.ReadFromBinaryReader"
+            BlockSigningAuthority = BlockSigningAuthorityVariant.ReadFromBinaryReader(reader)
         };
         return producerAuthority;
     }

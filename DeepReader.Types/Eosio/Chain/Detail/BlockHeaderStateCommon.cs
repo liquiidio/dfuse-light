@@ -50,10 +50,8 @@ public class BlockHeaderStateCommon
             blockStateHeaderCommon.ProducerToLastImpliedIrb[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
         }
 
-        // Todo: (Haron) Check on this variant (abstract class)
-        blockStateHeaderCommon.ValidBlockSigningAuthority = BlockSigningAuthorityV0.ReadFromBinaryReader(reader);
+        blockStateHeaderCommon.ValidBlockSigningAuthority = BlockSigningAuthorityVariant.ReadFromBinaryReader(reader);
 
-        // Todo: @corvin confirm this implementation
         blockStateHeaderCommon.ConfirmCount = reader.ReadBytes(reader.Read7BitEncodedInt());
 
         return blockStateHeaderCommon;

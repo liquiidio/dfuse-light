@@ -54,7 +54,6 @@ public class Transaction : TransactionHeader
         transaction.TransactionExtensions = new Extension[reader.Read7BitEncodedInt()];
         for (int i = 0; i < transaction.TransactionExtensions.Length; i++)
         {
-            // Todo: @corvin confirm this is how we read Extension
             transaction.TransactionExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
         }
 

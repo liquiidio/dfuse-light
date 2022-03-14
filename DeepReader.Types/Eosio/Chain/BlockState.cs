@@ -16,6 +16,7 @@ public class BlockState : BlockHeaderState
     public new static BlockState ReadFromBinaryReader(BinaryReader reader)
     {
         // Todo: (Haron) Confirm this type cast
+        // Corvin: "Looks good to me"
         var blockState = (BlockState)BlockHeaderState.ReadFromBinaryReader(reader);
 
         var readBlock = reader.ReadBoolean();

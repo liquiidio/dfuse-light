@@ -5,6 +5,17 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public abstract class BlockSigningAuthorityVariant
 {
+    public static BlockSigningAuthorityVariant ReadFromBinaryReader(BinaryReader reader)
+    {
+        var type = reader.ReadByte();
+        switch (type)
+        {
+            case 0:
+                return BlockSigningAuthorityV0.ReadFromBinaryReader(reader);
+            default:
+                throw new Exception("BlockSigningAuthorityVariant {type} unknown");
+        }
+    }
 }
 
 /// <summary>
@@ -15,9 +26,10 @@ public class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant
     public uint Threshold = 0;
     public SharedKeyWeight[] Keys = Array.Empty<SharedKeyWeight>();
 
-    public static BlockSigningAuthorityV0 ReadFromBinaryReader(BinaryReader reader)
+    public new static BlockSigningAuthorityV0 ReadFromBinaryReader(BinaryReader reader)
     {
         // Todo: (Haron) Review this - BlockSigningAuthority with an abstract class
+        // Corvin: "Already did this"
         var obj = new BlockSigningAuthorityV0()
         {
             Threshold = reader.ReadUInt32()
