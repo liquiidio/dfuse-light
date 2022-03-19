@@ -34,40 +34,40 @@ public static class DeepMindDeserializer
         try
         {
 #endif
-        object obj = null!;
-        try
-        {
-            var reader = new BinaryBufferReader(data);
+            object obj = null!;
+            try
+            {
+                var reader = new BinaryBufferReader(data);
 
-            if (VariantReaders.TryGetValue(type, out var variantReader))
-            {
-                obj = variantReader(reader);
-                if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
+                if (VariantReaders.TryGetValue(type, out var variantReader))
                 {
-                    Log.Error($"[{type.Name}] : reader has not read until end {reader.Position} of {data.Length} obj: {obj}");
+                    obj = variantReader(reader);
+                    if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
+                    {
+                        Log.Error($"[{type.Name}] : reader has not read until end {reader.Position} of {data.Length} obj: {obj}");
+                    }
+                    return obj;
                 }
-                return obj;
+                else
+                {
+                    obj = GetTypeReader(type)(reader, type);
+                    if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
+                        Log.Error($"[{type.Name}] : reader has not read until end {reader.Position} of {data.Length} obj: {obj}");
+                    return obj;
+                }
             }
-            else
+            catch (EndOfStreamException)
             {
-                obj = GetTypeReader(type)(reader, type);
-                if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
-                    Log.Error($"[{type.Name}] : reader has not read until end {reader.Position} of {data.Length} obj: {obj}");
-                return obj;
+                Log.Error($"[{type.Name}] End of stream ", "");
+                if (obj != null)
+                    Log.Information($"obj: {obj}");
             }
-        }
-        catch (EndOfStreamException)
-        {
-            Log.Error($"[{type.Name}] End of stream ", "");
-            if(obj != null)
-                Log.Information($"obj: {obj}");
-        }
-        catch (Exception e)
-        {
-            Log.Error(e,"");
-            throw;
-        }
-        return Activator.CreateInstance(type)!;
+            catch (Exception e)
+            {
+                Log.Error(e, "");
+                throw;
+            }
+            return Activator.CreateInstance(type)!;
 #if DEBUG
         }
         catch (Exception e)
@@ -84,50 +84,50 @@ public static class DeepMindDeserializer
         try
         {
 #endif
-        var obj = Activator.CreateInstance(type)!;
-        var objRef = __makeref(obj);
+            var obj = Activator.CreateInstance(type)!;
+            var objRef = __makeref(obj);
 
-        /*var fields = type.GetFields().All(f => Attribute.IsDefined(f, CommonTypes.TypeOfSortOrderAttribute))
-            ? type.GetFields().OrderBy(f =>
-                // ReSharper disable once PossibleNullReferenceException
-                ((SortOrderAttribute) f.GetCustomAttribute(CommonTypes.TypeOfSortOrderAttribute, true)).Order).ToList()
-            : type.GetFields().ToList();*/
+            /*var fields = type.GetFields().All(f => Attribute.IsDefined(f, CommonTypes.TypeOfSortOrderAttribute))
+                ? type.GetFields().OrderBy(f =>
+                    // ReSharper disable once PossibleNullReferenceException
+                    ((SortOrderAttribute) f.GetCustomAttribute(CommonTypes.TypeOfSortOrderAttribute, true)).Order).ToList()
+                : type.GetFields().ToList();*/
 
-        foreach (var fieldInfo in TryGetCachedFieldInfos(type))
-        {
-            var fieldType = fieldInfo.Key.FieldType;
-
-            if (VariantReaders.TryGetValue(fieldType, out var variantReader))
+            foreach (var fieldInfo in TryGetCachedFieldInfos(type))
             {
-                var value = fieldInfo.Value
-                    ? ReadOptional(binaryReader, variantReader)
-                    : variantReader(binaryReader);
-                if(value != null)
-                    fieldInfo.Key.SetValueDirect(objRef, value);
-            }
-            else if (fieldType.IsAbstract)
-            {
-                continue;
-            }
-            else if (fieldType.IsEnum)
-            {
-                var value = ReadEnum(binaryReader);
-                fieldInfo.Key.SetValueDirect(objRef, Enum.ToObject(fieldType, value));
-            }
-            else
-            {
-                var typeReader = GetTypeReader(fieldType);
+                var fieldType = fieldInfo.Key.FieldType;
 
-                var value = fieldInfo.Value
-                    ? ReadOptional(binaryReader, fieldType, typeReader)
-                    : typeReader(binaryReader, fieldType);
+                if (VariantReaders.TryGetValue(fieldType, out var variantReader))
+                {
+                    var value = fieldInfo.Value
+                        ? ReadOptional(binaryReader, variantReader)
+                        : variantReader(binaryReader);
+                    if (value != null)
+                        fieldInfo.Key.SetValueDirect(objRef, value);
+                }
+                else if (fieldType.IsAbstract)
+                {
+                    continue;
+                }
+                else if (fieldType.IsEnum)
+                {
+                    var value = ReadEnum(binaryReader);
+                    fieldInfo.Key.SetValueDirect(objRef, Enum.ToObject(fieldType, value));
+                }
+                else
+                {
+                    var typeReader = GetTypeReader(fieldType);
 
-                if (value != null)
-                    fieldInfo.Key.SetValueDirect(objRef, value);
+                    var value = fieldInfo.Value
+                        ? ReadOptional(binaryReader, fieldType, typeReader)
+                        : typeReader(binaryReader, fieldType);
+
+                    if (value != null)
+                        fieldInfo.Key.SetValueDirect(objRef, value);
+                }
             }
-        }
 
-        return obj;
+            return obj;
 #if DEBUG
         }
         catch (Exception e)
@@ -223,32 +223,32 @@ public static class DeepMindDeserializer
         try
         {
 #endif
-        var elementType = type.GetElementType()!;
-        var size = Convert.ToInt32(binaryReader.ReadVarUint32());
+            var elementType = type.GetElementType()!;
+            var size = Convert.ToInt32(binaryReader.ReadVarUint32());
 
-        var items = (Array)Activator.CreateInstance(type, size)!;
-//        var items = (Array)Activator.CreateInstance(type, new object[] { size })!;
-        if (size > 0)
-        {
-            if (VariantReaders.TryGetValue(elementType, out var variantReader))
+            var items = (Array)Activator.CreateInstance(type, size)!;
+            //        var items = (Array)Activator.CreateInstance(type, new object[] { size })!;
+            if (size > 0)
             {
-                for (var i = 0; i < size; i++)
+                if (VariantReaders.TryGetValue(elementType, out var variantReader))
                 {
-                    items.SetValue(variantReader(binaryReader), i);
+                    for (var i = 0; i < size; i++)
+                    {
+                        items.SetValue(variantReader(binaryReader), i);
+                    }
+                }
+                else
+                {
+                    var typeReader = GetTypeReader(elementType);
+
+                    for (var i = 0; i < size; i++)
+                    {
+                        items.SetValue(typeReader(binaryReader, elementType), i);
+                    }
                 }
             }
-            else
-            {
-                var typeReader = GetTypeReader(elementType);
 
-                for (var i = 0; i < size; i++)
-                {
-                    items.SetValue(typeReader(binaryReader, elementType), i);
-                }
-            }
-        }
-
-        return items;
+            return items;
 #if DEBUG
         }
         catch (Exception e)
@@ -265,48 +265,48 @@ public static class DeepMindDeserializer
         try
         {
 #endif
-        var genericType = type.GetGenericTypeDefinition();
-        var genericArgs = type.GetGenericArguments();
-        var size = Convert.ToInt32(binaryReader.ReadVarUint32());
+            var genericType = type.GetGenericTypeDefinition();
+            var genericArgs = type.GetGenericArguments();
+            var size = Convert.ToInt32(binaryReader.ReadVarUint32());
 
-        if (VariantReaders.TryGetValue(type, out var genTypeReader))
-        {
-            var generic = genTypeReader(binaryReader);
-            return generic;
-        }
-        else if (genericType == typeof(IDictionary))
-        {
-            var items = (IDictionary)Activator.CreateInstance(type)!;
-            if (genericArgs.Length == 2)
+            if (VariantReaders.TryGetValue(type, out var genTypeReader))
             {
-                var typeReader1 = GetTypeReader(genericArgs[0]);
-                var typeReader2 = GetTypeReader(genericArgs[1]);
-                for (var i = 0; i < size; i++)
-                {
-                    items?.Add(typeReader1(binaryReader, genericArgs[0]),
-                        typeReader2(binaryReader, genericArgs[1]));
-                }
+                var generic = genTypeReader(binaryReader);
+                return generic;
             }
-            return items!;
-        }
-        else if (genericType == typeof(IList))
-        {
-            var items = (IList)Activator.CreateInstance(type)!;
-            if (genericArgs.Length == 1)
+            else if (genericType == typeof(IDictionary))
             {
-                var typeReader = GetTypeReader(genericArgs[0]);
-                for (var i = 0; i < size; i++)
+                var items = (IDictionary)Activator.CreateInstance(type)!;
+                if (genericArgs.Length == 2)
                 {
-                    items?.Add(typeReader(binaryReader, genericArgs[0]));
+                    var typeReader1 = GetTypeReader(genericArgs[0]);
+                    var typeReader2 = GetTypeReader(genericArgs[1]);
+                    for (var i = 0; i < size; i++)
+                    {
+                        items?.Add(typeReader1(binaryReader, genericArgs[0]),
+                            typeReader2(binaryReader, genericArgs[1]));
+                    }
                 }
+                return items!;
             }
-            return items!;
-        }
-        else
-        {
-            Log.Information($"Generic Type {type.Name} not allowed");
-        }
-        return null!;
+            else if (genericType == typeof(IList))
+            {
+                var items = (IList)Activator.CreateInstance(type)!;
+                if (genericArgs.Length == 1)
+                {
+                    var typeReader = GetTypeReader(genericArgs[0]);
+                    for (var i = 0; i < size; i++)
+                    {
+                        items?.Add(typeReader(binaryReader, genericArgs[0]));
+                    }
+                }
+                return items!;
+            }
+            else
+            {
+                Log.Information($"Generic Type {type.Name} not allowed");
+            }
+            return null!;
 #if DEBUG
         }
         catch (Exception e)
