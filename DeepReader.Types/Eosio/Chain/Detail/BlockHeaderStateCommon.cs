@@ -6,7 +6,7 @@ namespace DeepReader.Types.Eosio.Chain.Detail;
 /// <summary>
 /// libraries/chain/include/eosio/chain/block_header_state.hpp
 /// </summary>
-public class BlockHeaderStateCommon
+public class BlockHeaderStateCommon : IEosioSerializable<BlockHeaderStateCommon>
 {
     [SortOrder(1)]
     public uint BlockNum = 0;
@@ -29,7 +29,7 @@ public class BlockHeaderStateCommon
 
     public static BlockHeaderStateCommon ReadFromBinaryReader(BinaryReader reader)
     {
-        var blockStateHeaderCommon = new BlockHeaderStateCommon() 
+        var blockStateHeaderCommon = new BlockHeaderStateCommon()
         {
             BlockNum = reader.ReadUInt32(),
             DPoSProposedIrreversibleBlockNum = reader.ReadUInt32(),

@@ -6,7 +6,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/block.hpp
 /// </summary>
-public class TransactionReceiptHeader
+public class TransactionReceiptHeader : IEosioSerializable<TransactionReceiptHeader>
 {
     [SortOrder(1)]
     public byte Status;    // fc::enum_type<uint8_t,status_enum> v

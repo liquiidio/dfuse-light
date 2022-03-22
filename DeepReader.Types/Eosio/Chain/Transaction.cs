@@ -6,7 +6,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/transaction.hpp
 /// </summary>
-public class Transaction : TransactionHeader
+public class Transaction : TransactionHeader, IEosioSerializable<Transaction>
 {
     // abi-field-name: context_free_actions ,abi-field-type: action[]
     [SortOrder(7)]

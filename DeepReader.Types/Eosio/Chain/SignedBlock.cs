@@ -5,7 +5,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/block.hpp
 /// </summary>
-public class SignedBlock : SignedBlockHeader
+public class SignedBlock : SignedBlockHeader, IEosioSerializable<SignedBlock>
 {
     [SortOrder(11)]
     public TransactionReceipt[] Transactions = Array.Empty<TransactionReceipt>();

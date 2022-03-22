@@ -7,7 +7,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/transaction.hpp
 /// </summary>
-public class SignedTransaction : Transaction
+public class SignedTransaction : Transaction, IEosioSerializable<SignedTransaction>
 {
     [SortOrder(10)]
     public Signature[] Signatures = Array.Empty<Signature>();

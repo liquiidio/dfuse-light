@@ -5,7 +5,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/trace.hpp
 /// </summary>
-public class TransactionTrace
+public class TransactionTrace : IEosioSerializable<TransactionTrace>
 {
     // SHA-256 (FIPS 180-4) of the FCBUFFER-encoded packed transaction
     public TransactionId Id = TransactionId.Empty;
@@ -113,7 +113,7 @@ public class TransactionTrace
     }
 }
 
-public class Except
+public class Except : IEosioSerializable<Except>
 {
     public long Code;
     public string Name = string.Empty;

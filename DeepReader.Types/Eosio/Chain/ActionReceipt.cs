@@ -6,7 +6,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/action_receipt.hpp
 /// </summary>
-public class ActionReceipt
+public class ActionReceipt : IEosioSerializable<ActionReceipt>
 {
     public Name Receiver = string.Empty;
     public Checksum256 ActionDigest = string.Empty;

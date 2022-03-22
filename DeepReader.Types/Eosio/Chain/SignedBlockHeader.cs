@@ -6,7 +6,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/block_header.hpp
 /// </summary>
-public class SignedBlockHeader : BlockHeader
+public class SignedBlockHeader : BlockHeader, IEosioSerializable<SignedBlockHeader>
 {
     [SortOrder(10)]
     public Signature ProducerSignature = Signature.Empty;// ecc.Signature // no pointer!!

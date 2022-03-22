@@ -7,7 +7,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/action.hpp
 /// </summary>
-public class Action : ActionBase
+public class Action : ActionBase, IEosioSerializable<Action>
 {
     // abi-field-name: data ,abi-field-type: bytes
     [JsonPropertyName("data")]

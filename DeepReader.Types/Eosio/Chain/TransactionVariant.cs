@@ -1,5 +1,3 @@
-using DeepReader.Types.EosTypes;
-using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Helpers;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -7,7 +5,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// Variant<TransactionId, PackedTransaction>
 /// </summary>
-public abstract class TransactionVariant
+public abstract class TransactionVariant : IEosioSerializable<TransactionVariant>
 {
     public static TransactionVariant ReadFromBinaryReader(BinaryReader reader)
     {
@@ -65,34 +63,4 @@ public class TransactionId : TransactionVariant
     }
 
     public static TransactionId Empty => new();
-}
-
-/// <summary>
-/// libraries/chain/include/eosio/chain/transaction.hpp
-/// </summary>
-public class PackedTransaction : TransactionVariant
-{
-    public Signature[] Signatures = Array.Empty<Signature>();
-    // TODO @corvin Compression to enum
-    public byte Compression = 0; //fc::enum_type<uint8_t, compression>
-    public Bytes PackedContextFreeData = new();
-    public Bytes PackedTrx = new ();
-
-    public new static PackedTransaction ReadFromBinaryReader(BinaryReader reader)
-    {
-        var obj = new PackedTransaction();
-
-        obj.Signatures = new Signature[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < obj.Signatures.Length; i++)
-        {
-            obj.Signatures[i] = reader.ReadSignature();
-        }
-
-        obj.Compression = reader.ReadByte();
-
-        obj.PackedContextFreeData = reader.ReadBytes(reader.Read7BitEncodedInt());
-        obj.PackedTrx = reader.ReadBytes(reader.Read7BitEncodedInt());
-
-        return obj;
-    }
 }

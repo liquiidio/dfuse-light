@@ -1,4 +1,4 @@
 ﻿public interface IParent<T>
 {
-    T ReadFromBinaryReader();
+    static abstract T ReadFromBinaryReader();
 }

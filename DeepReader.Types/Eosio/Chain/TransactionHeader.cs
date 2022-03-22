@@ -7,7 +7,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/transaction.hpp
 /// </summary>
-public class TransactionHeader
+public class TransactionHeader : IEosioSerializable<TransactionHeader>
 {
     // abi-field-name: expiration ,abi-field-type: time_point_sec
     [SortOrder(1)]

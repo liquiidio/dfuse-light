@@ -6,7 +6,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/block_header.hpp
 /// </summary>
-public class BlockHeader
+public class BlockHeader : IEosioSerializable<BlockHeader>
 {
     [SortOrder(1)]
     public Timestamp Timestamp = Timestamp.Zero;

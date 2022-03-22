@@ -7,7 +7,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/action.hpp
 /// </summary>
-public class ActionBase
+public class ActionBase : IEosioSerializable<ActionBase>
 {
 
     // abi-field-name: account ,abi-field-type: name

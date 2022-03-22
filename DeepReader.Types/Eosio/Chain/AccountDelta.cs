@@ -5,7 +5,8 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/trace.hpp
 /// </summary>
-public class AccountDelta {
+public class AccountDelta : IEosioSerializable<AccountDelta>
+{
     public Name Account = string.Empty;
     public long Delta = 0;
 

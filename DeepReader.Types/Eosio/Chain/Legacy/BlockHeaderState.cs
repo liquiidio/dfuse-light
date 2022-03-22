@@ -8,7 +8,7 @@ namespace DeepReader.Types.Eosio.Chain.Legacy;
 /// <summary>
 /// libraries/chain/include/eosio/chain/block_header_state.hpp
 /// </summary>
-public class BlockHeaderState : BlockHeaderStateCommon
+public class BlockHeaderState : BlockHeaderStateCommon, IEosioSerializable<BlockHeaderState>
 {
     [SortOrder(10)]
     public Checksum256 Id = Checksum256.Empty;

@@ -4,11 +4,6 @@
 
     public static BlockHeader ReadFromBinaryReader()
     {
-        return new();
-    }
-
-    BlockHeader IParent<BlockHeader>.ReadFromBinaryReader()
-    {
-        return BlockHeader.ReadFromBinaryReader();
+        return new BlockHeader();
     }
 }

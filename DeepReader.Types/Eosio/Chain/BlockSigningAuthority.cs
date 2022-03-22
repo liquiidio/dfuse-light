@@ -3,7 +3,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public abstract class BlockSigningAuthorityVariant
+public abstract class BlockSigningAuthorityVariant : IEosioSerializable<BlockSigningAuthorityVariant>
 {
     public static BlockSigningAuthorityVariant ReadFromBinaryReader(BinaryReader reader)
     {
@@ -21,7 +21,7 @@ public abstract class BlockSigningAuthorityVariant
 /// <summary>
 /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant
+public class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant, IEosioSerializable<BlockSigningAuthorityV0>
 {
     public uint Threshold = 0;
     public SharedKeyWeight[] Keys = Array.Empty<SharedKeyWeight>();

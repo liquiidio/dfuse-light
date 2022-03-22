@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.Interfaces;
 using Salar.BinaryBuffers;
 using Serilog;
 
@@ -23,9 +24,12 @@ public static class DeepMindDeserializer
         return await Task.Run(() => Deserialize(data, type), cancellationToken);
     }
 
-    public static T Deserialize<T>(byte[] data)
+    // Todo: @corvin from haron. 
+    public static T Deserialize<T>(byte[] data) where T : IEosioSerializable<T>
     {
-        return (T)Deserialize(data, typeof(T));
+        var reader = new BinaryReader(new MemoryStream(data));
+        //return (T)Deserialize(data, typeof(T));
+        return T.ReadFromBinaryReader(reader);
     }
 
     public static object Deserialize(byte[] data, Type type)
