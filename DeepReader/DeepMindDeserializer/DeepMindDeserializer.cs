@@ -14,73 +14,73 @@ namespace DeepReader.DeepMindDeserializer;
 // TODO Can we use ReadOnlySpan<byte> or ReadOnlyMemory<byte> instead of byte[] and would it bring a benefit?
 public static class DeepMindDeserializer
 {
-    public static async Task<T> DeserializeAsync<T>(byte[] data, CancellationToken cancellationToken) // where T : BaseClass
+    public static async Task<T> DeserializeAsync<T>(byte[] data, CancellationToken cancellationToken) where T : IEosioSerializable<T>
     {
-        return await Task.Run(() => (T)Deserialize(data, typeof(T)), cancellationToken);
+        return await Task.Run(() => Deserialize<T>(data), cancellationToken);
     }
 
     public static async Task<object> DeserializeAsync(byte[] data, Type type, CancellationToken cancellationToken) // where T : BaseClass
     {
-        return await Task.Run(() => Deserialize(data, type), cancellationToken);
+        // Todo: @corvin from haron, I am not sure how to implement this.
+        // I can't think of a way to pass the Type type to the generic deserialize method. 
+        return await Task.Run(() => Deserialize<type>(data), cancellationToken);
     }
 
-    // Todo: @corvin from haron. 
     public static T Deserialize<T>(byte[] data) where T : IEosioSerializable<T>
     {
         var reader = new BinaryReader(new MemoryStream(data));
-        //return (T)Deserialize(data, typeof(T));
         return T.ReadFromBinaryReader(reader);
     }
 
-    public static object Deserialize(byte[] data, Type type)
-    {
-#if DEBUG
-        try
-        {
-#endif
-            object obj = null!;
-            try
-            {
-                var reader = new BinaryBufferReader(data);
+//    public static object Deserialize(byte[] data, Type type)
+//    {
+//#if DEBUG
+//        try
+//        {
+//#endif
+//            object obj = null!;
+//            try
+//            {
+//                var reader = new BinaryBufferReader(data);
 
-                if (VariantReaders.TryGetValue(type, out var variantReader))
-                {
-                    obj = variantReader(reader);
-                    if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
-                    {
-                        Log.Error($"[{type.Name}] : reader has not read until end {reader.Position} of {data.Length} obj: {obj}");
-                    }
-                    return obj;
-                }
-                else
-                {
-                    obj = GetTypeReader(type)(reader, type);
-                    if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
-                        Log.Error($"[{type.Name}] : reader has not read until end {reader.Position} of {data.Length} obj: {obj}");
-                    return obj;
-                }
-            }
-            catch (EndOfStreamException)
-            {
-                Log.Error($"[{type.Name}] End of stream ", "");
-                if (obj != null)
-                    Log.Information($"obj: {obj}");
-            }
-            catch (Exception e)
-            {
-                Log.Error(e, "");
-                throw;
-            }
-            return Activator.CreateInstance(type)!;
-#if DEBUG
-        }
-        catch (Exception e)
-        {
-            Log.Debug($"type: {type.Name}");
-            throw;
-        }
-#endif
-    }
+//                if (VariantReaders.TryGetValue(type, out var variantReader))
+//                {
+//                    obj = variantReader(reader);
+//                    if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
+//                    {
+//                        Log.Error($"[{type.Name}] : reader has not read until end {reader.Position} of {data.Length} obj: {obj}");
+//                    }
+//                    return obj;
+//                }
+//                else
+//                {
+//                    obj = GetTypeReader(type)(reader, type);
+//                    if (reader.Position != data.Length && type != CommonTypes.TypeOfAbi)
+//                        Log.Error($"[{type.Name}] : reader has not read until end {reader.Position} of {data.Length} obj: {obj}");
+//                    return obj;
+//                }
+//            }
+//            catch (EndOfStreamException)
+//            {
+//                Log.Error($"[{type.Name}] End of stream ", "");
+//                if (obj != null)
+//                    Log.Information($"obj: {obj}");
+//            }
+//            catch (Exception e)
+//            {
+//                Log.Error(e, "");
+//                throw;
+//            }
+//            return Activator.CreateInstance(type)!;
+//#if DEBUG
+//        }
+//        catch (Exception e)
+//        {
+//            Log.Debug($"type: {type.Name}");
+//            throw;
+//        }
+//#endif
+//    }
 
     public static object ReadReferenceType(BinaryBufferReader binaryReader, Type type)
     {

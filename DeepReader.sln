@@ -11,7 +11,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeepReader.Types", "DeepRea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeepReader.Apis", "DeepReader.Apis\DeepReader.Apis.csproj", "{6A932385-8A15-4CD4-8114-40CA660AB6E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeepReader.Benchmarks", "DeepReader.Benchmarks\DeepReader.Benchmarks.csproj", "{3AE6AEE7-1826-4951-86C5-D6D7678266CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeepReader.Benchmarks", "DeepReader.Benchmarks\DeepReader.Benchmarks.csproj", "{3AE6AEE7-1826-4951-86C5-D6D7678266CE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1C6985F9-783A-4F7A-8153-BEB22F6ECA46}"
+	ProjectSection(SolutionItems) = preProject
+		nuget.config = nuget.config
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
