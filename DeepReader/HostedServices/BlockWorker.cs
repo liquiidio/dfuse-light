@@ -5,7 +5,9 @@ using DeepReader.Storage;
 using DeepReader.Types;
 using DeepReader.Types.FlattenedTypes;
 using DeepReader.Types.Helpers;
+using Newtonsoft.Json;
 using Serilog;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace DeepReader.HostedServices;
 
@@ -33,7 +35,7 @@ public class BlockWorker : BackgroundService
             IncludeFields = true,
             IgnoreReadOnlyFields = false,
             IgnoreReadOnlyProperties = false,
-            MaxDepth = 0
+            MaxDepth = Int32.MaxValue
         };
 
         bool test = true;
@@ -41,8 +43,11 @@ public class BlockWorker : BackgroundService
         {
             try
             {
-                if(block.Number % 1000 == 0)
+                if (block.Number % 1000 == 0)
+                {
                     Log.Information($"got block {block.Number}");
+                    Log.Information(JsonSerializer.Serialize(block, jsonSerializerOptions));
+                }
 
                 foreach (var setAbiAction in block.UnfilteredTransactionTraces.SelectMany(utt => utt.ActionTraces.Where(at => at.Act.Account == "eosio" && at.Act.Name == "setabi")))
                 {

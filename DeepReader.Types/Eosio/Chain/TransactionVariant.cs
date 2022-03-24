@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.JsonConverters;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -26,6 +28,7 @@ public abstract class TransactionVariant : IEosioSerializable<TransactionVariant
 /// <summary>
 /// Custom type due to Variant-Handling
 /// </summary>
+[JsonConverter(typeof(TransactionIdJsonConverter))]
 public class TransactionId : TransactionVariant
 {
     public byte[] Binary = Array.Empty<byte>();

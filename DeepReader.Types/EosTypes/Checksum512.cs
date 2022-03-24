@@ -1,19 +1,29 @@
-﻿using DeepReader.Types.Fc;
+﻿using System.Text.Json.Serialization;
+using DeepReader.Types.Fc;
+using DeepReader.Types.Helpers;
+using DeepReader.Types.JsonConverters;
 
 namespace DeepReader.Types.EosTypes;
 
+[JsonConverter(typeof(Checksum512JsonConverter))]
 public class Checksum512 : BinaryType
 {
-    private string _value = string.Empty;
+    private string? _stringVal = string.Empty;
+
+    public string StringVal
+    {
+        get => _stringVal ??= SerializationHelper.ByteArrayToHexString(Binary);
+        set => _stringVal = value;
+    }
 
     public static implicit operator Checksum512(string value)
     {
-        return new Checksum512 { _value = value };
+        return new Checksum512 { _stringVal = value };
     }
 
     public static implicit operator string(Checksum512 value)
     {
-        return value._value;
+        return value.StringVal;
     }
 
     public static implicit operator Checksum512(byte[] binary)

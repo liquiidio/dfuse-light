@@ -4,17 +4,17 @@ using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.JsonConverters;
 
-internal class Checksum256JsonConverter : JsonConverter<Checksum256>
+internal class Checksum160JsonConverter : JsonConverter<Checksum160>
 {
-    public override Checksum256 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override Checksum160 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         throw new NotImplementedException();
     }
 
-    public override void Write(Utf8JsonWriter writer, Checksum256 value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, Checksum160 value, JsonSerializerOptions options)
     {
         // TODO
-        writer.WriteStringValue(value.ToString());
+        writer.WriteStringValue(value.StringVal);
     }
 
 }

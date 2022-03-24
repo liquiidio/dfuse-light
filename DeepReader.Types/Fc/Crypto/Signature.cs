@@ -1,17 +1,28 @@
-﻿namespace DeepReader.Types.Fc.Crypto;
+﻿using System.Text.Json.Serialization;
+using DeepReader.Types.Helpers;
+using DeepReader.Types.JsonConverters;
 
+namespace DeepReader.Types.Fc.Crypto;
+
+[JsonConverter(typeof(SignatureJsonConverter))]
 public class Signature : BinaryType
 {
-    private string _value = string.Empty;
+    private string? _stringVal = string.Empty;
+
+    public string StringVal
+    {
+        get => _stringVal ??= SerializationHelper.ByteArrayToHexString(Binary);
+        set => _stringVal = value;
+    }
 
     public static implicit operator Signature(string value)
     {
-        return new Signature { _value = value };
+        return new Signature { _stringVal = value };
     }
 
     public static implicit operator string(Signature value)
     {
-        return value._value;
+        return value.StringVal;
     }
 
     public static implicit operator Signature(byte[] binary)
