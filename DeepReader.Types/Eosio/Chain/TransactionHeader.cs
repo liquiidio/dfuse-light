@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.Fc;
 

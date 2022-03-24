@@ -19,18 +19,13 @@ public static class DeepMindDeserializer
         return await Task.Run(() => Deserialize<T>(data), cancellationToken);
     }
 
-    public static async Task<object> DeserializeAsync(byte[] data, Type type, CancellationToken cancellationToken) // where T : BaseClass
-    {
-        // Todo: @corvin from haron, I am not sure how to implement this.
-        // I can't think of a way to pass the Type type to the generic deserialize method. 
-        return await Task.Run(() => Deserialize<type>(data), cancellationToken);
-    }
-
     public static T Deserialize<T>(byte[] data) where T : IEosioSerializable<T>
     {
         var reader = new BinaryReader(new MemoryStream(data));
         return T.ReadFromBinaryReader(reader);
     }
+
+
 
 //    public static object Deserialize(byte[] data, Type type)
 //    {
