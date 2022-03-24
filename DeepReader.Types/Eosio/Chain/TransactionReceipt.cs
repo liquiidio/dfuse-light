@@ -12,7 +12,12 @@ public class TransactionReceipt : TransactionReceiptHeader, IEosioSerializable<T
 
     public new static TransactionReceipt ReadFromBinaryReader(BinaryReader reader)
     {
-        var transactionReceipt = (TransactionReceipt)TransactionReceiptHeader.ReadFromBinaryReader(reader);
+        var transactionReceipt = new TransactionReceipt()
+        {
+            Status = reader.ReadByte(),
+            CpuUsageUs = reader.ReadUInt32(),
+            NetUsageWords = reader.ReadVarUint32Obj()
+        }; 
         transactionReceipt.Trx = TransactionVariant.ReadFromBinaryReader(reader);
         return transactionReceipt;
     }

@@ -26,7 +26,18 @@ public class Action : ActionBase, IEosioSerializable<Action>
 
     public new static Action ReadFromBinaryReader(BinaryReader reader)
     {
-        var action = (Action)ActionBase.ReadFromBinaryReader(reader);
+        var action = new Action()
+        {
+            Account = reader.ReadName(),
+            Name = reader.ReadName()
+        };
+
+        action.Authorization = new PermissionLevel[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < action.Authorization.Length; i++)
+        {
+            action.Authorization[i] = PermissionLevel.ReadFromBinaryReader(reader);
+        }
+
         action.Data = reader.ReadActionDataBytes();
         return action;
     }

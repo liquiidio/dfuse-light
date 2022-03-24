@@ -36,7 +36,15 @@ public class Transaction : TransactionHeader, IEosioSerializable<Transaction>
 
     public new static Transaction ReadFromBinaryReader(BinaryReader reader)
     {
-        var transaction = (Transaction)TransactionHeader.ReadFromBinaryReader(reader);
+        var transaction = new Transaction()
+        {
+            Expiration = reader.ReadTimestamp(),
+            RefBlockNum = reader.ReadUInt16(),
+            RefBlockPrefix = reader.ReadUInt32(),
+            MaxNetUsageWords = reader.ReadVarUint32Obj(),
+            MaxCpuUsageMs = reader.ReadByte(),
+            DelaySec = reader.ReadVarUint32Obj()
+        };
 
         transaction.ContextFreeActions = new Action[reader.Read7BitEncodedInt()];
         for (int i = 0; i < transaction.ContextFreeActions.Length; i++)

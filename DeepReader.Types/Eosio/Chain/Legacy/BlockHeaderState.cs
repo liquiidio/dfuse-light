@@ -23,7 +23,31 @@ public class BlockHeaderState : BlockHeaderStateCommon, IEosioSerializable<Block
 
     public new static BlockHeaderState ReadFromBinaryReader(BinaryReader reader)
     {
-        var blockHeaderState = (BlockHeaderState)BlockHeaderStateCommon.ReadFromBinaryReader(reader);
+        var blockHeaderState = new BlockHeaderState()
+        {
+            BlockNum = reader.ReadUInt32(),
+            DPoSProposedIrreversibleBlockNum = reader.ReadUInt32(),
+            DPoSIrreversibleBlockNum = reader.ReadUInt32(),
+            ActiveSchedule = ProducerAuthoritySchedule.ReadFromBinaryReader(reader),
+            BlockrootMerkle = IncrementalMerkle.ReadFromBinaryReader(reader)
+        };
+
+        blockHeaderState.ProducerToLastProduced = new PairAccountNameBlockNum[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < blockHeaderState.ProducerToLastProduced.Length; i++)
+        {
+            blockHeaderState.ProducerToLastProduced[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
+        }
+
+        blockHeaderState.ProducerToLastImpliedIrb = new PairAccountNameBlockNum[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < blockHeaderState.ProducerToLastImpliedIrb.Length; i++)
+        {
+            blockHeaderState.ProducerToLastImpliedIrb[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
+        }
+
+        blockHeaderState.ValidBlockSigningAuthority = BlockSigningAuthorityVariant.ReadFromBinaryReader(reader);
+
+        blockHeaderState.ConfirmCount = reader.ReadBytes(reader.Read7BitEncodedInt());
+        
         blockHeaderState.Id = reader.ReadChecksum256();
         blockHeaderState.Header = SignedBlockHeader.ReadFromBinaryReader(reader);
         blockHeaderState.PendingSchedule = ScheduleInfo.ReadFromBinaryReader(reader);
