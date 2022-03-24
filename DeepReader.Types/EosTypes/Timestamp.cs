@@ -2,7 +2,7 @@
 using DeepReader.Types.Fc;
 using DeepReader.Types.JsonConverters;
 
-namespace DeepReader.Types.Eosio.Chain;
+namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(TimestampJsonConverter))]
 public class Timestamp : BinaryType

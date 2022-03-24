@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.Fc;
+using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
 
 namespace DeepReader.Types.EosTypes;
@@ -7,16 +8,22 @@ namespace DeepReader.Types.EosTypes;
 [JsonConverter(typeof(Checksum256JsonConverter))]
 public class Checksum256 : BinaryType
 {
-    private string _value = string.Empty;
+    private string? _stringVal = string.Empty;
+
+    public string StringVal
+    {
+        get => _stringVal ??= SerializationHelper.ByteArrayToHexString(Binary);
+        set => _stringVal = value;
+    }
 
     public static implicit operator Checksum256(string value)
     {
-        return new Checksum256{ _value = value };
+        return new Checksum256{ _stringVal = value };
     }
 
     public static implicit operator string(Checksum256 value)
     {
-        return value._value;
+        return value.StringVal;
     }
 
     public static implicit operator Checksum256(byte[] binary)

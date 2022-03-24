@@ -19,5 +19,15 @@ public class PublicKey : BinaryType
         return value._value;
     }
 
+    public static implicit operator PublicKey(byte[] value)
+    {
+        return new PublicKey { Binary = value };
+    }
+
+    public static implicit operator byte[](PublicKey value)
+    {
+        return value.Binary;
+    }
+
     public static PublicKey Empty => new();
 }

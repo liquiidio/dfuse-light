@@ -27,6 +27,6 @@ internal class NameJsonConverter : JsonConverter<Name>
 
     public override void Write(Utf8JsonWriter writer, Name value, JsonSerializerOptions options)
     {
-        writer.WriteStringValue(value.ToString());
+        writer.WriteStringValue(value.StringVal);
     }
 }

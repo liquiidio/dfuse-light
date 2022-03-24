@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.Fc;
 
@@ -7,7 +8,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/transaction.hpp
 /// </summary>
-public class TransactionHeader
+public class TransactionHeader : IEosioSerializable<TransactionHeader>
 {
     // abi-field-name: expiration ,abi-field-type: time_point_sec
     [SortOrder(1)]
@@ -51,5 +52,19 @@ public class TransactionHeader
         this.MaxNetUsageWords = maxNetUsageWords;
         this.MaxCpuUsageMs = maxCpuUsageMs;
         this.DelaySec = delaySec;
+    }
+
+    public static TransactionHeader ReadFromBinaryReader(BinaryReader reader)
+    {
+        var header = new TransactionHeader()
+        {
+            Expiration = reader.ReadTimestamp(),
+            RefBlockNum = reader.ReadUInt16(),
+            RefBlockPrefix = reader.ReadUInt32(),
+            MaxNetUsageWords = reader.ReadVarUint32Obj(),
+            MaxCpuUsageMs = reader.ReadByte(),
+            DelaySec = reader.ReadVarUint32Obj()
+        };
+        return header;
     }
 }

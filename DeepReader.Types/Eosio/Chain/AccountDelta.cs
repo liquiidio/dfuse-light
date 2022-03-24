@@ -5,19 +5,20 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/trace.hpp
 /// </summary>
-public class AccountDelta {
+public class AccountDelta : IEosioSerializable<AccountDelta>
+{
     public Name Account = string.Empty;
     public long Delta = 0;
 
     public static AccountDelta ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new AccountDelta()
+        var accountDelta = new AccountDelta()
         {
-            Account = reader.ReadUInt64(),
+            Account = reader.ReadName(),
             Delta = reader.ReadInt64(),
         };
 
-        return obj;
+        return accountDelta;
     }
 
     internal void WriteToBinaryWriter(BinaryWriter writer)

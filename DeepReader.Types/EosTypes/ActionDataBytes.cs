@@ -1,6 +1,4 @@
-using DeepReader.Types.EosTypes;
-
-namespace DeepReader.Types.Eosio.Chain;
+namespace DeepReader.Types.EosTypes;
 
 /// <summary>
 /// Wraps Action-bytes (byte-array) to be Abi-deserialized to specific Type

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using DeepReader.Types.Enums;
 
 namespace DeepReader.Types;
@@ -12,7 +13,9 @@ public class DbOp
     public string PrimaryKey = string.Empty;//string
     public string OldPayer = string.Empty;//string
     public string NewPayer = string.Empty;//string
+    [JsonIgnore]
     public byte[] OldData = Array.Empty<byte>();//[]byte
+    [JsonIgnore]
     public byte[] NewData = Array.Empty<byte>();//[]byte
 
     internal static DbOp ReadFromBinaryReader(BinaryReader reader)

@@ -1,527 +1,543 @@
-﻿++Projektmappe "DeepReader" ‎(4 von 4 Projekten)
+﻿++Solution 'DeepReader' ‎(4 of 4 projects)
 i:{00000000-0000-0000-0000-000000000000}:DeepReader.sln
-++DeepReader.Apis
-i:{00000000-0000-0000-0000-000000000000}:DeepReader.Apis
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader.apis\deepreader.apis.csproj
-++Abhängigkeiten
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1064
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:>3847
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:>3904
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:>3961
-++Analysetools
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:analysetools
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:analysetools
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:analysetools
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:analysetools
-++Frameworks
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:frameworks
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:frameworks
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:frameworks
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:frameworks
-++Pakete
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:pakete
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:pakete
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:pakete
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:pakete
-++Projekte
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:projekte
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:projekte
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:projekte
-++GraphQl
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:e:\source\repos\deepreader\deepreader.apis\graphql\
-++Queries
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:e:\source\repos\deepreader\deepreader.apis\graphql\queries\
-++ActionQuery.cs
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:e:\source\repos\deepreader\deepreader.apis\graphql\queries\actionquery.cs
-++BlockQuery.cs
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:e:\source\repos\deepreader\deepreader.apis\graphql\queries\blockquery.cs
-++TransactionQuery.cs
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:e:\source\repos\deepreader\deepreader.apis\graphql\queries\transactionquery.cs
-++DeepReaderGrapqhHostBuilderExtensions.cs
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:e:\source\repos\deepreader\deepreader.apis\graphql\deepreadergrapqhhostbuilderextensions.cs
-++Microsoft.AspNetCore.App.Analyzers
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.0\analyzers\dotnet\cs\microsoft.aspnetcore.app.analyzers.dll
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.0\analyzers\dotnet\cs\microsoft.aspnetcore.app.analyzers.dll
-++Microsoft.AspNetCore.App.CodeFixes
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.0\analyzers\dotnet\cs\microsoft.aspnetcore.app.codefixes.dll
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.0\analyzers\dotnet\cs\microsoft.aspnetcore.app.codefixes.dll
-++Microsoft.CodeAnalysis.CSharp.NetAnalyzers
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\program files\dotnet\sdk\6.0.101\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.csharp.netanalyzers.dll
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\program files\dotnet\sdk\6.0.101\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.csharp.netanalyzers.dll
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\program files\dotnet\sdk\6.0.101\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.csharp.netanalyzers.dll
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\program files\dotnet\sdk\6.0.101\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.csharp.netanalyzers.dll
-++Microsoft.CodeAnalysis.NetAnalyzers
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\program files\dotnet\sdk\6.0.101\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.netanalyzers.dll
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\program files\dotnet\sdk\6.0.101\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.netanalyzers.dll
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\program files\dotnet\sdk\6.0.101\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.netanalyzers.dll
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\program files\dotnet\sdk\6.0.101\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.netanalyzers.dll
-++Microsoft.Extensions.Logging.Generators
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\madh-\.nuget\packages\microsoft.extensions.logging.abstractions\6.0.0\analyzers\dotnet\roslyn4.0\cs\microsoft.extensions.logging.generators.dll
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\users\madh-\.nuget\packages\microsoft.extensions.logging.abstractions\6.0.0\analyzers\dotnet\roslyn4.0\cs\microsoft.extensions.logging.generators.dll
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\madh-\.nuget\packages\microsoft.extensions.logging.abstractions\6.0.0\analyzers\dotnet\roslyn4.0\cs\microsoft.extensions.logging.generators.dll
-++System.Text.Json.SourceGeneration
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\program files\dotnet\packs\microsoft.netcore.app.ref\6.0.1\analyzers\dotnet\cs\system.text.json.sourcegeneration.dll
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\program files\dotnet\packs\microsoft.netcore.app.ref\6.0.1\analyzers\dotnet\cs\system.text.json.sourcegeneration.dll
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\program files\dotnet\packs\microsoft.netcore.app.ref\6.0.1\analyzers\dotnet\cs\system.text.json.sourcegeneration.dll
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\program files\dotnet\packs\microsoft.netcore.app.ref\6.0.1\analyzers\dotnet\cs\system.text.json.sourcegeneration.dll
-++Microsoft.NETCore.App
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\microsoft.netcore.app
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:e:\source\repos\deepreader\deepreader.storage\microsoft.netcore.app
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\microsoft.netcore.app
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:e:\source\repos\deepreader\deepreader.apis\microsoft.netcore.app
-++HotChocolate.AspNetCore (12.6.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>3355
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:>4345
 ++DeepReader.Types
 i:{00000000-0000-0000-0000-000000000000}:DeepReader.Types
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader.types\deepreader.types.csproj
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:e:\source\repos\deepreader\deepreader.types\bin\debug\net6.0\deepreader.types.dll
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:e:\source\repos\deepreader\deepreader.types\bin\debug\net6.0\deepreader.types.dll
-++DeepReader.StorageAdapters
-++Elastic
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:e:\source\repos\deepreader\deepreader.storage\elastic\
-++ElasticStorage.cs
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:e:\source\repos\deepreader\deepreader.storage\elastic\elasticstorage.cs
-++ElasticStorageHostbuilderExtensions.cs
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:e:\source\repos\deepreader\deepreader.storage\elastic\elasticstoragehostbuilderextensions.cs
-++Faster
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:e:\source\repos\deepreader\deepreader.storage\faster\
-++FasterStorage.cs
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:e:\source\repos\deepreader\deepreader.storage\faster\fasterstorage.cs
-++FasterStorageHostBuilderExtensions.cs
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:e:\source\repos\deepreader\deepreader.storage\faster\fasterstoragehostbuilderextensions.cs
-++Types.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\types.cs
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:e:\source\repos\deepreader\deepreader.storage\faster\types.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\classes\types.cs
-++IStorageAdapter.cs
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:e:\source\repos\deepreader\deepreader.storage\istorageadapter.cs
-++Microsoft.Extensions.Hosting.Abstractions (6.0.0)
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:>4338
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:>4346
-++Microsoft.Extensions.Logging.Abstractions (6.0.0)
-i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:>4342
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:>4348
-++Microsoft.FASTER.Core (1.9.11)
-++NEST (7.17.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>3354
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:>4336
-++JsonConverters
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\jsonconverters\
-++Checksum256JsonConverter.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\jsonconverters\checksum256jsonconverter.cs
-++NameJsonConverter.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\jsonconverters\namejsonconverter.cs
-++PublicKeyJsonConverter.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\jsonconverters\publickeyjsonconverter.cs
-++TimestampJsonConverter.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\jsonconverters\timestampjsonconverter.cs
-++Types
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\bin\debug\net6.0\deepreader.types.dll
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\bin\debug\net6.0\deepreader.types.dll
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\bin\debug\net6.0\deepreader.types.dll
+++Dependencies
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:>717
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:>716
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:>715
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>928
 ++Enums
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\enums\
-++DBOpOperation.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\enums\dbopoperation.cs
-++DTrxOpOperation.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\enums\dtrxopoperation.cs
-++PermOpOperation.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\enums\permopoperation.cs
-++RAMOp_Namespace.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\enums\ramop_namespace.cs
-++RAMOp_Operation.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\enums\ramop_operation.cs
-++RAMOpAction.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\enums\ramopaction.cs
-++RlimitOpOperation.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\enums\rlimitopoperation.cs
-++TableOpOperation.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\enums\tableopoperation.cs
-++TransactionStatus.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\enums\transactionstatus.cs
-++TrxOpOperation.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\enums\trxopoperation.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\enums\
 ++Eosio
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\
 ++Chain
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\
-++EosTypes
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\
-++Asset.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\asset.cs
-++Bytes.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\bytes.cs
-++Checksum160.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\checksum160.cs
-++Checksum256.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\checksum256.cs
-++Checksum512.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\checksum512.cs
-++ExtendedAsset.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\extendedasset.cs
-++Float128.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\float128.cs
-++Int128.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\int128.cs
-++Name.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\name.cs
-++PublicKey.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\publickey.cs
-++Symbol.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\symbol.cs
-++SymbolCode.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\symbolcode.cs
-++Uint128.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eostypes\uint128.cs
-++Fc
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\fc\
-++Crypto
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\fc\crypto\
-++BinaryType.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\fc\binarytype.cs
-++VarInt32.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\fc\varint32.cs
-++VarInt64.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\fc\varint64.cs
-++VarUint32.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\fc\varuint32.cs
-++VarUint64.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\fc\varuint64.cs
-++AccountRAMDelta.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\accountramdelta.cs
-++Authority.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\authority.cs
-++Block.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\block.cs
-++CreationOp.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\creationop.cs
-++DBOp.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\dbop.cs
-++DTrxOp.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\dtrxop.cs
-++ElasticLimitParameters.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\elasticlimitparameters.cs
-++Feature.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\feature.cs
-++FeatureOp.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\featureop.cs
-++KeyWeight.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\keyweight.cs
-++PermissionLevelWeight.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\permissionlevelweight.cs
-++PermissionObject.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\permissionobject.cs
-++PermOp.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\permop.cs
-++ProducerSchedule.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\producerschedule.cs
-++RAMCorrectionOp.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\ramcorrectionop.cs
-++RAMOp.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\ramop.cs
-++Ratio.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\ratio.cs
-++RlimitAccountLimits.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\rlimitaccountlimits.cs
-++RlimitAccountUsage.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\rlimitaccountusage.cs
-++RlimitConfig.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\rlimitconfig.cs
-++RlimitOp.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\rlimitop.cs
-++RlimitState.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\rlimitstate.cs
-++Specification.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\specification.cs
-++SubjectiveRestrictions.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\subjectiverestrictions.cs
-++TableOp.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\tableop.cs
-++TrxOp.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\trxop.cs
-++UsageAccumulator.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\usageaccumulator.cs
-++WaitWeight.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\waitweight.cs
-++AbiType.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\abitype.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\
 ++Detail
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\detail\
-++Legacy
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\legacy\
-++AccountDelta.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\accountdelta.cs
-++Action.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\action.cs
-++ActionBase.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\actionbase.cs
-++ActionDataBytes.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\actiondatabytes.cs
-++ActionReceipt.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\actionreceipt.cs
-++ActionTrace.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\actiontrace.cs
-++BlockHeader.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\blockheader.cs
-++BlockSigningAuthority.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\blocksigningauthority.cs
-++BlockState.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\blockstate.cs
-++IncrementalMerkle.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\incrementalmerkle.cs
-++PermissionLevel.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\permissionlevel.cs
-++ProtocolFeatureActivationSet.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\protocolfeatureactivationset.cs
-++SharedKeyWeight.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\sharedkeyweight.cs
-++SignedBlock.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\signedblock.cs
-++SignedBlockHeader.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\signedblockheader.cs
-++SignedTransaction.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\signedtransaction.cs
-++Timestamp.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\timestamp.cs
-++Transaction.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\transaction.cs
-++TransactionHeader.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\transactionheader.cs
-++TransactionReceipt.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\transactionreceipt.cs
-++TransactionReceiptHeader.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\transactionreceiptheader.cs
-++TransactionTrace.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\transactiontrace.cs
-++TransactionTraceAuthSequence.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\transactiontraceauthsequence.cs
-++TransactionVariant.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\transactionvariant.cs
-++Signature.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\fc\crypto\signature.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\detail\
 ++BlockHeaderStateCommon.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\detail\blockheaderstatecommon.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\detail\blockheaderstatecommon.cs
 ++PairAccountNameBlockNum.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\detail\pairaccountnameblocknum.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\detail\pairaccountnameblocknum.cs
 ++ScheduleInfo.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\detail\scheduleinfo.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\detail\scheduleinfo.cs
+++Legacy
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\legacy\
 ++BlockHeaderState.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\legacy\blockheaderstate.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\legacy\blockheaderstate.cs
 ++ProducerAuthority.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\legacy\producerauthority.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\legacy\producerauthority.cs
 ++ProducerAuthoritySchedule.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\legacy\producerauthorityschedule.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\legacy\producerauthorityschedule.cs
 ++ProducerKey.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\eosio\chain\legacy\producerkey.cs
-++DeepReader
-i:{00000000-0000-0000-0000-000000000000}:DeepReader
-++Cryptography.ECDSA.Secp256K1 (1.1.3)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1089
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:>4275
-++Lokad.ILPack (0.1.7)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1085
-++Microsoft.Extensions.Hosting (6.0.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1086
-++Microsoft.VisualStudio.Azure.Containers.Tools.Targets (1.14.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1093
-++Salar.BinaryBuffers (1.1.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1084
-++Serilog (2.10.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1094
-++Serilog.Exceptions (8.0.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1096
-++Serilog.Extensions.Hosting (4.2.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1088
-++Serilog.Extensions.Logging (3.1.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1087
-++Serilog.Settings.Configuration (3.3.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1095
-++Serilog.Sinks.Async (1.5.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1082
-++Serilog.Sinks.Console (4.0.1)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1090
-++Serilog.Sinks.Debug (2.0.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1092
-++Serilog.Sinks.File (5.0.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1091
-++Connected Services 
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1065
-++Properties
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\properties\
-++launchSettings.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\properties\launchsettings.json
-++AssemblyGenerator
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\assemblygenerator\
-++AssemblyCache.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\assemblygenerator\assemblycache.cs
-++RuntimeAssemblyGenerator.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\assemblygenerator\runtimeassemblygenerator.cs
-++Classes
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\classes\
-++AbiDecoder.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\classes\abidecoder.cs
-++CreationTree.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\classes\creationtree.cs
-++ParseCtx.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\classes\parsectx.cs
-++PostProcessor.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\classes\postprocessor.cs
-++StringExtensions.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\classes\stringextensions.cs
-++config
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\
-++mindreader
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\
-++producer
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\
-++DeepMindDeserializer
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\deepminddeserializer\
-++BinaryReaderExtensions.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\deepminddeserializer\binaryreaderextensions.cs
-++CommonTypes.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\deepminddeserializer\commontypes.cs
-++DeepMindDeserializer.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\deepminddeserializer\deepminddeserializer.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\legacy\producerkey.cs
+++AccountDelta.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\accountdelta.cs
+++Action.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\action.cs
+++ActionBase.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\actionbase.cs
+++ActionDataBytes.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\actiondatabytes.cs
+++ActionReceipt.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\actionreceipt.cs
+++ActionTrace.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\actiontrace.cs
+++BlockHeader.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\blockheader.cs
+++BlockSigningAuthority.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\blocksigningauthority.cs
+++BlockState.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\blockstate.cs
+++IncrementalMerkle.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\incrementalmerkle.cs
+++PermissionLevel.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\permissionlevel.cs
+++ProducerSchedule.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\producerschedule.cs
+++ProtocolFeatureActivationSet.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\protocolfeatureactivationset.cs
+++SharedKeyWeight.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\sharedkeyweight.cs
+++SignedBlock.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\signedblock.cs
+++SignedBlockHeader.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\signedblockheader.cs
+++SignedTransaction.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\signedtransaction.cs
+++Timestamp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\timestamp.cs
+++Transaction.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\transaction.cs
+++TransactionHeader.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\transactionheader.cs
+++TransactionReceipt.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\transactionreceipt.cs
+++TransactionReceiptHeader.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\transactionreceiptheader.cs
+++TransactionTrace.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\transactiontrace.cs
+++TransactionTraceAuthSequence.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\transactiontraceauthsequence.cs
+++TransactionVariant.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eosio\chain\transactionvariant.cs
+++EosTypes
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\
+++Asset.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\asset.cs
+++Bytes.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\bytes.cs
+++Checksum160.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\checksum160.cs
+++Checksum256.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\checksum256.cs
+++Checksum512.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\checksum512.cs
+++ExtendedAsset.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\extendedasset.cs
+++Float128.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\float128.cs
+++Int128.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\int128.cs
+++Name.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\name.cs
+++PublicKey.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\publickey.cs
+++Symbol.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\symbol.cs
+++SymbolCode.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\symbolcode.cs
+++Types.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\types.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\classes\types.cs
+++Uint128.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\eostypes\uint128.cs
+++Fc
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\fc\
+++Crypto
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\fc\crypto\
+++Signature.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\fc\crypto\signature.cs
+++BinaryType.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\fc\binarytype.cs
+++VarInt32.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\fc\varint32.cs
+++VarInt64.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\fc\varint64.cs
+++VarUint32.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\fc\varuint32.cs
+++VarUint64.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\fc\varuint64.cs
+++FlattenedTypes
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\flattenedtypes\
 ++Helpers
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\helpers\
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\helpers\
+++JsonConverters
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\jsonconverters\
+++AbiType.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\abitype.cs
+++AccountRAMDelta.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\accountramdelta.cs
+++Authority.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\authority.cs
+++Block.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\block.cs
+++Constants.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\constants.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\classes\constants.cs
+++CreationOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\creationop.cs
+++DBOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\dbop.cs
+++DTrxOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\dtrxop.cs
+++ElasticLimitParameters.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\elasticlimitparameters.cs
+++Feature.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\feature.cs
+++FeatureOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\featureop.cs
+++KeyWeight.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\keyweight.cs
+++PermissionLevelWeight.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\permissionlevelweight.cs
+++PermissionObject.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\permissionobject.cs
+++PermOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\permop.cs
+++RAMCorrectionOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\ramcorrectionop.cs
+++RAMOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\ramop.cs
+++Ratio.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\ratio.cs
+++RlimitAccountLimits.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\rlimitaccountlimits.cs
+++RlimitAccountUsage.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\rlimitaccountusage.cs
+++RlimitConfig.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\rlimitconfig.cs
+++RlimitOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\rlimitop.cs
+++RlimitState.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\rlimitstate.cs
+++Specification.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\specification.cs
+++SubjectiveRestrictions.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\subjectiverestrictions.cs
+++TableOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\tableop.cs
+++TrxOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\trxop.cs
+++UsageAccumulator.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\usageaccumulator.cs
+++WaitWeight.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\waitweight.cs
+++Analyzers
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:analyzers
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:analyzers
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:analyzers
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:analyzers
+++Frameworks
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:frameworks
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:frameworks
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:frameworks
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:frameworks
+++Packages
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:packages
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:packages
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:packages
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:packages
+++DBOpOperation.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\enums\dbopoperation.cs
+++DTrxOpOperation.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\enums\dtrxopoperation.cs
+++PermOpOperation.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\enums\permopoperation.cs
+++RAMOp_Namespace.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\enums\ramop_namespace.cs
+++RAMOp_Operation.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\enums\ramop_operation.cs
+++RAMOpAction.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\enums\ramopaction.cs
+++RlimitOpOperation.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\enums\rlimitopoperation.cs
+++TableOpOperation.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\enums\tableopoperation.cs
+++TransactionStatus.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\enums\transactionstatus.cs
+++TrxOpOperation.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\enums\trxopoperation.cs
+++FlattenedActionTrace.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\flattenedtypes\flattenedactiontrace.cs
+++FlattenedBlock.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\flattenedtypes\flattenedblock.cs
+++FlattenedBlockWrapper.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\flattenedtypes\flattenedblockwrapper.cs
+++FlattenedDbOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\flattenedtypes\flatteneddbop.cs
+++FlattenedRamOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\flattenedtypes\flattenedramop.cs
+++FlattenedTableOp.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\flattenedtypes\flattenedtableop.cs
+++FlattenedTransactionTrace.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\flattenedtypes\flattenedtransactiontrace.cs
+++FlattenedTransactionTraceWrapper.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\flattenedtypes\flattenedtransactiontracewrapper.cs
 ++CryptoHelper.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\helpers\cryptohelper.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\helpers\cryptohelper.cs
 ++NullableHelper.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\helpers\nullablehelper.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\helpers\nullablehelper.cs
 ++SerializationHelper.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\helpers\serializationhelper.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\helpers\serializationhelper.cs
 ++SortOrderAttribute.cs
-i:{55e233e9-2844-4076-b3d7-652f2a761f08}:e:\source\repos\deepreader\deepreader.types\helpers\sortorderattribute.cs
-++HostedServices
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\hostedservices\
-++BlockWorker.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\hostedservices\blockworker.cs
-++DlogReaderWorker.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\hostedservices\dlogreaderworker.cs
-++StorageDeserializer
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\storagedeserializer\
-++StorageSerializer
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\storageserializer\
-++BinaryWriterExtensions.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\storageserializer\binarywriterextensions.cs
-++StorageDeserializer.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\storageserializer\storagedeserializer.cs
-++StorageSerializer.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\storageserializer\storageserializer.cs
-++appsettings.Development.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\appsettings.development.json
-++appsettings.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\appsettings.json
-++Dockerfile
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\dockerfile
-++Program.cs
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\program.cs
-++Es wurden keine Dienstabhängigkeiten ermittelt.
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>1066
-++data
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\data\
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\data\
-++protocol_features
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\
-++config.ini
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\config.ini
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\config.ini
-++config.ini.000
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\config.ini.000
-++genesis.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\genesis.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\genesis.json
-++.dockerignore
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\.dockerignore
-++blocks
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\data\blocks\
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\data\blocks\
-++state
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\data\state\
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\data\state\
-++BUILTIN-ACTION_RETURN_VALUE.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-action_return_value.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-action_return_value.json
-++BUILTIN-BLOCKCHAIN_PARAMETERS.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-blockchain_parameters.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-blockchain_parameters.json
-++BUILTIN-CONFIGURABLE_WASM_LIMITS2.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-configurable_wasm_limits2.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-configurable_wasm_limits2.json
-++BUILTIN-DISALLOW_EMPTY_PRODUCER_SCHEDULE.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-disallow_empty_producer_schedule.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-disallow_empty_producer_schedule.json
-++BUILTIN-FIX_LINKAUTH_RESTRICTION.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-fix_linkauth_restriction.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-fix_linkauth_restriction.json
-++BUILTIN-FORWARD_SETCODE.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-forward_setcode.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-forward_setcode.json
-++BUILTIN-GET_CODE_HASH.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-get_code_hash.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-get_code_hash.json
-++BUILTIN-GET_SENDER.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-get_sender.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-get_sender.json
-++BUILTIN-NO_DUPLICATE_DEFERRED_ID.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-no_duplicate_deferred_id.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-no_duplicate_deferred_id.json
-++BUILTIN-ONLY_BILL_FIRST_AUTHORIZER.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-only_bill_first_authorizer.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-only_bill_first_authorizer.json
-++BUILTIN-ONLY_LINK_TO_EXISTING_PERMISSION.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-only_link_to_existing_permission.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-only_link_to_existing_permission.json
-++BUILTIN-PREACTIVATE_FEATURE.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-preactivate_feature.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-preactivate_feature.json
-++BUILTIN-RAM_RESTRICTIONS.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-ram_restrictions.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-ram_restrictions.json
-++BUILTIN-REPLACE_DEFERRED.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-replace_deferred.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-replace_deferred.json
-++BUILTIN-RESTRICT_ACTION_TO_SELF.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-restrict_action_to_self.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-restrict_action_to_self.json
-++BUILTIN-WEBAUTHN_KEY.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-webauthn_key.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-webauthn_key.json
-++BUILTIN-WTMSIG_BLOCK_SIGNATURES.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\protocol_features\builtin-wtmsig_block_signatures.json
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\protocol_features\builtin-wtmsig_block_signatures.json
-++reversible
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\data\blocks\reversible\
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\data\blocks\reversible\
-++blocks.index
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\data\blocks\blocks.index
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\data\blocks\blocks.index
-++blocks.log
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\data\blocks\blocks.log
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\data\blocks\blocks.log
-++code_cache.bin
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\data\state\code_cache.bin
-++fork_db.dat
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\data\state\fork_db.dat
-++shared_memory.bin
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\data\state\shared_memory.bin
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\data\state\shared_memory.bin
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\producer\data\blocks\reversible\shared_memory.bin
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader\config\mindreader\data\blocks\reversible\shared_memory.bin
-++Projektmappe "DeepReader" ‎(5 von 5 Projekten)
-++DeepReader.Helpers
-++Class1.cs
-++NewFolder
-++Storage
-++Projektmappe "DeepReader" ‎(3 von 3 Projekten)
-++Projektmappe "DeepReader" ‎(2 von 2 Projekten)
-++Projektmappe "DeepReader" ‎(1 von 1 Projekten)
-++Microsoft.FASTER.Core (1.9.12)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>3351
-i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:>4335
-++HotChocolate.Subscriptions.InMemory (12.6.0)
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>3590
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\helpers\sortorderattribute.cs
+++Checksum256JsonConverter.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\jsonconverters\checksum256jsonconverter.cs
+++NameJsonConverter.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\jsonconverters\namejsonconverter.cs
+++PublicKeyJsonConverter.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\jsonconverters\publickeyjsonconverter.cs
+++TimestampJsonConverter.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\jsonconverters\timestampjsonconverter.cs
+++Microsoft.CodeAnalysis.CSharp.NetAnalyzers
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.csharp.netanalyzers.dll
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.csharp.netanalyzers.dll
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.csharp.netanalyzers.dll
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.csharp.netanalyzers.dll
+++Microsoft.CodeAnalysis.NetAnalyzers
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.netanalyzers.dll
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.netanalyzers.dll
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.netanalyzers.dll
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\program files\dotnet\sdk\6.0.200\sdks\microsoft.net.sdk\analyzers\microsoft.codeanalysis.netanalyzers.dll
+++System.Text.Json.SourceGeneration
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\program files\dotnet\packs\microsoft.netcore.app.ref\6.0.2\analyzers\dotnet\cs\system.text.json.sourcegeneration.dll
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\program files\dotnet\packs\microsoft.netcore.app.ref\6.0.2\analyzers\dotnet\cs\system.text.json.sourcegeneration.dll
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\program files\dotnet\packs\microsoft.netcore.app.ref\6.0.2\analyzers\dotnet\cs\system.text.json.sourcegeneration.dll
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\program files\dotnet\packs\microsoft.netcore.app.ref\6.0.2\analyzers\dotnet\cs\system.text.json.sourcegeneration.dll
+++Microsoft.NETCore.App
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\microsoft.netcore.app
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\microsoft.netcore.app
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.apis\microsoft.netcore.app
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\microsoft.netcore.app
+++Cryptography.ECDSA.Secp256K1 (1.1.3)
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:>938
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>969
 ++DeepReader.Storage
 i:{00000000-0000-0000-0000-000000000000}:DeepReader.Storage
-i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:e:\source\repos\deepreader\deepreader.storage\deepreader.storage.csproj
-++C:\Program Files\dotnet\sdk\6.0.101\Sdks\Microsoft.NET.Sdk\targets\..\analyzers\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
-++C:\Program Files\dotnet\sdk\6.0.101\Sdks\Microsoft.NET.Sdk\targets\..\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\bin\debug\net6.0\deepreader.storage.dll
+++Elastic
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\elastic\
+++Faster
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\
+++IStorageAdapter.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\istorageadapter.cs
+++Projects
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:projects
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:projects
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:projects
+++ElasticStorage.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\elastic\elasticstorage.cs
+++ElasticStorageHostbuilderExtensions.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\elastic\elasticstoragehostbuilderextensions.cs
+++Blocks
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\blocks\
+++Transactions
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\transactions\
+++FasterStorage.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\fasterstorage.cs
+++FasterStorageHostBuilderExtensions.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\fasterstoragehostbuilderextensions.cs
+++Microsoft.Extensions.Logging.Generators
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\.nuget\packages\microsoft.extensions.logging.abstractions\6.0.0\analyzers\dotnet\roslyn4.0\cs\microsoft.extensions.logging.generators.dll
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.2\analyzers\dotnet\roslyn4.0\cs\microsoft.extensions.logging.generators.dll
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.2\analyzers\dotnet\roslyn4.0\cs\microsoft.extensions.logging.generators.dll
+++Microsoft.Extensions.Hosting.Abstractions (6.0.0)
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:>949
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:>997
+++Microsoft.Extensions.Logging.Abstractions (6.0.0)
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:>947
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:>995
+++Microsoft.FASTER.Core (1.9.12)
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:>950
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>979
+++NEST (7.17.0)
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:>948
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>977
+++BlockContext.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\blocks\blockcontext.cs
+++BlockFunctions.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\blocks\blockfunctions.cs
+++BlockId.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\blocks\blockid.cs
+++BlockIdSerializer.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\blocks\blockidserializer.cs
+++BlockInput.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\blocks\blockinput.cs
+++BlockOutput.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\blocks\blockoutput.cs
+++BlockStore.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\blocks\blockstore.cs
+++BlockValueSerializer.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\blocks\blockvalueserializer.cs
+++TransactionContext.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\transactions\transactioncontext.cs
+++TransactionFunctions.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\transactions\transactionfunctions.cs
+++TransactionId.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\transactions\transactionid.cs
+++TransactionIdSerializer.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\transactions\transactionidserializer.cs
+++TransactionInput.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\transactions\transactioninput.cs
+++TransactionOutput.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\transactions\transactionoutput.cs
+++TransactionStore.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\transactions\transactionstore.cs
+++TransactionValueSerializer.cs
+i:{84cc48a6-f568-4c35-a4c4-9feac99cc641}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.storage\faster\transactions\transactionvalueserializer.cs
+++DeepReader.Apis
+i:{00000000-0000-0000-0000-000000000000}:DeepReader.Apis
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.apis\bin\debug\net6.0\deepreader.apis.dll
+++GraphQl
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.apis\graphql\
+++Queries
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.apis\graphql\queries\
+++DeepReaderGrapqhHostBuilderExtensions.cs
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.apis\graphql\deepreadergrapqhhostbuilderextensions.cs
+++Microsoft.AspNetCore.App.Analyzers
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.2\analyzers\dotnet\cs\microsoft.aspnetcore.app.analyzers.dll
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.2\analyzers\dotnet\cs\microsoft.aspnetcore.app.analyzers.dll
+++Microsoft.AspNetCore.App.CodeFixes
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.2\analyzers\dotnet\cs\microsoft.aspnetcore.app.codefixes.dll
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\program files\dotnet\packs\microsoft.aspnetcore.app.ref\6.0.2\analyzers\dotnet\cs\microsoft.aspnetcore.app.codefixes.dll
+++HotChocolate.AspNetCore (12.6.0)
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:>996
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>970
+++ActionQuery.cs
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.apis\graphql\queries\actionquery.cs
+++BlockQuery.cs
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.apis\graphql\queries\blockquery.cs
+++TransactionQuery.cs
+i:{6a932385-8a15-4cd4-8114-40ca660ab6e6}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.apis\graphql\queries\transactionquery.cs
+++DeepReader
+i:{00000000-0000-0000-0000-000000000000}:DeepReader
+++Connected Services 
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>929
+++Properties
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\properties\
+++AssemblyGenerator
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\assemblygenerator\
+++Classes
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\classes\
+++AbiDecoder.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\classes\abidecoder.cs
+++CreationTree.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\classes\creationtree.cs
+++ParseCtx.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\classes\parsectx.cs
+++PostProcessor.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\classes\postprocessor.cs
+++StringExtensions.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\classes\stringextensions.cs
+++config
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\
+++mindreader
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\
+++data
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\data\
+++protocol_features
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\
+++config.ini
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\config.ini
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\producer\config.ini
+++config.ini.000
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\config.ini.000
+++config.ini.001
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\config.ini.001
+++genesis.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\genesis.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\producer\genesis.json
+++genesis.json.000
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\genesis.json.000
+++producer
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\producer\
+++DeepMindDeserializer
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\deepminddeserializer\
+++BinaryReaderExtensions.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\deepminddeserializer\binaryreaderextensions.cs
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\extensions\binaryreaderextensions.cs
+++CommonTypes.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\deepminddeserializer\commontypes.cs
+++DeepMindDeserializer.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\deepminddeserializer\deepminddeserializer.cs
+++HostedServices
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\hostedservices\
+++BlockWorker.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\hostedservices\blockworker.cs
+++DlogReaderWorker.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\hostedservices\dlogreaderworker.cs
+++appsettings.Development.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\appsettings.development.json
+++appsettings.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\appsettings.json
+++Dockerfile
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\dockerfile
+++Program.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\program.cs
+++No service dependencies discovered
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>930
+++launchSettings.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\properties\launchsettings.json
+++AssemblyCache.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\assemblygenerator\assemblycache.cs
+++RuntimeAssemblyGenerator.cs
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\assemblygenerator\runtimeassemblygenerator.cs
+++blocks
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\data\blocks\
+++state
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\data\state\
+++BUILTIN-ACTION_RETURN_VALUE.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-action_return_value.json
+++BUILTIN-BLOCKCHAIN_PARAMETERS.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-blockchain_parameters.json
+++BUILTIN-CONFIGURABLE_WASM_LIMITS2.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-configurable_wasm_limits2.json
+++BUILTIN-DISALLOW_EMPTY_PRODUCER_SCHEDULE.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-disallow_empty_producer_schedule.json
+++BUILTIN-FIX_LINKAUTH_RESTRICTION.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-fix_linkauth_restriction.json
+++BUILTIN-FORWARD_SETCODE.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-forward_setcode.json
+++BUILTIN-GET_CODE_HASH.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-get_code_hash.json
+++BUILTIN-GET_SENDER.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-get_sender.json
+++BUILTIN-NO_DUPLICATE_DEFERRED_ID.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-no_duplicate_deferred_id.json
+++BUILTIN-ONLY_BILL_FIRST_AUTHORIZER.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-only_bill_first_authorizer.json
+++BUILTIN-ONLY_LINK_TO_EXISTING_PERMISSION.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-only_link_to_existing_permission.json
+++BUILTIN-PREACTIVATE_FEATURE.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-preactivate_feature.json
+++BUILTIN-RAM_RESTRICTIONS.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-ram_restrictions.json
+++BUILTIN-REPLACE_DEFERRED.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-replace_deferred.json
+++BUILTIN-RESTRICT_ACTION_TO_SELF.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-restrict_action_to_self.json
+++BUILTIN-WEBAUTHN_KEY.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-webauthn_key.json
+++BUILTIN-WTMSIG_BLOCK_SIGNATURES.json
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\protocol_features\builtin-wtmsig_block_signatures.json
+++.dockerignore
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\.dockerignore
+++HotChocolate.Subscriptions.InMemory (12.6.0)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>978
+++Lokad.ILPack (0.1.7)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>965
+++Microsoft.Extensions.Hosting (6.0.0)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>966
+++Microsoft.VisualStudio.Azure.Containers.Tools.Targets (1.14.0)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>974
+++Salar.BinaryBuffers (1.1.0)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>964
+++Serilog (2.10.0)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>975
+++Serilog.Exceptions (8.0.0)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>980
+++Serilog.Extensions.Hosting (4.2.0)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>968
+++Serilog.Extensions.Logging (3.1.0)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>967
+++Serilog.Settings.Configuration (3.3.0)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>976
+++Serilog.Sinks.Async (1.5.0)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>963
+++Serilog.Sinks.Console (4.0.1)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>971
+++Serilog.Sinks.Debug (2.0.0)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>973
+++Serilog.Sinks.File (5.0.0)
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:>972
+++reversible
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\data\blocks\reversible\
+++blocks.index
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\data\blocks\blocks.index
+++blocks.log
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\data\blocks\blocks.log
+++code_cache.bin
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\data\state\code_cache.bin
+++fork_db.dat
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\data\state\fork_db.dat
+++shared_memory.bin
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\data\state\shared_memory.bin
+i:{ab6bd672-f8e4-4a17-ab80-95a252585fd5}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader\config\mindreader\data\blocks\reversible\shared_memory.bin
+++NewFolder
+++Extensions
+i:{55e233e9-2844-4076-b3d7-652f2a761f08}:c:\users\haron kipkorir\source\repos\liquiid\deepreader\deepreader.types\extensions\
+++BinaryReaderExtension.cs

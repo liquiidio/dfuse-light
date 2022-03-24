@@ -1,21 +1,34 @@
-using DeepReader.Types.EosTypes;
-using DeepReader.Types.Fc.Crypto;
+using System.Text.Json.Serialization;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.JsonConverters;
 
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// Variant<TransactionId, PackedTransaction>
 /// </summary>
-public abstract class TransactionVariant
+public abstract class TransactionVariant : IEosioSerializable<TransactionVariant>
 {
-
+    public static TransactionVariant ReadFromBinaryReader(BinaryReader reader)
+    {
+        var type = reader.ReadByte();
+        switch (type)
+        {
+            case 0:
+                return reader.ReadTransactionId();
+            case 1:
+                return PackedTransaction.ReadFromBinaryReader(reader);
+            default:
+                throw new Exception("BlockSigningAuthorityVariant {type} unknown");
+        }
+    }
 }
 
 
 /// <summary>
 /// Custom type due to Variant-Handling
 /// </summary>
+[JsonConverter(typeof(TransactionIdJsonConverter))]
 public class TransactionId : TransactionVariant
 {
     public byte[] Binary = Array.Empty<byte>();
@@ -53,15 +66,4 @@ public class TransactionId : TransactionVariant
     }
 
     public static TransactionId Empty => new();
-}
-
-/// <summary>
-/// libraries/chain/include/eosio/chain/transaction.hpp
-/// </summary>
-public class PackedTransaction : TransactionVariant
-{
-    public Signature[] Signatures = Array.Empty<Signature>();
-    public byte Compression = 0; //fc::enum_type<uint8_t, compression>
-    public Bytes PackedContextFreeData = new();
-    public Bytes PackedTrx = new ();
 }

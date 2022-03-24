@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+	<EnablePreviewFeatures>true</EnablePreviewFeatures>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -8,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Cryptography.ECDSA.Secp256K1" Version="1.1.3" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
   </ItemGroup>
 
 </Project>

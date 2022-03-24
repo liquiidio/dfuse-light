@@ -12,4 +12,5 @@ public abstract class RlimitOp
     //	*RlimitOp_AccountLimits
     //	*RlimitOp_AccountUsage
     //  public isRlimitOp_Kind Kind;//isRlimitOp_Kind
+
 }
