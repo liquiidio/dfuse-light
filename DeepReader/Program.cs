@@ -1,5 +1,6 @@
 using System.Threading.Channels;
 using DeepReader.Apis.GraphQl;
+using DeepReader.Apis.REST;
 using DeepReader.HostedServices;
 using DeepReader.Storage.Elastic;
 using DeepReader.Storage.Faster;
@@ -18,7 +19,7 @@ var host = Host.CreateDefaultBuilder(args)
         loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration)
     )
     .UseDeepReaderGraphQl()
-//    .UseElasticStorage()
+    .UseDeepReaderRest()
     .UseFasterStorage()
     .Build();
 

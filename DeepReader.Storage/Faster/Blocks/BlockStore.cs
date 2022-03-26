@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DeepReader.Types;
 using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
 
@@ -61,6 +62,11 @@ namespace DeepReader.Storage.Faster.Blocks
             var blockId = new BlockId(block.Number);
             return (await _blockStoreSession.UpsertAsync(ref blockId, ref block)).Complete();
         }
-
+        
+        public async Task<(bool, FlattenedBlock)> TryGetBlockById(uint blockNum)
+        {
+            var (status, output) = (await _blockStoreSession.ReadAsync(new BlockId(blockNum))).Complete();
+            return (status == Status.OK, output.Value);
+        }
     }
 }

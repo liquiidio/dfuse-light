@@ -1,0 +1,61 @@
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Swashbuckle.AspNetCore;
+
+namespace DeepReader.Apis.REST
+{
+    /// <summary>
+    /// Extends <see cref="T:Microsoft.Extensions.Hosting.IHostBuilder" /> with Serilog configuration methods.
+    /// </summary>
+    public static class DeepReaderRestHostBuilderExtensions
+    {
+        /// <summary>Sets Faster as the logging provider.</summary>
+        /// <param name="builder">The host builder to configure.</param>
+        /// <param name="logger">The Serilog logger; if not supplied, the static <see cref="T:Serilog.Log" /> will be used.</param>
+        /// <param name="dispose">When <c>true</c>, dispose <paramref name="logger" /> when the framework disposes the provider. If the
+        /// logger is not specified but <paramref name="dispose" /> is <c>true</c>, the <see cref="M:Serilog.Log.CloseAndFlush" /> method will be
+        /// called on the static <see cref="T:Serilog.Log" /> class instead.</param>
+        /// <returns>The host builder.</returns>
+        public static IHostBuilder UseDeepReaderRest(
+            this IHostBuilder builder,
+            ILogger logger = null,
+            bool dispose = false)
+        {
+            if (builder == null)
+                throw new ArgumentNullException(nameof(builder));
+
+            builder.ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.ConfigureServices(collection =>
+                {
+                    collection.AddControllers().AddJsonOptions(options =>
+                    {
+                        options.JsonSerializerOptions.MaxDepth = Int32.MaxValue;
+                        options.JsonSerializerOptions.IncludeFields = true;
+                        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    });
+                    collection.AddEndpointsApiExplorer();
+                    collection.AddSwaggerGen();
+                });
+                webBuilder.Configure(app =>
+                {
+                    app.UseSwagger();
+                    app.UseSwaggerUI(options =>
+                    {
+                        options.SwaggerEndpoint("/swagger/v1/swagger.json", "DeepReaderAPI v1");
+                    });
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapControllers();
+                    });
+                });
+            });
+            return builder;
+        }
+    }
+}

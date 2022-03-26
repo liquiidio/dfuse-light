@@ -40,6 +40,17 @@ public class TransactionId : TransactionVariant
         set => _stringVal = value;
     }
 
+    public TransactionId()
+    {
+
+    }
+
+    public TransactionId(string transactionId)
+    {
+        Binary = SerializationHelper.StringToByteArray(transactionId);
+        _stringVal = transactionId;
+    }
+
     public static implicit operator TransactionId(string value)
     {
         return new TransactionId(){ StringVal = value };
