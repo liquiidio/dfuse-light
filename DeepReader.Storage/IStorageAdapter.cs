@@ -9,5 +9,9 @@ namespace DeepReader.Storage
         Task StoreBlockAsync(FlattenedBlock block);
 
         Task StoreTransactionAsync(FlattenedTransactionTrace transactionTrace);
+
+        Task<(bool, FlattenedBlock)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false);
+
+        Task<(bool, FlattenedTransactionTrace)> GetTransactionAsync(string transactionId);
     }
 }

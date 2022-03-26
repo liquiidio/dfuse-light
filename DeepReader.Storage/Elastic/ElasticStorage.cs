@@ -26,5 +26,15 @@ namespace DeepReader.Storage.Elastic
         {
             await elasticClient.IndexDocumentAsync(new FlattenedTransactionTraceWrapper(){ TransactionTrace = transactionTrace });
         }
+
+        public Task<(bool, FlattenedBlock)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool, FlattenedTransactionTrace)> GetTransactionAsync(string transactionId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

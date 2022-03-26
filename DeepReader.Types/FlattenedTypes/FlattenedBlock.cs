@@ -1,4 +1,5 @@
-﻿using DeepReader.Types.Eosio.Chain;
+﻿using System.Text.Json.Serialization;
+using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
 
@@ -10,9 +11,13 @@ public struct FlattenedBlock
     public uint Number = 0;
 
     public Name Producer = Name.Empty;
-    public Signature ProducerSignature = Signature.Empty;// ecc.Signature // no pointer!!
+    public Signature ProducerSignature = Signature.Empty;
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]   // TODO (Corvin) not sure if this works for Collections
     public TransactionId[] TransactionIds = Array.Empty<TransactionId>();
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]   // TODO (Corvin) not sure if this works for Collections
+    public FlattenedTransactionTrace[] Transactions = Array.Empty<FlattenedTransactionTrace>();
 
     public FlattenedBlock()
     {
@@ -34,6 +39,8 @@ public struct FlattenedBlock
         {
             obj.TransactionIds[i] = reader.ReadBytes(32);
         }
+
+        // Ignore TransactionTraces here!
 
         return obj;
     }
