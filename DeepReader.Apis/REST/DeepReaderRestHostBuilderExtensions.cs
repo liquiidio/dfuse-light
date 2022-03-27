@@ -1,6 +1,8 @@
 ﻿using System.Text.Json;
+using DeepReader.Apis.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -30,16 +32,17 @@ namespace DeepReader.Apis.REST
 
             builder.ConfigureWebHostDefaults(webBuilder =>
             {
-                webBuilder.ConfigureServices(collection =>
+                webBuilder.ConfigureServices((hostContext, services) =>
                 {
-                    collection.AddControllers().AddJsonOptions(options =>
+                    services.Configure<ApiOptions>(config => hostContext.Configuration.GetSection("ElasticStorageOptions").Bind(config));
+                    services.AddControllers().AddJsonOptions(options =>
                     {
                         options.JsonSerializerOptions.MaxDepth = Int32.MaxValue;
                         options.JsonSerializerOptions.IncludeFields = true;
                         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                     });
-                    collection.AddEndpointsApiExplorer();
-                    collection.AddSwaggerGen();
+                    services.AddEndpointsApiExplorer();
+                    services.AddSwaggerGen();
                 });
                 webBuilder.Configure(app =>
                 {

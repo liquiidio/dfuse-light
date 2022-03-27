@@ -1,10 +1,13 @@
 ﻿using System.Text.Json;
 using System.Threading.Channels;
 using DeepReader.Apis.GraphQl.Queries;
+using DeepReader.Configuration;
+using DeepReader.Options;
 using DeepReader.Storage;
 using DeepReader.Types;
 using DeepReader.Types.FlattenedTypes;
 using DeepReader.Types.Helpers;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Serilog;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -17,10 +20,29 @@ public class BlockWorker : BackgroundService
 
     private readonly IStorageAdapter _storageAdapter;
 
-    public BlockWorker(ChannelReader<Block> blocksChannel, IStorageAdapter storageAdapter)
+    private MindReaderOptions _mindReaderOptions;
+    private DeepReaderOptions _deepReaderOptions;
+
+    public BlockWorker(ChannelReader<Block> blocksChannel, IStorageAdapter storageAdapter, IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor, IOptionsMonitor<DeepReaderOptions> deepReaderOptionsMonitor)
     {
+        _mindReaderOptions = mindReaderOptionsMonitor.CurrentValue;
+        mindReaderOptionsMonitor.OnChange(OnMindReaderOptionsChanged);
+
+        _deepReaderOptions = deepReaderOptionsMonitor.CurrentValue;
+        deepReaderOptionsMonitor.OnChange(OnDeepReaderOptionsChanged);
+
         _blocksChannel = blocksChannel;
         _storageAdapter = storageAdapter;
+    }
+
+    private void OnMindReaderOptionsChanged(MindReaderOptions newOptions)
+    {
+        _mindReaderOptions = newOptions;
+    }
+
+    private void OnDeepReaderOptionsChanged(DeepReaderOptions newOptions)
+    {
+        _deepReaderOptions = newOptions;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
