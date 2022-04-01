@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DeepReader.Types;
-using DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
+using Prometheus;
 
 namespace DeepReader.Storage.Faster.Blocks
 {
@@ -16,6 +11,8 @@ namespace DeepReader.Storage.Faster.Blocks
         private bool useReadCache = false;
 
         private readonly ClientSession<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockStoreSession;
+
+        private static readonly Histogram WritingBlockDuration = Metrics.CreateHistogram("deepreader_storage_faster_write_block_duration", "Histogram of time to store blocks to Faster");
 
         public BlockStore()
         {
@@ -60,9 +57,13 @@ namespace DeepReader.Storage.Faster.Blocks
         public async Task<Status> WriteBlock(FlattenedBlock block)
         {
             var blockId = new BlockId(block.Number);
-            return (await _blockStoreSession.UpsertAsync(ref blockId, ref block)).Complete();
+
+            using (WritingBlockDuration.NewTimer())
+            {
+                return (await _blockStoreSession.UpsertAsync(ref blockId, ref block)).Complete();
+            }
         }
-        
+
         public async Task<(bool, FlattenedBlock)> TryGetBlockById(uint blockNum)
         {
             var (status, output) = (await _blockStoreSession.ReadAsync(new BlockId(blockNum))).Complete();

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Prometheus;
 using Swashbuckle.AspNetCore;
 
 namespace DeepReader.Apis.REST
@@ -48,10 +49,24 @@ namespace DeepReader.Apis.REST
                     {
                         options.SwaggerEndpoint("/swagger/v1/swagger.json", "DeepReaderAPI v1");
                     });
+                    //app.UseHttpsRedirection();
                     app.UseRouting();
-                    app.UseEndpoints(endpoints =>
+
+                    // Exposes a default set of metrics through the "/metrics" endpoint
+                    //app.UseMetricServer();
+
+                    // Exposes HTTP metrics to Prometheus using the same endpoint above
+                    app.UseHttpMetrics(options =>
                     {
+                        // This will preserve only the first digit of the status code.
+                        // For example: 200, 201, 203 -> 2xx
+                        options.ReduceStatusCodeCardinality();
+                    });
+
+                    app.UseEndpoints(endpoints =>
+                    { 
                         endpoints.MapControllers();
+                        endpoints.MapMetrics();
                     });
                 });
             });
