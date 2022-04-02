@@ -20,8 +20,8 @@ namespace DeepReader.Storage.Faster
             _fasterStorageOptions = storageOptionsMonitor.CurrentValue;
             storageOptionsMonitor.OnChange(OnFasterStorageOptionsChanged);
 
-            _blockStore = new BlockStore();
-            _transactionStore = new TransactionStore();
+            _blockStore = new BlockStore(_fasterStorageOptions);
+            _transactionStore = new TransactionStore(_fasterStorageOptions);
         }
 
         private void OnFasterStorageOptionsChanged(FasterStorageOptions newOptions)
@@ -29,14 +29,14 @@ namespace DeepReader.Storage.Faster
             _fasterStorageOptions = newOptions;
         }
 
-        public async Task StoreBlockAsync(FlattenedBlock block) // compress, store, index
+        public async Task StoreBlockAsync(FlattenedBlock block)
         {
             await _blockStore.WriteBlock(block);
         }
 
-        public async Task StoreTransactionAsync(FlattenedTransactionTrace transactionTrace)  // compress, store, index
-        {
-            var status = await _transactionStore.WriteTransaction(transactionTrace);
+        public async Task StoreTransactionAsync(FlattenedTransactionTrace transactionTrace)
+        { 
+            await _transactionStore.WriteTransaction(transactionTrace);
         }
 
         public async Task<(bool,FlattenedBlock)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false)

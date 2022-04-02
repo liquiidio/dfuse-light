@@ -45,7 +45,12 @@
       "ProjectGuid": "6a932385-8a15-4cd4-8114-40ca660ab6e6",
       "DisplayName": "DeepReader.Apis",
       "ColorIndex": 7
+    },
+    "3ae6aee7-1826-4951-86c5-d6d7678266ce": {
+      "ProjectGuid": "3ae6aee7-1826-4951-86c5-d6d7678266ce",
+      "DisplayName": "DeepReader.Benchmarks",
+      "ColorIndex": 8
     }
   },
-  "NextColorIndex": 8
+  "NextColorIndex": 9
 }
