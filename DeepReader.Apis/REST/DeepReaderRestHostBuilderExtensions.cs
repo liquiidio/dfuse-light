@@ -52,9 +52,6 @@ namespace DeepReader.Apis.REST
                     //app.UseHttpsRedirection();
                     app.UseRouting();
 
-                    // Exposes a default set of metrics through the "/metrics" endpoint
-                    //app.UseMetricServer();
-
                     // Exposes HTTP metrics to Prometheus using the same endpoint above
                     app.UseHttpMetrics(options =>
                     {

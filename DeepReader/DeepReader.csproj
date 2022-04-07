@@ -27,7 +27,6 @@
     <PackageReference Include="Microsoft.FASTER.Core" Version="1.9.12" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
     <PackageReference Include="NEST" Version="7.17.0" />
-    <PackageReference Include="prometheus-net" Version="6.0.0" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="6.0.0" />
     <PackageReference Include="Salar.BinaryBuffers" Version="1.1.0" />
     <PackageReference Include="Serilog" Version="2.10.0" />
