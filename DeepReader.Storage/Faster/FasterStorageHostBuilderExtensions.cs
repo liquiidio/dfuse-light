@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using DeepReader.Storage.Options;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Serilog;
 
 namespace DeepReader.Storage.Faster
 {
@@ -23,14 +26,15 @@ namespace DeepReader.Storage.Faster
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
-            builder.ConfigureServices((Action<HostBuilderContext, IServiceCollection>)((_, collection) =>
+            builder.ConfigureServices((hostContext, services) =>
             {
-                collection.AddSingleton(services =>
+                services.Configure<FasterStorageOptions>(config => hostContext.Configuration.GetSection("FasterStorageOptions").Bind(config));
+                services.AddSingleton(provider =>
                 {
-                    IStorageAdapter storageAdapter = new FasterStorage();
+                    IStorageAdapter storageAdapter = new FasterStorage(provider.GetRequiredService<IOptionsMonitor<FasterStorageOptions>>());
                     return storageAdapter;
                 });
-            }));
+            });
             return builder;
         }
     }

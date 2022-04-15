@@ -16,7 +16,7 @@
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       },
-      "distributionName": "Ubuntu20.04LTS2"
+      "distributionName": "Ubuntu20.04LTS"
     },
 	"WSL : Ubuntu-18.04": {
       "commandName": "WSL",
