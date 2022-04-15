@@ -16,7 +16,9 @@ namespace DeepReader.Benchmarks
         [RequiresPreviewFeatures]
         public static T Deserialize<T>() where T : IParent<T>
         {
-            return T.ReadFromBinaryReader();
+            var result = T.ReadFromBinaryReader();
+            return result;
+            //return T.ReadFromBinaryReader();
         }
     }
 }
