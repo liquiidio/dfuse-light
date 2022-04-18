@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -44,6 +45,16 @@ public class Action : ActionBase, IEosioSerializable<Action>
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.WriteName(Account);
+        writer.WriteName(Name);
+
+        writer.Write(Authorization.Length);
+        foreach (var auth in Authorization)
+        {
+            auth.WriteToBinaryWriter(writer);
+        }
+
+        writer.Write(Data.Binary.Length);
+        writer.Write(Data.Binary);
     }
 }

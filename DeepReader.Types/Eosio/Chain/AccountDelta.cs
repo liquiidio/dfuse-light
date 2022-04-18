@@ -21,7 +21,7 @@ public class AccountDelta : IEosioSerializable<AccountDelta>
         return accountDelta;
     }
 
-    internal void WriteToBinaryWriter(BinaryWriter writer)
+    public void WriteToBinaryWriter(BinaryWriter writer)
     {
         writer.Write(Account.Binary);
         writer.Write(Delta);

@@ -1,5 +1,6 @@
 ﻿using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.Types.FlattenedTypes
@@ -78,8 +79,10 @@ namespace DeepReader.Types.FlattenedTypes
 
         public void WriteToBinaryWriter(BinaryWriter writer)
         {
-            writer.Write(Receiver.Binary);
+            writer.WriteName(Receiver);
+
             Act.WriteToBinaryWriter(writer);
+            
             writer.Write(ContextFree);
             writer.Write(ElapsedUs);
             writer.Write(Console);

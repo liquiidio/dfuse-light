@@ -1,4 +1,5 @@
 ﻿using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -30,5 +31,22 @@ public class PackedTransaction : TransactionVariant, IEosioSerializable<PackedTr
         obj.PackedTrx = reader.ReadBytes(reader.Read7BitEncodedInt());
 
         return obj;
+    }
+
+    public new void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.Write(Signatures.Length);
+        foreach (var signature in Signatures)
+        {
+            writer.WriteSignature(signature);
+        }
+
+        writer.Write(Compression);
+
+        writer.Write(PackedContextFreeData.Binary.Length);
+        writer.Write(PackedContextFreeData.Binary);
+
+        writer.Write(PackedTrx.Binary.Length);
+        writer.Write(PackedTrx.Binary);
     }
 }

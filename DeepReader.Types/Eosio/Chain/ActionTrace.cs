@@ -1,4 +1,5 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -8,7 +9,6 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class ActionTrace : IEosioSerializable<ActionTrace>
 {
-
     public VarUint32 ActionOrdinal = 0;
 
     public VarUint32 CreatorActionOrdinal = 0;
@@ -103,5 +103,67 @@ public class ActionTrace : IEosioSerializable<ActionTrace>
         actionTrace.ReturnValue = reader.ReadChars(reader.Read7BitEncodedInt());
 
         return actionTrace;
+    }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.Write(ActionOrdinal);
+        writer.Write(CreatorActionOrdinal);
+        writer.Write(ClosestUnnotifiedAncestorActionOrdinal);
+
+        if (Receipt != null)
+        {
+            writer.Write(true);
+            Receipt.WriteToBinaryWriter(writer);
+        }
+        else
+            writer.Write(false);
+
+        writer.WriteName(Receiver);
+
+        Act.WriteToBinaryWriter(writer);
+
+        writer.Write(ContextFree);
+        writer.Write(ElapsedUs);
+        writer.Write(Console);
+
+        TransactionId.WriteToBinaryWriter(writer);
+
+        writer.Write(BlockNum);
+        writer.Write(BlockTime._ticks);
+
+        if (ProducerBlockId != null)
+        {
+            writer.Write(true);
+            writer.WriteChecksum256(ProducerBlockId);
+        }
+        else
+            writer.Write(false);
+
+        writer.Write(AccountRamDeltas.Length);
+        foreach (var accountRamDelta in AccountRamDeltas)
+        {
+            accountRamDelta.WriteToBinaryWriter(writer);
+        }
+
+        if (Except != null)
+        {
+            writer.Write(true);
+            Except.WriteToBinaryWriter(writer);
+        }
+        else
+            writer.Write(false);
+
+
+        if (ErrorCode != null)
+        {
+            writer.Write(true);
+            writer.Write(ErrorCode.Value);
+        }
+        else
+            writer.Write(false);
+
+        writer.Write(ReturnValue.Length);
+        writer.Write(ReturnValue);
     }
 }

@@ -1,4 +1,5 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -18,5 +19,11 @@ public class TransactionTraceAuthSequence : IEosioSerializable<TransactionTraceA
             Sequence = reader.ReadUInt64()
         };
         return seq;
+    }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.WriteName(Account);
+        writer.Write(Sequence);
     }
 }

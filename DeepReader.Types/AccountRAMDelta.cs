@@ -16,4 +16,10 @@ public class AccountRamDelta : IEosioSerializable<AccountRamDelta>
         };
         return accountRamDelta;
     }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.Write(Account); // TODO Eosio Name
+        writer.Write(Delta); // TODO VARINT
+    }
 }

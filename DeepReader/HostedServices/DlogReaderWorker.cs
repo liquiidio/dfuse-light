@@ -54,11 +54,11 @@ public class DlogReaderWorker : BackgroundService
         await Task.Delay(3000, clt);
 
         
-        string mindreaderDir = "/home/cmadh/testing/config/";
-        string dataDir = "/home/cmadh/testing/data/";
+//        string mindreaderDir = "/home/cmadh/testing/config/";
+//        string dataDir = "/home/cmadh/testing/data/";
 
-        //string mindreaderDir = "/app/config/mindreader/";
-        //string dataDir = "/app/config/mindreader/data";
+        string mindreaderDir = "/app/config/mindreader/";
+        string dataDir = "/app/config/mindreader/data";
 
         using var mindreader = new Process();
         mindreader.StartInfo = new ProcessStartInfo

@@ -1,4 +1,5 @@
 ﻿using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.FlattenedTypes;
 
@@ -56,11 +57,12 @@ public struct FlattenedTransactionTrace
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)
-    {
-        writer.Write(Id.Binary);
-        writer.Write(BlockNum);
-        writer.Write(Elapsed);
-        writer.Write(NetUsage);
+    { ;
+        writer.WriteTransactionId(Id);
+        
+        writer.Write(BlockNum); // TODO VARINT
+        writer.Write(Elapsed); // TODO VARINT
+        writer.Write(NetUsage); // TODO VARINT
 
         writer.Write(ActionTraces.Length);
         foreach (var actionTrace in ActionTraces)

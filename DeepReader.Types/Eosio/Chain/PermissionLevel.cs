@@ -1,4 +1,5 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -18,5 +19,11 @@ public class PermissionLevel : IEosioSerializable<PermissionLevel>
             Permission = reader.ReadName()
         };
         return level;
+    }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.WriteName(Actor);
+        writer.WriteName(Permission);
     }
 }
