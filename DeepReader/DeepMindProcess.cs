@@ -12,18 +12,24 @@ namespace DeepReader
 {
     public class DeepMindProcess : Process
     {
-        public DeepMindProcess(MindReaderOptions mindReaderOptions)
+        public DeepMindProcess(MindReaderOptions mindReaderOptions, string? mindReaderDir = null, string? dataDir = null)
         {
             this.StartInfo = new ProcessStartInfo()
             {
                 FileName = "nodeos",
-                Arguments = BuildArgumentList(mindReaderOptions),
+                Arguments = BuildArgumentList(mindReaderOptions, mindReaderDir, dataDir),
                 UseShellExecute = false,
                 RedirectStandardError = mindReaderOptions.RedirectStandardError,
                 RedirectStandardOutput = mindReaderOptions.RedirectStandardOutput,
                 RedirectStandardInput = false,
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden
+                //            UseShellExecute = false,
+                //            RedirectStandardError = true,
+                //            RedirectStandardInput = false,
+                //            RedirectStandardOutput = true,
+                //            CreateNoWindow = true,
+                //            WindowStyle = ProcessWindowStyle.Hidden,
             };
         }
 
@@ -52,26 +58,32 @@ namespace DeepReader
             return ExitCode;
         }
 
-        public string BuildArgumentList(MindReaderOptions mindReaderOptions)
+        public string BuildArgumentList(MindReaderOptions mindReaderOptions, string? mindReaderDir = null, string? dataDir = null)
         {
             var sb = new StringBuilder();
             if (mindReaderOptions.DeleteAllBlocks)
                 sb.Append(" --delete-all-blocks");
 
-            if (!string.IsNullOrEmpty(mindReaderOptions.ConfigDir))
+            if (mindReaderDir == null && !string.IsNullOrEmpty(mindReaderOptions.ConfigDir))
                 sb.Append($"--config-dir {mindReaderOptions.ConfigDir}");
+            else if(mindReaderDir != null)
+                sb.Append($"--config-dir {mindReaderDir}");
             else
                 sb.Append("");//TODO default?
 
-            if (!string.IsNullOrEmpty(mindReaderOptions.DataDir))
+            if (dataDir == null && !string.IsNullOrEmpty(mindReaderOptions.DataDir))
                 sb.Append($" --data-dir {mindReaderOptions.DataDir}");
+            else if (dataDir != null)
+                sb.Append($" --data-dir {dataDir}");
             else
                 sb.Append("");//TODO default?
 
-            if (!string.IsNullOrEmpty(mindReaderOptions.GenesisJson))
+            if (mindReaderDir == null && !string.IsNullOrEmpty(mindReaderOptions.GenesisJson))
                 sb.Append($" --genesis-json {mindReaderOptions.GenesisJson}");
+            else if (mindReaderDir != null)
+                sb.Append($" --genesis-json {mindReaderDir}genesis.json");
             else
-                sb.Append("");//TODO default if not replay?
+                sb.Append("");//TODO mandatory empty if not replay and no blocks and no snapshot?
 
             if (mindReaderOptions.ForceAllChecks)
                 sb.Append(" --force-all-checks");
@@ -85,6 +97,11 @@ namespace DeepReader
             if (!string.IsNullOrEmpty(mindReaderOptions.Snapshot))
                 sb.Append($" --snapshot {mindReaderOptions.Snapshot}");
 
+            if (dataDir == null && !string.IsNullOrEmpty(mindReaderOptions.ProtocolFeaturesDir))
+                sb.Append($" --protocol-features-dir {mindReaderOptions.ProtocolFeaturesDir}");
+            else if (mindReaderDir != null)
+                sb.Append($" --protocol-features-dir {dataDir}");
+            
             return sb.ToString();
         }
     }

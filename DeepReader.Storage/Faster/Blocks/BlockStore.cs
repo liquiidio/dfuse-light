@@ -16,16 +16,20 @@ namespace DeepReader.Storage.Faster.Blocks
 
         private readonly ClientSession<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockStoreSession;
 
+        private FasterStorageOptions _options;
+
         public BlockStore(FasterStorageOptions options)
         {
-            if (!options.BlockStoreDir.EndsWith("/"))
-                options.BlockStoreDir += "/";
+            _options = options;
+
+            if (!_options.BlockStoreDir.EndsWith("/"))
+                _options.BlockStoreDir += "/";
 
             // Create files for storing data
-            var log = Devices.CreateLogDevice(options.BlockStoreDir + "hlog.log");
+            var log = Devices.CreateLogDevice(_options.BlockStoreDir + "hlog.log");
 
             // Log for storing serialized objects; needed only for class keys/values
-            var objlog = Devices.CreateLogDevice(options.BlockStoreDir + "hlog.obj.log");
+            var objlog = Devices.CreateLogDevice(_options.BlockStoreDir + "hlog.obj.log");
 
             // Define settings for log
             var logSettings = new LogSettings
@@ -47,9 +51,9 @@ namespace DeepReader.Storage.Faster.Blocks
             };
 
             _store = new FasterKV<BlockId, FlattenedBlock>(
-                size: options.MaxBlocksCacheEntries, // Cache Lines for Blocks
+                size: _options.MaxBlocksCacheEntries, // Cache Lines for Blocks
                 logSettings: logSettings,
-                checkpointSettings: new CheckpointSettings { CheckpointDir = options.BlockStoreDir },
+                checkpointSettings: new CheckpointSettings { CheckpointDir = _options.BlockStoreDir },
                 serializerSettings: serializerSettings,
                 comparer: new BlockId(0)
             );
@@ -72,9 +76,11 @@ namespace DeepReader.Storage.Faster.Blocks
 
         private void CommitThread()
         {
+            if (_options.CheckpointInterval == null)
+                return;
             while (true)
             {
-                Thread.Sleep(60000);
+                Thread.Sleep(_options.CheckpointInterval.Value);
 
                 // Take log-only checkpoint (quick - no index save)
                 //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();

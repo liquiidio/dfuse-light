@@ -15,23 +15,27 @@ namespace DeepReader.Storage.Faster.Transactions
 
         private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionStoreSession;
 
+        private FasterStorageOptions _options;
+
         public TransactionStore(FasterStorageOptions options)
         {
-            if(!options.TransactionStoreDir.EndsWith("/"))
+            _options = options;
+
+            if(!_options.TransactionStoreDir.EndsWith("/"))
                 options.TransactionStoreDir += "/";
 
             // Create files for storing data
-            var log = Devices.CreateLogDevice(options.TransactionStoreDir + "hlog.log");
+            var log = Devices.CreateLogDevice(_options.TransactionStoreDir + "hlog.log");
 
             // Log for storing serialized objects; needed only for class keys/values
-            var objlog = Devices.CreateLogDevice(options.TransactionStoreDir + "hlog.obj.log");
+            var objlog = Devices.CreateLogDevice(_options.TransactionStoreDir + "hlog.obj.log");
 
             // Define settings for log
             var logSettings = new LogSettings
             {
                 LogDevice = log,
                 ObjectLogDevice = objlog,
-                ReadCacheSettings = options.UseReadCache ? new ReadCacheSettings() : null,
+                ReadCacheSettings = _options.UseReadCache ? new ReadCacheSettings() : null,
                 // Uncomment below for low memory footprint demo
                 // PageSizeBits = 12, // (4K pages)
                 // MemorySizeBits = 20 // (1M memory for main log)
@@ -46,14 +50,15 @@ namespace DeepReader.Storage.Faster.Transactions
             };
 
             _store = new FasterKV<TransactionId, FlattenedTransactionTrace>(
-                size: options.MaxTransactionsCacheEntries, // Cache Lines for Transactions
+                size: _options.MaxTransactionsCacheEntries, // Cache Lines for Transactions
                 logSettings: logSettings,
-                checkpointSettings: new CheckpointSettings { CheckpointDir = options.TransactionStoreDir },
+                checkpointSettings: new CheckpointSettings { CheckpointDir = _options.TransactionStoreDir },
                 serializerSettings: serializerSettings,
                 comparer: new TransactionId()
             );
 
             _transactionStoreSession = _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>();
+
             new Thread(CommitThread).Start();
         }
 
@@ -71,9 +76,12 @@ namespace DeepReader.Storage.Faster.Transactions
 
         private void CommitThread()
         {
+            if (_options.CheckpointInterval == null) 
+                return;
+            
             while (true)
             {
-                Thread.Sleep(60000);
+                Thread.Sleep(_options.CheckpointInterval.Value);
 
                 // Take log-only checkpoint (quick - no index save)
                 //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();

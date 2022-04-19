@@ -28,7 +28,26 @@ public class DlogReaderWorker : BackgroundService
         _mindReaderOptions = _mindReaderOptionsMonitor.CurrentValue;
         _mindReaderOptionsMonitor.OnChange(OnMindReaderOptionsChanged);
 
+#if DEBUG
+        string mindreaderDir = "/app/config/mindreader/";
+        string dataDir = "/app/config/mindreader/data";
+
+
+        var vars = Environment.GetEnvironmentVariables();
+        if (vars.Contains("WSLENV"))
+        {
+            mindreaderDir = "/home/cmadh/testing/config/";
+            dataDir = "/home/cmadh/testing/data/";
+        }
+        else if (vars.Contains("DOTNET_RUNNING_IN_CONTAINER"))
+        {
+            mindreaderDir = "/app/config/mindreader/";
+            dataDir = "/app/config/mindreader/data";
+        }
+        _deepMindProcess = new DeepMindProcess(_mindReaderOptions, mindreaderDir, dataDir);
+#else
         _deepMindProcess = new DeepMindProcess(_mindReaderOptions);
+#endif
     }
 
     private void OnDeepReaderOptionsChanged(DeepReaderOptions newOptions)
@@ -53,63 +72,9 @@ public class DlogReaderWorker : BackgroundService
 
         await Task.Delay(3000, clt);
 
-
-        string mindreaderDir = "/app/config/mindreader/";
-        string dataDir = "/app/config/mindreader/data";
-
-
-        var vars = Environment.GetEnvironmentVariables();
-        if (vars.Contains("WSLENV"))
-        {
-            mindreaderDir = "/home/cmadh/testing/config/";
-            dataDir = "/home/cmadh/testing/data/";
-        }
-        else if(vars.Contains("DOTNET_RUNNING_IN_CONTAINER"))
-        {
-            mindreaderDir = "/app/config/mindreader/";
-            dataDir = "/app/config/mindreader/data";
-        }
-
-
-        using var mindreader = new Process();
-        mindreader.StartInfo = new ProcessStartInfo
-        {            
-            FileName = "nodeos",
-            ArgumentList =
-            {
-                /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", "--config-dir", $"{mindreaderDir}", "--protocol-features-dir", $"{dataDir}", "--data-dir", $"{dataDir}", "--genesis-json", $"{mindreaderDir}genesis.json",
-//                    "-e -p eosio --delete-all-blocks --deep-mind --plugin eosio::producer_plugin --plugin eosio::producer_api_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --filter-on='*' --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors"// >> nodeos.log 2 > &1 &
-            }, // { "--delete-all-blocks --deep-mind" },
-            UseShellExecute = false,
-            RedirectStandardError = true,
-            RedirectStandardInput = false,
-            RedirectStandardOutput = true,
-            CreateNoWindow = true,
-            WindowStyle = ProcessWindowStyle.Hidden,
-            //                WorkingDirectory = "/usr/bin",
-        };
-
-        if (mindreader != null)
-        {
-            mindreader.OutputDataReceived += OnNodeosDataReceived; // async (sender, e) => await OnNodeosOutputDataReceived(sender, e, stoppingToken);
-            mindreader.ErrorDataReceived += OnNodeosDataReceived;
-            mindreader.Exited += OnNodeosExited;
-
-            mindreader.Start();
-            mindreader.BeginErrorReadLine();
-            mindreader.BeginOutputReadLine();
-            //await process.WaitForExitAsync(stoppingToken);
-            while (!mindreader.HasExited)
-            {
-                await Task.Delay(10000, clt);
-
-                if(mindreader.HasExited)
-                {
-                    Log.Warning("MINDREADER EXITED!");
-                }
-            }
-            Log.Warning("EXITED 1");
-        }
+        _deepMindProcess.OutputDataReceived += OnNodeosDataReceived; // async (sender, e) => await OnNodeosOutputDataReceived(sender, e, stoppingToken);
+        _deepMindProcess.ErrorDataReceived += OnNodeosDataReceived;
+        await _deepMindProcess.RunAsync(clt);
     }
 
     private void OnNodeosExited(object? sender, EventArgs e)
