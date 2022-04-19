@@ -53,12 +53,23 @@ public class DlogReaderWorker : BackgroundService
 
         await Task.Delay(3000, clt);
 
-        
-//        string mindreaderDir = "/home/cmadh/testing/config/";
-//        string dataDir = "/home/cmadh/testing/data/";
 
         string mindreaderDir = "/app/config/mindreader/";
         string dataDir = "/app/config/mindreader/data";
+
+
+        var vars = Environment.GetEnvironmentVariables();
+        if (vars.Contains("WSLENV"))
+        {
+            mindreaderDir = "/home/cmadh/testing/config/";
+            dataDir = "/home/cmadh/testing/data/";
+        }
+        else if(vars.Contains("DOTNET_RUNNING_IN_CONTAINER"))
+        {
+            mindreaderDir = "/app/config/mindreader/";
+            dataDir = "/app/config/mindreader/data";
+        }
+
 
         using var mindreader = new Process();
         mindreader.StartInfo = new ProcessStartInfo
