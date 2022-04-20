@@ -3,6 +3,7 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+.vs/
 
 DeepReader/config/mindreader/data
 DeepReader/config/mindreader/protocol_features

@@ -1,7 +1,10 @@
 using System.Diagnostics;
 using System.Threading.Channels;
 using DeepReader.Classes;
+using DeepReader.Configuration;
+using DeepReader.Options;
 using DeepReader.Types;
+using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace DeepReader.HostedServices;
@@ -10,135 +13,68 @@ public class DlogReaderWorker : BackgroundService
 {
     private readonly ChannelWriter<Block> _blocksChannel;
 
+    private DeepMindProcess _deepMindProcess;
+    private DeepReaderOptions _deepReaderOptions;
+    private MindReaderOptions _mindReaderOptions;
     readonly ParseCtx _ctx = new();
 
-    public DlogReaderWorker(ChannelWriter<Block> blocksChannel)
+    public DlogReaderWorker(ChannelWriter<Block> blocksChannel, IOptionsMonitor<DeepReaderOptions> _deepReaderOptionsMonitor, IOptionsMonitor<MindReaderOptions> _mindReaderOptionsMonitor)
     {
         _blocksChannel = blocksChannel;
+
+        _deepReaderOptions = _deepReaderOptionsMonitor.CurrentValue;
+        _deepReaderOptionsMonitor.OnChange(OnDeepReaderOptionsChanged);
+
+        _mindReaderOptions = _mindReaderOptionsMonitor.CurrentValue;
+        _mindReaderOptionsMonitor.OnChange(OnMindReaderOptionsChanged);
+
+//#if DEBUG
+//        string mindreaderDir = "/app/config/mindreader/";
+//        string dataDir = "/app/config/mindreader/data";
+
+
+//        var vars = Environment.GetEnvironmentVariables();
+//        if (vars.Contains("WSLENV"))
+//        {
+//            mindreaderDir = "/home/cmadh/testing/config/";
+//            dataDir = "/home/cmadh/testing/data/";
+//        }
+//        else if (vars.Contains("DOTNET_RUNNING_IN_CONTAINER"))
+//        {
+//            mindreaderDir = "/app/config/mindreader/";
+//            dataDir = "/app/config/mindreader/data";
+//        }
+//        _deepMindProcess = new DeepMindProcess(_mindReaderOptions, mindreaderDir, dataDir);
+//#else
+        _deepMindProcess = new DeepMindProcess(_mindReaderOptions);
+//#endif
+    }
+
+    private void OnDeepReaderOptionsChanged(DeepReaderOptions newOptions)
+    {
+        _deepReaderOptions = newOptions;
+    }
+
+    private void OnMindReaderOptionsChanged(MindReaderOptions newOptions)
+    {
+        _mindReaderOptions = newOptions;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // TODO Corvin       await _deepMindProcess.RunAsync(stoppingToken);
         await StartNodeos(stoppingToken);
     }
 
     private async Task StartNodeos(CancellationToken clt)
     {
-        // TODO check nodeos version, provide arguments-list
-
-        //nodeos -e -p eosio \
-        //--delete-all-blocks \
-        //--deep-mind \
-        //--plugin eosio::producer_plugin \
-        //--plugin eosio::producer_api_plugin \
-        //--plugin eosio::chain_api_plugin \
-        //--plugin eosio::http_plugin \
-        //--plugin eosio::history_plugin \
-        //--plugin eosio::history_api_plugin \
-        //--filter-on="*" \
-        //--access-control-allow-origin='*' \
-        //--contracts-console \
-        //--http-validate-host=false \
-        //--verbose-http-errors >> nodeos.log 2 > &1 &
-
-        //var args = new System.Collections.ObjectModel.Collection<string>()
-        //{
-        //    "-e", "-p eosio",
-        //    "--delete-all-blocks",
-        //    "--deep-mind",
-        //    "--plugin eosio::producer_plugin",
-        //    "--plugin eosio::producer_api_plugin",
-        //    "--plugin eosio::chain_api_plugin",
-        //    "--plugin eosio::http_plugin",
-        //    "--plugin eosio::history_plugin",
-        //    "--plugin eosio::history_api_plugin",
-        //    "--filter-on = \"*\"",
-        //    "--access-control-allow-origin = '*'",
-        //    "--contracts-console",
-        //    "--http-validate-host = false",
-        //    "--verbose-http-errors >> nodeos.log 2 > &1 &"
-        //};
-
-        //ArgumentList =
-        //    {
-        //    "-e", "-p eosio",
-        //        "--delete-all-blocks",
-        //        "--deep-mind",
-        //        "--plugin eosio::producer_plugin",
-        //        "--plugin eosio::producer_api_plugin",
-        //        "--plugin eosio::chain_api_plugin",
-        //        "--plugin eosio::http_plugin",
-        //        "--plugin eosio::history_plugin",
-        //        "--plugin eosio::history_api_plugin",
-        //        "--filter-on = \"*\"",
-        //        "--access-control-allow-origin = '*'",
-        //        "--contracts-console",
-        //        "--http-validate-host = false",
-        //        "--verbose-http-errors >> nodeos.log 2 > &1 &"
-        //    }, // { "--delete-all-blocks --deep-mind" },
-
-//        string producerDir = "/app/config/producer/";
-//        using var producer = new Process();
-//        producer.StartInfo = new ProcessStartInfo
-//        {
-//            FileName = "nodeos",
-//            ArgumentList =
-//            {
-//                /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", /*"--deep-mind",*/ "--config-dir", $"{producerDir}", "--data-dir", $"{producerDir}data", "--genesis-json", $"{producerDir}genesis.json",
-////                    "-e -p eosio --delete-all-blocks --deep-mind --plugin eosio::producer_plugin --plugin eosio::producer_api_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --filter-on='*' --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors"// >> nodeos.log 2 > &1 &
-//            }, // { "--delete-all-blocks --deep-mind" },
-//            UseShellExecute = false,
-//            RedirectStandardError = false,
-//            RedirectStandardInput = false,
-//            RedirectStandardOutput = false,
-//            CreateNoWindow = true,
-//            WindowStyle = ProcessWindowStyle.Hidden
-//            //                WorkingDirectory = "/usr/bin",
-//        };
-//        producer.Start();
+        // TODO (Corvin) check nodeos version, provide arguments-list
 
         await Task.Delay(3000, clt);
 
-        string mindreaderDir = "/app/config/mindreader/";
-        using var mindreader = new Process();
-        mindreader.StartInfo = new ProcessStartInfo
-        {
-            FileName = "nodeos",
-            ArgumentList =
-            {
-                /*"-e" ,"-p", "eosio",*/ "--delete-all-blocks", "--config-dir", $"{mindreaderDir}", "--data-dir", $"{mindreaderDir}data", "--genesis-json", $"{mindreaderDir}genesis.json",
-//                    "-e -p eosio --delete-all-blocks --deep-mind --plugin eosio::producer_plugin --plugin eosio::producer_api_plugin --plugin eosio::chain_api_plugin --plugin eosio::http_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --filter-on='*' --access-control-allow-origin='*' --contracts-console --http-validate-host=false --verbose-http-errors"// >> nodeos.log 2 > &1 &
-            }, // { "--delete-all-blocks --deep-mind" },
-            UseShellExecute = false,
-            RedirectStandardError = true,
-            RedirectStandardInput = false,
-            RedirectStandardOutput = true,
-            CreateNoWindow = true,
-            WindowStyle = ProcessWindowStyle.Hidden
-            //                WorkingDirectory = "/usr/bin",
-        };
-
-        if (mindreader != null)
-        {
-            mindreader.OutputDataReceived += async (sender, e) => await OnNodeosDataReceived(sender, e, clt); // async (sender, e) => await OnNodeosOutputDataReceived(sender, e, stoppingToken);
-            mindreader.ErrorDataReceived += async (sender, e) => await OnNodeosDataReceived(sender, e, clt);
-            mindreader.Exited += OnNodeosExited;
-
-            mindreader.Start();
-            mindreader.BeginErrorReadLine();
-            mindreader.BeginOutputReadLine();
-            //await process.WaitForExitAsync(stoppingToken);
-            while (!mindreader.HasExited)
-            {
-                await Task.Delay(10000, clt);
-
-                if(mindreader.HasExited)
-                {
-                    Log.Warning("MINDREADER EXITED!");
-                }
-            }
-            Log.Warning("EXITED 1");
-        }
+        _deepMindProcess.OutputDataReceived += OnNodeosDataReceived; // async (sender, e) => await OnNodeosOutputDataReceived(sender, e, stoppingToken);
+        _deepMindProcess.ErrorDataReceived += OnNodeosDataReceived;
+        await _deepMindProcess.RunAsync(clt);
     }
 
     private void OnNodeosExited(object? sender, EventArgs e)
@@ -146,7 +82,7 @@ public class DlogReaderWorker : BackgroundService
         Log.Warning("Nodeos exited2");
     }
 
-    private async Task OnNodeosDataReceived(object sender, DataReceivedEventArgs e, CancellationToken clt)
+    private void OnNodeosDataReceived(object sender, DataReceivedEventArgs e)
     {
         try
         {
@@ -182,42 +118,57 @@ public class DlogReaderWorker : BackgroundService
                         case "PERM_OP":
                             _ctx.ReadPermOp(data[Range.StartAt(2)]);
                             break;
-                        case "DTRX_OP CREATE":
-                            _ctx.ReadCreateOrCancelDTrxOp("CREATE", data[Range.StartAt(2)]);
-                            break;
-                        case "DTRX_OP MODIFY_CREATE":
-                            _ctx.ReadCreateOrCancelDTrxOp("MODIFY_CREATE", data[Range.StartAt(2)]);
-                            break;
-                        case "DTRX_OP MODIFY_CANCEL":
-                            _ctx.ReadCreateOrCancelDTrxOp("MODIFY_CANCEL", data[Range.StartAt(2)]);
+                        case "DTRX_OP":
+                            switch (data[2])
+                            {
+                                case "CREATE":
+                                    _ctx.ReadCreateOrCancelDTrxOp("CREATE", data[Range.StartAt(2)]);
+                                    break;
+                                case "MODIFY_CREATE":
+                                    _ctx.ReadCreateOrCancelDTrxOp("MODIFY_CREATE", data[Range.StartAt(2)]);
+                                    break;
+                                case "MODIFY_CANCEL":
+                                    _ctx.ReadCreateOrCancelDTrxOp("MODIFY_CANCEL", data[Range.StartAt(2)]);
+                                    break;
+                                case "PUSH_CREATE":
+                                    _ctx.ReadCreateOrCancelDTrxOp("PUSH_CREATE", data[Range.StartAt(2)]);
+                                    break;
+                                case "CANCEL":
+                                    _ctx.ReadCreateOrCancelDTrxOp("CANCEL", data[Range.StartAt(2)]);
+                                    break;
+                                case "FAILED":
+                                    _ctx.ReadFailedDTrxOp(data[Range.StartAt(2)]);
+                                    break;
+                                default:
+                                    Log.Information(e.Data);
+                                    break;
+                            }
                             break;
                         case "RAM_CORRECTION_OP":
                             _ctx.ReadRamCorrectionOp(data[Range.StartAt(2)]);
                             break;
-                        case "DTRX_OP PUSH_CREATE":
-                            _ctx.ReadCreateOrCancelDTrxOp("PUSH_CREATE", data[Range.StartAt(2)]);
-                            break;
-                        case "DTRX_OP CANCEL":
-                            _ctx.ReadCreateOrCancelDTrxOp("CANCEL", data[Range.StartAt(2)]);
-                            break;
-                        case "DTRX_OP FAILED":
-                            _ctx.ReadFailedDTrxOp(data[Range.StartAt(2)]);
-                            break;
                         case "ACCEPTED_BLOCK":
                             var block = _ctx.ReadAcceptedBlock(data[Range.StartAt(2)]);
-                            await _blocksChannel.WriteAsync(block, clt);
+                            bool blockWritten = _blocksChannel.TryWrite(block);
+                            while (!blockWritten)
+                            {
+                                blockWritten = _blocksChannel.TryWrite(block);
+                            }
                             break;
                         case "START_BLOCK":
                             _ctx.ReadStartBlock(data[Range.StartAt(2)]);
-                            break;
-                        case "FEATURE_OP ACTIVATE":
-                            _ctx.ReadFeatureOpActivate(data[Range.StartAt(2)]);
                             break;
                         case "FEATURE_OP":
                             switch (data[2])
                             {
                                 case "PRE_ACTIVATE":
                                     _ctx.ReadFeatureOpPreActivate(data[Range.StartAt(2)]);
+                                    break;
+                                case "ACTIVATE":
+                                    _ctx.ReadFeatureOpActivate(data[Range.StartAt(2)]);
+                                    break;
+                                default:
+                                    Log.Information(e.Data);
                                     break;
                             }
                             break;
@@ -249,7 +200,7 @@ public class DlogReaderWorker : BackgroundService
                     } 
                 }
                 //else
-                //Log.Information(e.Data);
+                //    Log.Information(e.Data);
             }
             else
                 Log.Warning("data is null");

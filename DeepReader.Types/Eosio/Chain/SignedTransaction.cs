@@ -45,6 +45,9 @@ public class SignedTransaction : Transaction, IEosioSerializable<SignedTransacti
             signedTransaction.TransactionExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
         }
 
+        if (reader.BaseStream.Position == reader.BaseStream.Length) // Don't know exactly why but sometimes the stream is at it's end here already.
+            return signedTransaction;
+
         signedTransaction.Signatures = new Signature[reader.Read7BitEncodedInt()];
         for (int i = 0; i < signedTransaction.Signatures.Length; i++)
         {

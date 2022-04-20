@@ -128,6 +128,11 @@ public class Except : IEosioSerializable<Except>
         // - as long as we "replay" very old blocks Except? should always just be Null so returning Null should work here for now
         return null;
     }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public class ExceptLogMessage

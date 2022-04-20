@@ -668,19 +668,19 @@ public class ParseCtx
     //   DTRX_OP PUSH_CREATE   ${action_id} ${sender} ${sender_id} ${payer} ${published} ${delay} ${expiration} ${trx_id} ${trx}
     public void ReadCreateOrCancelDTrxOp(string tag, string[] chunks)
     {
-        if (chunks.Length != 11)
+        if (chunks.Length != 10)
         {
-            throw new Exception($"expected 11 fields, got {chunks.Length}");
+            throw new Exception($"expected 10 fields, got {chunks.Length}");
         }
 
-        var opString = chunks[1];
+        var opString = chunks[0];
         var rawOp = Enum.Parse<DTrxOpOperation>(opString, true);//pbcodec.DTrxOp_Operation_value["OPERATION_" + opString]);
 
         var op = rawOp; //pbcodec.DTrxOp_Operation(rawOp);
 
-        var actionIndex = Convert.ToInt32(chunks[2]);
+        var actionIndex = Convert.ToInt32(chunks[1]);
 
-        var trxHex = chunks[10].HexStringToByteArray();
+        var trxHex = chunks[9].HexStringToByteArray();
 
         SignedTransaction signedTrx;// = new SignedTransaction();
         if (op == DTrxOpOperation.PUSH_CREATE)
@@ -689,21 +689,20 @@ public class ParseCtx
         }
         else
         {
-            var trx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Transaction>(trxHex);
-            signedTrx = (SignedTransaction)trx;
+            signedTrx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(trxHex);
         }
 
         RecordDTrxOp(new DTrxOp()
         {
             Operation = op,
             ActionIndex = (uint) actionIndex,
-            Sender = chunks[3],
-            SenderId = chunks[4],
-            Payer = chunks[5],
-            PublishedAt = chunks[6],
-            DelayUntil = chunks[7],
-            ExpirationAt = chunks[8],
-            TransactionId = chunks[9],
+            Sender = chunks[2],
+            SenderId = chunks[3],
+            Payer = chunks[4],
+            PublishedAt = chunks[5],
+            DelayUntil = chunks[6],
+            ExpirationAt = chunks[7],
+            TransactionId = chunks[8],
             Transaction = signedTrx,
         });
 
@@ -1002,23 +1001,23 @@ public class ParseCtx
     //   RAM_CORRECTION_OP ${action_id} ${correction_id} ${unique_key} ${payer} ${delta}
     public void ReadRamCorrectionOp(string[] chunks)
     {
-        if (chunks.Length != 6)
+        if (chunks.Length != 5)
         {
-            throw new Exception($"expected 6 fields, got {chunks.Length}");
+            throw new Exception($"expected 5 fields, got {chunks.Length}");
         }
 
         // We assume ${action_id} will always be 0, since called from onblock, so that's why we do not process it
 
-        var delta = Convert.ToInt64(chunks[5]);
+        var delta = Convert.ToInt64(chunks[4]);
         /*if err != nil {
 	        return fmt.Errorf("delta not a valid number, got: %q", chunks[5])
         }*/
 
         RecordRamCorrectionOp(new RamCorrectionOp()
         {
-            CorrectionId = chunks[2],
-            UniqueKey = chunks[3],
-            Payer = chunks[4],
+            CorrectionId = chunks[1],
+            UniqueKey = chunks[2],
+            Payer = chunks[3],
             Delta = delta,
         });
     }

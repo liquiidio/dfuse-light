@@ -1,6 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using DeepReader.Storage.Options;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Serilog;
+
 
 namespace DeepReader.Storage.Elastic
 {
@@ -23,14 +27,15 @@ namespace DeepReader.Storage.Elastic
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
-            builder.ConfigureServices((Action<HostBuilderContext, IServiceCollection>) ((_, collection) =>
-            {
-                collection.AddSingleton(services =>
-                {
-                    IStorageAdapter storageAdapter = new ElasticStorage();
-                    return storageAdapter;
-                });
-            }));
+            builder.ConfigureServices((hostContext, services) =>
+           {
+               services.Configure<ElasticStorageOptions>(config => hostContext.Configuration.GetSection("ElasticStorageOptions").Bind(config));
+               services.AddSingleton(provider =>
+               {
+                   IStorageAdapter storageAdapter = new ElasticStorage(provider.GetRequiredService<IOptionsMonitor<ElasticStorageOptions>>());
+                   return storageAdapter;
+               });
+           });
             return builder;
         }
 

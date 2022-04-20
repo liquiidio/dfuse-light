@@ -1,4 +1,6 @@
 using DeepReader.Types.Enums;
+using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types;
 
@@ -6,10 +8,10 @@ public class TableOp
 {
     public TableOpOperation Operation = TableOpOperation.UNKNOWN;//TableOp_Operation
     public uint ActionIndex = 0;//uint32
-    public string Payer = string.Empty;//string
-    public string Code = string.Empty;//string
-    public string Scope = string.Empty;//string
-    public string TableName = string.Empty;//string
+    public Name Payer = string.Empty;//string
+    public Name Code = string.Empty;//string
+    public Name Scope = string.Empty;//string
+    public Name TableName = string.Empty;//string
 
     public static TableOp ReadFromBinaryReader(BinaryReader reader)
     {
@@ -18,6 +20,11 @@ public class TableOp
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write((byte)Operation);
+        writer.Write(ActionIndex);
+        writer.WriteName(Payer);
+        writer.WriteName(Code);
+        writer.WriteName(Scope);
+        writer.WriteName(TableName);
     }
 }

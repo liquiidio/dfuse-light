@@ -1,30 +1,41 @@
-﻿using DeepReader.Types;
+﻿using DeepReader.Storage.Options;
+using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.FlattenedTypes;
+using Microsoft.Extensions.Options;
 using Nest;
 
 namespace DeepReader.Storage.Elastic
 {
     internal class ElasticStorage : IStorageAdapter
     {
-        private ElasticClient elasticClient;
+        private readonly ElasticClient _elasticClient;
 
-        public ElasticStorage()
+        private ElasticStorageOptions _elasticStorageOptions;
+
+        public ElasticStorage(IOptionsMonitor<ElasticStorageOptions> storageOptionsMonitor)
         {
+            _elasticStorageOptions = storageOptionsMonitor.CurrentValue;
+            storageOptionsMonitor.OnChange(OnElasticStorageOptionsChanged);
+
             //var settings = new ConnectionSettings(new Uri("http://example.com:9200")).DefaultIndex("people");
             var connectionSettings = new ConnectionSettings();
-            elasticClient = new ElasticClient(connectionSettings);
+            _elasticClient = new ElasticClient(connectionSettings);
+        }
 
+        private void OnElasticStorageOptionsChanged(ElasticStorageOptions newOptions)
+        {
+            _elasticStorageOptions = newOptions;
         }
 
         public async Task StoreBlockAsync(FlattenedBlock block) // compress, store, index
         {
-            await elasticClient.IndexDocumentAsync(new FlattenedBlockWrapper(){ Block = block });
+            await _elasticClient.IndexDocumentAsync(new FlattenedBlockWrapper(){ Block = block });
         }
 
         public async Task StoreTransactionAsync(FlattenedTransactionTrace transactionTrace)  // compress, store, index
         {
-            await elasticClient.IndexDocumentAsync(new FlattenedTransactionTraceWrapper(){ TransactionTrace = transactionTrace });
+            await _elasticClient.IndexDocumentAsync(new FlattenedTransactionTraceWrapper(){ TransactionTrace = transactionTrace });
         }
 
         public Task<(bool, FlattenedBlock)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false)

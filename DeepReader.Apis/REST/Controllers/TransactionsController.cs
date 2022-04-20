@@ -1,6 +1,8 @@
-﻿using DeepReader.Storage;
+﻿using DeepReader.Apis.Options;
+using DeepReader.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace DeepReader.Apis.REST.Controllers
 {
@@ -10,9 +12,18 @@ namespace DeepReader.Apis.REST.Controllers
     {
         private readonly IStorageAdapter _storage;
 
-        public TransactionsController(IStorageAdapter storage)
+        private ApiOptions _apiOptions;
+
+        public TransactionsController(IStorageAdapter storage, IOptionsMonitor<ApiOptions> apiOptionsMonitor)
         {
+            _apiOptions = apiOptionsMonitor.CurrentValue;
+            apiOptionsMonitor.OnChange(OnApiOptionsChanged);
+
             _storage = storage;
+        }
+        private void OnApiOptionsChanged(ApiOptions newOptions)
+        {
+            _apiOptions = newOptions;
         }
 
         [HttpGet("transaction/{transaction_id}")]

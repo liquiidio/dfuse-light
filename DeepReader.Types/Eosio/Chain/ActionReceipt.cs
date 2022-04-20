@@ -1,4 +1,5 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -35,5 +36,22 @@ public class ActionReceipt : IEosioSerializable<ActionReceipt>
         actionReceipt.CodeSequence = reader.ReadVarUint32Obj();
         actionReceipt.AbiSequence = reader.ReadVarUint32Obj();
         return actionReceipt;
+    }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.WriteName(Receiver);
+        writer.WriteChecksum256(ActionDigest);
+        writer.Write(GlobalSequence);
+        writer.Write(ReceiveSequence);
+
+        writer.Write(AuthSequence.Length);
+        foreach (var transactionTraceAuthSequence in AuthSequence)
+        {
+            transactionTraceAuthSequence.WriteToBinaryWriter(writer);
+        }
+
+        writer.Write(CodeSequence);
+        writer.Write(AbiSequence);
     }
 }

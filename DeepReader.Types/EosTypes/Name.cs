@@ -20,7 +20,7 @@ public class Name : BinaryType
 
     public ulong IntVal
     {
-        get => _intVal ??= Convert.ToUInt64(Binary);
+        get => _intVal ??= BitConverter.ToUInt64(Binary);
         set => _intVal = value;
     }
 
