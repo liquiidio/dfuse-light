@@ -1,9 +1,12 @@
 ﻿using System.Text.Json;
+using DeepReader.Apis.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Prometheus;
 using Swashbuckle.AspNetCore;
 
 namespace DeepReader.Apis.REST
@@ -30,16 +33,17 @@ namespace DeepReader.Apis.REST
 
             builder.ConfigureWebHostDefaults(webBuilder =>
             {
-                webBuilder.ConfigureServices(collection =>
+                webBuilder.ConfigureServices((hostContext, services) =>
                 {
-                    collection.AddControllers().AddJsonOptions(options =>
+                    services.Configure<ApiOptions>(config => hostContext.Configuration.GetSection("ElasticStorageOptions").Bind(config));
+                    services.AddControllers().AddJsonOptions(options =>
                     {
                         options.JsonSerializerOptions.MaxDepth = Int32.MaxValue;
                         options.JsonSerializerOptions.IncludeFields = true;
                         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                     });
-                    collection.AddEndpointsApiExplorer();
-                    collection.AddSwaggerGen();
+                    services.AddEndpointsApiExplorer();
+                    services.AddSwaggerGen();
                 });
                 webBuilder.Configure(app =>
                 {
@@ -48,10 +52,21 @@ namespace DeepReader.Apis.REST
                     {
                         options.SwaggerEndpoint("/swagger/v1/swagger.json", "DeepReaderAPI v1");
                     });
+                    //app.UseHttpsRedirection();
                     app.UseRouting();
-                    app.UseEndpoints(endpoints =>
+
+                    // Exposes HTTP metrics to Prometheus using the same endpoint above
+                    app.UseHttpMetrics(options =>
                     {
+                        // This will preserve only the first digit of the status code.
+                        // For example: 200, 201, 203 -> 2xx
+                        options.ReduceStatusCodeCardinality();
+                    });
+
+                    app.UseEndpoints(endpoints =>
+                    { 
                         endpoints.MapControllers();
+                        endpoints.MapMetrics();
                     });
                 });
             });

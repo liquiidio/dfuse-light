@@ -4,6 +4,7 @@ using System.Reflection;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.Interfaces;
+using Prometheus;
 using Salar.BinaryBuffers;
 using Serilog;
 
@@ -14,6 +15,9 @@ namespace DeepReader.DeepMindDeserializer;
 // TODO Can we use ReadOnlySpan<byte> or ReadOnlyMemory<byte> instead of byte[] and would it bring a benefit?
 public static class DeepMindDeserializer
 {
+    // This should keep a count of the blocks created, that can be used to determine blocks per second (theoretically)
+    private static readonly Counter deserializedBlocksCount = Metrics.CreateCounter("deepreader_deserialized_blocks_count", "Number of deserialized blocks");
+
     public static async Task<T> DeserializeAsync<T>(byte[] data, CancellationToken cancellationToken) where T : IEosioSerializable<T>
     {
         return await Task.Run(() => Deserialize<T>(data), cancellationToken);
@@ -21,6 +25,7 @@ public static class DeepMindDeserializer
 
     public static T Deserialize<T>(byte[] data) where T : IEosioSerializable<T>
     {
+        deserializedBlocksCount.Inc();
         var reader = new BinaryReader(new MemoryStream(data));
         return T.ReadFromBinaryReader(reader);
     }

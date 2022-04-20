@@ -1,7 +1,9 @@
-﻿using DeepReader.Storage;
+﻿using DeepReader.Apis.Options;
+using DeepReader.Storage;
 using DeepReader.Types.FlattenedTypes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace DeepReader.Apis.REST.Controllers
 {
@@ -11,9 +13,19 @@ namespace DeepReader.Apis.REST.Controllers
     {
         private readonly IStorageAdapter _storage;
 
-        public BlocksController(IStorageAdapter storage)
+        private ApiOptions _apiOptions;
+
+        public BlocksController(IStorageAdapter storage, IOptionsMonitor<ApiOptions> apiOptionsMonitor)
         {
+            _apiOptions = apiOptionsMonitor.CurrentValue;
+            apiOptionsMonitor.OnChange(OnApiOptionsChanged);
+
             _storage = storage;
+        }
+
+        private void OnApiOptionsChanged(ApiOptions newOptions)
+        {
+            _apiOptions = newOptions;
         }
 
         [HttpGet("block/{block_num}")]
