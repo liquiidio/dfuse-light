@@ -6,7 +6,9 @@
         "DOTNET_ENVIRONMENT": "Development"
       },
       "hotReloadEnabled": false,
-      "dotnetRunMessages": true
+      "dotnetRunMessages": true,
+      "remoteDebugEnabled": false,
+      "remoteDebugMachine": "test:22"
     },
     "Docker": {
       "commandName": "Docker"
@@ -16,9 +18,10 @@
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       },
-      "distributionName": "Ubuntu20.04LTS"
+      "distributionName": "Ubuntu20.04LTS2",
+      "remoteDebugEnabled": true
     },
-	"WSL : Ubuntu-18.04": {
+    "WSL : Ubuntu-18.04": {
       "commandName": "WSL",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"

@@ -5,17 +5,18 @@ namespace DeepReader.Storage.Faster.Blocks;
 
 public sealed class BlockFunctions : FunctionsBase<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext>
 {
-    public override void ConcurrentReader(ref BlockId id, ref BlockInput input, ref FlattenedBlock value, ref BlockOutput dst)
+    public override bool ConcurrentReader(ref BlockId id, ref BlockInput input, ref FlattenedBlock value, ref BlockOutput dst, ref ReadInfo readInfo)
     {
         dst.Value = value;
+        return true;
     }
 
-    public override void CheckpointCompletionCallback(string sessionId, CommitPoint commitPoint)
+    public override void CheckpointCompletionCallback(int sessionId, string sessionName, CommitPoint commitPoint)
     {
         Console.WriteLine("Session {0} reports persistence until {1}", sessionId, commitPoint.UntilSerialNo);
     }
 
-    public override void ReadCompletionCallback(ref BlockId id, ref BlockInput input, ref BlockOutput output, BlockContext ctx, Status status)
+    public override void ReadCompletionCallback(ref BlockId id, ref BlockInput input, ref BlockOutput output, BlockContext ctx, Status status, RecordMetadata recordMetadata)
     {
         if (ctx.Type == 0)
         {
@@ -26,7 +27,7 @@ public sealed class BlockFunctions : FunctionsBase<BlockId, FlattenedBlock, Bloc
         {
             long ticks = DateTime.Now.Ticks - ctx.Ticks;
 
-            if (status == Status.NOTFOUND)
+            if (status.Found)
                 Console.WriteLine("Async: Value not found, latency = {0}ms", new TimeSpan(ticks).TotalMilliseconds);
 
             if (output.Value.Number != id.Id)
@@ -36,8 +37,9 @@ public sealed class BlockFunctions : FunctionsBase<BlockId, FlattenedBlock, Bloc
         }
     }
 
-    public override void SingleReader(ref BlockId id, ref BlockInput input, ref FlattenedBlock value, ref BlockOutput dst)
+    public override bool SingleReader(ref BlockId id, ref BlockInput input, ref FlattenedBlock value, ref BlockOutput dst, ref ReadInfo readInfo)
     {
         dst.Value = value;
+        return true;
     }
 }

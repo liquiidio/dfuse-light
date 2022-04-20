@@ -23,7 +23,7 @@ namespace DeepReader
                 RedirectStandardOutput = mindReaderOptions.RedirectStandardOutput,
                 RedirectStandardInput = false,
                 CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
+                WindowStyle = ProcessWindowStyle.Hidden,                
                 //            UseShellExecute = false,
                 //            RedirectStandardError = true,
                 //            RedirectStandardInput = false,
@@ -46,6 +46,11 @@ namespace DeepReader
 
             if (StartInfo.RedirectStandardError)
                 BeginErrorReadLine();
+
+            await Task.Delay(5000, cancellationToken);
+
+            this.PriorityClass = ProcessPriorityClass.RealTime;
+            this.PriorityBoostEnabled = true;
 
             await this.WaitForExitAsync(cancellationToken);
             return ExitCode;
@@ -101,8 +106,12 @@ namespace DeepReader
                 sb.Append($" --protocol-features-dir {mindReaderOptions.ProtocolFeaturesDir}");
             else if (mindReaderDir != null)
                 sb.Append($" --protocol-features-dir {dataDir}");
+
+            var argList = sb.ToString();
             
-            return sb.ToString();
+            Log.Information(argList);
+
+            return argList;
         }
     }
 }

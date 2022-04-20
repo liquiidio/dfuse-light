@@ -1,8 +1,11 @@
+using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
+
 namespace DeepReader.Types;
 
 public class AccountRamDelta : IEosioSerializable<AccountRamDelta>
 {
-    public string Account = string.Empty;// string
+    public Name Account = string.Empty;// string
     public long Delta = 0;// int64
 
     public static AccountRamDelta ReadFromBinaryReader(BinaryReader reader)
@@ -11,7 +14,7 @@ public class AccountRamDelta : IEosioSerializable<AccountRamDelta>
         // Haron: "This class is in DeepReader.Types namespace, also have a look at string Account"
         var accountRamDelta = new AccountRamDelta()
         {
-            Account = reader.ReadString(),
+            Account = reader.ReadName(),
             Delta = reader.ReadInt64()
         };
         return accountRamDelta;
@@ -19,7 +22,7 @@ public class AccountRamDelta : IEosioSerializable<AccountRamDelta>
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        writer.Write(Account); // TODO Eosio Name
+        writer.WriteName(Account); // TODO Eosio Name
         writer.Write(Delta); // TODO VARINT
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using System.Threading.Channels;
 using System.Threading.Tasks.Dataflow;
 using DeepReader.Apis.GraphQl.Queries;
@@ -66,7 +67,6 @@ public class BlockWorker : BackgroundService
             MaxDepth = Int32.MaxValue
         };
 
-        bool test = true;
         await foreach (var block in _blocksChannel.ReadAllAsync(cancellationToken))
         {
             try
@@ -76,6 +76,8 @@ public class BlockWorker : BackgroundService
                     Log.Information($"got block {block.Number}");
                     Log.Information(JsonSerializer.Serialize(block, jsonSerializerOptions));
                     Log.Information($"channel-size: {_blocksChannel.Count}");
+
+                    Log.Information($"Current Threads: {Process.GetCurrentProcess().Threads.Count}");
                 }
 
                 //foreach (var setAbiAction in block.UnfilteredTransactionTraces.SelectMany(utt => utt.ActionTraces.Where(at => at.Act.Account == "eosio" && at.Act.Name == "setabi")))

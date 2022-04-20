@@ -3,22 +3,20 @@ using FASTER.core;
 
 namespace DeepReader.Storage.Faster.Transactions;
 
-public sealed class TransactionFunctions : FunctionsBase<TransactionId, FlattenedTransactionTrace, TransactionInput,
-    TransactionOutput, TransactionContext>
+public sealed class TransactionFunctions : FunctionsBase<TransactionId, FlattenedTransactionTrace, TransactionInput,TransactionOutput, TransactionContext>
 {
-    public override void ConcurrentReader(ref TransactionId id, ref TransactionInput input,
-        ref FlattenedTransactionTrace value, ref TransactionOutput dst)
+    public override bool ConcurrentReader(ref TransactionId id, ref TransactionInput input, ref FlattenedTransactionTrace value, ref TransactionOutput dst, ref ReadInfo readInfo)
     {
         dst.Value = value;
+        return true;
     }
 
-    public override void CheckpointCompletionCallback(string sessionId, CommitPoint commitPoint)
+    public override void CheckpointCompletionCallback(int sessionId, string sessionName, CommitPoint commitPoint)
     {
         Console.WriteLine("Session {0} reports persistence until {1}", sessionId, commitPoint.UntilSerialNo);
     }
 
-    public override void ReadCompletionCallback(ref TransactionId id, ref TransactionInput input,
-        ref TransactionOutput output, TransactionContext ctx, Status status)
+    public override void ReadCompletionCallback(ref TransactionId id, ref TransactionInput input, ref TransactionOutput output, TransactionContext ctx, Status status, RecordMetadata recordMetadata)
     {
         if (ctx.Type == 0)
         {
@@ -29,7 +27,7 @@ public sealed class TransactionFunctions : FunctionsBase<TransactionId, Flattene
         {
             long ticks = DateTime.Now.Ticks - ctx.Ticks;
 
-            if (status == Status.NOTFOUND)
+            if (status.Found)
                 Console.WriteLine("Async: Value not found, latency = {0}ms", new TimeSpan(ticks).TotalMilliseconds);
 
             if (output.Value.Id != id.Id)
@@ -41,9 +39,9 @@ public sealed class TransactionFunctions : FunctionsBase<TransactionId, Flattene
         }
     }
 
-    public override void SingleReader(ref TransactionId id, ref TransactionInput input,
-        ref FlattenedTransactionTrace value, ref TransactionOutput dst)
+    public override bool SingleReader(ref TransactionId id, ref TransactionInput input, ref FlattenedTransactionTrace value, ref TransactionOutput dst, ref ReadInfo readInfo)
     {
         dst.Value = value;
+        return true;
     }
 }

@@ -71,7 +71,7 @@ namespace DeepReader.Storage.Faster.Transactions
         public async Task<(bool, FlattenedTransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
         {
             var (status, output) = (await _transactionStoreSession.ReadAsync(new TransactionId(transactionId))).Complete();
-            return (status == Status.OK, output.Value);
+            return (status.IsCompletedSuccessfully, output.Value);
         }
 
         private void CommitThread()

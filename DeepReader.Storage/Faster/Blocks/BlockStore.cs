@@ -71,7 +71,7 @@ namespace DeepReader.Storage.Faster.Blocks
         public async Task<(bool, FlattenedBlock)> TryGetBlockById(uint blockNum)
         {
             var (status, output) = (await _blockStoreSession.ReadAsync(new BlockId(blockNum))).Complete();
-            return (status == Status.OK, output.Value);
+            return (status.IsCompletedSuccessfully, output.Value);
         }
 
         private void CommitThread()

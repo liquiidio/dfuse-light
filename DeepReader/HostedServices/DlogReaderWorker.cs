@@ -28,26 +28,26 @@ public class DlogReaderWorker : BackgroundService
         _mindReaderOptions = _mindReaderOptionsMonitor.CurrentValue;
         _mindReaderOptionsMonitor.OnChange(OnMindReaderOptionsChanged);
 
-#if DEBUG
-        string mindreaderDir = "/app/config/mindreader/";
-        string dataDir = "/app/config/mindreader/data";
+//#if DEBUG
+//        string mindreaderDir = "/app/config/mindreader/";
+//        string dataDir = "/app/config/mindreader/data";
 
 
-        var vars = Environment.GetEnvironmentVariables();
-        if (vars.Contains("WSLENV"))
-        {
-            mindreaderDir = "/home/cmadh/testing/config/";
-            dataDir = "/home/cmadh/testing/data/";
-        }
-        else if (vars.Contains("DOTNET_RUNNING_IN_CONTAINER"))
-        {
-            mindreaderDir = "/app/config/mindreader/";
-            dataDir = "/app/config/mindreader/data";
-        }
-        _deepMindProcess = new DeepMindProcess(_mindReaderOptions, mindreaderDir, dataDir);
-#else
+//        var vars = Environment.GetEnvironmentVariables();
+//        if (vars.Contains("WSLENV"))
+//        {
+//            mindreaderDir = "/home/cmadh/testing/config/";
+//            dataDir = "/home/cmadh/testing/data/";
+//        }
+//        else if (vars.Contains("DOTNET_RUNNING_IN_CONTAINER"))
+//        {
+//            mindreaderDir = "/app/config/mindreader/";
+//            dataDir = "/app/config/mindreader/data";
+//        }
+//        _deepMindProcess = new DeepMindProcess(_mindReaderOptions, mindreaderDir, dataDir);
+//#else
         _deepMindProcess = new DeepMindProcess(_mindReaderOptions);
-#endif
+//#endif
     }
 
     private void OnDeepReaderOptionsChanged(DeepReaderOptions newOptions)
@@ -118,26 +118,34 @@ public class DlogReaderWorker : BackgroundService
                         case "PERM_OP":
                             _ctx.ReadPermOp(data[Range.StartAt(2)]);
                             break;
-                        case "DTRX_OP CREATE":
-                            _ctx.ReadCreateOrCancelDTrxOp("CREATE", data[Range.StartAt(2)]);
-                            break;
-                        case "DTRX_OP MODIFY_CREATE":
-                            _ctx.ReadCreateOrCancelDTrxOp("MODIFY_CREATE", data[Range.StartAt(2)]);
-                            break;
-                        case "DTRX_OP MODIFY_CANCEL":
-                            _ctx.ReadCreateOrCancelDTrxOp("MODIFY_CANCEL", data[Range.StartAt(2)]);
+                        case "DTRX_OP":
+                            switch (data[2])
+                            {
+                                case "CREATE":
+                                    _ctx.ReadCreateOrCancelDTrxOp("CREATE", data[Range.StartAt(2)]);
+                                    break;
+                                case "MODIFY_CREATE":
+                                    _ctx.ReadCreateOrCancelDTrxOp("MODIFY_CREATE", data[Range.StartAt(2)]);
+                                    break;
+                                case "MODIFY_CANCEL":
+                                    _ctx.ReadCreateOrCancelDTrxOp("MODIFY_CANCEL", data[Range.StartAt(2)]);
+                                    break;
+                                case "PUSH_CREATE":
+                                    _ctx.ReadCreateOrCancelDTrxOp("PUSH_CREATE", data[Range.StartAt(2)]);
+                                    break;
+                                case "CANCEL":
+                                    _ctx.ReadCreateOrCancelDTrxOp("CANCEL", data[Range.StartAt(2)]);
+                                    break;
+                                case "FAILED":
+                                    _ctx.ReadFailedDTrxOp(data[Range.StartAt(2)]);
+                                    break;
+                                default:
+                                    Log.Information(e.Data);
+                                    break;
+                            }
                             break;
                         case "RAM_CORRECTION_OP":
                             _ctx.ReadRamCorrectionOp(data[Range.StartAt(2)]);
-                            break;
-                        case "DTRX_OP PUSH_CREATE":
-                            _ctx.ReadCreateOrCancelDTrxOp("PUSH_CREATE", data[Range.StartAt(2)]);
-                            break;
-                        case "DTRX_OP CANCEL":
-                            _ctx.ReadCreateOrCancelDTrxOp("CANCEL", data[Range.StartAt(2)]);
-                            break;
-                        case "DTRX_OP FAILED":
-                            _ctx.ReadFailedDTrxOp(data[Range.StartAt(2)]);
                             break;
                         case "ACCEPTED_BLOCK":
                             var block = _ctx.ReadAcceptedBlock(data[Range.StartAt(2)]);
@@ -150,14 +158,17 @@ public class DlogReaderWorker : BackgroundService
                         case "START_BLOCK":
                             _ctx.ReadStartBlock(data[Range.StartAt(2)]);
                             break;
-                        case "FEATURE_OP ACTIVATE":
-                            _ctx.ReadFeatureOpActivate(data[Range.StartAt(2)]);
-                            break;
                         case "FEATURE_OP":
                             switch (data[2])
                             {
                                 case "PRE_ACTIVATE":
                                     _ctx.ReadFeatureOpPreActivate(data[Range.StartAt(2)]);
+                                    break;
+                                case "ACTIVATE":
+                                    _ctx.ReadFeatureOpActivate(data[Range.StartAt(2)]);
+                                    break;
+                                default:
+                                    Log.Information(e.Data);
                                     break;
                             }
                             break;
