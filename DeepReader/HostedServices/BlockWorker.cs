@@ -11,6 +11,7 @@ using DeepReader.Types.FlattenedTypes;
 using DeepReader.Types.Helpers;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Prometheus;
 using Serilog;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -24,6 +25,8 @@ public class BlockWorker : BackgroundService
 
     private MindReaderOptions _mindReaderOptions;
     private DeepReaderOptions _deepReaderOptions;
+
+    private static readonly Histogram BlocksChannelSize = Metrics.CreateHistogram("deepreader_blockworker_block_channel_size", "The current size of the channel size in block worker");
 
     public BlockWorker(ChannelReader<Block> blocksChannel, IStorageAdapter storageAdapter, IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor, IOptionsMonitor<DeepReaderOptions> deepReaderOptionsMonitor)
     {
@@ -66,6 +69,9 @@ public class BlockWorker : BackgroundService
             IgnoreReadOnlyProperties = false,
             MaxDepth = Int32.MaxValue
         };
+
+
+        BlocksChannelSize.Observe(_blocksChannel.Count);
 
         await foreach (var block in _blocksChannel.ReadAllAsync(cancellationToken))
         {

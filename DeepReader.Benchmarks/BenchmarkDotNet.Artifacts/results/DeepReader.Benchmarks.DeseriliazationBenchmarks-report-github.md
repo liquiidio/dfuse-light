@@ -10,4 +10,4 @@ Intel Core i5-3470 CPU 3.20GHz (Ivy Bridge), 1 CPU, 4 logical and 4 physical cor
 ```
 |                 Method |     Mean |     Error |    StdDev | Rank |  Gen 0 | Allocated |
 |----------------------- |---------:|----------:|----------:|-----:|-------:|----------:|
-| DeserializeBlockHeader | 5.049 ns | 0.1841 ns | 0.3801 ns |    1 | 0.0076 |      24 B |
+| DeserializeBlockHeader | 5.110 ns | 0.1695 ns | 0.2878 ns |    1 | 0.0076 |      24 B |

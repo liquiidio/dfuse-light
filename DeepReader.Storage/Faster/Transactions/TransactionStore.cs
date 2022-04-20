@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DeepReader.Storage.Options;
 using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
+using Prometheus;
 
 namespace DeepReader.Storage.Faster.Transactions
 {
@@ -16,6 +17,8 @@ namespace DeepReader.Storage.Faster.Transactions
         private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionStoreSession;
 
         private FasterStorageOptions _options;
+
+        private static readonly Histogram WritingTransactionDuration = Metrics.CreateHistogram("deepreader_storage_faster_write_transaction_duration", "Histogram of time to store transactions to Faster");
 
         public TransactionStore(FasterStorageOptions options)
         {
@@ -65,7 +68,11 @@ namespace DeepReader.Storage.Faster.Transactions
         public async Task<Status> WriteTransaction(FlattenedTransactionTrace transaction)
         {
             var transactionId = new TransactionId(transaction.Id);
-            return (await _transactionStoreSession.UpsertAsync(ref transactionId, ref transaction)).Complete();
+
+            using (WritingTransactionDuration.NewTimer())
+            {
+                return (await _transactionStoreSession.UpsertAsync(ref transactionId, ref transaction)).Complete();
+            }
         }
 
         public async Task<(bool, FlattenedTransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
