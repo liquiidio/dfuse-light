@@ -4,6 +4,8 @@ using DeepReader.Types.Enums;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
+using KGySoft.CoreLibraries;
+using Microsoft.Toolkit.HighPerformance;
 using Serilog;
 namespace DeepReader.Classes;
 
@@ -141,7 +143,7 @@ public class ParseCtx
 	        // not set, let's re-create it here with soft fail status only.
 	        failedTrace.Receipt ??= new TransactionReceiptHeader()
             {
-                Status = (byte) TransactionStatus.SOFTFAIL
+                Status = TransactionStatus.SOFTFAIL
             };
 
             // We add the failed deferred trace first, before the "real" trace (the `onerror` handler)
@@ -161,7 +163,7 @@ public class ParseCtx
             // defined failed to execute properly. So in the `hard_fail` case, let's reset all ops.
             // However, we do keep `RLimitOps` as they seems to be billed regardeless of transaction
             // execution status
-            if (trace.Receipt == null || trace.Receipt.Status == (byte)TransactionStatus.HARDFAIL)
+            if (trace.Receipt == null || trace.Receipt.Status == TransactionStatus.HARDFAIL)
             {
                 RevertOpsDueToFailedTransaction();
             }
@@ -170,7 +172,7 @@ public class ParseCtx
         // All this stiching of ops into trace must be performed after `if` because the if can revert them all
         var creationTreeRoots = CreationTree.ComputeCreationTree(CreationOps);
 
-        trace.CreationTree = CreationTree.ToFlatTree(creationTreeRoots).ToArray();
+        trace.CreationTree = CreationTree.ToFlatTree(creationTreeRoots);
         trace.DtrxOps = Trx.DtrxOps;
         trace.DbOps = Trx.DbOps;
         trace.FeatureOps = Trx.FeatureOps;
@@ -248,14 +250,14 @@ public class ParseCtx
 
 	// Line format:
 	//   START_BLOCK ${block_num}
-    public void ReadStartBlock(string[] chunks)
+    public void ReadStartBlock(in IList<StringSegment> chunks)
     {
-        if (chunks.Length != 1)
+        if (chunks.Count != 3)
         {
-            throw new Exception($"expected 1 fields, got {chunks.Length}");
+            throw new Exception($"expected 3 fields, got {chunks.Count}");
         }
 
-        var blockNum = Convert.ToInt64(chunks[0]);
+        var blockNum = Int64.Parse(chunks[2].AsSpan);
 
         ResetBlock();
         ActiveBlockNum = blockNum;
@@ -271,13 +273,13 @@ public class ParseCtx
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
 
-    public Block ReadAcceptedBlock(string[] chunks) {
-        if (chunks.Length != 2)
+    public Block ReadAcceptedBlock(in IList<StringSegment> chunks) {
+        if (chunks.Count != 4)
         {
-            throw new Exception($"expected 2 fields, got {chunks.Length}");
+            throw new Exception($"expected 4 fields, got {chunks.Count}");
         }
 
-        var blockNum = Convert.ToInt64(chunks[0]);
+        var blockNum = Int64.Parse(chunks[2].AsSpan);
         if(blockNum == ActiveBlockNum + 1)
         {
             ActiveBlockNum++;
@@ -288,9 +290,7 @@ public class ParseCtx
             Log.Information($"block_num {blockNum} doesn't match the active block num {ActiveBlockNum}");
         }
 
-        var blockStateHex = chunks[1].HexStringToByteArray();
-
-        var blockState = DeepMindDeserializer.DeepMindDeserializer.Deserialize<BlockState>(blockStateHex);
+        var blockState = DeepMindDeserializer.DeepMindDeserializer.Deserialize<BlockState>(Decoder.HexToBytes(chunks[3]));
 
         var block = new Block()
         {
@@ -516,14 +516,14 @@ public class ParseCtx
 
     // Line format:
     //   APPLIED_TRANSACTION ${block_num} ${trace_hex}
-    public void ReadAppliedTransaction(string[] chunks)
+    public void ReadAppliedTransaction(in IList<StringSegment> chunks)
     {
-        if (chunks.Length != 2)
+        if (chunks.Count != 4)
         {
-            throw new Exception($"expected 2 fields, got {chunks.Length}");
+            throw new Exception($"expected 4 fields, got {chunks.Count}");
         }
 
-        var blockNum = Convert.ToUInt32(chunks[0]);
+        var blockNum = Int32.Parse(chunks[2].AsSpan);
 
         if (ActiveBlockNum != blockNum)
         {
@@ -531,7 +531,7 @@ public class ParseCtx
             Log.Information($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
         }
 
-        var trxTrace = DeepMindDeserializer.DeepMindDeserializer.Deserialize<TransactionTrace>(chunks[1].HexStringToByteArray());
+        var trxTrace = DeepMindDeserializer.DeepMindDeserializer.Deserialize<TransactionTrace>(Decoder.HexToBytes(chunks[3]));
 
         RecordTransaction(trxTrace);
     }
@@ -541,27 +541,27 @@ public class ParseCtx
     //  CREATION_OP NOTIFY ${action_id}
     //  CREATION_OP INLINE ${action_id}
     //  CREATION_OP CFA_INLINE ${action_id}
-    public void ReadCreationOp(string[] chunks)
+    public void ReadCreationOp(in IList<StringSegment> chunks)
     {
-        if (chunks.Length != 2)
+        if (chunks.Count != 4)
         {
-            throw new Exception($"expected 2 fields, got {chunks.Length}");
+            throw new Exception($"expected 4 fields, got {chunks.Count}");
         }
 
-        var kind = chunks[0];
+        var kind = chunks[2];
         if (kind != "ROOT" && kind != "NOTIFY" && kind != "INLINE" && kind != "CFA_INLINE")
         {
             throw new Exception($"kind must be one of ROOT, NOTIFY, CFA_INLINE or INLINE, got: {kind}");
         }
 
-        var actionIndex = Convert.ToInt32(chunks[1]);
+        var actionIndex = Int32.Parse(chunks[3].AsSpan);
         /*if err != nil {
 	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
         }*/
 
         RecordCreationOp(new CreationOp()
         {
-            Kind = kind,
+            Kind = Enum.Parse<CreationOpKind>(kind),
             // FIXME: this index is 0-based, whereas `action_ordinal` is 1-based, where 0 means a virtual root node.
             // This is a BIG problem as now we unpack the traces and simply keep that `action_ordinal` field.. so in `eosws`, we need to re-map all of this together.
             // Perhaps we can simply ditch all of this since we'll have the `closest unnotified ancestor`,.. and we could *NOT* compute our own thing anymore.. and always use theirs..
@@ -574,75 +574,53 @@ public class ParseCtx
     //   DB_OP INS ${action_id} ${payer} ${table_code} ${scope} ${table_name} ${primkey} ${ndata}
     //   DB_OP UPD ${action_id} ${opayer}:${npayer} ${table_code} ${scope} ${table_name} ${primkey} ${odata}:${ndata}
     //   DB_OP REM ${action_id} ${payer} ${table_code} ${scope} ${table_name} ${primkey} ${odata}
-    public void ReadDbOp(string[] chunks)
+    public void ReadDbOp(in IList<StringSegment> chunks)
     {
-        if (chunks.Length != 8)
+        if (chunks.Count != 10)
         {
-            throw new Exception($"expected 8 fields, got {chunks.Length}");
+            throw new Exception($"expected 10 fields, got {chunks.Count}");
         }
 
-        var actionIndex = Convert.ToInt32(chunks[1]);
+        var actionIndex = Int32.Parse(chunks[3].AsSpan);
         /*if err != nil {
 	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
         }*/
 
-        var opString = chunks[0];
+        var op = Enum.Parse<DbOpOperation>(chunks[2]);
+        ReadOnlyMemory<byte> oldData = default, newData = default;
+        Name oldPayer = 0, newPayer = 0;
 
-        var op = DbOpOperation.UNKNOWN;
-        string oldData = string.Empty, newData = string.Empty;
-        string oldPayer = string.Empty, newPayer = string.Empty;
-
-        switch (opString)
+        switch (op)
         {
-	        case "INS":
-                op = DbOpOperation.INSERT;
-                newData = chunks[7];
-                newPayer = chunks[2];
+	        case DbOpOperation.INS:
+                newData = chunks[9].AsMemory.Cast<char, byte>();
+                newPayer = chunks[4].AsSpan;
 				break;
-            case "UPD":
-                op = DbOpOperation.UPDATE;
-                var dataChunks = chunks[7].Split(':');
-	            if (dataChunks.Length != 2)
+            case DbOpOperation.UPD:
+                var dataChunks = chunks[9].Split(':');
+	            if (dataChunks.Count != 2)
                 {
                     throw new Exception("should have old and new data in field 8, found only one");
                 }
 
-                oldData = dataChunks[0];
-                newData = dataChunks[1];
+                oldData = dataChunks[0].AsMemory.Cast<char, byte>();
+                newData = dataChunks[1].AsMemory.Cast<char, byte>();
 
-                var payerChunks = chunks[2].Split(':');
-	            if (payerChunks.Length != 2)
+                var payerChunks = chunks[4].Split(':');
+	            if (payerChunks.Count != 2)
                 {
                     throw new Exception("should have two payers in field 3, separated by a ':', found only one");
                 }
 
-                oldPayer = payerChunks[0];
-                newPayer = payerChunks[1];
+                oldPayer = payerChunks[0].AsSpan;
+                newPayer = payerChunks[1].AsSpan;
 				break;
-            case "REM":
-                op = DbOpOperation.REMOVE;
-                oldData = chunks[7];
-                oldPayer = chunks[2];
+            case DbOpOperation.REM:
+                oldData = chunks[9].AsMemory.Cast<char, byte>();
+                oldPayer = chunks[4].AsSpan;
 				break;
             default:
-                throw new Exception($"unknown operation: {opString}");
-        }
-
-        byte[] oldBytes = new byte[] { }, newBytes = new byte[] { };
-        if (!string.IsNullOrEmpty(oldData))
-        {
-            oldBytes = oldData.ToBytes();
-	        /*if err != nil {
-		        return fmt.Errorf("couldn't decode old_data: %s", err)
-	        }*/
-        }
-
-        if (!string.IsNullOrEmpty(newData))
-        {
-            newBytes = newData.ToBytes();
-	        /*if err != nil {
-		        return fmt.Errorf("couldn't decode new_data: %s", err)
-	        }*/
+                throw new Exception($"unknown operation: {chunks[2]}");
         }
 
         RecordDbOp(new DbOp()
@@ -651,12 +629,12 @@ public class ParseCtx
             ActionIndex = (uint) actionIndex,
             OldPayer = oldPayer,
             NewPayer = newPayer,
-            Code = chunks[3],
-            Scope = chunks[4],
-            TableName = chunks[5],
-            PrimaryKey = chunks[6],
-            OldData = oldBytes,
-            NewData = newBytes,
+            Code = chunks[5].AsSpan,
+            Scope = chunks[6].AsSpan,
+            TableName = chunks[7].AsSpan,
+            PrimaryKey = (string)chunks[8]!,
+            OldData = oldData,
+            NewData = newData,
         });
     }
 
@@ -666,59 +644,57 @@ public class ParseCtx
     //   DTRX_OP CREATE        ${action_id} ${sender} ${sender_id} ${payer} ${published} ${delay} ${expiration} ${trx_id} ${trx}
     //   DTRX_OP CANCEL        ${action_id} ${sender} ${sender_id} ${payer} ${published} ${delay} ${expiration} ${trx_id} ${trx}
     //   DTRX_OP PUSH_CREATE   ${action_id} ${sender} ${sender_id} ${payer} ${published} ${delay} ${expiration} ${trx_id} ${trx}
-    public void ReadCreateOrCancelDTrxOp(string tag, string[] chunks)
+    public void ReadCreateOrCancelDTrxOp(string tag, IList<StringSegment> chunks)
     {
-        if (chunks.Length != 10)
+        if (chunks.Count != 12)
         {
-            throw new Exception($"expected 10 fields, got {chunks.Length}");
+            throw new Exception($"expected 12 fields, got {chunks.Count}");
         }
 
-        var opString = chunks[0];
+        var opString = chunks[2];
         var rawOp = Enum.Parse<DTrxOpOperation>(opString, true);//pbcodec.DTrxOp_Operation_value["OPERATION_" + opString]);
 
         var op = rawOp; //pbcodec.DTrxOp_Operation(rawOp);
 
-        var actionIndex = Convert.ToInt32(chunks[1]);
+        var actionIndex = Int32.Parse(chunks[3].AsSpan);
 
-        var trxHex = chunks[9].HexStringToByteArray();
+        var signedTrx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(Decoder.HexToBytes(chunks[11]));
 
-        SignedTransaction signedTrx;// = new SignedTransaction();
-        if (op == DTrxOpOperation.PUSH_CREATE)
+        try
         {
-            signedTrx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(trxHex);
+            RecordDTrxOp(new DTrxOp()
+            {
+                Operation = op,
+                ActionIndex = (uint)actionIndex,
+                Sender = chunks[4].AsSpan,
+                SenderId = UInt64.Parse(chunks[5]),
+                Payer = chunks[6].AsSpan,
+                PublishedAt = DateTimeOffset.Parse(chunks[7]),
+                DelayUntil = DateTimeOffset.Parse(chunks[8]),
+                ExpirationAt = DateTimeOffset.Parse(chunks[9]),
+                TransactionId = chunks[10].AsSpan,
+                Transaction = signedTrx,
+            });
         }
-        else
+        catch (Exception e)
         {
-            signedTrx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(trxHex);
+            Console.WriteLine("SenderId " + chunks[5]);
+            throw;
         }
 
-        RecordDTrxOp(new DTrxOp()
-        {
-            Operation = op,
-            ActionIndex = (uint) actionIndex,
-            Sender = chunks[2],
-            SenderId = chunks[3],
-            Payer = chunks[4],
-            PublishedAt = chunks[5],
-            DelayUntil = chunks[6],
-            ExpirationAt = chunks[7],
-            TransactionId = chunks[8],
-            Transaction = signedTrx,
-        });
-
-        _ = Task.Run(() => AbiDecoder.ProcessSignedTransaction(signedTrx));
+        //_ = Task.Run(() => AbiDecoder.ProcessSignedTransaction(signedTrx));
     }
 
     // Line format:
     //   DTRX_OP FAILED ${action_id}
-    public void ReadFailedDTrxOp(string[] chunks)
+    public void ReadFailedDTrxOp(in IList<StringSegment> chunks)
     {
-        if (chunks.Length != 3)
+        if (chunks.Count != 4)
         {
-            throw new Exception($"expected 3 fields, got {chunks.Length}");
+            throw new Exception($"expected 4 fields, got {chunks.Count}");
         }
 
-        var actionIndex = Convert.ToInt32(chunks[2]);
+        var actionIndex = Int32.Parse(chunks[3].AsSpan);
         /*if err != nil {
 	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
         }*/
@@ -732,14 +708,14 @@ public class ParseCtx
 
     // Line formats:
     //   FEATURE_OP ACTIVATE ${feature_digest} ${feature}
-    public void ReadFeatureOpActivate(string[] chunks)
+    public void ReadFeatureOpActivate(in IList<StringSegment> chunks)
     {
-        if (chunks.Length != 4)
+        if (chunks.Count != 6)
         {
-            throw new Exception($"expected 4 fields, got {chunks.Length}");
+            throw new Exception($"expected 6 fields, got {chunks.Count}");
         }
 
-        var feature = JsonSerializer.Deserialize<Feature>(chunks[3], _jsonSerializerOptions)!;
+        var feature = JsonSerializer.Deserialize<Feature>(chunks[5], _jsonSerializerOptions)!;
         // TODO does this work?
         //err:= json.Unmarshal(json.RawMessage(chunks[3]), &feature)
         /*if err != nil {
@@ -748,22 +724,24 @@ public class ParseCtx
 
         RecordFeatureOp(new FeatureOp()
         {
-            Kind = chunks[1],
-            FeatureDigest = chunks[2],
+            Kind = (string)chunks[3]!,
+            FeatureDigest = chunks[4].AsMemory,
             Feature = feature,
         });
+
+        Console.WriteLine("FeatureOpKind: " + chunks[3]);   // TODO remove once we know all the kinds
     }
 
     // Line formats:
     //   FEATURE_OP PRE_ACTIVATE ${action_id} ${feature_digest} ${feature}
-    public void ReadFeatureOpPreActivate(string[] chunks)
+    public void ReadFeatureOpPreActivate(in IList<StringSegment> chunks)
     {
-        if (chunks.Length != 5)
+        if (chunks.Count != 7)
         {
-            throw new Exception($"expected 5 fields, got {chunks.Length}");
+            throw new Exception($"expected 7 fields, got {chunks.Count}");
         }
 
-        var actionIndex = Convert.ToInt32(chunks[2]);
+        var actionIndex = Int32.Parse(chunks[4].AsSpan);
         /*if err != nil {
 	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
         }*/
@@ -777,9 +755,9 @@ public class ParseCtx
 
         RecordFeatureOp(new FeatureOp()
         {
-            Kind = chunks[1],
+            Kind = (string)chunks[3]!,
             ActionIndex = (uint) actionIndex,
-            FeatureDigest = chunks[3],
+            FeatureDigest = chunks[5].AsMemory,
             Feature = feature,
         });
     }
@@ -788,36 +766,33 @@ public class ParseCtx
     //   PERM_OP INS ${action_id} [${permission_id}] ${data}
     //   PERM_OP UPD ${action_id} [${permission_id}] ${data}
     //   PERM_OP REM ${action_id} [${permission_id}] ${data} <-- {"old": <old>, "new": <new>}
-    public void ReadPermOp(string[] chunks)
+    public void ReadPermOp(in IList<StringSegment> chunks)
     {
-        var actionIndex = Convert.ToInt32(chunks[1]);
+        var actionIndex = Int32.Parse(chunks[3].AsSpan);
 
-        var opString = chunks[0];
-        var dataChunk = chunks[2];
+        var dataChunk = chunks[4];
         ulong permissionId = 0;
 
         // A `PERM_OP` with 5 fields have ["permission_id"] field in index #3 set and data chunk is actually index #4
-        if (chunks.Length == 4)
+        if (chunks.Count == 6)
         {
-            permissionId = Convert.ToUInt64(chunks[2]);
-            dataChunk = chunks[3];
+            permissionId = UInt64.Parse(chunks[4]);
+            dataChunk = chunks[5];
         }
 
-        var op = PermOpOperation.UNKNOWN;
-        string oldData = string.Empty, newData = string.Empty;
+        var op = Enum.Parse<PermOpOperation>(chunks[2]);
+        ReadOnlySpan<char> oldData = default, newData = default;
 
-        switch (opString) {
-	        case "INS":
-		        op = PermOpOperation.INSERT;
+        switch (op) {
+	        case PermOpOperation.INS:
                 //var feature = JsonSerializer.Deserialize<PermissionObject>(chunks[3]);
-                newData = dataChunk;
+                newData = dataChunk.AsSpan;
                 //                newData = Encoding.ASCII.GetBytes(dataChunk);
                 break;
-            case "UPD":
-                op = PermOpOperation.UPDATE;
+            case PermOpOperation.UPD:
                 //   var oldJSONResult = gjson.Get(dataChunk, "old")
                 // TODO deserialize directly?
-                JsonDocument jsonDocument = JsonDocument.Parse(dataChunk);
+                JsonDocument jsonDocument = JsonDocument.Parse(dataChunk.AsMemory);
                 if (!jsonDocument.RootElement.TryGetProperty("old", out var oldJsonResult))
                 {
                     throw new Exception(
@@ -830,15 +805,14 @@ public class ParseCtx
                         $"a PERM_OP UPD should JSON data should have an 'new' field, found none in: {dataChunk}");
                 }
 
-                oldData = oldJsonResult.GetRawText();
-    	        newData = newJsonResult.GetRawText();
+                oldData = oldJsonResult.GetRawText().AsSpan();
+    	        newData = newJsonResult.GetRawText().AsSpan();
                 break;
-            case "REM":
-                op = PermOpOperation.REMOVE;
-                oldData = dataChunk;
+            case PermOpOperation.REM:
+                oldData = dataChunk.AsSpan;
                 break;
             default:
-                throw new Exception($"unknown PERM_OP op: {opString}");
+                throw new Exception($"unknown PERM_OP op: {chunks[2]}");
         }
 
         var permOp = new PermOp()
@@ -849,10 +823,19 @@ public class ParseCtx
 
         if (newData.Length > 0)
         {
-            var newPerm = JsonSerializer.Deserialize<PermissionObject>(newData, _jsonSerializerOptions)!;
+            try
+            {
+                var newPerm = JsonSerializer.Deserialize<PermissionObject>(newData, _jsonSerializerOptions)!;
 
-            permOp.NewPerm = newPerm;
-            permOp.NewPerm.Id = permissionId;
+                permOp.NewPerm = newPerm;
+                permOp.NewPerm.Id = permissionId;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.WriteLine(newData.ToString());
+                throw;
+            }
         }
 
         if (oldData.Length > 0)
@@ -871,36 +854,36 @@ public class ParseCtx
 
     // Line format:
     //   RAM_OP ${action_index} ${unique_key} ${namespace} ${action} ${legacy_tag} ${payer} ${new_usage} ${delta}
-    public void ReadRamOp(string[] chunks)
+    public void ReadRamOp(in IList<StringSegment> chunks)
     {
-        if (chunks.Length != 8)
+        if (chunks.Count != 10)
         {
-            throw new Exception($"expected 8 fields, got {chunks.Length}");
+            throw new Exception($"expected 10 fields, got {chunks.Count}");
         }
 
-        var actionIndex = Convert.ToInt32(chunks[0]);
+        var actionIndex = Int32.Parse(chunks[2].AsSpan);
 
-        var namespaceString = chunks[2];
+        var namespaceString = chunks[4];
         var @namespace = Enum.Parse<RamOpNamespace>(namespaceString, true);
 
-        var actionString = chunks[3];
+        var actionString = chunks[5];
         var action = Enum.Parse<RamOpAction>(actionString, true);
         /*if !ok {
         return fmt.Errorf("action %q unknown", actionString)
         }*/
 
-        var operationString = chunks[4];
+        var operationString = chunks[6];
         var operation = Enum.Parse<RamOpOperation>(operationString, true);
         /*if !ok {
         return fmt.Errorf("operation %q unknown", operationString)
         }*/
 
-        var usage = Convert.ToUInt64(chunks[6]);
+        var usage = UInt64.Parse(chunks[8].AsSpan!);
         /*if err != nil {
         return fmt.Errorf("usage is not a valid number, got: %q", chunks[4])
         }*/
 
-        var delta = Convert.ToInt64(chunks[7]);
+        var delta = Int64.Parse(chunks[9].AsSpan);
         /*if err != nil {
         return fmt.Errorf("delta is not a valid number, got: %q", chunks[5])
         }*/
@@ -908,11 +891,11 @@ public class ParseCtx
         RecordRamOp(new RamOp()
         {
             ActionIndex = (uint) actionIndex,
-            UniqueKey = chunks[1],
+            UniqueKey = chunks[3].Split(':'),
             Namespace = @namespace,
             Action = action,
             Operation = operation,
-            Payer = chunks[5],
+            Payer = chunks[7].AsSpan,
             Usage = usage,
             Delta = (long) delta,
         });
@@ -924,10 +907,10 @@ public class ParseCtx
     //
     //  Version 13
     //    DEEP_MIND_VERSION ${major_version} ${minor_version}
-    public void ReadDeepmindVersion(string[] chunks)
+    public void ReadDeepmindVersion(in IList<StringSegment> chunks)
     {
-        var majorVersion = chunks[0];
-        if (!InSupportedVersion(majorVersion)) {
+        var majorVersion = chunks[2];
+        if (!InSupportedVersion((string)majorVersion!)) {
             throw new Exception(
                 $"deep mind reported version {majorVersion}, but this reader supports only {string.Join(", ", SupportedVersions)}");
         }
@@ -952,17 +935,19 @@ public class ParseCtx
     //
     //  Version 13
     //    ABIDUMP START ${block_num} ${global_sequence_num}
-    public void ReadAbiStart(string[] chunks)
+    public void ReadAbiStart(in IList<StringSegment> chunks)
     {
+        // RANGE 3!
+
         // TODO
-        switch (chunks.Length) {
-            case 2: // Version > 12 ?
-                var blockNum = Convert.ToInt32(chunks[0]);
-                var globalSequence = Convert.ToInt32(chunks[1]);
+        switch (chunks.Count) {
+            case 5: // Version > 12 ?
+                var blockNum = Int32.Parse(chunks[3].AsSpan);
+                var globalSequence = Int32.Parse(chunks[4].AsSpan);
 //                    logFields.Add(zap.Int("block_num", blockNum), zap.Int("global_sequence", globalSequence));
                 break;
             default:
-                throw new Exception($"expected to have either {{0}} or {{2}} fields, got {chunks.Length}");
+                throw new Exception($"expected to have either {{3}} or {{5}} fields, got {chunks.Count}");
             }
 
 //	        zlog.Info("read ABI start marker", logFields...)
@@ -975,18 +960,20 @@ public class ParseCtx
     //
     //  Version 13
     //    ABIDUMP ABI ${contract} ${base64_abi}
-    public void ReadAbiDump(string[] chunks)
+    public void ReadAbiDump(in IList<StringSegment> chunks)
     {
-        string contract = string.Empty, rawAbi = string.Empty;
-        switch (chunks.Length) {
-            case 0: // Version < 14?
+        // RANGE 3!
+
+        ReadOnlySpan<char> contract = default, rawAbi = default;
+        switch (chunks.Count) {
+            case 3: // Version < 14?
                 break;
-	        case 2: // Version 14?
-                contract = chunks[0];
-                rawAbi = chunks[1];
+	        case 5: // Version 14?
+                contract = chunks[3].AsSpan;
+                rawAbi = chunks[4].AsSpan;
                 break;
             default:
-                throw new Exception($"expected to have either {{0}} or {{2}} fields, got {chunks.Length}");
+                throw new Exception($"expected to have either {{3}} or {{5}} fields, got {chunks.Count}");
         }
 
         if (TraceEnabled)
@@ -999,25 +986,25 @@ public class ParseCtx
 
     // Line format:
     //   RAM_CORRECTION_OP ${action_id} ${correction_id} ${unique_key} ${payer} ${delta}
-    public void ReadRamCorrectionOp(string[] chunks)
+    public void ReadRamCorrectionOp(in IList<StringSegment> chunks)
     {
-        if (chunks.Length != 5)
+        if (chunks.Count != 7)
         {
-            throw new Exception($"expected 5 fields, got {chunks.Length}");
+            throw new Exception($"expected 7 fields, got {chunks.Count}");
         }
 
         // We assume ${action_id} will always be 0, since called from onblock, so that's why we do not process it
 
-        var delta = Convert.ToInt64(chunks[4]);
+        var delta = Int64.Parse(chunks[6].AsSpan);
         /*if err != nil {
 	        return fmt.Errorf("delta not a valid number, got: %q", chunks[5])
         }*/
 
         RecordRamCorrectionOp(new RamCorrectionOp()
         {
-            CorrectionId = chunks[1],
-            UniqueKey = chunks[2],
-            Payer = chunks[3],
+            CorrectionId = UInt64.Parse(chunks[3]), // TODO
+            UniqueKey = UInt64.Parse(chunks[4]), // TODO
+            Payer = chunks[5].AsSpan,
             Delta = delta,
         });
     }
@@ -1031,49 +1018,36 @@ public class ParseCtx
     //   RLIMIT_OP ACCOUNT_LIMITS UPD ${data}
     //   RLIMIT_OP ACCOUNT_USAGE  INS ${data}
     //   RLIMIT_OP ACCOUNT_USAGE  UPD ${data}
-    public void ReadRlimitOp(string[] chunks)
+    public void ReadRlimitOp(in IList<StringSegment> chunks)
     {
-        if (chunks.Length != 3)
+        if (chunks.Count != 5)
         {
-            throw new Exception($"expected 3 fields, got {chunks.Length}");
+            throw new Exception($"expected 5 fields, got {chunks.Count}");
         }
 
-        var kindString = chunks[0];
-        var operationString = chunks[1];
-
-        var operation = RlimitOpOperation.UNKNOWN;
-        switch (operationString) {
-	        case "INS":
-                operation = RlimitOpOperation.INSERT;
-                break;
-            case "UPD":
-                operation = RlimitOpOperation.UPDATE;
-                break;
-            default:
-                throw new Exception($"operation {operationString} is unknown");
-        }
+        var rlimitOpOperation = Enum.Parse<RlimitOpOperation>(chunks[3]);
+        var rlimitOpKind = Enum.Parse<RlimitOpKind>(chunks[2]);
 
         RlimitOp op;
-        var data = chunks[2];
 
-        switch (kindString) {
-	        case "CONFIG":
-                op = JsonSerializer.Deserialize<RlimitConfig>(data, _jsonSerializerOptions)!;
+        switch (rlimitOpKind) {
+	        case RlimitOpKind.CONFIG:
+                op = JsonSerializer.Deserialize<RlimitConfig>(chunks[4], _jsonSerializerOptions)!;
                 break;
-            case "STATE":
-                op = JsonSerializer.Deserialize<RlimitState>(data, _jsonSerializerOptions)!;
+            case RlimitOpKind.STATE:
+                op = JsonSerializer.Deserialize<RlimitState>(chunks[4], _jsonSerializerOptions)!;
                 break;
-            case "ACCOUNT_LIMITS":
-                op = JsonSerializer.Deserialize<RlimitAccountLimits>(data, _jsonSerializerOptions)!;
+            case RlimitOpKind.ACCOUNT_LIMITS:
+                op = JsonSerializer.Deserialize<RlimitAccountLimits>(chunks[4], _jsonSerializerOptions)!;
                 break;
-            case "ACCOUNT_USAGE":
-                op = JsonSerializer.Deserialize<RlimitAccountUsage>(data, _jsonSerializerOptions)!;
+            case RlimitOpKind.ACCOUNT_USAGE:
+                op = JsonSerializer.Deserialize<RlimitAccountUsage>(chunks[4], _jsonSerializerOptions)!;
                 break;
             default:
-                throw new Exception($"unknown kind: {kindString}");
+                throw new Exception($"unknown kind: {chunks[2]}");
         }
 
-        op.Operation = operation;
+        op.Operation = rlimitOpOperation;
 
         RecordRlimitOp(op);
     }
@@ -1081,70 +1055,40 @@ public class ParseCtx
     // Line formats:
     //   TBL_OP INS ${action_id} ${code} ${scope} ${table} ${payer}
     //   TBL_OP REM ${action_id} ${code} ${scope} ${table} ${payer}
-    public void ReadTableOp(string[] chunks)
+    public void ReadTableOp(in IList<StringSegment> chunks)
     {
-        if (chunks.Length != 6)
+        if (chunks.Count != 8)
         {
-            throw new Exception($"expected 6 fields, got {chunks.Length}");
-        }
-
-        var actionIndex = Convert.ToInt32(chunks[1]);
-
-        var opString = chunks[0];
-        var op = TableOpOperation.UNKNOWN;
-        switch (opString) {
-	        case "INS":
-                op = TableOpOperation.INSERT;
-                break;
-            case "REM":
-                op = TableOpOperation.REMOVE;
-                break;
-            default:
-                throw new Exception($"unknown kind: {opString}");
+            throw new Exception($"expected 8 fields, got {chunks.Count}");
         }
 
         RecordTableOp(new TableOp()
         {
-            Operation = op,
-            ActionIndex = (uint) actionIndex,
-            Payer = chunks[5],
-            Code = chunks[2],
-            Scope = chunks[3],
-            TableName = chunks[4],
+            Operation = Enum.Parse<TableOpOperation>(chunks[2]),
+            ActionIndex = (uint)Int32.Parse(chunks[3]),
+            Payer = chunks[7].AsSpan,
+            Code = chunks[4].AsSpan,
+            Scope = chunks[5].AsSpan,
+            TableName = chunks[6].AsSpan,
         });
     }
 
     // Line formats:
     //   TRX_OP CREATE onblock|onerror ${id} ${trx}
-    public void ReadTrxOp(string[] chunks)
+    public void ReadTrxOp(in IList<StringSegment> chunks)
     {
-        if (chunks.Length != 4)
+        if (chunks.Count != 6)
         {
-            throw new Exception($"expected 4 fields, got {chunks.Length}");
+            throw new Exception($"expected 6 fields, got {chunks.Count}");
         }
 
-        var opString = chunks[0];
-        var op = TrxOpOperation.UNKNOWN;
-        switch (opString) {
-	        case "CREATE":
-                op = TrxOpOperation.CREATE;
-                break;
-            default:
-                throw new Exception($"unknown kind: {opString}");
-        }
-
-        var name = chunks[1];
-        var trxId = chunks[2];
-
-        var trxHex = chunks[3].HexStringToByteArray();
-
-        var trx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(trxHex);
+        var trx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(Decoder.HexToBytes(chunks[5]));
 
         RecordTrxOp(new TrxOp()
         {
-            Operation = op,
-            Name = name, // "onblock" or "onerror"
-            TransactionId = trxId, // the hash of the transaction
+            Operation = Enum.Parse<TrxOpOperation>(chunks[2]),
+            Name = chunks[3].AsSpan, // "onblock" or "onerror"
+            TransactionId = chunks[4].AsSpan, // the hash of the transaction
             Transaction = trx,
         });
     }

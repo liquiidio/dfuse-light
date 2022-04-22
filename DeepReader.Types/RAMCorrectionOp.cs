@@ -1,9 +1,11 @@
+using DeepReader.Types.EosTypes;
+
 namespace DeepReader.Types;
 
 public class RamCorrectionOp
 {
-    public string CorrectionId = string.Empty;//string
-    public string UniqueKey = string.Empty;//string
-    public string Payer = string.Empty;//string
+    public ulong CorrectionId = 0;//string
+    public ulong UniqueKey = 0;//string
+    public Name Payer = 0;//string
     public long Delta = 0;//int64
 }

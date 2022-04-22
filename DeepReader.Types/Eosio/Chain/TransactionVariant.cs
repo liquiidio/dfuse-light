@@ -11,7 +11,6 @@ public abstract class TransactionVariant : IEosioSerializable<TransactionVariant
 {
     public static TransactionVariant ReadFromBinaryReader(BinaryReader reader)
     {
-
         var type = reader.ReadByte();
         switch (type)
         {
@@ -68,7 +67,12 @@ public class TransactionId : TransactionVariant
 
     public static implicit operator TransactionId(string value)
     {
-        return new TransactionId(){ StringVal = value };
+        return new TransactionId(){ StringVal = value };    // TODO string to Binary
+    }
+
+    public static implicit operator TransactionId(ReadOnlySpan<char> value)
+    {
+        return new TransactionId() { StringVal = value.ToString() };    // TODO string to Binary or (even better) span to binary
     }
 
     public static implicit operator string(TransactionId value)

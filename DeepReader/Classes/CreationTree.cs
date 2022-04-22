@@ -20,11 +20,11 @@ public static class CreationTree
 
         foreach (var ok in opKinds)
         {
-            if (opKinds[0] != "ROOT") {
+            if (opKinds[0] != CreationOpKind.ROOT) {
                 // TODO return nil, fmt.Errorf("first exec op kind of execution start should be ROOT, got %s", opKinds[0])
             }
 
-            var root = new Node { Kind = "ROOT", ActionIndex = -1, Children = new List<Node>() };
+            var root = new Node { Kind = CreationOpKind.ROOT, ActionIndex = -1, Children = new List<Node>() };
             roots.Add(root);
 
             ExecuteAction(actionIndex, root, opsMap);
@@ -42,7 +42,7 @@ public static class CreationTree
         return roots;
     }
 
-    private static void ExecuteAction(int actionIndex, Node root, Dictionary<int, string[]> opsMap)
+    private static void ExecuteAction(int actionIndex, Node root, Dictionary<int, CreationOpKind[]> opsMap)
     {
         actionIndex++;
         root.ActionIndex = actionIndex;
@@ -50,7 +50,8 @@ public static class CreationTree
         var notifies = new List<Node>();
         var cfas = new List<Node>();
         var inlines = new List<Node>();
-        RecordChildCreationOp(root, opsMap[root.ActionIndex], ref notifies, ref cfas, ref inlines);
+
+        RecordChildCreationOp(root, opsMap[root.ActionIndex], notifies, cfas, inlines);
 
         foreach (var notify in notifies)
         {
@@ -58,8 +59,7 @@ public static class CreationTree
             var nestedCfas = new List<Node>();
             var nestedInlines = new List<Node>();
 
-            // TODO pass notifies, cfas, inlines directly?
-            ExecuteNotify(ref actionIndex, notify, opsMap, ref nestedNotifies, ref nestedCfas, ref nestedInlines);
+            ExecuteNotify(ref actionIndex, notify, opsMap, nestedNotifies, nestedCfas, nestedInlines);
             
             notifies.AddRange(nestedNotifies);
             cfas.AddRange(nestedCfas);
@@ -77,33 +77,30 @@ public static class CreationTree
         }
     }
 
-    private static void ExecuteNotify(ref int actionIndex, Node root, Dictionary<int, string[]> opsMap, ref List<Node> notifies, ref List<Node> cfas, ref List<Node> inlines)
+    private static void ExecuteNotify(ref int actionIndex, Node root, IReadOnlyDictionary<int, CreationOpKind[]> opsMap, ICollection<Node> notifies, ICollection<Node> cfas, ICollection<Node> inlines)
     {
         actionIndex++;
         root.ActionIndex = actionIndex;
 
-        RecordChildCreationOp(root, opsMap[root.ActionIndex], ref notifies, ref cfas, ref inlines);
+        RecordChildCreationOp(root, opsMap[root.ActionIndex], notifies, cfas, inlines);
     }
 
-    private static void RecordChildCreationOp(Node root, string[] opKinds, ref List<Node> notifies, ref List<Node> cfas, ref List<Node> inlines)
+    private static void RecordChildCreationOp(Node root, IEnumerable<CreationOpKind> opKinds, ICollection<Node> notifies, ICollection<Node> cfas, ICollection<Node> inlines)
     {
         foreach (var opKind in opKinds)
         {
-            if (opKind == "ROOT")
-            {
-                continue;
-            }
-
             var child = new Node() { Kind = opKind, ActionIndex = -1, Children = new List<Node>() };
             switch (opKind)
             {
-                case "NOTIFY":
+                case CreationOpKind.ROOT:
+                    continue;
+                case CreationOpKind.NOTIFY:
                     notifies.Add(child);
                     break;
-                case "CFA_INLINE":
+                case CreationOpKind.CFA_INLINE:
                     cfas.Add(child);
                     break;
-                case "INLINE":
+                case CreationOpKind.INLINE:
                     inlines.Add(child);
                     break;
             }
@@ -132,14 +129,14 @@ public static class CreationTree
 
     public struct Node
     {
-        public string Kind;
+        public CreationOpKind Kind;
         public int ActionIndex;
         public IList<Node> Children;
     }
     
-    private static Dictionary<int, string[]> CreationOpsToMap(List<CreationOp> creationOps)
+    private static Dictionary<int, CreationOpKind[]> CreationOpsToMap(List<CreationOp> creationOps)
     {
-        Dictionary<int, string[]> mapping = new Dictionary<int, string[]>();
+        Dictionary<int, CreationOpKind[]> mapping = new Dictionary<int, CreationOpKind[]>();
 
         for (int i = 0; i < creationOps.Count; i++)
         {
@@ -158,7 +155,7 @@ public static class CreationTree
             tree.AddRange(_ToFlatTree(root, -1, ref walkIndex));
         }
         
-        return tree.ToArray();
+        return tree;
     }
 
     private static IList<CreationFlatNode> _ToFlatTree(Node root, int parentIndex, ref int walkIndex)

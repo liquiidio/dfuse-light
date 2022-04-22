@@ -59,11 +59,19 @@ public class AbiDecoder
         return;
     }
 
-    public static void AddInitialAbi(string contract, string rawAbiBase64)
+    public static void AddInitialAbi(ReadOnlySpan<char> contract, ReadOnlySpan<char> rawAbiBase64)
     {
-        var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(rawAbiBase64.Base64StringToByteArray());
-        Log.Information($"Deserialized Abi for {contract} : {JsonSerializer.Serialize(abi, _jsonSerializerOptions)}");
-        // TODO
-        return;
+        byte[] bytes = new byte[rawAbiBase64.Length*2]; // TODO calculate bytes-size
+
+        if (Convert.TryFromBase64Chars(rawAbiBase64, bytes, out var bytesWritten))
+        {
+            Console.WriteLine($"bytesWritten " + bytesWritten + " rawAbiBase64.Length " + rawAbiBase64.Length); // TODO remove
+            var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(bytes[Range.EndAt(bytesWritten)]);
+            Log.Information($"Deserialized Abi for {contract} : {JsonSerializer.Serialize(abi, _jsonSerializerOptions)}");
+        }
+        else
+        {
+            Console.WriteLine($"Deserialization of Abi for {contract} FAILED");
+        }
     }
 }

@@ -73,7 +73,10 @@ namespace DeepReader.Storage.Faster.Blocks
 
             using (WritingBlockDuration.NewTimer())
             {
-                return (await _blockStoreSession.UpsertAsync(ref blockId, ref block)).Complete();
+                var result = await _blockStoreSession.UpsertAsync(ref blockId, ref block);
+                while (result.Status.IsPending)
+                    result = await result.CompleteAsync();
+                return result.Status;
             }
         }
 
@@ -85,7 +88,7 @@ namespace DeepReader.Storage.Faster.Blocks
 
         private void CommitThread()
         {
-            if (_options.CheckpointInterval == null)
+            if (_options.CheckpointInterval is null or 0)
                 return;
             while (true)
             {

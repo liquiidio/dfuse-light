@@ -6,43 +6,44 @@ namespace DeepReader.Types;
 [Serializable]
 public class Abi : IEosioSerializable<Abi>
 {
-    public string Version = string.Empty;
-    public AbiType[] AbiTypes = Array.Empty<AbiType>();
-    public AbiStruct[] AbiStructs = Array.Empty<AbiStruct>();
-    public AbiAction[] AbiActions = Array.Empty<AbiAction>();
-    public AbiTable[] AbiTables = Array.Empty<AbiTable>();
+    public string Version;
+    public AbiType[] AbiTypes;
+    public AbiStruct[] AbiStructs;
+    public AbiAction[] AbiActions;
+    public AbiTable[] AbiTables;
+
+    public Abi(BinaryReader reader)
+    {
+        Version = reader.ReadString();
+
+        AbiTypes = new AbiType[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < AbiTypes.Length; i++)
+        {
+            AbiTypes[i] = AbiType.ReadFromBinaryReader(reader);
+        }
+
+        AbiStructs = new AbiStruct[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < AbiStructs.Length; i++)
+        {
+            AbiStructs[i] = AbiStruct.ReadFromBinaryReader(reader);
+        }
+
+        AbiActions = new AbiAction[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < AbiActions.Length; i++)
+        {
+            AbiActions[i] = AbiAction.ReadFromBinaryReader(reader);
+        }
+
+        AbiTables = new AbiTable[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < AbiTables.Length; i++)
+        {
+            AbiTables[i] = AbiTable.ReadFromBinaryReader(reader);
+        }
+    }
+
     public static Abi ReadFromBinaryReader(BinaryReader reader)
     {
-        var abi = new Abi()
-        {
-            Version = reader.ReadString()
-        };
-
-        abi.AbiTypes = new AbiType[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < abi.AbiTypes.Length; i++)
-        {
-            abi.AbiTypes[i] = AbiType.ReadFromBinaryReader(reader);
-        }
-
-        abi.AbiStructs = new AbiStruct[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < abi.AbiStructs.Length; i++)
-        {
-            abi.AbiStructs[i] = AbiStruct.ReadFromBinaryReader(reader);
-        }
-
-        abi.AbiActions = new AbiAction[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < abi.AbiActions.Length; i++)
-        {
-            abi.AbiActions[i] = AbiAction.ReadFromBinaryReader(reader);
-        }
-
-        abi.AbiTables = new AbiTable[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < abi.AbiTables.Length; i++)
-        {
-            abi.AbiTables[i] = AbiTable.ReadFromBinaryReader(reader);
-        }
-
-        return abi;
+        return new Abi(reader);
     }
 }
 
@@ -50,19 +51,20 @@ public class Abi : IEosioSerializable<Abi>
 public class AbiType : IEosioSerializable<AbiType>
 {
     [JsonPropertyName("new_type_name")]
-    public string NewTypeName = string.Empty;
+    public string NewTypeName;
 
     [JsonPropertyName("type")]
-    public string Type = string.Empty;
+    public string Type;
+
+    public AbiType(BinaryReader reader)
+    {
+        NewTypeName = reader.ReadString();
+        Type = reader.ReadString();
+    }
 
     public static AbiType ReadFromBinaryReader(BinaryReader reader)
     {
-        var abiType = new AbiType()
-        {
-            NewTypeName = reader.ReadString(),
-            Type = reader.ReadString()
-        };
-        return abiType;
+        return new AbiType(reader);
     }
 }
 
@@ -70,29 +72,29 @@ public class AbiType : IEosioSerializable<AbiType>
 public class AbiStruct : IEosioSerializable<AbiStruct>
 {
     [JsonPropertyName("name")]
-    public string Name = string.Empty;
+    public string Name;
 
     [JsonPropertyName("base")]
-    public string Base = string.Empty;
+    public string Base;
 
     [JsonPropertyName("fields")]
-    public AbiField[] Fields = Array.Empty<AbiField>();
+    public AbiField[] Fields;
+
+    public AbiStruct(BinaryReader reader)
+    {
+        Name = reader.ReadString();
+        Base = reader.ReadString();
+
+        Fields = new AbiField[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < Fields.Length; i++)
+        {
+            Fields[i] = AbiField.ReadFromBinaryReader(reader);
+        }
+    }
 
     public static AbiStruct ReadFromBinaryReader(BinaryReader reader)
     {
-        var abiStruct = new AbiStruct()
-        {
-            Name = reader.ReadString(),
-            Base = reader.ReadString()
-        };
-        
-        abiStruct.Fields = new AbiField[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < abiStruct.Fields.Length; i++)
-        {
-            abiStruct.Fields[i] = AbiField.ReadFromBinaryReader(reader);
-        }
-        
-        return abiStruct;
+        return new AbiStruct(reader);
     }
 }
 
@@ -100,19 +102,20 @@ public class AbiStruct : IEosioSerializable<AbiStruct>
 public class AbiField : IEosioSerializable<AbiField>
 {
     [JsonPropertyName("name")]
-    public string Name = string.Empty;
+    public string Name;
 
     [JsonPropertyName("type")]
-    public string Type = string.Empty;
+    public string Type;
+
+    public AbiField(BinaryReader reader)
+    {
+        Name = reader.ReadString();
+        Type = reader.ReadString();
+    }
 
     public static AbiField ReadFromBinaryReader(BinaryReader reader)
     {
-        var abiField = new AbiField()
-        {
-            Name = reader.ReadString(),
-            Type = reader.ReadString()
-        };
-        return abiField;
+        return new AbiField(reader);
     }
 }
 
@@ -120,23 +123,24 @@ public class AbiField : IEosioSerializable<AbiField>
 public class AbiAction : IEosioSerializable<AbiAction>
 {
     [JsonPropertyName("name")]
-    public Name Name = Name.Empty;
+    public Name Name;
 
     [JsonPropertyName("type")]
-    public string Type = string.Empty;
+    public string Type;
 
     [JsonPropertyName("ricardian_contract")]
-    public string RicardianContract = string.Empty;
+    public string RicardianContract;
+
+    public AbiAction(BinaryReader reader)
+    {
+        Name = reader.ReadName();
+        Type = reader.ReadString();
+        RicardianContract = reader.ReadString();
+    }
 
     public static AbiAction ReadFromBinaryReader(BinaryReader reader)
     {
-        var abiAction = new AbiAction()
-        {
-            Name = reader.ReadName(),
-            Type = reader.ReadString(),
-            RicardianContract = reader.ReadString()
-        };
-        return abiAction;
+        return new AbiAction(reader);
     }
 }
 
@@ -144,41 +148,43 @@ public class AbiAction : IEosioSerializable<AbiAction>
 public class AbiTable : IEosioSerializable<AbiTable>
 {
     [JsonPropertyName("name")]
-    public Name Name = Name.Empty;
+    public Name Name;
 
     [JsonPropertyName("index_type")]
-    public string IndexType = string.Empty;
+    public string IndexType;
 
     [JsonPropertyName("key_names")]
-    public string[] KeyNames = Array.Empty<string>();
+    public string[] KeyNames;
 
     [JsonPropertyName("key_types")]
-    public string[] KeyTypes = Array.Empty<string>();
+    public string[] KeyTypes;
 
     [JsonPropertyName("type")]
-    public string Type = string.Empty;
+    public string Type;
+
+    public AbiTable(BinaryReader reader)
+    {
+
+        Name = reader.ReadName();
+        IndexType = reader.ReadString();
+
+        KeyNames = new string[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < KeyNames.Length; i++)
+        {
+            KeyNames[i] = reader.ReadString();
+        }
+
+        KeyTypes = new string[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < KeyTypes.Length; i++)
+        {
+            KeyTypes[i] = reader.ReadString();
+        }
+
+        Type = reader.ReadString();
+    }
 
     public static AbiTable ReadFromBinaryReader(BinaryReader reader)
     {
-        var abiTable = new AbiTable()
-        {
-            Name = reader.ReadName(),
-            IndexType = reader.ReadString()
-        };
-
-        abiTable.KeyNames = new string[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < abiTable.KeyNames.Length; i++)
-        {
-            abiTable.KeyNames[i] = reader.ReadString();
-        }
-
-        abiTable.KeyTypes = new string[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < abiTable.KeyTypes.Length; i++)
-        {
-            abiTable.KeyTypes[i] = reader.ReadString();
-        }
-
-        abiTable.Type = reader.ReadString();
-        return abiTable;
+        return new AbiTable(reader);
     }
 }

@@ -8,17 +8,14 @@ namespace DeepReader.Types.Eosio.Chain;
 public class TransactionReceipt : TransactionReceiptHeader, IEosioSerializable<TransactionReceipt>
 {
     [SortOrder(4)]
-    public TransactionVariant Trx = TransactionId.Empty;
+    public TransactionVariant Trx;
 
+    public TransactionReceipt(BinaryReader reader) : base(reader)
+    {
+        Trx = TransactionVariant.ReadFromBinaryReader(reader);
+    }
     public new static TransactionReceipt ReadFromBinaryReader(BinaryReader reader)
     {
-        var transactionReceipt = new TransactionReceipt()
-        {
-            Status = reader.ReadByte(),
-            CpuUsageUs = reader.ReadUInt32(),
-            NetUsageWords = reader.ReadVarUint32Obj()
-        }; 
-        transactionReceipt.Trx = TransactionVariant.ReadFromBinaryReader(reader);
-        return transactionReceipt;
+        return new TransactionReceipt(reader);
     }
 }

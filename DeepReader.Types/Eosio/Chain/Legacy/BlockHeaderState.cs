@@ -11,58 +11,58 @@ namespace DeepReader.Types.Eosio.Chain.Legacy;
 public class BlockHeaderState : BlockHeaderStateCommon, IEosioSerializable<BlockHeaderState>
 {
     [SortOrder(10)]
-    public Checksum256 Id = Checksum256.Empty;
+    public Checksum256 Id;
     [SortOrder(11)]
-    public SignedBlockHeader Header = new();
+    public SignedBlockHeader Header;
     [SortOrder(12)]
-    public ScheduleInfo PendingSchedule = new();
+    public ScheduleInfo PendingSchedule;
     [SortOrder(13)]
     public ProtocolFeatureActivationSet? ActivatedProtocolFeatures;
     [SortOrder(14)]
-    public Signature[] AdditionalSignatures = Array.Empty<Signature>();
+    public Signature[] AdditionalSignatures;
 
-    public new static BlockHeaderState ReadFromBinaryReader(BinaryReader reader)
+    public BlockHeaderState(BinaryReader reader)
     {
-        var blockHeaderState = new BlockHeaderState()
-        {
-            BlockNum = reader.ReadUInt32(),
-            DPoSProposedIrreversibleBlockNum = reader.ReadUInt32(),
-            DPoSIrreversibleBlockNum = reader.ReadUInt32(),
-            ActiveSchedule = ProducerAuthoritySchedule.ReadFromBinaryReader(reader),
-            BlockrootMerkle = IncrementalMerkle.ReadFromBinaryReader(reader)
-        };
+        BlockNum = reader.ReadUInt32();
+        DPoSProposedIrreversibleBlockNum = reader.ReadUInt32();
+        DPoSIrreversibleBlockNum = reader.ReadUInt32();
+        ActiveSchedule = ProducerAuthoritySchedule.ReadFromBinaryReader(reader);
+        BlockrootMerkle = IncrementalMerkle.ReadFromBinaryReader(reader);
 
-        blockHeaderState.ProducerToLastProduced = new PairAccountNameBlockNum[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < blockHeaderState.ProducerToLastProduced.Length; i++)
+        ProducerToLastProduced = new PairAccountNameBlockNum[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < ProducerToLastProduced.Length; i++)
         {
-            blockHeaderState.ProducerToLastProduced[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
+            ProducerToLastProduced[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
         }
 
-        blockHeaderState.ProducerToLastImpliedIrb = new PairAccountNameBlockNum[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < blockHeaderState.ProducerToLastImpliedIrb.Length; i++)
+        ProducerToLastImpliedIrb = new PairAccountNameBlockNum[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < ProducerToLastImpliedIrb.Length; i++)
         {
-            blockHeaderState.ProducerToLastImpliedIrb[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
+            ProducerToLastImpliedIrb[i] = PairAccountNameBlockNum.ReadFromBinaryReader(reader);
         }
 
-        blockHeaderState.ValidBlockSigningAuthority = BlockSigningAuthorityVariant.ReadFromBinaryReader(reader);
+        ValidBlockSigningAuthority = BlockSigningAuthorityVariant.ReadFromBinaryReader(reader);
 
-        blockHeaderState.ConfirmCount = reader.ReadBytes(reader.Read7BitEncodedInt());
-        
-        blockHeaderState.Id = reader.ReadChecksum256();
-        blockHeaderState.Header = SignedBlockHeader.ReadFromBinaryReader(reader);
-        blockHeaderState.PendingSchedule = ScheduleInfo.ReadFromBinaryReader(reader);
+        ConfirmCount = reader.ReadBytes(reader.Read7BitEncodedInt());
+
+        Id = reader.ReadChecksum256();
+        Header = SignedBlockHeader.ReadFromBinaryReader(reader);
+        PendingSchedule = ScheduleInfo.ReadFromBinaryReader(reader);
 
         var readActivatedProtocolFeatures = reader.ReadBoolean();
 
         if (readActivatedProtocolFeatures)
-            blockHeaderState.ActivatedProtocolFeatures = ProtocolFeatureActivationSet.ReadFromBinaryReader(reader);
+            ActivatedProtocolFeatures = ProtocolFeatureActivationSet.ReadFromBinaryReader(reader);
 
-        blockHeaderState.AdditionalSignatures = new Signature[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < blockHeaderState.AdditionalSignatures.Length; i++)
+        AdditionalSignatures = new Signature[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < AdditionalSignatures.Length; i++)
         {
-            blockHeaderState.AdditionalSignatures[i] = reader.ReadSignature();
+            AdditionalSignatures[i] = reader.ReadSignature();
         }
+    }
 
-        return blockHeaderState;
+    public new static BlockHeaderState ReadFromBinaryReader(BinaryReader reader)
+    {
+        return new BlockHeaderState(reader);
     }
 }

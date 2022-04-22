@@ -8,6 +8,15 @@
     <UserSecretsId>dotnet-DeepReader-454E9F28-494B-40EF-8646-548B2D6CF105</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <Platforms>AnyCPU;x64</Platforms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Optimize>False</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,10 +35,13 @@
     <PackageReference Include="Cryptography.ECDSA.Secp256K1" Version="1.1.3" />
     <PackageReference Include="HotChocolate.AspNetCore" Version="12.6.0" />
     <PackageReference Include="HotChocolate.Subscriptions.InMemory" Version="12.6.0" />
+    <PackageReference Include="KGySoft.CoreLibraries" Version="6.0.2" />
     <PackageReference Include="Lokad.ILPack" Version="0.1.7" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
     <PackageReference Include="Microsoft.FASTER.Core" Version="2.0.2" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
     <PackageReference Include="NEST" Version="7.17.0" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="6.0.0" />
@@ -49,5 +61,20 @@
     <ProjectReference Include="..\DeepReader.Apis\DeepReader.Apis.csproj" />
     <ProjectReference Include="..\DeepReader.Storage\DeepReader.Storage.csproj" />
     <ProjectReference Include="..\DeepReader.Types\DeepReader.Types.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

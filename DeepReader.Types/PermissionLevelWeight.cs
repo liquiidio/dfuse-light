@@ -4,6 +4,6 @@ namespace DeepReader.Types;
 
 public class PermissionLevelWeight
 {
-    public PermissionLevel Permission = new();//*PermissionLevel
+    public PermissionLevel Permission;//*PermissionLevel
     public uint Weight = 0;//uint32
 }

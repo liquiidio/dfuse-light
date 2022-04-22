@@ -20,89 +20,89 @@ public static class RuntimeAssemblyGenerator
     public static async Task CreateAbiAndAssemblyAsync(Name contractName, byte[] abiBytes, uint blockNum,
         CancellationToken cancellationToken)
     {
-        await Task.Run(() => CreateAbiAndAssembly(contractName, abiBytes, blockNum), cancellationToken);
+//        await Task.Run(() => CreateAbiAndAssembly(contractName, abiBytes, blockNum), cancellationToken);
     }
 
-    public static void CreateAbiAndAssembly(Name contractName, byte[] abiBytes, uint blockNum)
-    {
+    //public static void CreateAbiAndAssembly(Name contractName, byte[] abiBytes, uint blockNum)
+    //{
 
-        var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(abiBytes);
-        CreateAssembly(contractName, abi, blockNum);
-    }
+    //    var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(abiBytes);
+    //    CreateAssembly(contractName, abi, blockNum);
+    //}
 
-    public static Assembly CreateAssembly(Name contractName, Abi abi, uint blockNum)
-    {
-        var abiTypeCacheEntry = new AbiTypeCacheEntry();
+    //public static Assembly CreateAssembly(Name contractName, Abi abi, uint blockNum)
+    //{
+    //    var abiTypeCacheEntry = new AbiTypeCacheEntry();
 
-        var assemblyName = new AssemblyName(contractName);
-        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
-        var moduleBuilder = assemblyBuilder.DefineDynamicModule("Main");
+    //    var assemblyName = new AssemblyName(contractName);
+    //    var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
+    //    var moduleBuilder = assemblyBuilder.DefineDynamicModule("Main");
 
-        foreach (var abiType in abi.AbiTypes)
-        {
-            abiTypeCacheEntry.AbiTypeTypes.TryAdd(abiType.NewTypeName, abiType.Type);
-        }
-        foreach (var abiStruct in abi.AbiStructs)
-        {
-            var recursions = 0;
-            Type? type;
+    //    foreach (var abiType in abi.AbiTypes)
+    //    {
+    //        abiTypeCacheEntry.AbiTypeTypes.TryAdd(abiType.NewTypeName, abiType.Type);
+    //    }
+    //    foreach (var abiStruct in abi.AbiStructs)
+    //    {
+    //        var recursions = 0;
+    //        Type? type;
 
-            if (!string.IsNullOrWhiteSpace(abiStruct.Base)) // TODO multi-inheritance
-            {
-                var abiStructWithBase = new AbiStruct()
-                {
-                    Name = abiStruct.Name
-                };
-                var baseStruct = abi.AbiStructs.SingleOrDefault(a => a.Name == abiStruct.Base, new AbiStruct());
-                abiStructWithBase.Fields = new AbiField[baseStruct.Fields.Length + abiStruct.Fields.Length];
-                var i = 0;
-                foreach (var baseStructField in baseStruct.Fields)
-                {
-                    abiStructWithBase.Fields[i] = baseStructField;
-                    i++;
-                }
+    //        if (!string.IsNullOrWhiteSpace(abiStruct.Base)) // TODO multi-inheritance
+    //        {
+    //            var abiStructWithBase = new AbiStruct()
+    //            {
+    //                Name = abiStruct.Name
+    //            };
+    //            var baseStruct = abi.AbiStructs.SingleOrDefault(a => a.Name == abiStruct.Base, new AbiStruct());
+    //            abiStructWithBase.Fields = new AbiField[baseStruct.Fields.Length + abiStruct.Fields.Length];
+    //            var i = 0;
+    //            foreach (var baseStructField in baseStruct.Fields)
+    //            {
+    //                abiStructWithBase.Fields[i] = baseStructField;
+    //                i++;
+    //            }
 
-                foreach (var abiStructField in abiStruct.Fields)
-                {
-                    abiStructWithBase.Fields[i] = abiStructField;
-                    i++;
-                }
+    //            foreach (var abiStructField in abiStruct.Fields)
+    //            {
+    //                abiStructWithBase.Fields[i] = abiStructField;
+    //                i++;
+    //            }
 
-                type = moduleBuilder.AddTypeFromStruct(abiStructWithBase, abi, contractName,
-                    ref abiTypeCacheEntry.AbiStructTypes, ref recursions);
-            }
-            else
-            {
-                type = moduleBuilder.AddTypeFromStruct(abiStruct, abi, contractName,
-                    ref abiTypeCacheEntry.AbiStructTypes, ref recursions);
-            }
+    //            type = moduleBuilder.AddTypeFromStruct(abiStructWithBase, abi, contractName,
+    //                ref abiTypeCacheEntry.AbiStructTypes, ref recursions);
+    //        }
+    //        else
+    //        {
+    //            type = moduleBuilder.AddTypeFromStruct(abiStruct, abi, contractName,
+    //                ref abiTypeCacheEntry.AbiStructTypes, ref recursions);
+    //        }
 
-            if (type != null)
-            {
-                abiTypeCacheEntry.AbiStructTypes.TryAdd(abiStruct.Name, type);
-            }
-        }
+    //        if (type != null)
+    //        {
+    //            abiTypeCacheEntry.AbiStructTypes.TryAdd(abiStruct.Name, type);
+    //        }
+    //    }
 
-        if (abi.AbiActions != null)
-            foreach (var abiAction in abi.AbiActions)
-            {
-                abiTypeCacheEntry.AbiActionTypes.TryAdd(abiAction.Name, abiAction.Type);
-            }
+    //    if (abi.AbiActions != null)
+    //        foreach (var abiAction in abi.AbiActions)
+    //        {
+    //            abiTypeCacheEntry.AbiActionTypes.TryAdd(abiAction.Name, abiAction.Type);
+    //        }
 
-        if (abi.AbiTables != null)
-            foreach (var abiTable in abi.AbiTables)
-            {
-                abiTypeCacheEntry.AbiTableTypes.TryAdd(abiTable.Name, abiTable.Type);
-            }
+    //    if (abi.AbiTables != null)
+    //        foreach (var abiTable in abi.AbiTables)
+    //        {
+    //            abiTypeCacheEntry.AbiTableTypes.TryAdd(abiTable.Name, abiTable.Type);
+    //        }
 
-        SaveAssemblyAndAbi(moduleBuilder.Assembly, abi, contractName, blockNum);
+    //    SaveAssemblyAndAbi(moduleBuilder.Assembly, abi, contractName, blockNum);
 
-        Log.Information("Assemblies for contract [" + contractName + "] at block " + blockNum + " generated");
+    //    Log.Information("Assemblies for contract [" + contractName + "] at block " + blockNum + " generated");
 
-        AssemblyCache.UpsertAbiTypeCacheEntry(contractName, abiTypeCacheEntry, blockNum);
+    //    AssemblyCache.UpsertAbiTypeCacheEntry(contractName, abiTypeCacheEntry, blockNum);
 
-        return moduleBuilder.Assembly;
-    }
+    //    return moduleBuilder.Assembly;
+    //}
 
     private static async void SaveAssemblyAndAbi(Assembly assembly, Abi abi, string contractName, uint blockNum)
     {

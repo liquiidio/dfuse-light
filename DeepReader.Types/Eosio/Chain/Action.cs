@@ -13,7 +13,7 @@ public class Action : ActionBase, IEosioSerializable<Action>
     // abi-field-name: data ,abi-field-type: bytes
     [JsonPropertyName("data")]
     [SortOrder(4)]
-    public ActionDataBytes Data = new ();
+    public ActionDataBytes Data;
 
     public Action()
     {
@@ -25,22 +25,23 @@ public class Action : ActionBase, IEosioSerializable<Action>
         this.Data = data;
     }
 
-    public new static Action ReadFromBinaryReader(BinaryReader reader)
+    public Action(BinaryReader reader)
     {
-        var action = new Action()
-        {
-            Account = reader.ReadName(),
-            Name = reader.ReadName()
-        };
+        Account = reader.ReadName();
+        Name = reader.ReadName();
 
-        action.Authorization = new PermissionLevel[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < action.Authorization.Length; i++)
+        Authorization = new PermissionLevel[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < Authorization.Length; i++)
         {
-            action.Authorization[i] = PermissionLevel.ReadFromBinaryReader(reader);
+            Authorization[i] = PermissionLevel.ReadFromBinaryReader(reader);
         }
 
-        action.Data = reader.ReadActionDataBytes();
-        return action;
+        Data = reader.ReadActionDataBytes();
+    }
+
+    public new static Action ReadFromBinaryReader(BinaryReader reader)
+    {
+        return new Action(reader);
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)

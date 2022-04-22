@@ -7,19 +7,21 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class IncrementalMerkle : IEosioSerializable<IncrementalMerkle>
 {
-    public Checksum256[] ActiveNodes = Array.Empty<Checksum256>();
-    public ulong NodeCount = 0;
+    public Checksum256[] ActiveNodes;
+    public ulong NodeCount;
 
-    public static IncrementalMerkle ReadFromBinaryReader(BinaryReader reader)
+    public IncrementalMerkle(BinaryReader reader)
     {
-        var incrementalMerkle = new IncrementalMerkle();
-        incrementalMerkle.ActiveNodes = new Checksum256[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < incrementalMerkle.ActiveNodes.Length; i++)
+        ActiveNodes = new Checksum256[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < ActiveNodes.Length; i++)
         {
-            incrementalMerkle.ActiveNodes[i] = reader.ReadChecksum256();
+            ActiveNodes[i] = reader.ReadChecksum256();
         }
 
-        incrementalMerkle.NodeCount = reader.ReadUInt64();
-        return incrementalMerkle;
+        NodeCount = reader.ReadUInt64();
+    }
+    public static IncrementalMerkle ReadFromBinaryReader(BinaryReader reader)
+    {
+        return new IncrementalMerkle(reader);
     }
 }

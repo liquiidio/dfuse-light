@@ -8,16 +8,16 @@ namespace DeepReader.Types.Eosio.Chain.Detail;
 /// </summary>
 public class PairAccountNameBlockNum : IEosioSerializable<PairAccountNameBlockNum>
 {
-    public Name AccountName = string.Empty;
-    public uint BlockNum = 0;
+    public Name AccountName;
+    public uint BlockNum;
 
+    public PairAccountNameBlockNum(BinaryReader reader)
+    {
+        AccountName = reader.ReadName();
+        BlockNum = reader.ReadUInt32();
+    }
     public static PairAccountNameBlockNum ReadFromBinaryReader(BinaryReader reader)
     {
-        var pairAccountNameBlockNum = new PairAccountNameBlockNum()
-        {
-            AccountName = reader.ReadName(),
-            BlockNum = reader.ReadUInt32()
-        };
-        return pairAccountNameBlockNum;
+        return new PairAccountNameBlockNum(reader);
     }
 }

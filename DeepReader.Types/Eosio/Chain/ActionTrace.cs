@@ -9,33 +9,33 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class ActionTrace : IEosioSerializable<ActionTrace>
 {
-    public VarUint32 ActionOrdinal = 0;
+    public VarUint32 ActionOrdinal;
 
-    public VarUint32 CreatorActionOrdinal = 0;
+    public VarUint32 CreatorActionOrdinal;
 
-    public VarUint32 ClosestUnnotifiedAncestorActionOrdinal = 0;
+    public VarUint32 ClosestUnnotifiedAncestorActionOrdinal;
 
     public ActionReceipt? Receipt;
 
-    public Name Receiver = Name.Empty;
+    public Name Receiver;
 
-    public Action Act = new();
+    public Action Act;
 
-    public bool ContextFree = false;
+    public bool ContextFree;
 
-    public long ElapsedUs = 0;
+    public long ElapsedUs;
 
-    public string Console = string.Empty;
+    public string Console;
 
-    public TransactionId TransactionId = string.Empty;
+    public TransactionId TransactionId;
 
-    public uint BlockNum = 0;
+    public uint BlockNum;
 
-    public Timestamp BlockTime = 0;
+    public Timestamp BlockTime;
 
     public Checksum256? ProducerBlockId;
 
-    public AccountDelta[] AccountRamDeltas = Array.Empty<AccountDelta>();
+    public AccountDelta[] AccountRamDeltas;
 
     // TODO Added in 2.1.x - this seems to be wrong with Mandel
     //	public AccountDelta[] AccountDiskDeltas = Array.Empty<AccountDelta>();
@@ -44,7 +44,7 @@ public class ActionTrace : IEosioSerializable<ActionTrace>
 
     public ulong? ErrorCode;
 
-    public char[] ReturnValue = Array.Empty<char>();	// TODO, string?
+    public char[] ReturnValue;	// TODO, string?
 
     public bool IsInput()
     {
@@ -56,53 +56,53 @@ public class ActionTrace : IEosioSerializable<ActionTrace>
         return CreatorActionOrdinal;
     }
 
-    public static ActionTrace ReadFromBinaryReader(BinaryReader reader)
+    public ActionTrace(BinaryReader reader)
     {
-        var actionTrace = new ActionTrace()
-        {
-            ActionOrdinal = reader.ReadVarUint32Obj(),
-            CreatorActionOrdinal = reader.ReadVarUint32Obj(),
-            ClosestUnnotifiedAncestorActionOrdinal = reader.ReadVarUint32Obj(),
-        };
+        ActionOrdinal = reader.ReadVarUint32Obj();
+        CreatorActionOrdinal = reader.ReadVarUint32Obj();
+        ClosestUnnotifiedAncestorActionOrdinal = reader.ReadVarUint32Obj();
 
         var readActionReceipt = reader.ReadBoolean();
 
         if (readActionReceipt)
-            actionTrace.Receipt = ActionReceipt.ReadFromBinaryReader(reader);
+            Receipt = ActionReceipt.ReadFromBinaryReader(reader);
 
-        actionTrace.Receiver = reader.ReadName();
-        actionTrace.Act = Action.ReadFromBinaryReader(reader);
-        actionTrace.ContextFree = reader.ReadBoolean();
-        actionTrace.ElapsedUs = reader.ReadInt64();
-        actionTrace.Console = reader.ReadString();
-        actionTrace.TransactionId = reader.ReadTransactionId();
-        actionTrace.BlockNum = reader.ReadUInt32();
-        actionTrace.BlockTime = reader.ReadTimestamp();
+        Receiver = reader.ReadName();
+        Act = Action.ReadFromBinaryReader(reader);
+        ContextFree = reader.ReadBoolean();
+        ElapsedUs = reader.ReadInt64();
+        Console = reader.ReadString();
+        TransactionId = reader.ReadTransactionId();
+        BlockNum = reader.ReadUInt32();
+        BlockTime = reader.ReadTimestamp();
 
         var readProducerBlockId = reader.ReadBoolean();
 
         if (readProducerBlockId)
-            actionTrace.ProducerBlockId = reader.ReadChecksum256();
+            ProducerBlockId = reader.ReadChecksum256();
 
-        actionTrace.AccountRamDeltas = new AccountDelta[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < actionTrace.AccountRamDeltas.Length; i++)
+        AccountRamDeltas = new AccountDelta[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < AccountRamDeltas.Length; i++)
         {
-            actionTrace.AccountRamDeltas[i] = AccountDelta.ReadFromBinaryReader(reader);
+            AccountRamDeltas[i] = AccountDelta.ReadFromBinaryReader(reader);
         }
 
         var readExcept = reader.ReadBoolean();
 
         if (readExcept)
-            actionTrace.Except = Except.ReadFromBinaryReader(reader);
+            Except = Except.ReadFromBinaryReader(reader);
 
         var readErrorCode = reader.ReadBoolean();
 
         if (readErrorCode)
-            actionTrace.ErrorCode = reader.ReadUInt64();
+            ErrorCode = reader.ReadUInt64();
 
-        actionTrace.ReturnValue = reader.ReadChars(reader.Read7BitEncodedInt());
+        ReturnValue = reader.ReadChars(reader.Read7BitEncodedInt());
+    }
 
-        return actionTrace;
+    public static ActionTrace ReadFromBinaryReader(BinaryReader reader)
+    {
+        return new ActionTrace(reader);
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)

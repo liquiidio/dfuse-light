@@ -41,7 +41,12 @@ public class Name : BinaryType
 
     public static implicit operator Name(ulong value)
     {
-        return new Name() { _intVal = value };  // TODO string to ulong
+        return new Name() { _intVal = value };  // TODO ulong to string
+    }
+
+    public static implicit operator Name(ReadOnlySpan<char> value)
+    {
+        return new Name() { _stringVal = value.ToString() }; // TODO ulong to string, string to binary
     }
 
     public override bool Equals(object? obj)
