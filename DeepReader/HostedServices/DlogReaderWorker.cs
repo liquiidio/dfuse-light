@@ -4,7 +4,9 @@ using DeepReader.Classes;
 using DeepReader.Configuration;
 using DeepReader.Options;
 using DeepReader.Types;
+using KGySoft.CoreLibraries;
 using Microsoft.Extensions.Options;
+using Microsoft.Toolkit.HighPerformance;
 using Serilog;
 
 namespace DeepReader.HostedServices;
@@ -16,7 +18,7 @@ public class DlogReaderWorker : BackgroundService
     private DeepMindProcess _deepMindProcess;
     private DeepReaderOptions _deepReaderOptions;
     private MindReaderOptions _mindReaderOptions;
-    readonly ParseCtx _ctx = new();
+    private readonly ParseCtx _ctx = new();
 
     public DlogReaderWorker(ChannelWriter<Block> blocksChannel, IOptionsMonitor<DeepReaderOptions> _deepReaderOptionsMonitor, IOptionsMonitor<MindReaderOptions> _mindReaderOptionsMonitor)
     {
@@ -28,26 +30,32 @@ public class DlogReaderWorker : BackgroundService
         _mindReaderOptions = _mindReaderOptionsMonitor.CurrentValue;
         _mindReaderOptionsMonitor.OnChange(OnMindReaderOptionsChanged);
 
-//#if DEBUG
-//        string mindreaderDir = "/app/config/mindreader/";
-//        string dataDir = "/app/config/mindreader/data";
+        var vars = Environment.GetEnvironmentVariables();
+        if (vars.Contains("WSLENV") && vars.Contains("NAME") && (string)vars["NAME"] == "cmadh_desktop")
+        {
+            var mindreaderDir = "/home/cmadh/testing/config/";
+            var dataDir = "/home/cmadh/testing/data/";
 
+            _deepMindProcess = new DeepMindProcess(_mindReaderOptions, mindreaderDir, dataDir);
+        }
+        else if (vars.Contains("WSLENV") && vars.Contains("NAME") && (string)vars["NAME"] == "HARON_PC_NAME")
+        {
+            var mindreaderDir = "/home/cmadh/testing/config/";
+            var dataDir = "/home/cmadh/testing/data/";
 
-//        var vars = Environment.GetEnvironmentVariables();
-//        if (vars.Contains("WSLENV"))
-//        {
-//            mindreaderDir = "/home/cmadh/testing/config/";
-//            dataDir = "/home/cmadh/testing/data/";
-//        }
-//        else if (vars.Contains("DOTNET_RUNNING_IN_CONTAINER"))
-//        {
-//            mindreaderDir = "/app/config/mindreader/";
-//            dataDir = "/app/config/mindreader/data";
-//        }
-//        _deepMindProcess = new DeepMindProcess(_mindReaderOptions, mindreaderDir, dataDir);
-//#else
-        _deepMindProcess = new DeepMindProcess(_mindReaderOptions);
-//#endif
+            _deepMindProcess = new DeepMindProcess(_mindReaderOptions, mindreaderDir, dataDir);
+        }
+        else if (vars.Contains("DOTNET_RUNNING_IN_CONTAINER"))
+        {
+            var mindreaderDir = "/app/config/mindreader/";
+            var dataDir = "/app/config/mindreader/data";
+
+            _deepMindProcess = new DeepMindProcess(_mindReaderOptions, mindreaderDir, dataDir);
+        }
+        else
+        {
+            _deepMindProcess = new DeepMindProcess(_mindReaderOptions);
+        }
     }
 
     private void OnDeepReaderOptionsChanged(DeepReaderOptions newOptions)
@@ -72,7 +80,7 @@ public class DlogReaderWorker : BackgroundService
 
         await Task.Delay(3000, clt);
 
-        _deepMindProcess.OutputDataReceived += OnNodeosDataReceived; // async (sender, e) => await OnNodeosOutputDataReceived(sender, e, stoppingToken);
+        _deepMindProcess.OutputDataReceived += OnNodeosDataReceived; // async (sender, e) => await OpanNodeosOutputDataReceived(sender, e, stoppingToken);
         _deepMindProcess.ErrorDataReceived += OnNodeosDataReceived;
         await _deepMindProcess.RunAsync(clt);
     }
@@ -90,54 +98,57 @@ public class DlogReaderWorker : BackgroundService
             {
                 if (e.Data.StartsWith("DMLOG"))
                 {
-                    var data = e.Data.Split(' ');
+//                    var data = e.Data.Split(' ', 12);
 
-                    switch (data[1])
+                    var data = e.Data.AsSegment().Split(' ', 12);
+//                    var a = dat[0] == "sf";
+
+                    switch ((string)data[1]!)
                     {
                         case "RAM_OP":
-                            _ctx.ReadRamOp(data[Range.StartAt(2)]);
+                            _ctx.ReadRamOp(data);
                             break;
                         case "CREATION_OP":
-                            _ctx.ReadCreationOp(data[Range.StartAt(2)]);
+                            _ctx.ReadCreationOp(data);
                             break;
                         case "DB_OP":
-                            _ctx.ReadDbOp(data[Range.StartAt(2)]);
+                            _ctx.ReadDbOp(data);
                             break;
                         case "RLIMIT_OP":
-                            _ctx.ReadRlimitOp(data[Range.StartAt(2)]);
+                            _ctx.ReadRlimitOp(data);
                             break;
                         case "TRX_OP":
-                            _ctx.ReadTrxOp(data[Range.StartAt(2)]);
+                            _ctx.ReadTrxOp(data);
                             break;
                         case "APPLIED_TRANSACTION":
-                            _ctx.ReadAppliedTransaction(data[Range.StartAt(2)]);
+                            _ctx.ReadAppliedTransaction(data);
                             break;
                         case "TBL_OP":
-                            _ctx.ReadTableOp(data[Range.StartAt(2)]);
+                            _ctx.ReadTableOp(data);
                             break;
                         case "PERM_OP":
-                            _ctx.ReadPermOp(data[Range.StartAt(2)]);
+                            _ctx.ReadPermOp(data);
                             break;
                         case "DTRX_OP":
-                            switch (data[2])
+                            switch ((string)data[2]!)
                             {
                                 case "CREATE":
-                                    _ctx.ReadCreateOrCancelDTrxOp("CREATE", data[Range.StartAt(2)]);
+                                    _ctx.ReadCreateOrCancelDTrxOp("CREATE", data);
                                     break;
                                 case "MODIFY_CREATE":
-                                    _ctx.ReadCreateOrCancelDTrxOp("MODIFY_CREATE", data[Range.StartAt(2)]);
+                                    _ctx.ReadCreateOrCancelDTrxOp("MODIFY_CREATE", data);
                                     break;
                                 case "MODIFY_CANCEL":
-                                    _ctx.ReadCreateOrCancelDTrxOp("MODIFY_CANCEL", data[Range.StartAt(2)]);
+                                    _ctx.ReadCreateOrCancelDTrxOp("MODIFY_CANCEL", data);
                                     break;
                                 case "PUSH_CREATE":
-                                    _ctx.ReadCreateOrCancelDTrxOp("PUSH_CREATE", data[Range.StartAt(2)]);
+                                    _ctx.ReadCreateOrCancelDTrxOp("PUSH_CREATE", data);
                                     break;
                                 case "CANCEL":
-                                    _ctx.ReadCreateOrCancelDTrxOp("CANCEL", data[Range.StartAt(2)]);
+                                    _ctx.ReadCreateOrCancelDTrxOp("CANCEL", data);
                                     break;
                                 case "FAILED":
-                                    _ctx.ReadFailedDTrxOp(data[Range.StartAt(2)]);
+                                    _ctx.ReadFailedDTrxOp(data);
                                     break;
                                 default:
                                     Log.Information(e.Data);
@@ -145,27 +156,27 @@ public class DlogReaderWorker : BackgroundService
                             }
                             break;
                         case "RAM_CORRECTION_OP":
-                            _ctx.ReadRamCorrectionOp(data[Range.StartAt(2)]);
+                            _ctx.ReadRamCorrectionOp(data);
                             break;
                         case "ACCEPTED_BLOCK":
-                            var block = _ctx.ReadAcceptedBlock(data[Range.StartAt(2)]);
-                            bool blockWritten = _blocksChannel.TryWrite(block);
+                            var block = _ctx.ReadAcceptedBlock(data);
+                            var blockWritten = _blocksChannel.TryWrite(block);
                             while (!blockWritten)
                             {
                                 blockWritten = _blocksChannel.TryWrite(block);
                             }
                             break;
                         case "START_BLOCK":
-                            _ctx.ReadStartBlock(data[Range.StartAt(2)]);
+                            _ctx.ReadStartBlock(data);
                             break;
                         case "FEATURE_OP":
-                            switch (data[2])
+                            switch ((string)data[2]!)
                             {
                                 case "PRE_ACTIVATE":
-                                    _ctx.ReadFeatureOpPreActivate(data[Range.StartAt(2)]);
+                                    _ctx.ReadFeatureOpPreActivate(data);
                                     break;
                                 case "ACTIVATE":
-                                    _ctx.ReadFeatureOpActivate(data[Range.StartAt(2)]);
+                                    _ctx.ReadFeatureOpActivate(data);
                                     break;
                                 default:
                                     Log.Information(e.Data);
@@ -177,13 +188,13 @@ public class DlogReaderWorker : BackgroundService
                             _ctx.ResetBlock();
                             break;
                         case "ABIDUMP":
-                            switch (data[2])
+                            switch ((string)data[2]!)
                             {
                                 case "START":
-                                    _ctx.ReadAbiStart(data[Range.StartAt(3)]);
+                                    _ctx.ReadAbiStart(data);
                                     break;
                                 case "ABI":
-                                    _ctx.ReadAbiDump(data[Range.StartAt(3)]);
+                                    _ctx.ReadAbiDump(data);
                                     break;
                                 case "END":
                                     // noop
@@ -191,7 +202,7 @@ public class DlogReaderWorker : BackgroundService
                             }
                             break;
                         case "DEEP_MIND_VERSION":
-                            _ctx.ReadDeepmindVersion(data[Range.StartAt(2)]);
+                            _ctx.ReadDeepmindVersion(data);
                             break;
                         default:
                             Log.Information(e.Data);

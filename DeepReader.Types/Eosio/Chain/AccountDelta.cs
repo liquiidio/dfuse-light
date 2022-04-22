@@ -7,18 +7,18 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class AccountDelta : IEosioSerializable<AccountDelta>
 {
-    public Name Account = string.Empty;
-    public long Delta = 0;
+    public Name Account;
+    public long Delta;
+
+    public AccountDelta(BinaryReader reader)
+    {
+        Account = reader.ReadName();
+        Delta = reader.ReadInt64();
+    }
 
     public static AccountDelta ReadFromBinaryReader(BinaryReader reader)
     {
-        var accountDelta = new AccountDelta()
-        {
-            Account = reader.ReadName(),
-            Delta = reader.ReadInt64(),
-        };
-
-        return accountDelta;
+        return new AccountDelta(reader);
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)

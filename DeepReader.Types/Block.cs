@@ -11,12 +11,12 @@ public class Block
 	public Checksum256 Id = Checksum256.Empty;
 	public uint Number = 0;
 	public uint Version = 0;
-	public SignedBlockHeader Header = new();
+	public SignedBlockHeader Header;
 	public string ProducerSignature = string.Empty;
 	public Extension[] BlockExtensions = Array.Empty<Extension>();
 	public uint DposProposedIrreversibleBlocknum = 0;
 	public uint DposIrreversibleBlocknum = 0;
-	public IncrementalMerkle BlockrootMerkle = new();
+	public IncrementalMerkle BlockrootMerkle;
 	public PairAccountNameBlockNum[] ProducerToLastProduced = Array.Empty<PairAccountNameBlockNum>();
 	public PairAccountNameBlockNum[] ProducerToLastImpliedIrb = Array.Empty<PairAccountNameBlockNum>();
 	public uint[] ConfirmCount = Array.Empty<uint>();
@@ -133,7 +133,7 @@ public class Block
 	// counterpart. The inner element for a producer can then be composed with
 	// multiple keys, each with their own weight and the threshold required to
 	// accept the block signature.
-	public ProducerAuthoritySchedule ActiveSchedule = new();//*ProducerAuthoritySchedule
+	public ProducerAuthoritySchedule ActiveSchedule;//*ProducerAuthoritySchedule
 	// Wheter or not a filtering process was run on this block. The filtering process sets to nil
 	// the `unfiltered_transaction_traces` to `nil` and populate the `filtered_transaction_traces`
 	// according to the `filtering_include_filter_expr` and `filtering_exclude_filter_expr` CEL

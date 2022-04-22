@@ -12,4 +12,9 @@ public class PermissionObject
     public string Name = string.Empty;//string
     public DateTime LastUpdated = new();//*timestamp.Timestamp
     public Authority Auth = new();//*Authority
+
+    public PermissionObject()
+    {
+
+    }
 }

@@ -7,21 +7,21 @@ namespace DeepReader.Types.Eosio.Chain.Legacy;
 /// </summary>
 public class ProducerKey : IEosioSerializable<ProducerKey>
 {
-    public Name AccountName = Name.Empty;
-    public PublicKey[] BlockSigningKey = Array.Empty<PublicKey>();//ecc.PublicKey
+    public Name AccountName;
+    public PublicKey[] BlockSigningKey;//ecc.PublicKey
 
+    public ProducerKey(BinaryReader reader)
+    {
+        AccountName = reader.ReadName();
+
+        BlockSigningKey = new PublicKey[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < BlockSigningKey.Length; i++)
+        {
+            BlockSigningKey[i] = reader.ReadPublicKey(); //PubKeyDataSize + 1 byte for type
+        }
+    }
     public static ProducerKey ReadFromBinaryReader(BinaryReader reader)
     {
-        var producerKey = new ProducerKey()
-        {
-            AccountName = reader.ReadName(),
-        };
-
-        producerKey.BlockSigningKey = new PublicKey[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < producerKey.BlockSigningKey.Length; i++)
-        {
-            producerKey.BlockSigningKey[i] = reader.ReadPublicKey(); //PubKeyDataSize + 1 byte for type
-        }
-        return producerKey;
+        return new ProducerKey(reader);
     }
 }

@@ -8,21 +8,19 @@ namespace DeepReader.Types.Eosio.Chain.Detail;
 /// </summary>
 public struct ScheduleInfo : IEosioSerializable<ScheduleInfo>
 {
-    public uint ScheduleLibNum = 0; /// last irr block num
-    public Checksum256 ScheduleHash = Checksum256.Empty;
-    public ProducerAuthoritySchedule Schedule = new();
+    public uint ScheduleLibNum; /// last irr block num
+    public Checksum256 ScheduleHash;
+    public ProducerAuthoritySchedule Schedule;
 
-    public ScheduleInfo()
+    public ScheduleInfo(BinaryReader reader)
     {
-
+        ScheduleLibNum = reader.ReadUInt32();
+        ScheduleHash = reader.ReadChecksum256();
+        Schedule = ProducerAuthoritySchedule.ReadFromBinaryReader(reader);
     }
 
     public static ScheduleInfo ReadFromBinaryReader(BinaryReader reader)
     {
-        ScheduleInfo info = new ScheduleInfo();
-        info.ScheduleLibNum = reader.ReadUInt32();
-        info.ScheduleHash = reader.ReadChecksum256();
-        info.Schedule = ProducerAuthoritySchedule.ReadFromBinaryReader(reader);
-        return info;
+        return new ScheduleInfo(reader);
     }
 };

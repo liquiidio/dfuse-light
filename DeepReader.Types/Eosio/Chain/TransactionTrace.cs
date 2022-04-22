@@ -8,23 +8,23 @@ namespace DeepReader.Types.Eosio.Chain;
 public class TransactionTrace : IEosioSerializable<TransactionTrace>
 {
     // SHA-256 (FIPS 180-4) of the FCBUFFER-encoded packed transaction
-    public TransactionId Id = TransactionId.Empty;
+    public TransactionId Id;
     // Reference to the block number in which this transaction was executed.
-    public uint BlockNum = 0;
+    public uint BlockNum;
     // Reference to the block time this transaction was executed in
-    public Timestamp BlockTime = Timestamp.Zero;
+    public Timestamp BlockTime;
     // Reference to the block ID this transaction was executed in
     public Checksum256? ProducerBlockId = Checksum256.Empty;
     // Receipt of execution of this transaction
     public TransactionReceiptHeader? Receipt;
-    public long Elapsed = 0;
-    public ulong NetUsage = 0;
+    public long Elapsed;
+    public ulong NetUsage;
     // Whether this transaction was taken from a scheduled transactions pool for
     // execution (delayed)
-    public bool Scheduled = false;
+    public bool Scheduled;
     // Traces of each action within the transaction, including all notified and
     // nested actions.
-    public ActionTrace[] ActionTraces = Array.Empty<ActionTrace>();
+    public ActionTrace[] ActionTraces;
 
     // Account RAM Delta - ignored in dfuse
     public AccountRamDelta? AccountRamDelta;
@@ -56,60 +56,68 @@ public class TransactionTrace : IEosioSerializable<TransactionTrace>
                                                                           // List of table creations/deletions
     public IList<TableOp> TableOps { get; set; } = new List<TableOp>();//[]*TableOp
                                                                        // Tree of creation, rather than execution
-    public CreationFlatNode[] CreationTree { get; set; } = Array.Empty<CreationFlatNode>();//[]*CreationFlatNode
+    public IList<CreationFlatNode> CreationTree { get; set; } = new List<CreationFlatNode>();//[]*CreationFlatNode
 
     // Index within block's unfiltered execution traces
     public ulong Index { get; set; } = 0;
 
-    public static TransactionTrace ReadFromBinaryReader(BinaryReader reader)
+    public TransactionTrace()
     {
-        var transactionTrace = new TransactionTrace()
-        {
-            Id = reader.ReadTransactionId(),
-            BlockNum = reader.ReadUInt32(),
-            BlockTime = reader.ReadTimestamp(),
-        };
+        Id = TransactionId.Empty;
+        BlockTime = Timestamp.Zero;
+        ActionTraces = Array.Empty<ActionTrace>();
+    }
+
+    public TransactionTrace(BinaryReader reader)
+    {
+        Id = reader.ReadTransactionId();
+        BlockNum = reader.ReadUInt32();
+        BlockTime = reader.ReadTimestamp();
 
         var readProducerBlockId = reader.ReadBoolean();
 
         if (readProducerBlockId)
-            transactionTrace.ProducerBlockId = reader.ReadChecksum256();
+            ProducerBlockId = reader.ReadChecksum256();
 
         var readReceipt = reader.ReadBoolean();
 
         if (readReceipt)
-            transactionTrace.Receipt = TransactionReceiptHeader.ReadFromBinaryReader(reader);
+            Receipt = TransactionReceiptHeader.ReadFromBinaryReader(reader);
 
-        transactionTrace.Elapsed = reader.ReadInt64();
-        transactionTrace.NetUsage = reader.ReadUInt64();
-        transactionTrace.Scheduled = reader.ReadBoolean();
+        Elapsed = reader.ReadInt64();
+        NetUsage = reader.ReadUInt64();
+        Scheduled = reader.ReadBoolean();
 
-        transactionTrace.ActionTraces = new ActionTrace[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < transactionTrace.ActionTraces.Length; i++)
+        ActionTraces = new ActionTrace[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < ActionTraces.Length; i++)
         {
-            transactionTrace.ActionTraces[i] = ActionTrace.ReadFromBinaryReader(reader);
+            ActionTraces[i] = ActionTrace.ReadFromBinaryReader(reader);
         }
 
         var readAccountRamDelta = reader.ReadBoolean();
 
         if (readAccountRamDelta)
-            transactionTrace.AccountRamDelta = AccountRamDelta.ReadFromBinaryReader(reader);
+            AccountRamDelta = AccountRamDelta.ReadFromBinaryReader(reader);
 
         var readFailedDtrxTrace = reader.ReadBoolean();
         // Todo @corvin from haron
         // Haron: "This is a weird field. It is of the same type as this, how does it work?
         //if (readFailedDtrxTrace)
-        //	transactionTrace.FailedDtrxTrace = transactionTrace
+        //	FailedDtrxTrace = transactionTrace
 
         var readException = reader.ReadBoolean();
         if (readException)
-            transactionTrace.Exception = Except.ReadFromBinaryReader(reader);
+            Exception = Except.ReadFromBinaryReader(reader);
 
         var readErrorCode = reader.ReadBoolean();
         if (readErrorCode)
-            transactionTrace.ErrorCode = reader.ReadUInt64();
+            ErrorCode = reader.ReadUInt64();
 
-        return transactionTrace;
+    }
+
+    public static TransactionTrace ReadFromBinaryReader(BinaryReader reader)
+    {
+        return new TransactionTrace(reader);
     }
 }
 

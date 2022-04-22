@@ -15,22 +15,23 @@ public class PackedTransaction : TransactionVariant, IEosioSerializable<PackedTr
     public Bytes PackedContextFreeData = new();
     public Bytes PackedTrx = new ();
 
-    public new static PackedTransaction ReadFromBinaryReader(BinaryReader reader)
+    public PackedTransaction(BinaryReader reader)
     {
-        var obj = new PackedTransaction();
-
-        obj.Signatures = new Signature[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < obj.Signatures.Length; i++)
+        Signatures = new Signature[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < Signatures.Length; i++)
         {
-            obj.Signatures[i] = reader.ReadSignature();
+            Signatures[i] = reader.ReadSignature();
         }
 
-        obj.Compression = reader.ReadByte();
+        Compression = reader.ReadByte();
 
-        obj.PackedContextFreeData = reader.ReadBytes(reader.Read7BitEncodedInt());
-        obj.PackedTrx = reader.ReadBytes(reader.Read7BitEncodedInt());
+        PackedContextFreeData = reader.ReadBytes(reader.Read7BitEncodedInt());
+        PackedTrx = reader.ReadBytes(reader.Read7BitEncodedInt());
+    }
 
-        return obj;
+    public new static PackedTransaction ReadFromBinaryReader(BinaryReader reader)
+    {
+        return new PackedTransaction(reader);
     }
 
     public new void WriteToBinaryWriter(BinaryWriter writer)

@@ -5,22 +5,22 @@ namespace DeepReader.Types.Eosio.Chain.Legacy;
 /// </summary>
 public class ProducerAuthoritySchedule : IEosioSerializable<ProducerAuthoritySchedule>
 {
-    public uint Version = 0;
-    public ProducerAuthority[] Producers = Array.Empty<ProducerAuthority>();
+    public uint Version;
+    public ProducerAuthority[] Producers;
+
+    public ProducerAuthoritySchedule(BinaryReader reader)
+    {
+        Version = reader.ReadUInt32();
+
+        Producers = new ProducerAuthority[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < Producers.Length; i++)
+        {
+            Producers[i] = ProducerAuthority.ReadFromBinaryReader(reader);
+        }
+    }
 
     public static ProducerAuthoritySchedule ReadFromBinaryReader(BinaryReader reader)
     {
-        var producerAuthoritySchedule = new ProducerAuthoritySchedule()
-        {
-            Version = reader.ReadUInt32()
-        };
-
-        producerAuthoritySchedule.Producers = new ProducerAuthority[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < producerAuthoritySchedule.Producers.Length; i++)
-        {
-            producerAuthoritySchedule.Producers[i] = ProducerAuthority.ReadFromBinaryReader(reader);
-        }
-
-        return producerAuthoritySchedule;
+        return new ProducerAuthoritySchedule(reader);
     }
 }

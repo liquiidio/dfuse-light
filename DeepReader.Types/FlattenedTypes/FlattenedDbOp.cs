@@ -12,8 +12,8 @@ public struct FlattenedDbOp
     public byte[] PrimaryKey = Array.Empty<byte>();//string
     public Name OldPayer = string.Empty;//string
     public Name NewPayer = string.Empty;//string
-    public byte[] OldData = Array.Empty<byte>();//[]byte
-    public byte[] NewData = Array.Empty<byte>();//[]byte
+    public ReadOnlyMemory<byte> OldData = Array.Empty<byte>();//[]byte
+    public ReadOnlyMemory<byte> NewData = Array.Empty<byte>();//[]byte
 
     public FlattenedDbOp()
     {
@@ -49,8 +49,8 @@ public struct FlattenedDbOp
         writer.Write(OldPayer.Binary);
         writer.Write(NewPayer.Binary);
         writer.Write(OldData.Length);
-        writer.Write(OldData);
+        writer.Write(OldData.Span);
         writer.Write(NewData.Length);
-        writer.Write(NewData);
+        writer.Write(NewData.Span);
     }
 }

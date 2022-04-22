@@ -7,7 +7,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/action.hpp
 /// </summary>
-public class ActionBase : IEosioSerializable<ActionBase>
+public class ActionBase
 {
 
     // abi-field-name: account ,abi-field-type: name
@@ -35,21 +35,5 @@ public class ActionBase : IEosioSerializable<ActionBase>
         this.Account = account;
         this.Name = name;
         this.Authorization = authorization;
-    }
-
-    public static ActionBase ReadFromBinaryReader(BinaryReader reader)
-    {
-        var actionBase = new ActionBase()
-        {
-            Account = reader.ReadName(),
-            Name = reader.ReadName()
-        };
-
-        actionBase.Authorization = new PermissionLevel[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < actionBase.Authorization.Length; i++)
-        {
-            actionBase.Authorization[i] = PermissionLevel.ReadFromBinaryReader(reader);
-        }
-        return actionBase;
     }
 }

@@ -7,16 +7,16 @@ namespace DeepReader.Types.Eosio.Chain.Legacy;
 /// </summary>
 public class ProducerAuthority : IEosioSerializable<ProducerAuthority>
 {
-    public Name AccountName = Name.Empty;
-    public BlockSigningAuthorityVariant BlockSigningAuthority = new BlockSigningAuthorityV0();
+    public Name AccountName;
+    public BlockSigningAuthorityVariant BlockSigningAuthority;
 
+    public ProducerAuthority(BinaryReader reader)
+    {
+        AccountName = reader.ReadName();
+        BlockSigningAuthority = BlockSigningAuthorityVariant.ReadFromBinaryReader(reader);
+    }
     public static ProducerAuthority ReadFromBinaryReader(BinaryReader reader)
     {
-        var producerAuthority = new ProducerAuthority()
-        {
-            AccountName = reader.ReadName(),
-            BlockSigningAuthority = BlockSigningAuthorityVariant.ReadFromBinaryReader(reader)
-        };
-        return producerAuthority;
+        return new ProducerAuthority(reader);
     }
 }

@@ -71,7 +71,10 @@ namespace DeepReader.Storage.Faster.Transactions
 
             using (WritingTransactionDuration.NewTimer())
             {
-                return (await _transactionStoreSession.UpsertAsync(ref transactionId, ref transaction)).Complete();
+                var result = await _transactionStoreSession.UpsertAsync(ref transactionId, ref transaction);
+                while (result.Status.IsPending)
+                    result = await result.CompleteAsync();
+                return result.Status;
             }
         }
 
@@ -83,7 +86,7 @@ namespace DeepReader.Storage.Faster.Transactions
 
         private void CommitThread()
         {
-            if (_options.CheckpointInterval == null) 
+            if (_options.CheckpointInterval is null or 0) 
                 return;
             
             while (true)

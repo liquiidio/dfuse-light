@@ -7,19 +7,19 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class ProtocolFeatureActivationSet : IEosioSerializable<ProtocolFeatureActivationSet>
 {
-    public Checksum256[] ProtocolFeatures = Array.Empty<Checksum256>();
+    public Checksum256[] ProtocolFeatures;
 
+    public ProtocolFeatureActivationSet(BinaryReader reader)
+    {
+        ProtocolFeatures = new Checksum256[reader.Read7BitEncodedInt()];
+
+        for (int i = 0; i < ProtocolFeatures.Length; i++)
+        {
+            ProtocolFeatures[i] = reader.ReadChecksum256();
+        }
+    }
     public static ProtocolFeatureActivationSet ReadFromBinaryReader(BinaryReader reader)
     {
-        var protocolFeatureActivationSet = new ProtocolFeatureActivationSet()
-        {
-            ProtocolFeatures = new Checksum256[reader.Read7BitEncodedInt()]
-        };
-
-        for (int i = 0; i < protocolFeatureActivationSet.ProtocolFeatures.Length; i++)
-        {
-            protocolFeatureActivationSet.ProtocolFeatures[i] = reader.ReadChecksum256();
-        }
-        return protocolFeatureActivationSet;
+        return new ProtocolFeatureActivationSet(reader);
     }
 }

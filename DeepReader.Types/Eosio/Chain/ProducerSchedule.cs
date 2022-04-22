@@ -7,22 +7,22 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class ProducerSchedule : IEosioSerializable<ProducerSchedule>
 {
-    public uint Version = 0;//uint32
-    public ProducerKey[] Producers = Array.Empty<ProducerKey>();//[]*ProducerKey
+    public uint Version;//uint32
+    public ProducerKey[] Producers;//[]*ProducerKey
+
+    public ProducerSchedule(BinaryReader reader)
+    {
+        Version = reader.ReadUInt32();
+
+        Producers = new ProducerKey[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < Producers.Length; i++)
+        {
+            Producers[i] = ProducerKey.ReadFromBinaryReader(reader);
+        }
+    }
 
     public static ProducerSchedule ReadFromBinaryReader(BinaryReader reader)
     {
-        var producerSchedule = new ProducerSchedule()
-        {
-            Version = reader.ReadUInt32()
-        };
-
-        producerSchedule.Producers = new ProducerKey[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < producerSchedule.Producers.Length; i++)
-        {
-            producerSchedule.Producers[i] = ProducerKey.ReadFromBinaryReader(reader);
-        }
-
-        return producerSchedule;
+        return new ProducerSchedule(reader);
     }
 }

@@ -23,21 +23,22 @@ public abstract class BlockSigningAuthorityVariant : IEosioSerializable<BlockSig
 /// </summary>
 public class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant, IEosioSerializable<BlockSigningAuthorityV0>
 {
-    public uint Threshold = 0;
-    public SharedKeyWeight[] Keys = Array.Empty<SharedKeyWeight>();
+    public uint Threshold;
+    public SharedKeyWeight[] Keys;
+
+    public BlockSigningAuthorityV0(BinaryReader reader)
+    {
+        Threshold = reader.ReadUInt32();
+
+        Keys = new SharedKeyWeight[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < Keys.Length; i++)
+        {
+            Keys[i] = SharedKeyWeight.ReadFromBinaryReader(reader);
+        }
+    }
 
     public new static BlockSigningAuthorityV0 ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new BlockSigningAuthorityV0()
-        {
-            Threshold = reader.ReadUInt32()
-        };
-
-        obj.Keys = new SharedKeyWeight[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < obj.Keys.Length; i++)
-        {
-            obj.Keys[i] = SharedKeyWeight.ReadFromBinaryReader(reader);
-        }
-        return obj;
+        return new BlockSigningAuthorityV0(reader);
     }
 }

@@ -7,6 +7,7 @@
       },
       "hotReloadEnabled": false,
       "dotnetRunMessages": true,
+      "nativeDebugging": true
     },
     "WSL : Ubuntu-20.04": {
       "commandName": "WSL",
@@ -22,20 +23,16 @@
         "DOTNET_ENVIRONMENT": "Development"
       },
       "distributionName": "Ubuntu-18.04"
-	},
-	"Docker": {
+    },
+    "Docker": {
       "commandName": "Docker",
       "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/metrics",
-      "publishAllPorts": true,
-      //"useSSL": true,
-      "httpPort": 5000,
-      //"sslPort": 5001,
       "environmentVariables": {
-        //"ASPNETCORE_URLS": "https://+:5001;http://+:5000",
         "ASPNETCORE_URLS": "http://+:5000"
-        //"ASPNETCORE_HTTPS_PORT": "5001"
-      }
+      },
+      "httpPort": 5000,
+      "publishAllPorts": true
     }
   }
 }

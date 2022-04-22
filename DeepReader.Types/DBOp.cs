@@ -16,9 +16,9 @@ public class DbOp
     public Name OldPayer = string.Empty;//string
     public Name NewPayer = string.Empty;//string
     [JsonIgnore]
-    public byte[] OldData = Array.Empty<byte>();//[]byte
+    public ReadOnlyMemory<byte> OldData = Array.Empty<byte>();//[]byte
     [JsonIgnore]
-    public byte[] NewData = Array.Empty<byte>();//[]byte
+    public ReadOnlyMemory<byte> NewData = Array.Empty<byte>();//[]byte
 
     internal static DbOp ReadFromBinaryReader(BinaryReader reader)
     {

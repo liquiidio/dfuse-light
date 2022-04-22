@@ -84,6 +84,8 @@ public class BlockWorker : BackgroundService
                     Log.Information($"channel-size: {_blocksChannel.Count}");
 
                     Log.Information($"Current Threads: {Process.GetCurrentProcess().Threads.Count}");
+
+                    GC.Collect(0, GCCollectionMode.Optimized, true);
                 }
 
                 //foreach (var setAbiAction in block.UnfilteredTransactionTraces.SelectMany(utt => utt.ActionTraces.Where(at => at.Act.Account == "eosio" && at.Act.Name == "setabi")))

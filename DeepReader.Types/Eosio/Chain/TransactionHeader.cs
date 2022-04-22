@@ -13,7 +13,7 @@ public class TransactionHeader : IEosioSerializable<TransactionHeader>
     // abi-field-name: expiration ,abi-field-type: time_point_sec
     [SortOrder(1)]
     [JsonPropertyName("expiration")]
-    public Timestamp Expiration = Timestamp.Zero;
+    public Timestamp Expiration;
 
     // abi-field-name: ref_block_num ,abi-field-type: uint16
     [SortOrder(2)]
@@ -28,7 +28,7 @@ public class TransactionHeader : IEosioSerializable<TransactionHeader>
     // abi-field-name: max_net_usage_words ,abi-field-type: varuint32
     [SortOrder(4)]
     [JsonPropertyName("max_net_usage_words")]
-    public VarUint32 MaxNetUsageWords = 0;
+    public VarUint32 MaxNetUsageWords;
 
     // abi-field-name: max_cpu_usage_ms ,abi-field-type: uint8
     [SortOrder(5)]
@@ -38,33 +38,21 @@ public class TransactionHeader : IEosioSerializable<TransactionHeader>
     // abi-field-name: delay_sec ,abi-field-type: varuint32
     [SortOrder(6)]
     [JsonPropertyName("delay_sec")]
-    public VarUint32 DelaySec = 0;
+    public VarUint32 DelaySec;
 
-    public TransactionHeader()
+    public TransactionHeader(BinaryReader reader)
     {
-    }
-
-    public TransactionHeader(uint expiration, ushort refBlockNum, uint refBlockPrefix, VarUint32 maxNetUsageWords, byte maxCpuUsageMs, VarUint32 delaySec)
-    {
-        this.Expiration = expiration;
-        this.RefBlockNum = refBlockNum;
-        this.RefBlockPrefix = refBlockPrefix;
-        this.MaxNetUsageWords = maxNetUsageWords;
-        this.MaxCpuUsageMs = maxCpuUsageMs;
-        this.DelaySec = delaySec;
+        Expiration = reader.ReadTimestamp();
+        RefBlockNum = reader.ReadUInt16();
+        RefBlockPrefix = reader.ReadUInt32();
+        MaxNetUsageWords = 0;
+        MaxNetUsageWords = reader.ReadVarUint32Obj();
+        MaxCpuUsageMs = reader.ReadByte();
+        DelaySec = reader.ReadVarUint32Obj();
     }
 
     public static TransactionHeader ReadFromBinaryReader(BinaryReader reader)
     {
-        var header = new TransactionHeader()
-        {
-            Expiration = reader.ReadTimestamp(),
-            RefBlockNum = reader.ReadUInt16(),
-            RefBlockPrefix = reader.ReadUInt32(),
-            MaxNetUsageWords = reader.ReadVarUint32Obj(),
-            MaxCpuUsageMs = reader.ReadByte(),
-            DelaySec = reader.ReadVarUint32Obj()
-        };
-        return header;
+        return new TransactionHeader(reader);
     }
 }

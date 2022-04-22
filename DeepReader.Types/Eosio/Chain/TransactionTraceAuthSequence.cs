@@ -8,17 +8,18 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class TransactionTraceAuthSequence : IEosioSerializable<TransactionTraceAuthSequence>
 {
-    public Name Account = string.Empty;
-    public ulong Sequence = 0;
+    public Name Account;
+    public ulong Sequence;
+
+    public TransactionTraceAuthSequence(BinaryReader reader)
+    {
+        Account = reader.ReadName();
+        Sequence = reader.ReadUInt64();
+    }
 
     public static TransactionTraceAuthSequence ReadFromBinaryReader(BinaryReader reader)
     {
-        var seq = new TransactionTraceAuthSequence()
-        {
-            Account = reader.ReadName(),
-            Sequence = reader.ReadUInt64()
-        };
-        return seq;
+        return new TransactionTraceAuthSequence(reader);
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)

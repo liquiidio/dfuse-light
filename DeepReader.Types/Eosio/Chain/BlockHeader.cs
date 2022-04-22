@@ -9,49 +9,48 @@ namespace DeepReader.Types.Eosio.Chain;
 public class BlockHeader : IEosioSerializable<BlockHeader>
 {
     [SortOrder(1)]
-    public Timestamp Timestamp = Timestamp.Zero;
+    public Timestamp Timestamp;
     [SortOrder(2)]
-    public Name Producer = Name.Empty;
+    public Name Producer;
     [SortOrder(3)]
-    public ushort Confirmed = 0;
+    public ushort Confirmed;
     [SortOrder(4)]
-    public Checksum256 Previous = Checksum256.Empty;
+    public Checksum256 Previous;
     [SortOrder(5)]
-    public Checksum256 TransactionMroot = Checksum256.Empty;
+    public Checksum256 TransactionMroot;
     [SortOrder(6)]
-    public Checksum256 ActionMroot = Checksum256.Empty;
+    public Checksum256 ActionMroot;
     [SortOrder(7)]
-    public uint ScheduleVersion = 0;
+    public uint ScheduleVersion;
     [SortOrder(8)]
     public ProducerSchedule? NewProducers;
     [SortOrder(9)]
-    public Extension[] HeaderExtensions = Array.Empty<Extension>();
+    public Extension[] HeaderExtensions;
 
-    public static BlockHeader ReadFromBinaryReader(BinaryReader reader)
+    public BlockHeader(BinaryReader reader)
     {
-        var blockHeader = new BlockHeader()
-        {
-            Timestamp = reader.ReadTimestamp(),
-            Producer = reader.ReadName(),
-            Confirmed = reader.ReadUInt16(),
-            Previous = reader.ReadChecksum256(),
-            TransactionMroot = reader.ReadChecksum256(),
-            ActionMroot = reader.ReadChecksum256(),
-            ScheduleVersion = reader.ReadUInt32(),
-        };
+        Timestamp = reader.ReadTimestamp();
+        Producer = reader.ReadName();
+        Confirmed = reader.ReadUInt16();
+        Previous = reader.ReadChecksum256();
+        TransactionMroot = reader.ReadChecksum256();
+        ActionMroot = reader.ReadChecksum256();
+        ScheduleVersion = reader.ReadUInt32();
 
         var readProducer = reader.ReadBoolean();
 
         if (readProducer)
-            blockHeader.NewProducers = ProducerSchedule.ReadFromBinaryReader(reader);
+            NewProducers = ProducerSchedule.ReadFromBinaryReader(reader);
 
-
-        blockHeader.HeaderExtensions = new Extension[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < blockHeader.HeaderExtensions.Length; i++)
+        HeaderExtensions = new Extension[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < HeaderExtensions.Length; i++)
         {
-            blockHeader.HeaderExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
+            HeaderExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
         }
+    }
 
-        return blockHeader;
+    public static BlockHeader ReadFromBinaryReader(BinaryReader reader)
+    {
+        return new BlockHeader(reader);
     }
 }
