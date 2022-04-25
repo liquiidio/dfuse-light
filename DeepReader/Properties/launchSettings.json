@@ -14,7 +14,8 @@
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       },
-      "distributionName": "Ubuntu20.04LTS2",
+      //"distributionName": "Ubuntu20.04LTS2",
+      "distributionName": "Ubuntu-20.04",
       "remoteDebugEnabled": true
     },
     "WSL : Ubuntu-18.04": {
