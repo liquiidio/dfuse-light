@@ -1,12 +1,6 @@
 ﻿using DeepReader.Types;
-using DeepReader.Types.Enums;
-using DeepReader.Types.Eosio.Chain;
-using DeepReader.Types.EosTypes;
-using DeepReader.Types.Fc;
-using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.FlattenedTypes;
 using DeepReader.Types.Helpers;
-using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.Classes
 {

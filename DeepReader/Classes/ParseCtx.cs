@@ -17,7 +17,7 @@ public class ParseCtx
 
     public TransactionTrace Trx;
 
-    public List<CreationOp> CreationOps;
+    public IList<CreationOp> CreationOps;
 
     public bool TraceEnabled;
 
@@ -64,6 +64,7 @@ public class ParseCtx
 	public void ResetTrx()
     {
         Trx = new TransactionTrace();
+        CreationOps.Clear();
     }
 
 	public void RecordCreationOp(CreationOp operation)
@@ -170,7 +171,7 @@ public class ParseCtx
         }
 
         // All this stiching of ops into trace must be performed after `if` because the if can revert them all
-        var creationTreeRoots = CreationTree.ComputeCreationTree(CreationOps);
+        var creationTreeRoots = CreationTree.ComputeCreationTree((IReadOnlyList<CreationOp>)CreationOps);
 
         trace.CreationTree = CreationTree.ToFlatTree(creationTreeRoots);
         trace.DtrxOps = Trx.DtrxOps;
@@ -480,11 +481,11 @@ public class ParseCtx
     //    };
     //}
 
-    private byte[][] ChecksumsToBytesSlices(byte[] merkleActiveNodes)
-    {
-        // TODO
-        return new[] { merkleActiveNodes };
-    }
+    //private byte[][] ChecksumsToBytesSlices(byte[] merkleActiveNodes)
+    //{
+    //    // TODO
+    //    return new[] { merkleActiveNodes };
+    //}
 
     //private Extension[] ExtensionsToDEOS(Extension[] signedBlockBlockExtensions)
     //{
@@ -676,9 +677,9 @@ public class ParseCtx
                 Transaction = signedTrx,
             });
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            Console.WriteLine("SenderId " + chunks[5]);
+            Console.WriteLine($"SenderId {chunks[5]}");
             throw;
         }
 
@@ -828,7 +829,7 @@ public class ParseCtx
                 var newPerm = JsonSerializer.Deserialize<PermissionObject>(newData, _jsonSerializerOptions)!;
 
                 permOp.NewPerm = newPerm;
-                permOp.NewPerm.Id = permissionId;
+                permOp.NewPerm.UsageId = permissionId;
             }
             catch (Exception e)
             {
@@ -846,7 +847,7 @@ public class ParseCtx
 		        return fmt.Errorf("unmashal old perm data: %s", err)
 	        }*/
             permOp.OldPerm = oldPerm;
-            permOp.OldPerm.Id = permissionId;
+            permOp.OldPerm.UsageId = permissionId;
         }
 
         RecordPermOp(permOp);
@@ -861,43 +862,28 @@ public class ParseCtx
             throw new Exception($"expected 10 fields, got {chunks.Count}");
         }
 
-        var actionIndex = Int32.Parse(chunks[2].AsSpan);
+        var actionIndex = UInt32.Parse(chunks[2]);
 
-        var namespaceString = chunks[4];
-        var @namespace = Enum.Parse<RamOpNamespace>(namespaceString, true);
+        var @namespace = Enum.Parse<RamOpNamespace>(chunks[4], true);
 
-        var actionString = chunks[5];
-        var action = Enum.Parse<RamOpAction>(actionString, true);
-        /*if !ok {
-        return fmt.Errorf("action %q unknown", actionString)
-        }*/
+        var action = Enum.Parse<RamOpAction>(chunks[5], true);
 
-        var operationString = chunks[6];
-        var operation = Enum.Parse<RamOpOperation>(operationString, true);
-        /*if !ok {
-        return fmt.Errorf("operation %q unknown", operationString)
-        }*/
+        var operation = Enum.Parse<RamOpOperation>(chunks[6], true);
 
-        var usage = UInt64.Parse(chunks[8].AsSpan!);
-        /*if err != nil {
-        return fmt.Errorf("usage is not a valid number, got: %q", chunks[4])
-        }*/
+        var usage = UInt64.Parse(chunks[8]);
 
-        var delta = Int64.Parse(chunks[9].AsSpan);
-        /*if err != nil {
-        return fmt.Errorf("delta is not a valid number, got: %q", chunks[5])
-        }*/
+        var delta = Int64.Parse(chunks[9]);
 
         RecordRamOp(new RamOp()
         {
-            ActionIndex = (uint) actionIndex,
+            ActionIndex = actionIndex,
             UniqueKey = chunks[3].Split(':'),
             Namespace = @namespace,
             Action = action,
             Operation = operation,
             Payer = chunks[7].AsSpan,
             Usage = usage,
-            Delta = (long) delta,
+            Delta = delta,
         });
     }
 
@@ -944,14 +930,12 @@ public class ParseCtx
             case 5: // Version > 12 ?
                 var blockNum = Int32.Parse(chunks[3].AsSpan);
                 var globalSequence = Int32.Parse(chunks[4].AsSpan);
-//                    logFields.Add(zap.Int("block_num", blockNum), zap.Int("global_sequence", globalSequence));
+                Log.Information($"read ABI start marker: block_num {blockNum} global_sequence {globalSequence}");
                 break;
             default:
                 throw new Exception($"expected to have either {{3}} or {{5}} fields, got {chunks.Count}");
             }
-
-//	        zlog.Info("read ABI start marker", logFields...)
-            AbiDecoder.ResetCache();
+        AbiDecoder.ResetCache();
     }
 
     // Line format:

@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.JsonConverters;

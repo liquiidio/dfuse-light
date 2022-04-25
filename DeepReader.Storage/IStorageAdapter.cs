@@ -1,6 +1,4 @@
-﻿using DeepReader.Types;
-using DeepReader.Types.Eosio.Chain;
-using DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Types.FlattenedTypes;
 
 namespace DeepReader.Storage
 {

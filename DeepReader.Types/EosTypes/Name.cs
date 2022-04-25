@@ -12,6 +12,18 @@ public class Name : BinaryType
 
     private ulong? _intVal;
 
+    public Name()
+    {
+
+    }
+
+    public Name(ulong intVal, string stringVal, byte[] binary)
+    {
+        _intVal = intVal;
+        _stringVal = stringVal;
+        Binary = binary;
+    }
+
     public string StringVal 
     { 
         get => _stringVal ??= SerializationHelper.ByteArrayToName(Binary);

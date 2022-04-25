@@ -1,7 +1,5 @@
 ﻿using DeepReader.Apis.Options;
 using DeepReader.Storage;
-using DeepReader.Types.FlattenedTypes;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 

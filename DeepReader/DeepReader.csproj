@@ -7,16 +7,22 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>dotnet-DeepReader-454E9F28-494B-40EF-8646-548B2D6CF105</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <Platforms>AnyCPU;x64</Platforms>
+	<Platforms> AnyCPU;x64</Platforms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>False</Optimize>
+	<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	<Deterministic>true</Deterministic>
+	<DebugType>full</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Optimize>False</Optimize>
+	<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	<Deterministic>true</Deterministic>
+	<DebugType>full</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
