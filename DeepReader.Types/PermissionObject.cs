@@ -2,8 +2,8 @@ namespace DeepReader.Types;
 
 public class PermissionObject
 {
-    // Id represents the EOSIO internal id of this permission object.
-    public ulong Id = 0;//uint64
+    // UsageId represents the EOSIO internal id of this permission object.
+    public ulong UsageId = 0;//uint64
     // Parent represents the EOSIO internal id of the parent's of this permission object.
     public ulong Parent = 0;//uint64
     // Owner is the account for which this permission was set

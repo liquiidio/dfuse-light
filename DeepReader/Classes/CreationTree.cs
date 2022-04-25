@@ -1,11 +1,13 @@
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
+using KGySoft.CoreLibraries;
+using Serilog;
 
 namespace DeepReader.Classes;
 
 public static class CreationTree
 {
-    public static List<Node> ComputeCreationTree(List<CreationOp> creationOps)
+    public static List<Node> ComputeCreationTree(IReadOnlyList<CreationOp> creationOps)
     {
         // TODO, not sure if this is converted correctly from dfuse-code
 
@@ -16,21 +18,28 @@ public static class CreationTree
         var opsMap = CreationOpsToMap(creationOps);
 
         var roots = new List<Node>();
+
+        var ok = opsMap.Length > (actionIndex + 1);
         var opKinds = opsMap[actionIndex + 1];
 
-        foreach (var ok in opKinds)
+        while (ok)
         {
-            if (opKinds[0] != CreationOpKind.ROOT) {
-                // TODO return nil, fmt.Errorf("first exec op kind of execution start should be ROOT, got %s", opKinds[0])
+            if (opKinds.First() != CreationOpKind.ROOT)
+            {
+                Log.Warning($"first exec op kind of execution start should be ROOT, got {opKinds.First()}");
             }
 
             var root = new Node { Kind = CreationOpKind.ROOT, ActionIndex = -1, Children = new List<Node>() };
             roots.Add(root);
 
-            ExecuteAction(actionIndex, root, opsMap);
+            ExecuteAction(ref actionIndex, root, opsMap);
 
-            opKinds = opsMap[actionIndex + 1];
+//            opKinds = opsMap[actionIndex + 1];
 
+            if (opsMap.Length <= (actionIndex + 1))
+                ok = false;
+            else
+                opKinds = opsMap[actionIndex + 1];
             // TODO: We should check for gaps in action indices here. Assume an exec ops
             //       list of `[{ROOT, 0}, {NOTIFY, 1}, {ROOT, 2}]`. In this list, we would
             //       create a ROOT #0, skip NOTIFY then try to execute ROOT #2. This is incorrect
@@ -42,51 +51,59 @@ public static class CreationTree
         return roots;
     }
 
-    private static void ExecuteAction(int actionIndex, Node root, Dictionary<int, CreationOpKind[]> opsMap)
+    private static void ExecuteAction(ref int actionIndex, Node root, CreationOpKind[][] opsMap)
     {
         actionIndex++;
         root.ActionIndex = actionIndex;
 
-        var notifies = new List<Node>();
-        var cfas = new List<Node>();
-        var inlines = new List<Node>();
+        var (notifies, cfas, inlines) = RecordChildCreationOp(root, opsMap[root.ActionIndex]);
 
-        RecordChildCreationOp(root, opsMap[root.ActionIndex], notifies, cfas, inlines);
-
-        foreach (var notify in notifies)
+        for(var i = 0; i < notifies.Count; i++)
         {
-            var nestedNotifies = new List<Node>();
-            var nestedCfas = new List<Node>();
-            var nestedInlines = new List<Node>();
+            if (opsMap.Length > actionIndex + 1)
+            {
+                var (nestedNotifies, nestedCfas, nestedInlines) = ExecuteNotify(ref actionIndex, notifies[i], opsMap);
 
-            ExecuteNotify(ref actionIndex, notify, opsMap, nestedNotifies, nestedCfas, nestedInlines);
-            
-            notifies.AddRange(nestedNotifies);
-            cfas.AddRange(nestedCfas);
-            notifies.AddRange(nestedInlines);
+                notifies.AddRange(nestedNotifies);
+                cfas.AddRange(nestedCfas);
+                inlines.AddRange(nestedInlines);
+            }
+            else
+                break; // TODO, here seems to be something wrong
         }
 
         foreach (var cfa in cfas)
         {
-            ExecuteAction(actionIndex, cfa, opsMap);
+            if (opsMap.Length > actionIndex + 1)
+            {
+                ExecuteAction(ref actionIndex, cfa, opsMap);
+            }
+            else
+                break; // TODO, here seems to be something wrong
         }
 
         foreach (var inline in inlines)
         {
-            ExecuteAction(actionIndex, inline, opsMap);
+            if (opsMap.Length > actionIndex + 1)
+            {
+                ExecuteAction(ref actionIndex, inline, opsMap);
+            }
+            else
+                break; // TODO, here seems to be something wrong
         }
     }
 
-    private static void ExecuteNotify(ref int actionIndex, Node root, IReadOnlyDictionary<int, CreationOpKind[]> opsMap, ICollection<Node> notifies, ICollection<Node> cfas, ICollection<Node> inlines)
+    private static (ICollection<Node> notifies, ICollection<Node> cfas, ICollection<Node> inlines) ExecuteNotify(ref int actionIndex, Node root, CreationOpKind[][] opsMap)
     {
         actionIndex++;
         root.ActionIndex = actionIndex;
 
-        RecordChildCreationOp(root, opsMap[root.ActionIndex], notifies, cfas, inlines);
+        return RecordChildCreationOp(root, opsMap[root.ActionIndex]);
     }
 
-    private static void RecordChildCreationOp(Node root, IEnumerable<CreationOpKind> opKinds, ICollection<Node> notifies, ICollection<Node> cfas, ICollection<Node> inlines)
+    private static (IList<Node> notifies, IList<Node> cfas, IList<Node> inlines) RecordChildCreationOp(Node root, CreationOpKind[] opKinds)
     {
+        var notifies = new List<Node>(); var cfas = new List<Node>(); var inlines = new List<Node>();
         foreach (var opKind in opKinds)
         {
             var child = new Node() { Kind = opKind, ActionIndex = -1, Children = new List<Node>() };
@@ -108,6 +125,8 @@ public static class CreationTree
             root.Children.Add(child);
         }
         
+        return (notifies, cfas, inlines);
+
         // for _, opKind := range opKinds {
         //     if opKind == "ROOT" {
         //         continue
@@ -134,15 +153,18 @@ public static class CreationTree
         public IList<Node> Children;
     }
     
-    private static Dictionary<int, CreationOpKind[]> CreationOpsToMap(List<CreationOp> creationOps)
+    private static CreationOpKind[][] CreationOpsToMap(IReadOnlyList<CreationOp> creationOps)
     {
-        Dictionary<int, CreationOpKind[]> mapping = new Dictionary<int, CreationOpKind[]>();
+        var i = 0;  // TODO here's something wrong
+        return creationOps.GroupBy(o => o.ActionIndex).Select(o => o.Select(o => o.Kind).ToArray()).ToArray();
+        //Dictionary<int, CreationOpKind> mapping = new Dictionary<int, CreationOpKind>();
 
-        for (int i = 0; i < creationOps.Count; i++)
-        {
-            mapping[i] = new[] { creationOps[i].Kind };
-        }
-        return mapping;
+        //for (int i = 0; i < creationOps.Count; i++)
+        //{
+        //    mapping[i] = new[] { creationOps[i].Kind };
+        //}
+
+        //return mapping;
     }
     
     public static IList<CreationFlatNode> ToFlatTree(List<Node> roots)

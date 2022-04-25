@@ -1,7 +1,5 @@
-using DeepReader.Types.Eosio.Chain.Detail;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.Eosio.Chain.Legacy;
-using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types.Eosio.Chain;
 

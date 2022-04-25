@@ -1,6 +1,4 @@
 ﻿using DeepReader.Storage.Options;
-using DeepReader.Types;
-using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.FlattenedTypes;
 using Microsoft.Extensions.Options;
 using Nest;

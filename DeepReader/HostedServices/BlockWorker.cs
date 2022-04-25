@@ -1,8 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
 using System.Threading.Channels;
-using System.Threading.Tasks.Dataflow;
-using DeepReader.Apis.GraphQl.Queries;
 using DeepReader.Configuration;
 using DeepReader.Options;
 using DeepReader.Storage;
@@ -10,10 +8,8 @@ using DeepReader.Types;
 using DeepReader.Types.FlattenedTypes;
 using DeepReader.Types.Helpers;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Prometheus;
 using Serilog;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace DeepReader.HostedServices;
 
@@ -52,6 +48,8 @@ public class BlockWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        Thread.CurrentThread.Name = $"BlockWorker";
+
         await ProcessBlocks(stoppingToken);
     }
 
@@ -70,8 +68,8 @@ public class BlockWorker : BackgroundService
             MaxDepth = Int32.MaxValue
         };
 
-
-        BlocksChannelSize.Observe(_blocksChannel.Count);
+        if (_blocksChannel.CanCount)
+            BlocksChannelSize.Observe(_blocksChannel.Count);
 
         await foreach (var block in _blocksChannel.ReadAllAsync(cancellationToken))
         {
@@ -79,13 +77,13 @@ public class BlockWorker : BackgroundService
             {
                 if (block.Number % 1000 == 0)
                 {
+//                    Log.Information(JsonSerializer.Serialize(block, jsonSerializerOptions));
+
+                    if (_blocksChannel.CanCount)
+                        Log.Information($"channel-size: {_blocksChannel.Count}");
+
                     Log.Information($"got block {block.Number}");
-                    Log.Information(JsonSerializer.Serialize(block, jsonSerializerOptions));
-                    Log.Information($"channel-size: {_blocksChannel.Count}");
-
                     Log.Information($"Current Threads: {Process.GetCurrentProcess().Threads.Count}");
-
-                    GC.Collect(0, GCCollectionMode.Optimized, true);
                 }
 
                 //foreach (var setAbiAction in block.UnfilteredTransactionTraces.SelectMany(utt => utt.ActionTraces.Where(at => at.Act.Account == "eosio" && at.Act.Name == "setabi")))

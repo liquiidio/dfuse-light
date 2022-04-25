@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types.JsonConverters;

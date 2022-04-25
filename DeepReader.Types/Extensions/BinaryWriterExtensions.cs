@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DeepReader.Types.Eosio.Chain;
+﻿using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Fc;
 using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types.Extensions

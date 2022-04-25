@@ -8,7 +8,7 @@ namespace DeepReader.Classes;
 
 public class AbiDecoder
 {
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         IncludeFields = true,
         PropertyNameCaseInsensitive = true,
@@ -67,7 +67,7 @@ public class AbiDecoder
         {
             Console.WriteLine($"bytesWritten " + bytesWritten + " rawAbiBase64.Length " + rawAbiBase64.Length); // TODO remove
             var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(bytes[Range.EndAt(bytesWritten)]);
-            Log.Information($"Deserialized Abi for {contract} : {JsonSerializer.Serialize(abi, _jsonSerializerOptions)}");
+            Log.Information($"Deserialized Abi for {contract} : {JsonSerializer.Serialize(abi, JsonSerializerOptions)}");
         }
         else
         {

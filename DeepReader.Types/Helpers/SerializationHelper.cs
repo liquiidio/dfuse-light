@@ -269,4 +269,19 @@ public class SerializationHelper
 
         return new Name { Binary = binary, StringVal = new string(str).TrimEnd('.') };
     }
+
+    public static string ByteArrayToNameString(byte[] binary)
+    {
+        var str = new[] { '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.' };
+
+        var tmp = BitConverter.ToUInt64(binary);
+        for (uint i = 0; i <= 12; ++i)
+        {
+            var c = CharMap[tmp & (ulong)(i == 0 ? 0x0f : 0x1f)];
+            str[(int)(12 - i)] = c;
+            tmp >>= i == 0 ? 4 : 5;
+        }
+
+        return new string(str).TrimEnd('.');
+    }
 }
