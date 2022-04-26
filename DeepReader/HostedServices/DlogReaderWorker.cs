@@ -36,10 +36,10 @@ public class DlogReaderWorker : BackgroundService
 
             _deepMindProcess = new DeepMindProcess(_mindReaderOptions, mindreaderDir, dataDir);
         }
-        else if (vars.Contains("WSLENV") && vars.Contains("NAME") && (string)vars["NAME"] == "HARON_PC_NAME")
+        else if (vars.Contains("WSLENV") && vars.Contains("NAME") && (string)vars["NAME"] == "DESKTOP-JGBAUO9")
         {
-            var mindreaderDir = "/home/cmadh/testing/config/";
-            var dataDir = "/home/cmadh/testing/data/";
+            var mindreaderDir = "/home/haron/testing/config/";
+            var dataDir = "/home/haron/testing/data/";
 
             _deepMindProcess = new DeepMindProcess(_mindReaderOptions, mindreaderDir, dataDir);
         }

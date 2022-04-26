@@ -39,8 +39,6 @@
 
   <ItemGroup>
     <PackageReference Include="Cryptography.ECDSA.Secp256K1" Version="1.1.3" />
-    <PackageReference Include="HotChocolate.AspNetCore" Version="12.6.0" />
-    <PackageReference Include="HotChocolate.Subscriptions.InMemory" Version="12.6.0" />
     <PackageReference Include="KGySoft.CoreLibraries" Version="6.0.2" />
     <PackageReference Include="Lokad.ILPack" Version="0.1.7" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
