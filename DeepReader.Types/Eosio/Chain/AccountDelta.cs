@@ -7,8 +7,8 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class AccountDelta : IEosioSerializable<AccountDelta>
 {
-    public Name Account;
-    public long Delta;
+    public Name Account { get; set; }
+    public long Delta { get; set; }
 
     public AccountDelta(BinaryReader reader)
     {

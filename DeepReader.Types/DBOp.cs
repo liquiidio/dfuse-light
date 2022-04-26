@@ -7,18 +7,18 @@ namespace DeepReader.Types;
 
 public class DbOp
 {
-    public DbOpOperation Operation = DbOpOperation.UNKNOWN;//DBOp_Operation
-    public uint ActionIndex = 0;//uint32
-    public Name Code = string.Empty;//string
-    public Name Scope = string.Empty;//string
-    public Name TableName = string.Empty;//string
-    public string PrimaryKey = string.Empty;//string
-    public Name OldPayer = string.Empty;//string
-    public Name NewPayer = string.Empty;//string
+    public DbOpOperation Operation { get; set; } = DbOpOperation.UNKNOWN;//DBOp_Operation
+    public uint ActionIndex { get; set; } = 0;//uint32
+    public Name Code { get; set; } = string.Empty;//string
+    public Name Scope { get; set; } = string.Empty;//string
+    public Name TableName { get; set; } = string.Empty;//string
+    public string PrimaryKey { get; set; } = string.Empty;//string
+    public Name OldPayer { get; set; } = string.Empty;//string
+    public Name NewPayer { get; set; } = string.Empty;//string
     [JsonIgnore]
-    public ReadOnlyMemory<byte> OldData = Array.Empty<byte>();//[]byte
+    public ReadOnlyMemory<byte> OldData { get; set; } = Array.Empty<byte>();//[]byte
     [JsonIgnore]
-    public ReadOnlyMemory<byte> NewData = Array.Empty<byte>();//[]byte
+    public ReadOnlyMemory<byte> NewData { get; set; } = Array.Empty<byte>();//[]byte
 
     internal static DbOp ReadFromBinaryReader(BinaryReader reader)
     {

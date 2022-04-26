@@ -5,27 +5,27 @@ using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.Types.FlattenedTypes
 {
-    public struct FlattenedActionTrace
+    public class FlattenedActionTrace
     {
-        public Name Receiver = Name.Empty;
+        public Name Receiver { get; set; } = Name.Empty;
 
-        public Action Act = new();
+        public Action Act { get; set; } = new();
 
-        public bool ContextFree = false;
+        public bool ContextFree { get; set; } = false;
 
-        public long ElapsedUs = 0;
+        public long ElapsedUs { get; set; } = 0;
 
-        public string Console = string.Empty;
+        public string Console { get; set; } = string.Empty;
 
-        public AccountDelta[] AccountRamDeltas = Array.Empty<AccountDelta>();
+        public AccountDelta[] AccountRamDeltas { get; set; } = Array.Empty<AccountDelta>();
 
-        public FlattenedRamOp[] RamOps = Array.Empty<FlattenedRamOp>();
+        public FlattenedRamOp[] RamOps { get; set; } = Array.Empty<FlattenedRamOp>();
 
-        public FlattenedDbOp[] DbOps = Array.Empty<FlattenedDbOp>();
+        public FlattenedDbOp[] DbOps { get; set; } = Array.Empty<FlattenedDbOp>();
 
-        public FlattenedTableOp[] TableOps = Array.Empty<FlattenedTableOp>();
+        public FlattenedTableOp[] TableOps { get; set; } = Array.Empty<FlattenedTableOp>();
 
-        public char[] ReturnValue = Array.Empty<char>(); // TODO, string?
+        public char[] ReturnValue { get; set; } = Array.Empty<char>(); // TODO, string?
 
 
         public FlattenedActionTrace()

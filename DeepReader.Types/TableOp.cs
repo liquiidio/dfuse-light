@@ -6,12 +6,12 @@ namespace DeepReader.Types;
 
 public class TableOp
 {
-    public TableOpOperation Operation = TableOpOperation.UNKNOWN;//TableOp_Operation
-    public uint ActionIndex = 0;//uint32
-    public Name Payer = string.Empty;//string
-    public Name Code = string.Empty;//string
-    public Name Scope = string.Empty;//string
-    public Name TableName = string.Empty;//string
+    public TableOpOperation Operation { get; set; } = TableOpOperation.UNKNOWN;//TableOp_Operation
+    public uint ActionIndex { get; set; } = 0;//uint32
+    public Name Payer { get; set; } = string.Empty;//string
+    public Name Code { get; set; } = string.Empty;//string
+    public Name Scope { get; set; } = string.Empty;//string
+    public Name TableName { get; set; } = string.Empty;//string
 
     public static TableOp ReadFromBinaryReader(BinaryReader reader)
     {

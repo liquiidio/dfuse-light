@@ -3,15 +3,15 @@ using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.FlattenedTypes;
 
-public struct FlattenedRamOp
+public class FlattenedRamOp
 {
-    public RamOpOperation Operation = RamOpOperation.UNKNOWN;//RAMOp_Operation
-    public Name Payer = string.Empty;//string
-    public long Delta = 0;//int64
-    public ulong Usage = 0;//uint64
+    public RamOpOperation Operation { get; set; } = RamOpOperation.UNKNOWN;//RAMOp_Operation
+    public Name Payer { get; set; } = string.Empty;//string
+    public long Delta { get; set; } = 0;//int64
+    public ulong Usage { get; set; } = 0;//uint64
     // To eventually replace `operation`.
-    public RamOpNamespace Namespace = RamOpNamespace.UNKNOWN;//RAMOp_Namespace
-    public RamOpAction Action = RamOpAction.UNKNOWN;//RAMOp_Action
+    public RamOpNamespace Namespace { get; set; } = RamOpNamespace.UNKNOWN;//RAMOp_Namespace
+    public RamOpAction Action { get; set; } = RamOpAction.UNKNOWN;//RAMOp_Action
 
     public FlattenedRamOp()
     {

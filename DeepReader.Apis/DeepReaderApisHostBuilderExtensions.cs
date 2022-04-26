@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using DeepReader.Apis.GraphQl.QueryTypes;
 using DeepReader.Apis.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -33,6 +34,10 @@ namespace DeepReader.Apis
                     });
                     services.AddEndpointsApiExplorer();
                     services.AddSwaggerGen();
+
+                    services.AddGraphQLServer()
+                        .AddQueryType(q => q.Name("Query"))
+                        .AddType<BlockQueryType>();
                 });
                 webBuilder.Configure(app =>
                 {
@@ -56,6 +61,7 @@ namespace DeepReader.Apis
                     {
                         endpoints.MapControllers();
                         endpoints.MapMetrics();
+                        endpoints.MapGraphQL();
                     });
                 });
             });
