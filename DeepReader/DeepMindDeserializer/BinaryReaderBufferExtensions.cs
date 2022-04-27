@@ -224,7 +224,7 @@ public static class BinaryBufferReaderExtensions
     {
         var binary = reader.ReadBytes(8);
 
-        return SerializationHelper.ByteArrayToName(binary);
+        return new Name(BitConverter.ToUInt64(binary), SerializationHelper.ByteArrayToName(binary), binary);
     }
 
     public static string ReadString(this BinaryBufferReader reader)

@@ -15,6 +15,17 @@ public class Signature : BinaryType
         set => _stringVal = value;
     }
 
+    public Signature()
+    {
+
+    }
+
+    public Signature(byte[] binary, string stringVal)
+    {
+        Binary = binary;
+        StringVal = stringVal;
+    }
+
     public static implicit operator Signature(string value)
     {
         return new Signature { _stringVal = value };

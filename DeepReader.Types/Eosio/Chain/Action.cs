@@ -49,13 +49,13 @@ public class Action : ActionBase, IEosioSerializable<Action>
         writer.WriteName(Account);
         writer.WriteName(Name);
 
-        writer.Write(Authorization.Length);
+        writer.Write7BitEncodedInt(Authorization.Length);
         foreach (var auth in Authorization)
         {
             auth.WriteToBinaryWriter(writer);
         }
 
-        writer.Write(Data.Binary.Length);
+        writer.Write7BitEncodedInt(Data.Binary.Length);
         writer.Write(Data.Binary);
     }
 }

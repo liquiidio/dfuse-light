@@ -4,6 +4,7 @@ using DeepReader.Types.Enums;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
+using DeepReader.Types.Helpers;
 using KGySoft.CoreLibraries;
 using Microsoft.Toolkit.HighPerformance;
 using Serilog;
@@ -595,7 +596,7 @@ public class ParseCtx
         {
 	        case DbOpOperation.INS:
                 newData = chunks[9].AsMemory.Cast<char, byte>();
-                newPayer = chunks[4].AsSpan;
+                newPayer = SerializationHelper.CharSpanToName(chunks[4].AsSpan);
 				break;
             case DbOpOperation.UPD:
                 var dataChunks = chunks[9].Split(':');
@@ -613,12 +614,12 @@ public class ParseCtx
                     throw new Exception("should have two payers in field 3, separated by a ':', found only one");
                 }
 
-                oldPayer = payerChunks[0].AsSpan;
-                newPayer = payerChunks[1].AsSpan;
+                oldPayer = SerializationHelper.CharSpanToName(payerChunks[0].AsSpan);
+                newPayer = SerializationHelper.CharSpanToName(payerChunks[1].AsSpan);
 				break;
             case DbOpOperation.REM:
                 oldData = chunks[9].AsMemory.Cast<char, byte>();
-                oldPayer = chunks[4].AsSpan;
+                oldPayer = SerializationHelper.CharSpanToName(chunks[4].AsSpan);
 				break;
             default:
                 throw new Exception($"unknown operation: {chunks[2]}");
@@ -630,9 +631,9 @@ public class ParseCtx
             ActionIndex = (uint) actionIndex,
             OldPayer = oldPayer,
             NewPayer = newPayer,
-            Code = chunks[5].AsSpan,
-            Scope = chunks[6].AsSpan,
-            TableName = chunks[7].AsSpan,
+            Code = SerializationHelper.CharSpanToName(chunks[5].AsSpan),
+            Scope = SerializationHelper.CharSpanToName(chunks[6].AsSpan),
+            TableName = SerializationHelper.CharSpanToName(chunks[7].AsSpan),
             PrimaryKey = (string)chunks[8]!,
             OldData = oldData,
             NewData = newData,
@@ -667,9 +668,9 @@ public class ParseCtx
             {
                 Operation = op,
                 ActionIndex = (uint)actionIndex,
-                Sender = chunks[4].AsSpan,
+                Sender = SerializationHelper.CharSpanToName(chunks[4].AsSpan),
                 SenderId = UInt64.Parse(chunks[5]),
-                Payer = chunks[6].AsSpan,
+                Payer = SerializationHelper.CharSpanToName(chunks[6].AsSpan),
                 PublishedAt = DateTimeOffset.Parse(chunks[7]),
                 DelayUntil = DateTimeOffset.Parse(chunks[8]),
                 ExpirationAt = DateTimeOffset.Parse(chunks[9]),
@@ -881,7 +882,7 @@ public class ParseCtx
             Namespace = @namespace,
             Action = action,
             Operation = operation,
-            Payer = chunks[7].AsSpan,
+            Payer = SerializationHelper.CharSpanToName(chunks[7].AsSpan),
             Usage = usage,
             Delta = delta,
         });
@@ -988,7 +989,7 @@ public class ParseCtx
         {
             CorrectionId = UInt64.Parse(chunks[3]), // TODO
             UniqueKey = UInt64.Parse(chunks[4]), // TODO
-            Payer = chunks[5].AsSpan,
+            Payer = SerializationHelper.CharSpanToName(chunks[5].AsSpan),
             Delta = delta,
         });
     }
@@ -1050,10 +1051,10 @@ public class ParseCtx
         {
             Operation = Enum.Parse<TableOpOperation>(chunks[2]),
             ActionIndex = (uint)Int32.Parse(chunks[3]),
-            Payer = chunks[7].AsSpan,
-            Code = chunks[4].AsSpan,
-            Scope = chunks[5].AsSpan,
-            TableName = chunks[6].AsSpan,
+            Payer = SerializationHelper.CharSpanToName(chunks[7].AsSpan),
+            Code = SerializationHelper.CharSpanToName(chunks[4].AsSpan),
+            Scope = SerializationHelper.CharSpanToName(chunks[5].AsSpan),
+            TableName = SerializationHelper.CharSpanToName(chunks[6].AsSpan),
         });
     }
 
@@ -1071,7 +1072,7 @@ public class ParseCtx
         RecordTrxOp(new TrxOp()
         {
             Operation = Enum.Parse<TrxOpOperation>(chunks[2]),
-            Name = chunks[3].AsSpan, // "onblock" or "onerror"
+            Name = SerializationHelper.CharSpanToName(chunks[3].AsSpan), // "onblock" or "onerror"
             TransactionId = chunks[4].AsSpan, // the hash of the transaction
             Transaction = trx,
         });

@@ -1,6 +1,7 @@
 ﻿using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.Helpers;
 using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.Types.FlattenedTypes
@@ -69,7 +70,7 @@ namespace DeepReader.Types.FlattenedTypes
             }
 
             obj.ReturnValue = new char[reader.ReadInt32()];
-            for (int i = 0; i < obj.TableOps.Length; i++)
+            for (int i = 0; i < obj.ReturnValue.Length; i++)
             {
                 obj.ReturnValue[i] = reader.ReadChar();
             }

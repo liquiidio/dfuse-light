@@ -119,7 +119,7 @@ public class BlockWorker : BackgroundService
         }
     }
 
-    private Task<(FlattenedBlock, IEnumerable<FlattenedTransactionTrace>)> FlattenAsync(Block block)
+    private Task<(FlattenedBlock, FlattenedTransactionTrace[])> FlattenAsync(Block block)
     {
         return Task.Run(() =>
         {
@@ -187,7 +187,7 @@ public class BlockWorker : BackgroundService
                                     }).ToArray(),
                         }
                     ).ToArray()
-                }));
+                }).ToArray());
         });
     }
 }
