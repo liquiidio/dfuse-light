@@ -36,6 +36,10 @@ namespace DeepReader.Apis
                     services.AddSwaggerGen();
 
                     services.AddGraphQLServer()
+                        .ModifyOptions(options =>
+                        {
+                            options.DefaultBindingBehavior = BindingBehavior.Explicit;
+                        })
                         .AddQueryType(q => q.Name("Query"))
                         .AddType<BlockQueryType>();
                 });
@@ -59,9 +63,9 @@ namespace DeepReader.Apis
 
                     app.UseEndpoints(endpoints =>
                     {
+                        endpoints.MapGraphQL();
                         endpoints.MapControllers();
                         endpoints.MapMetrics();
-                        endpoints.MapGraphQL();
                     });
                 });
             });

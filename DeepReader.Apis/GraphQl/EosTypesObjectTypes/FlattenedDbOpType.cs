@@ -6,7 +6,7 @@ namespace DeepReader.Apis.GraphQl.EosTypesObjectTypes
     {
         protected override void Configure(IObjectTypeDescriptor<FlattenedDbOp> descriptor)
         {
-            descriptor.Field(f => f.Operation).Type<EnumType>().Name("Operation");
+            descriptor.Field(f => f.Operation).Type<StringType>().Name("Operation");
             descriptor.Field(f => f.Code).Type<NameType>().Name("Code");
             descriptor.Field(f => f.Scope).Type<NameType>().Name("Scope");
             descriptor.Field(f => f.TableName).Type<NameType>().Name("TableName");

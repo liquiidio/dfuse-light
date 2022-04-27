@@ -6,7 +6,7 @@ namespace DeepReader.Apis.GraphQl.EosTypesObjectTypes
     {
         protected override void Configure(IObjectTypeDescriptor<Checksum256> descriptor)
         {
-            descriptor.Field(f => f.StringVal).Type<IntType>();
+            descriptor.Field(f => f.StringVal).Type<StringType>();
         }
     }
 }
