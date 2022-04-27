@@ -51,6 +51,13 @@ public class SerializationHelper
         return arr;
     }
 
+    public static Name CharSpanToName(ReadOnlySpan<char> chars)
+    {
+        var name = chars.ToString();
+        var nameBytes = SerializationHelper.NameToBytes(name);
+        return new Name(BitConverter.ToUInt64(nameBytes), name, nameBytes);
+    }
+
     public static int GetHexVal(char hex)
     {
         int val = hex;

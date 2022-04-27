@@ -56,9 +56,9 @@ public class Name : BinaryType
         return new Name() { _intVal = value };  // TODO ulong to string
     }
 
-    public static implicit operator Name(ReadOnlySpan<char> value)
+    public static implicit operator Name(byte[] value)
     {
-        return new Name() { _stringVal = value.ToString() }; // TODO ulong to string, string to binary
+        return new Name() { Binary = value };  // TODO ulong to string
     }
 
     public override bool Equals(object? obj)

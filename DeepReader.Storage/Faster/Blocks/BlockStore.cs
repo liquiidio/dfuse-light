@@ -2,6 +2,7 @@
 using DeepReader.Types.FlattenedTypes;
  using FASTER.core;
 using Prometheus;
+using Serilog;
 
 namespace DeepReader.Storage.Faster.Blocks
 {
@@ -9,13 +10,15 @@ namespace DeepReader.Storage.Faster.Blocks
     {
         private readonly FasterKV<BlockId, FlattenedBlock> _store;
 
-        private readonly ClientSession<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockStoreSession;
+        private readonly ClientSession<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockStoreWriterSession;
+        private readonly ClientSession<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockStoreReaderSession;
+
+        private readonly BlockEvictionObserver _lockEvictionObserver;
 
         private FasterStorageOptions _options;
 
         private static readonly Histogram WritingBlockDuration = Metrics.CreateHistogram("deepreader_storage_faster_write_block_duration", "Histogram of time to store blocks to Faster");
-
-
+        
         public BlockStore(FasterStorageOptions options)
         {
             _options = options;
@@ -37,7 +40,7 @@ namespace DeepReader.Storage.Faster.Blocks
                 ObjectLogDevice = objlog,
                 ReadCacheSettings = options.UseReadCache ? new ReadCacheSettings() : null,
                 // Uncomment below for low memory footprint demo
-                // PageSizeBits = 12, // (4K pages)
+                PageSizeBits = 12, // (4K pages)
                 // MemorySizeBits = 20 // (1M memory for main log)
             };
 
@@ -49,15 +52,32 @@ namespace DeepReader.Storage.Faster.Blocks
                 valueSerializer = () => new BlockValueSerializer()
             };
 
+            var checkPointsDir = _options.BlockStoreDir + "checkpoints";
+
+            var checkpointManager = new DeviceLogCommitCheckpointManager(
+                new LocalStorageNamedDeviceFactory(),
+                new DefaultCheckpointNamingScheme(checkPointsDir), true);
+
             _store = new FasterKV<BlockId, FlattenedBlock>(
                 size: _options.MaxBlocksCacheEntries, // Cache Lines for Blocks
                 logSettings: logSettings,
-                checkpointSettings: new CheckpointSettings { CheckpointDir = _options.BlockStoreDir },
+                checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
                 comparer: new BlockId(0)
             );
 
-            _blockStoreSession = _store.For(new BlockFunctions()).NewSession<BlockFunctions>();
+            if (Directory.Exists(checkPointsDir))
+            { 
+                Log.Information("Recovering BlockStore");
+                _store.Recover(1);
+                Log.Information("BlockStore recovered");
+            }
+
+            _blockStoreWriterSession = _store.For(new BlockFunctions()).NewSession<BlockFunctions>();
+            _blockStoreReaderSession = _store.For(new BlockFunctions()).NewSession<BlockFunctions>();
+
+            _lockEvictionObserver = new BlockEvictionObserver(_store);
+
             new Thread(CommitThread).Start();
         }
 
@@ -67,7 +87,7 @@ namespace DeepReader.Storage.Faster.Blocks
 
             using (WritingBlockDuration.NewTimer())
             {
-                var result = await _blockStoreSession.UpsertAsync(ref blockId, ref block);
+                var result = await _blockStoreWriterSession.UpsertAsync(ref blockId, ref block);
                 while (result.Status.IsPending)
                     result = await result.CompleteAsync();
                 return result.Status;
@@ -76,7 +96,7 @@ namespace DeepReader.Storage.Faster.Blocks
 
         public async Task<(bool, FlattenedBlock)> TryGetBlockById(uint blockNum)
         {
-            var (status, output) = (await _blockStoreSession.ReadAsync(new BlockId(blockNum))).Complete();
+            var (status, output) = (await _blockStoreReaderSession.ReadAsync(new BlockId(blockNum))).Complete();
             return (status.IsCompletedSuccessfully, output.Value);
         }
 

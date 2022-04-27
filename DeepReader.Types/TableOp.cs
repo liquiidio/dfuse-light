@@ -13,9 +13,24 @@ public class TableOp
     public Name Scope = string.Empty;//string
     public Name TableName = string.Empty;//string
 
+    public TableOp()
+    {
+
+    }
+
+    public TableOp(BinaryReader reader)
+    {
+        Operation = (TableOpOperation) reader.ReadByte();
+        ActionIndex = reader.ReadUInt16();
+        Payer = reader.ReadName();
+        Code = reader.ReadName();
+        Scope = reader.ReadName();
+        TableName = reader.ReadName();
+    }
+
     public static TableOp ReadFromBinaryReader(BinaryReader reader)
     {
-        throw new NotImplementedException();
+        return new TableOp(reader);
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)

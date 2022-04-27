@@ -16,7 +16,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.Configure<DeepReaderOptions>(config => hostContext.Configuration.GetSection("DeepReaderOptions").Bind(config));
         services.Configure<MindReaderOptions>(config => hostContext.Configuration.GetSection("MindReaderOptions").Bind(config));
 
-        services.AddSingleton(Channel.CreateBounded<IList<IList<StringSegment>>>(new BoundedChannelOptions(20000) { SingleReader = false, SingleWriter = true, FullMode = BoundedChannelFullMode.Wait }));
+        services.AddSingleton(Channel.CreateBounded<IList<IList<StringSegment>>>(new BoundedChannelOptions(50000) { SingleReader = false, SingleWriter = true, FullMode = BoundedChannelFullMode.Wait }));
         services.AddSingleton(svc => svc.GetRequiredService<Channel<IList<IList<StringSegment>>>>().Reader);
         services.AddSingleton(svc => svc.GetRequiredService<Channel<IList<IList<StringSegment>>>>().Writer);
         

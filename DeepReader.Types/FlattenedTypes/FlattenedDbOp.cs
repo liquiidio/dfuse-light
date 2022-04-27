@@ -1,5 +1,6 @@
 ﻿using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.FlattenedTypes;
 
@@ -20,37 +21,73 @@ public struct FlattenedDbOp
 
     }
 
+    public FlattenedDbOp(BinaryReader reader)
+    {
+        Operation = (DbOpOperation)reader.ReadByte();
+        Code = reader.ReadName();
+        Scope = reader.ReadName();
+        TableName = reader.ReadName();
+        PrimaryKey = reader.ReadBytes(reader.ReadInt32());
+        switch (Operation)
+        {
+            case DbOpOperation.UNKNOWN:
+                break;
+            case DbOpOperation.INS: // has only newpayer and newdata
+                NewPayer = reader.ReadName();
+                NewData = reader.ReadBytes(reader.Read7BitEncodedInt());
+                break;
+            case DbOpOperation.UPD: // has all
+                NewPayer = reader.ReadName();
+                NewData = reader.ReadBytes(reader.Read7BitEncodedInt());
+                OldPayer = reader.ReadName();
+                OldData = reader.ReadBytes(reader.Read7BitEncodedInt());
+                break;
+            case DbOpOperation.REM: // has only oldpayer and olddata
+                OldPayer = reader.ReadName();
+                OldData = reader.ReadBytes(reader.Read7BitEncodedInt());
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
     public static FlattenedDbOp ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new FlattenedDbOp()
-        {
-            Operation = (DbOpOperation) reader.ReadByte(),
-            Code = reader.ReadUInt64(),
-            Scope = reader.ReadUInt64(),
-            TableName = reader.ReadUInt64(),
-            PrimaryKey = reader.ReadBytes(reader.ReadInt32()),
-            OldPayer = reader.ReadUInt64(),
-            NewPayer = reader.ReadUInt64(),
-            OldData = reader.ReadBytes(reader.ReadInt32()),
-            NewData = reader.ReadBytes(reader.ReadInt32())
-        };
-
-        return obj;
+        return new FlattenedDbOp(reader);
     }
 
     internal void WriteToBinaryWriter(BinaryWriter writer)
     {
         writer.Write((byte)Operation);
-        writer.Write(Code.Binary);
-        writer.Write(Scope.Binary);
-        writer.Write(TableName.Binary);
+        writer.WriteName(Code);
+        writer.WriteName(Scope);
+        writer.WriteName(TableName);
         writer.Write(PrimaryKey.Length);
         writer.Write(PrimaryKey);
-        writer.Write(OldPayer.Binary);
-        writer.Write(NewPayer.Binary);
-        writer.Write(OldData.Length);
-        writer.Write(OldData.Span);
-        writer.Write(NewData.Length);
-        writer.Write(NewData.Span);
+        switch (Operation)
+        {
+            case DbOpOperation.UNKNOWN:
+                break;
+            case DbOpOperation.INS: // has only newpayer and newdata
+                writer.WriteName(NewPayer);
+                writer.Write7BitEncodedInt(NewData.Length);
+                writer.Write(NewData.Span);
+                break;
+            case DbOpOperation.UPD: // has all
+                writer.WriteName(NewPayer);
+                writer.Write7BitEncodedInt(NewData.Length);
+                writer.Write(NewData.Span);
+                writer.WriteName(OldPayer);
+                writer.Write7BitEncodedInt(OldData.Length);
+                writer.Write(OldData.Span);
+                break;
+            case DbOpOperation.REM: // has only oldpayer and olddata
+                writer.WriteName(OldPayer);
+                writer.Write7BitEncodedInt(OldData.Length);
+                writer.Write(OldData.Span);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 }

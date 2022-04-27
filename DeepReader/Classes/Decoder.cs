@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using Serilog;
 
 namespace DeepReader.Classes;
 
@@ -6,10 +7,10 @@ public class Decoder
 {
     public static Span<byte> HexToBytes(ReadOnlySpan<char> chunk)
     {
-        ArrayPool<byte> pool = ArrayPool<byte>.Create();
-        Span<byte> b = pool.Rent(1);
+        //ArrayPool<byte> pool = ArrayPool<byte>.Create();
+        //Span<byte> b = pool.Rent(1);
 
-        Span<byte> bytes = GC.AllocateUninitializedArray<byte>(chunk.Length >> 1);
+        Span<byte> bytes = new Span<byte>(new byte[chunk.Length >> 1]);//GC.AllocateUninitializedArray<byte>(chunk.Length >> 1));
         TryDecodeFromUtf16(chunk, bytes);
         return bytes;
     }

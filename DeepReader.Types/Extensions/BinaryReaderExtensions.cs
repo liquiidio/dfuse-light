@@ -24,19 +24,22 @@ namespace DeepReader.Types
         public static Signature ReadSignature(this BinaryReader reader)
         {
             var type = reader.ReadByte();
-            var signBytes = reader.ReadBytes(Constants.SignKeyDataSize);
+            var signBytes = reader.ReadBytes(Constants.SignKeyDataSize); // TODO 64 or 65 bytes ?!
             reader.ReadByte();//read another byte
 
+            // TODO, general, is this SignBytesToString using sha or just BytesToString?!
+            // yeah, here's probably something wrong.
+            // https://github.com/eosnetworkfoundation/mandel-fc/blob/main/include/fc/crypto/elliptic.hpp
             switch (type)
             {
                 case (int)KeyType.R1:
-                    return CryptoHelper.SignBytesToString(signBytes, "R1", "SIG_R1_");
+                    return new Signature(signBytes, CryptoHelper.SignBytesToString(signBytes, "R1", "SIG_R1_"));
                 case (int)KeyType.K1:
-                    return CryptoHelper.SignBytesToString(signBytes, "K1", "SIG_K1_");
+                    return new Signature(signBytes, CryptoHelper.SignBytesToString(signBytes, "K1", "SIG_K1_"));
                 default:
                     Log.Error(new Exception($"Signature type {type} not supported"), "");
                     Log.Error(new Exception(CryptoHelper.SignBytesToString(signBytes, "K1", "SIG_K1_")), "");
-                    return CryptoHelper.SignBytesToString(signBytes, "K1", "SIG_K1_");  // TODO ??
+                    return new Signature(signBytes, CryptoHelper.SignBytesToString(signBytes, "K1", "SIG_K1_"));  // TODO ??
             }
         }
 
@@ -221,9 +224,8 @@ namespace DeepReader.Types
 
         public static Name ReadName(this BinaryReader reader)
         {
-            var binary = reader.ReadBytes(8);
-
-            return SerializationHelper.ByteArrayToName(binary);
+            return reader.ReadBytes(8);
+//            return SerializationHelper.ByteArrayToName(binary);
         }
 
         public static string ReadString(this BinaryReader reader)

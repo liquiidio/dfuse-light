@@ -2,6 +2,7 @@ using DeepReader.Storage.Options;
 using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
 using Prometheus;
+using Serilog;
 
 namespace DeepReader.Storage.Faster.Transactions
 {
@@ -35,7 +36,7 @@ namespace DeepReader.Storage.Faster.Transactions
                 ObjectLogDevice = objlog,
                 ReadCacheSettings = _options.UseReadCache ? new ReadCacheSettings() : null,
                 // Uncomment below for low memory footprint demo
-                // PageSizeBits = 12, // (4K pages)
+                PageSizeBits = 12, // (4K pages)
                 // MemorySizeBits = 20 // (1M memory for main log)
             };
 
@@ -47,13 +48,26 @@ namespace DeepReader.Storage.Faster.Transactions
                 valueSerializer = () => new TransactionValueSerializer()
             };
 
+            var checkPointsDir = _options.TransactionStoreDir + "checkpoints";
+
+            var checkpointManager = new DeviceLogCommitCheckpointManager(
+                new LocalStorageNamedDeviceFactory(),
+                new DefaultCheckpointNamingScheme(checkPointsDir), true);
+
             _store = new FasterKV<TransactionId, FlattenedTransactionTrace>(
                 size: _options.MaxTransactionsCacheEntries, // Cache Lines for Transactions
                 logSettings: logSettings,
-                checkpointSettings: new CheckpointSettings { CheckpointDir = _options.TransactionStoreDir },
+                checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
                 comparer: new TransactionId()
             );
+
+            if (Directory.Exists(checkPointsDir))
+            {
+                Log.Information("Recovering TransactionStore");
+                _store.Recover(1);
+                Log.Information("TransactionStore recovered");
+            }
 
             _transactionStoreSession = _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>();
 

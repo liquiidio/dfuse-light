@@ -3,6 +3,7 @@ using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.Eosio.Chain.Detail;
 using DeepReader.Types.Eosio.Chain.Legacy;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types;
 
@@ -12,7 +13,7 @@ public class Block
 	public uint Number = 0;
 	public uint Version = 0;
 	public SignedBlockHeader Header;
-	public string ProducerSignature = string.Empty;
+	public Signature ProducerSignature;
 	public Extension[] BlockExtensions = Array.Empty<Extension>();
 	public uint DposProposedIrreversibleBlocknum = 0;
 	public uint DposIrreversibleBlocknum = 0;
