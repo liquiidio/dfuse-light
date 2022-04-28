@@ -2,7 +2,7 @@
 using HotChocolate.Language;
 using Serilog;
 
-namespace DeepReader.Apis.GraphQl.EosTypesObjectTypes
+namespace DeepReader.Apis.GraphQl.CustomScalarTypes
 {
     internal class NameType : ScalarType
     {

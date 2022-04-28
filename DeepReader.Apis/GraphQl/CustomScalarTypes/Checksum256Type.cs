@@ -1,7 +1,7 @@
 ﻿using DeepReader.Types.EosTypes;
 using HotChocolate.Language;
 
-namespace DeepReader.Apis.GraphQl.EosTypesObjectTypes
+namespace DeepReader.Apis.GraphQl.CustomScalarTypes
 {
     internal class Checksum256Type : ScalarType
     {

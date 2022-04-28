@@ -1,6 +1,6 @@
 ﻿using DeepReader.Types.EosTypes;
 
-namespace DeepReader.Apis.GraphQl.EosTypesObjectTypes
+namespace DeepReader.Apis.GraphQl.CustomScalarTypes
 {
     internal class ActionDataBytesType : ObjectType<ActionDataBytes>
     {

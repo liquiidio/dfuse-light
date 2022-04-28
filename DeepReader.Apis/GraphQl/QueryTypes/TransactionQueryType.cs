@@ -1,4 +1,4 @@
-﻿using DeepReader.Apis.GraphQl.EosTypesObjectTypes;
+﻿using DeepReader.Apis.GraphQl.ObjectTypes;
 using DeepReader.Apis.GraphQl.Queries;
 
 namespace DeepReader.Apis.GraphQl.QueryTypes

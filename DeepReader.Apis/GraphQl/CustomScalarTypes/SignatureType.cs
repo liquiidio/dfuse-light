@@ -1,16 +1,16 @@
-﻿using DeepReader.Types.Eosio.Chain;
+﻿using DeepReader.Types.Fc.Crypto;
 using HotChocolate.Language;
 
-namespace DeepReader.Apis.GraphQl.EosTypesObjectTypes
+namespace DeepReader.Apis.GraphQl.CustomScalarTypes
 {
-    internal class TransactionIdType : ScalarType
+    internal class SignatureType : ScalarType
     {
-        public TransactionIdType() : base("TransactionId")
+        public SignatureType() : base("Signature")
         {
-            Description = "Represents a TransactionId as a string to the user";
+            Description = "Represents a Signature as a string to the user";
         }
 
-        public override Type RuntimeType => typeof(TransactionId);
+        public override Type RuntimeType => typeof(Signature);
 
         public override bool IsInstanceOfType(IValueNode valueSyntax)
         {
@@ -23,7 +23,7 @@ namespace DeepReader.Apis.GraphQl.EosTypesObjectTypes
         {
             if (valueSyntax is StringValueNode stringValueNode)
             {
-                return (TransactionId)stringValueNode.Value;
+                return (Signature)stringValueNode.Value;
             }
             throw new SerializationException("The specified value has to be of type string", this);
         }
@@ -35,11 +35,11 @@ namespace DeepReader.Apis.GraphQl.EosTypesObjectTypes
 
         public override IValueNode ParseValue(object? runtimeValue)
         {
-            if (runtimeValue is TransactionId c)
+            if (runtimeValue is Signature c)
             {
                 return new StringValueNode(null, c.StringVal, false);
             }
-            throw new SerializationException($"The specified value has to be of type {typeof(TransactionId)}", this);
+            throw new SerializationException($"The specified value has to be of type {typeof(Signature)}", this);
         }
 
         public override bool TryDeserialize(object? resultValue, out object? runtimeValue)
@@ -51,7 +51,7 @@ namespace DeepReader.Apis.GraphQl.EosTypesObjectTypes
 
             if (resultValue is string s)
             {
-                runtimeValue = (TransactionId)s;
+                runtimeValue = (Signature)s;
                 return true;
             }
 
@@ -65,7 +65,7 @@ namespace DeepReader.Apis.GraphQl.EosTypesObjectTypes
 
             resultValue = null;
 
-            if (runtimeValue is TransactionId c)
+            if (runtimeValue is Signature c)
             {
                 resultValue = c.StringVal;
                 return true;
