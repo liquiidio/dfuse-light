@@ -8,7 +8,12 @@ namespace DeepReader.Apis.GraphQl.QueryTypes
         protected override void Configure(IObjectTypeDescriptor descriptor)
         {
             descriptor.Name("Query");
-            descriptor.Field("GetBlock").ResolveWith<BlockQuery>(q => q.GetBlock()).Type<FlattenedBlockType>().Name("GetBlockById");
+            descriptor
+                .Field("GetBlock")
+                .Argument("block_num", a => a.Type<UnsignedIntType>())
+                .ResolveWith<BlockQuery>(q => q.GetBlock(default, default!))
+                .Type<FlattenedBlockType>()
+                .Name("GetBlockById");
         }
     }
 }
