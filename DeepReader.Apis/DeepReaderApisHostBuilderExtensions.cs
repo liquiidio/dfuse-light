@@ -37,7 +37,8 @@ namespace DeepReader.Apis
 
                     services.AddGraphQLServer()
                         .AddQueryType(q => q.Name("Query"))
-                        .AddType<BlockQueryType>();
+                        .AddType<BlockQueryType>()
+                        .AddType<TransactionQueryType>();
                 });
                 webBuilder.Configure(app =>
                 {
