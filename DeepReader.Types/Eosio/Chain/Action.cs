@@ -39,7 +39,7 @@ public class Action : ActionBase, IEosioSerializable<Action>
         Data = reader.ReadActionDataBytes();
     }
 
-    public new static Action ReadFromBinaryReader(BinaryReader reader)
+    public static Action ReadFromBinaryReader(BinaryReader reader)
     {
         return new Action(reader);
     }

@@ -1,12 +1,13 @@
 ﻿using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.FlattenedTypes;
 
 public struct FlattenedRamOp
 {
     public RamOpOperation Operation = RamOpOperation.UNKNOWN;//RAMOp_Operation
-    public Name Payer = string.Empty;//string
+    public Name Payer = Name.Empty;//string
     public long Delta = 0;//int64
     public ulong Usage = 0;//uint64
     // To eventually replace `operation`.
@@ -23,7 +24,7 @@ public struct FlattenedRamOp
         var obj = new FlattenedRamOp()
         {
             Operation = (RamOpOperation) reader.ReadByte(),
-            Payer = reader.ReadUInt64(),
+            Payer = reader.ReadName(),
             Delta = reader.ReadInt64(),
             Usage = reader.ReadUInt64(),
             Namespace = (RamOpNamespace) reader.ReadByte(),

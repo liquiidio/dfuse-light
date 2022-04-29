@@ -1,7 +1,4 @@
-﻿using System.Buffers;
-using Serilog;
-
-namespace DeepReader.Classes;
+﻿namespace DeepReader.Classes;
 
 public class Decoder
 {

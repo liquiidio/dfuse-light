@@ -13,8 +13,8 @@ public class PermissionLevel : IEosioSerializable<PermissionLevel>
 
     public PermissionLevel()
     {
-        Actor = 0;
-        Permission = 0;
+        Actor = Name.Empty;
+        Permission = Name.Empty;
     }
 
     public PermissionLevel(BinaryReader reader)

@@ -12,17 +12,17 @@ namespace DeepReader.Classes;
 
 public class ParseCtx
 {
-    public Block Block;
+    private Block _block;
 
-    public long ActiveBlockNum = 1;
+    private long _activeBlockNum;
 
-    public TransactionTrace Trx;
+    private TransactionTrace _trx;
 
-    public IList<CreationOp> CreationOps;
+    private readonly IList<CreationOp> _creationOps;
 
-    public bool TraceEnabled;
+    private readonly bool _traceEnabled;
 
-    public string[] SupportedVersions = new[] {"13"};
+    private readonly string[] _supportedVersions = {"13"};
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
@@ -32,21 +32,21 @@ public class ParseCtx
 
     public ParseCtx()
     {
-        Block = new Block();
-        ActiveBlockNum = 0;
-        Trx = new TransactionTrace();
-        CreationOps = new List<CreationOp>();
-        TraceEnabled = true;
+        _block = new Block();
+        _activeBlockNum = 0;
+        _trx = new TransactionTrace();
+        _creationOps = new List<CreationOp>();
+        _traceEnabled = true;
     }
 
     public ParseCtx(Block block, long activeBlockNum, TransactionTrace trx, List<CreationOp> creationOps, bool traceEnabled, string[] supportedVersions)
     {
-        Block = block;
-        ActiveBlockNum = activeBlockNum;
-        Trx = trx;
-        CreationOps = creationOps;
-        TraceEnabled = traceEnabled;
-        SupportedVersions = supportedVersions;
+        _block = block;
+        _activeBlockNum = activeBlockNum;
+        _trx = trx;
+        _creationOps = creationOps;
+        _traceEnabled = traceEnabled;
+        _supportedVersions = supportedVersions;
     }
 
     public void ResetBlock()
@@ -54,33 +54,33 @@ public class ParseCtx
 		// The nodeos bootstrap phase at chain initialization happens before the first block is ever
 		// produced. As such, those operations needs to be attached to initial block. Hence, let's
 		// reset recorded ops only if a block existed previously.
-		if (ActiveBlockNum != 0)
+		if (_activeBlockNum != 0)
         {
             ResetTrx();
         }
 		
-        Block = new Block();
+        _block = new Block();
     }
 
 	public void ResetTrx()
     {
-        Trx = new TransactionTrace();
-        CreationOps.Clear();
+        _trx = new TransactionTrace();
+        _creationOps.Clear();
     }
 
 	public void RecordCreationOp(CreationOp operation)
     {
-        CreationOps.Add(operation);
+        _creationOps.Add(operation);
     }
 
 	public void RecordDbOp(DbOp operation)
     {
-        Trx.DbOps.Add(operation);
+        _trx.DbOps.Add(operation);
     }
 
 	public void RecordDTrxOp(DTrxOp transaction)
     {
-        Trx.DtrxOps.Add(transaction);
+        _trx.DtrxOps.Add(transaction);
    
         if (transaction.Operation == DTrxOpOperation.FAILED)
         {
@@ -90,43 +90,43 @@ public class ParseCtx
 
     public void RecordFeatureOp(FeatureOp operation)
     {
-        Trx.FeatureOps.Add(operation);
+        _trx.FeatureOps.Add(operation);
     }
 
     public void RecordPermOp(PermOp operation)
     {
-        Trx.PermOps.Add(operation);
+        _trx.PermOps.Add(operation);
     }
 
     public void RecordRamOp(RamOp operation)
     {
-        Trx.RamOps.Add(operation);
+        _trx.RamOps.Add(operation);
     }
 
     public void RecordRamCorrectionOp(RamCorrectionOp operation)
     {
-        Trx.RamCorrectionOps.Add(operation);
+        _trx.RamCorrectionOps.Add(operation);
     }
 
     public void RecordRlimitOp(RlimitOp operation)
 	{
 		if (operation is RlimitConfig || operation is RlimitState)
         {
-            Block.RlimitOps.Add(operation);
+            _block.RlimitOps.Add(operation);
         }
 		else if (operation is RlimitAccountLimits || operation is RlimitAccountUsage) {
-			Trx.RlimitOps.Add(operation);
+			_trx.RlimitOps.Add(operation);
 	    }
 	}
 
     public void RecordTableOp(TableOp operation)
     {
-        Trx.TableOps.Add(operation);
+        _trx.TableOps.Add(operation);
     }
 
     public void RecordTrxOp(TrxOp operation)
     {
-        Block.UnfilteredImplicitTransactionOps.Add(operation);
+        _block.UnfilteredImplicitTransactionOps.Add(operation);
     }
 
     public void RecordTransaction(TransactionTrace trace)
@@ -138,7 +138,7 @@ public class ParseCtx
 	        // handler trace and the actual deferred transaction trace that failed.
 
 	        // The deferred transaction removal RAM op needs to be attached to the failed trace, not the onerror handler
-            Trx.RamOps = TransferDeferredRemovedRamOp(Trx.RamOps, failedTrace);
+            _trx.RamOps = TransferDeferredRemovedRamOp(_trx.RamOps, failedTrace);
 
 	        // The only possibilty to have failed deferred trace, is when the deferred execution
 	        // resulted in a subjetive failure, which is really a soft fail. So, when the receipt is
@@ -151,7 +151,7 @@ public class ParseCtx
             // We add the failed deferred trace first, before the "real" trace (the `onerror` handler)
             // since it was ultimetaly ran first. There is no ops possible on the trace expect the
             // transferred RAM op, so it's all good to attach it directly.
-            Block.UnfilteredTransactionTraces.Add(failedTrace);
+            _block.UnfilteredTransactionTraces.Add(failedTrace);
 
             // TODO
 	        /*
@@ -172,19 +172,19 @@ public class ParseCtx
         }
 
         // All this stiching of ops into trace must be performed after `if` because the if can revert them all
-        var creationTreeRoots = CreationTree.ComputeCreationTree((IReadOnlyList<CreationOp>)CreationOps);
+        var creationTreeRoots = CreationTree.ComputeCreationTree((IReadOnlyList<CreationOp>)_creationOps);
 
         trace.CreationTree = CreationTree.ToFlatTree(creationTreeRoots);
-        trace.DtrxOps = Trx.DtrxOps;
-        trace.DbOps = Trx.DbOps;
-        trace.FeatureOps = Trx.FeatureOps;
-        trace.PermOps = Trx.PermOps;
-        trace.RamOps = Trx.RamOps;
-        trace.RamCorrectionOps = Trx.RamCorrectionOps;
-        trace.RlimitOps = Trx.RlimitOps;
-        trace.TableOps = Trx.TableOps;
+        trace.DtrxOps = _trx.DtrxOps;
+        trace.DbOps = _trx.DbOps;
+        trace.FeatureOps = _trx.FeatureOps;
+        trace.PermOps = _trx.PermOps;
+        trace.RamOps = _trx.RamOps;
+        trace.RamCorrectionOps = _trx.RamCorrectionOps;
+        trace.RlimitOps = _trx.RlimitOps;
+        trace.TableOps = _trx.TableOps;
 
-        Block.UnfilteredTransactionTraces.Add(trace);
+        _block.UnfilteredTransactionTraces.Add(trace);
 
         AbiDecoder.ProcessTransactionTrace(trace);
 
@@ -212,11 +212,11 @@ public class ParseCtx
     {
         // We must keep the deferred removal, as this RAM changed is **not** reverted by nodeos, unlike all other ops
         // as well as the RLimitOps, which happens at a location that does not revert.
-        var toRestoreRlimitOps = Trx.RlimitOps;
+        var toRestoreRlimitOps = _trx.RlimitOps;
 
         RamOp? deferredRemovalRamOp = null;// = new RAMOp();
 
-        foreach (var trxRamOp in Trx.RamOps)
+        foreach (var trxRamOp in _trx.RamOps)
         {
             if (trxRamOp.Namespace == RamOpNamespace.DEFERRED_TRX && trxRamOp.Action == RamOpAction.REMOVE)
             {
@@ -226,10 +226,10 @@ public class ParseCtx
         }
 
         ResetTrx();
-        Trx.RlimitOps = toRestoreRlimitOps;
+        _trx.RlimitOps = toRestoreRlimitOps;
         if (deferredRemovalRamOp != null)
         {
-            Trx.RamOps = new List<RamOp>() { deferredRemovalRamOp };
+            _trx.RamOps = new List<RamOp>() { deferredRemovalRamOp };
         }
     }
 
@@ -262,7 +262,7 @@ public class ParseCtx
         var blockNum = Int64.Parse(chunks[2].AsSpan);
 
         ResetBlock();
-        ActiveBlockNum = blockNum;
+        _activeBlockNum = blockNum;
 
         AbiDecoder.StartBlock(blockNum);
     }
@@ -282,14 +282,14 @@ public class ParseCtx
         }
 
         var blockNum = Int64.Parse(chunks[2].AsSpan);
-        if(blockNum == ActiveBlockNum + 1)
+        if(blockNum == _activeBlockNum + 1)
         {
-            ActiveBlockNum++;
+            _activeBlockNum++;
         }
 
-        if (ActiveBlockNum != blockNum)
+        if (_activeBlockNum != blockNum)
         {
-            Log.Information($"block_num {blockNum} doesn't match the active block num {ActiveBlockNum}");
+            Log.Information($"block_num {blockNum} doesn't match the active block num {_activeBlockNum}");
         }
 
         var blockState = DeepMindDeserializer.DeepMindDeserializer.Deserialize<BlockState>(Decoder.HexToBytes(chunks[3]));
@@ -311,9 +311,9 @@ public class ParseCtx
             ActiveSchedule = blockState.ActiveSchedule,
             ValidBlockSigningAuthority = blockState.ValidBlockSigningAuthority,
             BlockSigningKey = blockState.ValidBlockSigningAuthority is BlockSigningAuthorityV0 blockSigningAuthority ? blockSigningAuthority.Keys.FirstOrDefault()?.Key ?? PublicKey.Empty : PublicKey.Empty,
-            RlimitOps = Block.RlimitOps,
-            UnfilteredImplicitTransactionOps = Block.UnfilteredImplicitTransactionOps,
-            UnfilteredTransactionTraces = Block.UnfilteredTransactionTraces,
+            RlimitOps = _block.RlimitOps,
+            UnfilteredImplicitTransactionOps = _block.UnfilteredImplicitTransactionOps,
+            UnfilteredTransactionTraces = _block.UnfilteredTransactionTraces,
             ConfirmCount = new uint[blockState.ConfirmCount.Length],
             BlockExtensions = blockState.Block?.BlockExtensions ?? Array.Empty<KeyValuePair<ushort, char[]>>(),
             ProducerSignature = blockState.Block?.ProducerSignature ?? Signature.Empty,
@@ -527,10 +527,10 @@ public class ParseCtx
 
         var blockNum = Int32.Parse(chunks[2].AsSpan);
 
-        if (ActiveBlockNum != blockNum)
+        if (_activeBlockNum != blockNum)
         {
 //            throw new Exception($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
-            Log.Information($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
+            Log.Information($"saw transactions from block {blockNum} while active block is {_activeBlockNum}");
         }
 
         var trxTrace = DeepMindDeserializer.DeepMindDeserializer.Deserialize<TransactionTrace>(Decoder.HexToBytes(chunks[3]));
@@ -590,7 +590,7 @@ public class ParseCtx
 
         var op = Enum.Parse<DbOpOperation>(chunks[2]);
         ReadOnlyMemory<byte> oldData = default, newData = default;
-        Name oldPayer = 0, newPayer = 0;
+        Name oldPayer = Name.Empty, newPayer = Name.Empty;
 
         switch (op)
         {
@@ -899,14 +899,14 @@ public class ParseCtx
         var majorVersion = chunks[2];
         if (!InSupportedVersion((string)majorVersion!)) {
             throw new Exception(
-                $"deep mind reported version {majorVersion}, but this reader supports only {string.Join(", ", SupportedVersions)}");
+                $"deep mind reported version {majorVersion}, but this reader supports only {string.Join(", ", _supportedVersions)}");
         }
         Log.Information($"read deep mind version {majorVersion}");
     }
 
     public bool InSupportedVersion(string majorVersion)
     {
-        foreach (var supportedVersion in SupportedVersions)
+        foreach (var supportedVersion in _supportedVersions)
         {
             if (majorVersion == supportedVersion)
             {
@@ -961,7 +961,7 @@ public class ParseCtx
                 throw new Exception($"expected to have either {{3}} or {{5}} fields, got {chunks.Count}");
         }
 
-        if (TraceEnabled)
+        if (_traceEnabled)
         {
             Log.Information($"read initial ABI for contract {contract}");
         }

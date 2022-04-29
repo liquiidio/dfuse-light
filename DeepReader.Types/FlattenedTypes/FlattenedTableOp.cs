@@ -1,15 +1,16 @@
 ﻿using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.FlattenedTypes;
 
 public struct FlattenedTableOp
 {
     public TableOpOperation Operation = TableOpOperation.UNKNOWN;//TableOp_Operation
-    public Name Payer = string.Empty;//string
-    public Name Code = string.Empty;//string
-    public Name Scope = string.Empty;//string
-    public Name TableName = string.Empty;//string
+    public Name Payer = Name.Empty;//string
+    public Name Code = Name.Empty;//string
+    public Name Scope = Name.Empty;//string
+    public Name TableName = Name.Empty;//string
 
     public FlattenedTableOp()
     {
@@ -21,10 +22,10 @@ public struct FlattenedTableOp
         var obj = new FlattenedTableOp()
         {
             Operation = (TableOpOperation) reader.ReadByte(),
-            Payer = reader.ReadUInt64(),
-            Code = reader.ReadUInt64(),
-            Scope = reader.ReadUInt64(),
-            TableName = reader.ReadUInt64()
+            Payer = reader.ReadName(),
+            Code = reader.ReadName(),
+            Scope = reader.ReadName(),
+            TableName = reader.ReadName()
         };
 
         return obj;

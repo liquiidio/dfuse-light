@@ -1,8 +1,5 @@
-﻿using System.Diagnostics;
-using System.Text.Json;
-using DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
-using Serilog;
 
 namespace DeepReader.Storage.Faster.Transactions;
 

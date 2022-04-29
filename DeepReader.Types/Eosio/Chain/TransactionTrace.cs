@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -90,10 +90,6 @@ public class TransactionTrace : IEosioSerializable<TransactionTrace>
         Scheduled = reader.ReadBoolean();
 
         ActionTraces = new ActionTrace[reader.Read7BitEncodedInt()];
-        if (ActionTraces.Length > 440)
-        {
-            string test = "";
-        }
         for (int i = 0; i < ActionTraces.Length; i++)
         {
             ActionTraces[i] = ActionTrace.ReadFromBinaryReader(reader);

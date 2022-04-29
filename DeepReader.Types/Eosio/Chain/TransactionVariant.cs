@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
 

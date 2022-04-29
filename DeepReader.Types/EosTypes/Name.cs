@@ -2,19 +2,21 @@
 using DeepReader.Types.Fc;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
+using DeepReader.Types.Other;
 
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(NameJsonConverter))]
 public class Name : BinaryType
 {
-    private string? _stringVal = string.Empty;
+    private string? _stringVal;
 
     private ulong? _intVal;
 
-    public Name()
+    public Name(ulong intVal, byte[] binary)
     {
-
+        _intVal = intVal;
+        Binary = binary;
     }
 
     public Name(ulong intVal, string stringVal, byte[] binary)
@@ -26,7 +28,7 @@ public class Name : BinaryType
 
     public string StringVal 
     { 
-        get => _stringVal ??= SerializationHelper.ByteArrayToName(Binary);
+        get => _stringVal ??= SerializationHelper.ByteArrayToNameString(Binary);
         set => _stringVal = value;
     }
 
@@ -41,70 +43,60 @@ public class Name : BinaryType
         return value.StringVal;
     }
 
-    public static implicit operator Name(string value)
-    {
-        return new Name(){ _stringVal = value};  // TODO string to ulong
-    }
-
     public static implicit operator ulong(Name value)
     {
         return value.IntVal;
     }
 
-    public static implicit operator Name(ulong value)
-    {
-        return new Name() { _intVal = value };  // TODO ulong to string
-    }
-
-    public static implicit operator Name(byte[] value)
-    {
-        return new Name() { Binary = value };  // TODO ulong to string
-    }
-
     public override bool Equals(object? obj)
     {
+        if (obj is ulong intVal)
+        {
+            return _intVal == intVal;
+        }
         if (obj is not Name item)
         {
             return false;
         }
-
-        return Binary.Equals(item.Binary) || StringVal.Equals(item.StringVal);
+        return _intVal == item._intVal;
     }
 
     public static bool operator ==(Name obj1, Name obj2)
     {
-        return obj1.Binary == obj2.Binary;
+        return obj1._intVal == obj2._intVal;
     }
 
     public static bool operator !=(Name obj1, Name obj2)
     {
-        return obj1.Binary != obj2.Binary;
+        return obj1._intVal != obj2._intVal;
     }
 
-    public static bool operator == (string name1, Name obj2)
-    {
-        return name1 == obj2._stringVal;
-    }
+    //public static bool operator == (string name1, Name obj2)
+    //{
+    //    return name1 == obj2._stringVal;
+    //}
 
-    public static bool operator !=(string name1, Name obj2)
-    {
-        return name1 != obj2._stringVal;
-    }
+    //public static bool operator !=(string name1, Name obj2)
+    //{
+    //    return name1 != obj2._stringVal;
+    //}
 
-    public static bool operator ==(Name name1, string name2)
-    {
-        return name1._stringVal == name2;
-    }
+    //public static bool operator ==(Name name1, string name2)
+    //{
+    //    return name1._stringVal == name2;
+    //}
 
-    public static bool operator !=(Name name1, string name2)
-    {
-        return name1._stringVal != name2;
-    }
+    //public static bool operator !=(Name name1, string name2)
+    //{
+    //    return name1._stringVal != name2;
+    //}
 
     public override int GetHashCode()
     {
         return Binary.GetHashCode();
     }
 
-    public static Name Empty => new();
+    public static Name Empty => NameCache.GetOrCreate(0);
+
+    public static Name Wildcard = new(0, "*", Array.Empty<byte>());
 }

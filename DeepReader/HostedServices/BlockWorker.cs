@@ -1,12 +1,13 @@
 ﻿using System.Diagnostics;
-using System.Text.Json;
 using System.Threading.Channels;
-using DeepReader.Configuration;
 using DeepReader.Options;
 using DeepReader.Storage;
 using DeepReader.Types;
+using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.FlattenedTypes;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.Other;
+using KGySoft.CoreLibraries;
 using Microsoft.Extensions.Options;
 using Prometheus;
 using Serilog;
@@ -16,15 +17,27 @@ namespace DeepReader.HostedServices;
 public class BlockWorker : BackgroundService
 {
     private readonly ChannelReader<Block> _blocksChannel;
+    private readonly ChannelReader<List<IList<StringSegment>>> _blockSegmentsListChannel;
 
     private readonly IStorageAdapter _storageAdapter;
 
     private MindReaderOptions _mindReaderOptions;
     private DeepReaderOptions _deepReaderOptions;
 
+    private readonly ParallelOptions _blockFlatteningParallelOptions;
+
     private static readonly Histogram BlocksChannelSize = Metrics.CreateHistogram("deepreader_blockworker_block_channel_size", "The current size of the channel size in block worker");
 
-    public BlockWorker(ChannelReader<Block> blocksChannel, IStorageAdapter storageAdapter, IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor, IOptionsMonitor<DeepReaderOptions> deepReaderOptionsMonitor)
+    private readonly Func<FlattenedTransactionTrace, bool> _filterEmptyTransactionsFilter;
+
+    private Func<ActionTrace, bool> _actionFilter;
+    private Func<DbOp, bool> _deltaFilter;
+
+    public BlockWorker(ChannelReader<Block> blocksChannel,
+        ChannelReader<List<IList<StringSegment>>> blockSegmentsListChannel, 
+        IStorageAdapter storageAdapter,
+        IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor,
+        IOptionsMonitor<DeepReaderOptions> deepReaderOptionsMonitor)
     {
         _mindReaderOptions = mindReaderOptionsMonitor.CurrentValue;
         mindReaderOptionsMonitor.OnChange(OnMindReaderOptionsChanged);
@@ -32,8 +45,21 @@ public class BlockWorker : BackgroundService
         _deepReaderOptions = deepReaderOptionsMonitor.CurrentValue;
         deepReaderOptionsMonitor.OnChange(OnDeepReaderOptionsChanged);
 
+        _blockFlatteningParallelOptions = new ParallelOptions()
+        {
+            MaxDegreeOfParallelism = _deepReaderOptions.FlatteningMaxDegreeOfParallelism
+        };
+
         _blocksChannel = blocksChannel;
+        _blockSegmentsListChannel = blockSegmentsListChannel;
         _storageAdapter = storageAdapter;
+
+        _filterEmptyTransactionsFilter = _deepReaderOptions.FilterEmptyTransactions
+            ? transactionTrace => transactionTrace.ActionTraces.Length > 0
+            : _ => true;
+
+        _actionFilter = _deepReaderOptions.Filter.BuildActionFilter();
+        _deltaFilter = _deepReaderOptions.Filter.BuildDeltaFilter();
     }
 
     private void OnMindReaderOptionsChanged(MindReaderOptions newOptions)
@@ -53,20 +79,15 @@ public class BlockWorker : BackgroundService
         await ProcessBlocks(stoppingToken);
     }
 
-    ParallelOptions parallelOptions = new()
-    {
-        MaxDegreeOfParallelism = 3
-    };
-
     private async Task ProcessBlocks(CancellationToken cancellationToken)
     {
-        var jsonSerializerOptions = new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            IgnoreReadOnlyFields = false,
-            IgnoreReadOnlyProperties = false,
-            MaxDepth = Int32.MaxValue
-        };
+        //var jsonSerializerOptions = new JsonSerializerOptions()
+        //{
+        //    IncludeFields = true,
+        //    IgnoreReadOnlyFields = false,
+        //    IgnoreReadOnlyProperties = false,
+        //    MaxDepth = Int32.MaxValue
+        //};
 
         if (_blocksChannel.CanCount)
             BlocksChannelSize.Observe(_blocksChannel.Count);
@@ -77,10 +98,11 @@ public class BlockWorker : BackgroundService
             {
                 if (block.Number % 1000 == 0)
                 {
-//                    Log.Information(JsonSerializer.Serialize(block, jsonSerializerOptions));
-
                     if (_blocksChannel.CanCount)
-                        Log.Information($"channel-size: {_blocksChannel.Count}");
+                        Log.Information($"blocks-channel-size: {_blocksChannel.Count}");
+
+                    if (_blockSegmentsListChannel.CanCount)
+                        Log.Information($"segment-channel-size: {_blockSegmentsListChannel.Count}");
 
                     Log.Information($"got block {block.Number}");
                     Log.Information($"Current Threads: {Process.GetCurrentProcess().Threads.Count}");
@@ -101,16 +123,10 @@ public class BlockWorker : BackgroundService
 
                 await _storageAdapter.StoreBlockAsync(flattenedBlock);
 
-                await Parallel.ForEachAsync(flattenedTransactionTraces, parallelOptions, async (flattenedTransactionTrace, cancellationToken) =>
+                await Parallel.ForEachAsync(flattenedTransactionTraces, _blockFlatteningParallelOptions, async (flattenedTransactionTrace, _) =>
                 {
-                    await _storageAdapter.StoreTransactionAsync(flattenedTransactionTrace);
+                    await _storageAdapter.StoreTransactionAsync(flattenedTransactionTrace); // TODO cancellationToken
                 });
-
-                //foreach (var flattenedTransactionTrace in flattenedTransactionTraces)
-                //{
-                //    await _storageAdapter.StoreTransactionAsync(flattenedTransactionTrace);
-                //}
-
             }
             catch (Exception e)
             {
@@ -119,7 +135,7 @@ public class BlockWorker : BackgroundService
         }
     }
 
-    private Task<(FlattenedBlock, FlattenedTransactionTrace[])> FlattenAsync(Block block)
+    private Task<(FlattenedBlock, IEnumerable<FlattenedTransactionTrace>)> FlattenAsync(Block block)
     {
         return Task.Run(() =>
         {
@@ -141,14 +157,14 @@ public class BlockWorker : BackgroundService
                     Id = transactionTrace.Id,
                     NetUsage = transactionTrace.NetUsage,
                     TableOps = transactionTrace.TableOps.ToArray(),
-                    ActionTraces = transactionTrace.ActionTraces.Select((actionTrace, actionIndex) =>
+                    ActionTraces = transactionTrace.ActionTraces.Where(_actionFilter).Select((actionTrace, actionIndex) =>
                         new FlattenedActionTrace()
                         {
                             AccountRamDeltas = actionTrace.AccountRamDeltas,
                             Act = actionTrace.Act,
                             Console = actionTrace.Console,
                             ContextFree = actionTrace.ContextFree,
-                            DbOps = transactionTrace.DbOps.Where(dbOp => dbOp.ActionIndex == actionIndex).Select(dbOp =>
+                            DbOps = transactionTrace.DbOps.Where(dbOp => _deltaFilter(dbOp) && dbOp.ActionIndex == actionIndex).Select(dbOp =>
                                 new FlattenedDbOp()
                                 {
                                     Code = dbOp.Code,
@@ -187,7 +203,8 @@ public class BlockWorker : BackgroundService
                                     }).ToArray(),
                         }
                     ).ToArray()
-                }).ToArray());
+                }).Where(_filterEmptyTransactionsFilter));
         });
     }
+
 }

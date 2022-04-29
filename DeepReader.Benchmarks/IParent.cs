@@ -1,4 +1,6 @@
-﻿public interface IParent<T>
+﻿namespace DeepReader.Benchmarks;
+
+public interface IParent<T>
 {
     static abstract T ReadFromBinaryReader();
 }

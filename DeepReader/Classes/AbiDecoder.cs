@@ -17,7 +17,6 @@ public class AbiDecoder
     public static void ProcessTransactionTrace(TransactionTrace trace)
     {
         // TODO
-        return;
     }
 
     public static async void ProcessSignedTransaction(SignedTransaction signedTransaction)
@@ -44,19 +43,16 @@ public class AbiDecoder
     public static void StartBlock(long blockNum)
     {
         // TODO
-        return;
     }
 
     public static void EndBlock(Block block)
     {
         // TODO
-        return;
     }
 
     public static void ResetCache()
     {
         // TODO
-        return;
     }
 
     public static void AddInitialAbi(ReadOnlySpan<char> contract, ReadOnlySpan<char> rawAbiBase64)

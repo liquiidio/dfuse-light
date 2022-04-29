@@ -7,16 +7,16 @@ namespace DeepReader.Types.EosTypes;
 [JsonConverter(typeof(TimestampJsonConverter))]
 public class Timestamp : BinaryType
 {
-    public uint _ticks;
+    public uint Ticks;
 
     public static implicit operator Timestamp(uint value)
     {
-        return new Timestamp() {_ticks = value};
+        return new Timestamp() {Ticks = value};
     }
 
     public DateTime ToDateTime()
     {
-        return DateTimeOffset.FromUnixTimeSeconds(_ticks).DateTime;
+        return DateTimeOffset.FromUnixTimeSeconds(Ticks).DateTime;
     }
 
     public static Timestamp Zero => new();

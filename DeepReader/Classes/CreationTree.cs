@@ -155,8 +155,8 @@ public static class CreationTree
     
     private static CreationOpKind[][] CreationOpsToMap(IReadOnlyList<CreationOp> creationOps)
     {
-        var i = 0;  // TODO here's something wrong
-        return creationOps.GroupBy(o => o.ActionIndex).Select(o => o.Select(o => o.Kind).ToArray()).ToArray();
+        // TODO here's something wrong
+        return creationOps.GroupBy(o => o.ActionIndex).Select(o => o.Select(go => go.Kind).ToArray()).ToArray();
         //Dictionary<int, CreationOpKind> mapping = new Dictionary<int, CreationOpKind>();
 
         //for (int i = 0; i < creationOps.Count; i++)

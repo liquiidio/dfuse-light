@@ -15,14 +15,10 @@ public class Checksum160 : BinaryType
         get => _stringVal ??= SerializationHelper.ByteArrayToHexString(Binary);
         set => _stringVal = value;
     }
-    public static implicit operator Checksum160(string value)
-    {
-        return new Checksum160 { _stringVal = value};
-    }
 
     public static implicit operator string(Checksum160 value)
     {
-        return value._stringVal;
+        return value.StringVal;
     }
 
     public static implicit operator Checksum160(byte[] binary)

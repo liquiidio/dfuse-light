@@ -9,11 +9,11 @@ namespace DeepReader.Types.Eosio.Chain.Detail;
 public class BlockHeaderStateCommon
 {
     [SortOrder(1)]
-    public uint BlockNum = 0;
+    public uint BlockNum;
     [SortOrder(2)]
-    public uint DPoSProposedIrreversibleBlockNum = 0;
+    public uint DPoSProposedIrreversibleBlockNum;
     [SortOrder(3)]
-    public uint DPoSIrreversibleBlockNum = 0;
+    public uint DPoSIrreversibleBlockNum;
     [SortOrder(4)]
     public ProducerAuthoritySchedule ActiveSchedule;
     [SortOrder(5)]

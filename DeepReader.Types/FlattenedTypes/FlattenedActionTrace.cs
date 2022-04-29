@@ -1,7 +1,6 @@
 ﻿using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
-using DeepReader.Types.Helpers;
 using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.Types.FlattenedTypes
@@ -38,7 +37,7 @@ namespace DeepReader.Types.FlattenedTypes
         {
             var obj = new FlattenedActionTrace()
             {
-                Receiver = reader.ReadUInt64(),
+                Receiver = reader.ReadName(),
                 Act = Action.ReadFromBinaryReader(reader),
                 ContextFree = reader.ReadBoolean(),
                 ElapsedUs = reader.ReadInt64(),

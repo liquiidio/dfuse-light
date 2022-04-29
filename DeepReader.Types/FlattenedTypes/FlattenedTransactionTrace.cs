@@ -25,8 +25,6 @@ public struct FlattenedTransactionTrace
 
     }
 
-    public static int recovered = 0;
-
     public static FlattenedTransactionTrace ReadFromBinaryReader(BinaryReader reader)
     {
         var obj = new FlattenedTransactionTrace()
@@ -37,14 +35,7 @@ public struct FlattenedTransactionTrace
             NetUsage = reader.ReadUInt64(),
         };
 
-        Interlocked.Increment(ref recovered);
-
-        var test = reader.ReadInt32();
-        if (test > 400)
-        {
-            string a = "" + recovered;
-        }
-        obj.ActionTraces = new FlattenedActionTrace[test];
+        obj.ActionTraces = new FlattenedActionTrace[reader.ReadInt32()];
         for (int i = 0; i < obj.ActionTraces.Length; i++)
         {
             obj.ActionTraces[i] = FlattenedActionTrace.ReadFromBinaryReader(reader);
@@ -73,10 +64,6 @@ public struct FlattenedTransactionTrace
         writer.Write(Elapsed); // TODO VARINT
         writer.Write(NetUsage); // TODO VARINT
 
-        if (ActionTraces.Length > 10)
-        {
-            string test = "";
-        }
         writer.Write(ActionTraces.Length);
         foreach (var actionTrace in ActionTraces)
         {

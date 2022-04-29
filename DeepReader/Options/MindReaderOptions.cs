@@ -1,4 +1,4 @@
-﻿namespace DeepReader.Configuration
+﻿namespace DeepReader.Options
 {
     public class MindReaderOptions
     {

@@ -33,7 +33,7 @@ namespace DeepReader.Storage.Faster
         }
 
         public async Task StoreTransactionAsync(FlattenedTransactionTrace transactionTrace)
-        { 
+        {
             await _transactionStore.WriteTransaction(transactionTrace);
         }
 
@@ -44,6 +44,7 @@ namespace DeepReader.Storage.Faster
             {
                 block.Transactions = new FlattenedTransactionTrace[block.TransactionIds.Length];
                 int i = 0;
+                // TODO, parallel foreach synchronized by int i and interlocked increments?
                 foreach (var transactionId in block.TransactionIds)
                 {
                     var (foundTrx, trx) =

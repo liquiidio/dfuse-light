@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types.FlattenedTypes;
@@ -30,7 +31,7 @@ public struct FlattenedBlock
         {
             Id = reader.ReadBytes(32),
             Number = reader.ReadUInt16(),
-            Producer = reader.ReadUInt64(),
+            Producer = reader.ReadName(),
             ProducerSignature = reader.ReadBytes(64),
         };
 

@@ -21,11 +21,6 @@ namespace DeepReader.Storage.Faster.Transactions
         {
             byte* ptr = (byte*)Unsafe.AsPointer(ref id.Id.Binary);
             return Utility.HashBytes(ptr, id.Id.Binary.Length);
-//            if (id.Id.Binary.Length >= 8)
-//                return BitConverter.ToInt64(id.Id.Binary.Take(8).ToArray());
-//            else
-//                return 0;
-////                return id.Id.Binary.Length >= 8 ?  : 0 ;
         }
 
         public bool Equals(ref TransactionId k1, ref TransactionId k2)

@@ -4,57 +4,56 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace DeepReader.Classes
 {
-    internal class NameCache 
+    public static class NameCache 
     {
-        private MemoryCache _cache = new MemoryCache(new MemoryCacheOptions()
+        private static MemoryCache _cache = new MemoryCache(new MemoryCacheOptions()
         {
             SizeLimit = 1024,
-            ExpirationScanFrequency = TimeSpan.FromMinutes(1)
+            ExpirationScanFrequency = TimeSpan.FromMinutes(5)
         });
 
-        private MemoryCacheEntryOptions cacheEntryOptions = new MemoryCacheEntryOptions()
-            .SetSlidingExpiration(TimeSpan.FromSeconds(2));
+        private static readonly MemoryCacheEntryOptions _cacheEntryOptions = new MemoryCacheEntryOptions()
+            .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-        public Name GetOrCreate(ReadOnlyMemory<char> chars)
+        public static Name GetOrCreate(ReadOnlyMemory<char> chars)
         {
             var bytes = Decoder.HexToBytes(chars.Span);
             var key = BitConverter.ToUInt64(bytes);
             if (!_cache.TryGetValue(key, out Name cacheEntry))// Look for cache key.
             {
                 // Key not in cache, so get data.
-                cacheEntry = new Name(key, chars.ToString(), bytes.ToArray());
+                cacheEntry = new Name(key, bytes.ToArray());
 
                 // Save data in cache.
-                _cache.Set(key, cacheEntry, cacheEntryOptions);
+                _cache.Set(key, cacheEntry, _cacheEntryOptions);
             }
             return cacheEntry;
         }
 
-        public Name GetOrCreate(byte[] bytes)
+        public static Name GetOrCreate(byte[] bytes)
         {
             var key = BitConverter.ToUInt64(bytes);
             if (!_cache.TryGetValue(key, out Name cacheEntry))// Look for cache key.
             {
-
                 // Key not in cache, so get data.
-                cacheEntry = new Name(key, SerializationHelper.ByteArrayToNameString(bytes), bytes);
+                cacheEntry = new Name(key, bytes);
 
                 // Save data in cache.
-                _cache.Set(key, cacheEntry, cacheEntryOptions);
+                _cache.Set(key, cacheEntry, _cacheEntryOptions);
             }
             return cacheEntry;
         }
 
-        public Name GetOrCreate(ulong key)
+        public static Name GetOrCreate(ulong key)
         {
             if (!_cache.TryGetValue(key, out Name cacheEntry))// Look for cache key.
             {
                 var bytes = BitConverter.GetBytes(key);
                 // Key not in cache, so get data.
-                cacheEntry = new Name(key, SerializationHelper.ByteArrayToNameString(bytes), bytes);
+                cacheEntry = new Name(key, bytes);
 
                 // Save data in cache.
-                _cache.Set(key, cacheEntry, cacheEntryOptions);
+                _cache.Set(key, cacheEntry, _cacheEntryOptions);
             }
             return cacheEntry;
         }

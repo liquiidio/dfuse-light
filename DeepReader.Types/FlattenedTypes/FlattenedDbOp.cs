@@ -7,12 +7,12 @@ namespace DeepReader.Types.FlattenedTypes;
 public struct FlattenedDbOp
 {
     public DbOpOperation Operation = DbOpOperation.UNKNOWN;//DBOp_Operation
-    public Name Code = string.Empty;//string
-    public Name Scope = string.Empty;//string
-    public Name TableName = string.Empty;//string
+    public Name Code = Name.Empty;//string
+    public Name Scope = Name.Empty;//string
+    public Name TableName = Name.Empty;//string
     public byte[] PrimaryKey = Array.Empty<byte>();//string
-    public Name OldPayer = string.Empty;//string
-    public Name NewPayer = string.Empty;//string
+    public Name OldPayer = Name.Empty;//string
+    public Name NewPayer = Name.Empty;//string
     public ReadOnlyMemory<byte> OldData = Array.Empty<byte>();//[]byte
     public ReadOnlyMemory<byte> NewData = Array.Empty<byte>();//[]byte
 
