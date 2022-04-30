@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using DeepReader.Types.Helpers;
 using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -12,18 +11,15 @@ public class ActionBase
 
     // abi-field-name: account ,abi-field-type: name
     [JsonPropertyName("account")]
-    [SortOrder(1)]
-    public Name Account = Name.Empty;
+    public Name Account { get; set; } = Name.Empty;
 
     // abi-field-name: name ,abi-field-type: name
     [JsonPropertyName("name")]
-    [SortOrder(2)]
-    public Name Name = Name.Empty;
+    public Name Name { get; set; } = Name.Empty;
 
     // abi-field-name: authorization ,abi-field-type: permission_level[]
     [JsonPropertyName("authorization")]
-    [SortOrder(3)]
-    public PermissionLevel[] Authorization = Array.Empty<PermissionLevel>();
+    public PermissionLevel[] Authorization { get; set; } = Array.Empty<PermissionLevel>();
 
     public ActionBase()
     {

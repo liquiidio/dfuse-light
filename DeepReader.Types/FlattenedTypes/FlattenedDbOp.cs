@@ -4,17 +4,17 @@ using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.FlattenedTypes;
 
-public struct FlattenedDbOp
+public class FlattenedDbOp
 {
-    public DbOpOperation Operation = DbOpOperation.UNKNOWN;//DBOp_Operation
-    public Name Code = Name.Empty;//string
-    public Name Scope = Name.Empty;//string
-    public Name TableName = Name.Empty;//string
-    public byte[] PrimaryKey = Array.Empty<byte>();//string
-    public Name OldPayer = Name.Empty;//string
-    public Name NewPayer = Name.Empty;//string
-    public ReadOnlyMemory<byte> OldData = Array.Empty<byte>();//[]byte
-    public ReadOnlyMemory<byte> NewData = Array.Empty<byte>();//[]byte
+    public DbOpOperation Operation { get; set; } = DbOpOperation.UNKNOWN;//DBOp_Operation
+    public Name Code { get; set; } = string.Empty;//string
+    public Name Scope { get; set; } = string.Empty;//string
+    public Name TableName { get; set; } = string.Empty;//string
+    public byte[] PrimaryKey { get; set; } = Array.Empty<byte>();//string
+    public Name OldPayer { get; set; } = string.Empty;//string
+    public Name NewPayer { get; set; } = string.Empty;//string
+    public ReadOnlyMemory<byte> OldData { get; set; } = Array.Empty<byte>();//[]byte
+    public ReadOnlyMemory<byte> NewData { get; set; } = Array.Empty<byte>();//[]byte
 
     public FlattenedDbOp()
     {

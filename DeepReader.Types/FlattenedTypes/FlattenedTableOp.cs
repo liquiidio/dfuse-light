@@ -4,13 +4,13 @@ using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.FlattenedTypes;
 
-public struct FlattenedTableOp
+public class FlattenedTableOp
 {
-    public TableOpOperation Operation = TableOpOperation.UNKNOWN;//TableOp_Operation
-    public Name Payer = Name.Empty;//string
-    public Name Code = Name.Empty;//string
-    public Name Scope = Name.Empty;//string
-    public Name TableName = Name.Empty;//string
+    public TableOpOperation Operation { get; set; } = TableOpOperation.UNKNOWN;//TableOp_Operation
+    public Name Payer { get; set; } = string.Empty;//string
+    public Name Code { get; set; } = string.Empty;//string
+    public Name Scope { get; set; } = string.Empty;//string
+    public Name TableName { get; set; } = string.Empty;//string
 
     public FlattenedTableOp()
     {

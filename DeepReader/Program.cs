@@ -53,8 +53,7 @@ var host = Host.CreateDefaultBuilder(args)
     }).UseSerilog((hostingContext, loggerConfiguration) =>
         loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration)
     )
-    .UseDeepReaderGraphQl()
-    .UseDeepReaderRest()
+    .UseDeepReaderApis()
     .UseFasterStorage()
     .Build();
 

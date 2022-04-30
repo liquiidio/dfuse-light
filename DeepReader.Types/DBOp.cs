@@ -7,18 +7,18 @@ namespace DeepReader.Types;
 
 public class DbOp
 {
-    public DbOpOperation Operation = DbOpOperation.UNKNOWN;//DBOp_Operation
-    public uint ActionIndex;//uint32
-    public Name Code = Name.Empty;//string
-    public Name Scope = Name.Empty;//string
-    public Name TableName = Name.Empty;//string
-    public string PrimaryKey = Name.Empty;//string
-    public Name OldPayer = Name.Empty;//string
-    public Name NewPayer = Name.Empty;//string
+    public DbOpOperation Operation { get; set; } = DbOpOperation.UNKNOWN;//DBOp_Operation
+    public uint ActionIndex { get; set; } = 0;//uint32
+    public Name Code { get; set; } = string.Empty;//string
+    public Name Scope { get; set; } = string.Empty;//string
+    public Name TableName { get; set; } = string.Empty;//string
+    public string PrimaryKey { get; set; } = string.Empty;//string
+    public Name OldPayer { get; set; } = string.Empty;//string
+    public Name NewPayer { get; set; } = string.Empty;//string
     [JsonIgnore]
-    public ReadOnlyMemory<byte> OldData = Array.Empty<byte>();//[]byte
+    public ReadOnlyMemory<byte> OldData { get; set; } = Array.Empty<byte>();//[]byte
     [JsonIgnore]
-    public ReadOnlyMemory<byte> NewData = Array.Empty<byte>();//[]byte
+    public ReadOnlyMemory<byte> NewData { get; set; } = Array.Empty<byte>();//[]byte
 
     public DbOp()
     {

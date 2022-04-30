@@ -6,19 +6,19 @@ using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types.FlattenedTypes;
 
-public struct FlattenedBlock
+public class FlattenedBlock
 {
-    public Checksum256 Id = Checksum256.Empty;
-    public uint Number = 0;
+    public Checksum256 Id { get; set; } = Checksum256.Empty;
+    public uint Number { get; set; } = 0;
 
-    public Name Producer = Name.Empty;
-    public Signature ProducerSignature = Signature.Empty;
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]   // TODO (Corvin) not sure if this works for Collections
-    public TransactionId[] TransactionIds = Array.Empty<TransactionId>();
+    public Name Producer { get; set; } = Name.Empty;
+    public Signature ProducerSignature { get; set; } = Signature.Empty;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]   // TODO (Corvin) not sure if this works for Collections
-    public FlattenedTransactionTrace[] Transactions = Array.Empty<FlattenedTransactionTrace>();
+    public TransactionId[] TransactionIds { get; set; } = Array.Empty<TransactionId>();
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]   // TODO (Corvin) not sure if this works for Collections
+    public FlattenedTransactionTrace[] Transactions { get; set; } = Array.Empty<FlattenedTransactionTrace>();
 
     public FlattenedBlock()
     {

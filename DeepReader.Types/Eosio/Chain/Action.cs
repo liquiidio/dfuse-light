@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using DeepReader.Types.Helpers;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 
@@ -12,8 +11,7 @@ public class Action : ActionBase, IEosioSerializable<Action>
 {
     // abi-field-name: data ,abi-field-type: bytes
     [JsonPropertyName("data")]
-    [SortOrder(4)]
-    public ActionDataBytes Data;
+    public ActionDataBytes Data { get; set; }
 
     public Action()
     {
