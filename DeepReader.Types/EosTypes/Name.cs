@@ -48,6 +48,11 @@ public class Name : BinaryType
         return value.IntVal;
     }
 
+    public static implicit operator Name(string value)
+    {
+        return new Name(0, value, Array.Empty<byte>()); // TODO ?
+    }
+
     public override bool Equals(object? obj)
     {
         if (obj is ulong intVal)

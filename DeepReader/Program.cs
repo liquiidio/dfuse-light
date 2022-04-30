@@ -1,4 +1,5 @@
 using System.Threading.Channels;
+using DeepReader.Apis;
 using DeepReader.Apis.GraphQl;
 using DeepReader.Apis.REST;
 using DeepReader.Classes;

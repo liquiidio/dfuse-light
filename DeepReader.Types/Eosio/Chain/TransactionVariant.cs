@@ -1,3 +1,5 @@
+using DeepReader.Types.Extensions;
+
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
