@@ -10,8 +10,8 @@ namespace DeepReader.Storage.Faster.Blocks
     {
         private readonly FasterKV<BlockId, FlattenedBlock> _store;
 
-        private readonly ClientSession<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockStoreWriterSession;
-        private readonly ClientSession<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockStoreReaderSession;
+        private readonly ClientSession<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockWriterSession;
+        private readonly ClientSession<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockReaderSession;
 
         private readonly BlockEvictionObserver _lockEvictionObserver;
 
@@ -73,12 +73,25 @@ namespace DeepReader.Storage.Faster.Blocks
                 Log.Information("BlockStore recovered");
             }
 
-            _blockStoreWriterSession = _store.For(new BlockFunctions()).NewSession<BlockFunctions>();
-            _blockStoreReaderSession = _store.For(new BlockFunctions()).NewSession<BlockFunctions>();
+            foreach (var recoverableSession in _store.RecoverableSessions)
+            {
+                if (recoverableSession.Item2 == "BlockWriterSession")
+                {
+                    _blockWriterSession = _store.For(new BlockFunctions())
+                        .ResumeSession<BlockFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
+                }
+                else if (recoverableSession.Item2 == "BlockReaderSession")
+                {
+                    _blockReaderSession = _store.For(new BlockFunctions())
+                        .ResumeSession<BlockFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
+                }
+            }
 
-            _lockEvictionObserver = new BlockEvictionObserver(_store);
+            _blockWriterSession = _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockWriterSession");
+            _blockReaderSession = _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockReaderSession");
+//            _lockEvictionObserver = new BlockEvictionObserver(_store);
 
-            new Thread(CommitThread).Start();
+            //new Thread(CommitThread).Start();
         }
 
         public async Task<Status> WriteBlock(FlattenedBlock block)
@@ -87,7 +100,7 @@ namespace DeepReader.Storage.Faster.Blocks
 
             using (WritingBlockDuration.NewTimer())
             {
-                var result = await _blockStoreWriterSession.UpsertAsync(ref blockId, ref block);
+                var result = await _blockWriterSession.UpsertAsync(ref blockId, ref block);
                 while (result.Status.IsPending)
                     result = await result.CompleteAsync();
                 return result.Status;
@@ -96,24 +109,27 @@ namespace DeepReader.Storage.Faster.Blocks
 
         public async Task<(bool, FlattenedBlock)> TryGetBlockById(uint blockNum)
         {
-            var (status, output) = (await _blockStoreReaderSession.ReadAsync(new BlockId(blockNum))).Complete();
+            var (status, output) = (await _blockReaderSession.ReadAsync(new BlockId(blockNum))).Complete();
             return (status.IsCompletedSuccessfully, output.Value);
         }
 
-        private void CommitThread()
+        public async Task CommitAsync(CancellationToken cancellationToken)
         {
             if (_options.CheckpointInterval is null or 0)
                 return;
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                Thread.Sleep(_options.CheckpointInterval.Value);
+                await Task.Delay(_options.CheckpointInterval.Value, cancellationToken);
+//                Thread.Sleep(_options.CheckpointInterval.Value);
 
                 // Take log-only checkpoint (quick - no index save)
                 //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                 // Take index + log checkpoint (longer time)
-                _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                await _store.TakeFullCheckpointAsync(CheckpointType.FoldOver, cancellationToken);//.GetAwaiter().GetResult();
+                //_store.Log.FlushAndEvict(true);
             }
+            _store.DisposeRecoverableSessions();
         }
     }
 }

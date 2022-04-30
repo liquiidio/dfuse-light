@@ -669,7 +669,7 @@ public class ParseCtx
                 Operation = op,
                 ActionIndex = (uint)actionIndex,
                 Sender = SerializationHelper.CharSpanToName(chunks[4].AsSpan),
-                SenderId = UInt64.Parse(chunks[5]),
+                SenderId = chunks[5].AsMemory,
                 Payer = SerializationHelper.CharSpanToName(chunks[6].AsSpan),
                 PublishedAt = DateTimeOffset.Parse(chunks[7]),
                 DelayUntil = DateTimeOffset.Parse(chunks[8]),

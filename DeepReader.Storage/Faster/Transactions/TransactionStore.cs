@@ -10,7 +10,8 @@ namespace DeepReader.Storage.Faster.Transactions
     {
         private readonly FasterKV<TransactionId, FlattenedTransactionTrace> _store;
 
-        private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionStoreSession;
+        private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionWriterSession;
+        private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionReaderSession;
 
         private FasterStorageOptions _options;
 
@@ -69,9 +70,25 @@ namespace DeepReader.Storage.Faster.Transactions
                 Log.Information("TransactionStore recovered");
             }
 
-            _transactionStoreSession = _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>();
+            foreach (var recoverableSession in _store.RecoverableSessions)
+            {
+                if (recoverableSession.Item2 == "TransactionWriterSession")
+                {
+                    _transactionWriterSession = _store.For(new TransactionFunctions())
+                        .ResumeSession<TransactionFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
+                }
+                else if (recoverableSession.Item2 == "TransactionReaderSession")
+                {
+                    _transactionReaderSession = _store.For(new TransactionFunctions())
+                        .ResumeSession<TransactionFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
+                }
+            }
 
-            new Thread(CommitThread).Start();
+            _transactionWriterSession ??=
+                _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionWriterSession");
+            _transactionReaderSession ??=
+                _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionReaderSession");
+            //new Thread(CommitThread).Start();
         }
 
         public async Task<Status> WriteTransaction(FlattenedTransactionTrace transaction)
@@ -80,7 +97,7 @@ namespace DeepReader.Storage.Faster.Transactions
 
             using (WritingTransactionDuration.NewTimer())
             {
-                var result = await _transactionStoreSession.UpsertAsync(ref transactionId, ref transaction);
+                var result = await _transactionWriterSession.UpsertAsync(ref transactionId, ref transaction);
                 while (result.Status.IsPending)
                     result = await result.CompleteAsync();
                 return result.Status;
@@ -89,25 +106,27 @@ namespace DeepReader.Storage.Faster.Transactions
 
         public async Task<(bool, FlattenedTransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
         {
-            var (status, output) = (await _transactionStoreSession.ReadAsync(new TransactionId(transactionId))).Complete();
+            var (status, output) = (await _transactionReaderSession.ReadAsync(new TransactionId(transactionId))).Complete();
             return (status.IsCompletedSuccessfully, output.Value);
         }
 
-        private void CommitThread()
+        public async Task CommitAsync(CancellationToken cancellationToken)
         {
             if (_options.CheckpointInterval is null or 0) 
                 return;
             
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                Thread.Sleep(_options.CheckpointInterval.Value);
+                await Task.Delay(_options.CheckpointInterval.Value, cancellationToken);
 
                 // Take log-only checkpoint (quick - no index save)
                 //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                 // Take index + log checkpoint (longer time)
-                _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                await _store.TakeFullCheckpointAsync(CheckpointType.FoldOver, cancellationToken);
+                //_store.Log.FlushAndEvict(true);
             }
+            _store.DisposeRecoverableSessions();
         }
     }
 }
