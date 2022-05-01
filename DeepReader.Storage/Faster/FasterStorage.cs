@@ -1,13 +1,14 @@
 ﻿using DeepReader.Storage.Faster.Blocks;
 using DeepReader.Storage.Faster.Transactions;
 using DeepReader.Storage.Options;
+using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.FlattenedTypes;
-using Microsoft.Extensions.Hosting;
+using FASTER.core;
 using Microsoft.Extensions.Options;
 
 namespace DeepReader.Storage.Faster
 {
-    internal class FasterStorage : BackgroundService, IStorageAdapter
+    internal class FasterStorage : IStorageAdapter
     {
         private readonly BlockStore _blockStore;
         private readonly TransactionStore _transactionStore;
@@ -34,7 +35,7 @@ namespace DeepReader.Storage.Faster
         }
 
         public async Task StoreTransactionAsync(FlattenedTransactionTrace transactionTrace)
-        {
+        { 
             await _transactionStore.WriteTransaction(transactionTrace);
         }
 
@@ -45,7 +46,6 @@ namespace DeepReader.Storage.Faster
             {
                 block.Transactions = new FlattenedTransactionTrace[block.TransactionIds.Length];
                 int i = 0;
-                // TODO, parallel foreach synchronized by int i and interlocked increments?
                 foreach (var transactionId in block.TransactionIds)
                 {
                     var (foundTrx, trx) =
@@ -62,13 +62,6 @@ namespace DeepReader.Storage.Faster
         public async Task<(bool, FlattenedTransactionTrace)> GetTransactionAsync(string transactionId)
         {
             return await _transactionStore.TryGetTransactionTraceById(new Types.Eosio.Chain.TransactionId(transactionId));
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
-        {
-            var blockStoreCommitTask = _blockStore.CommitAsync(cancellationToken);
-            var transactionStoreCommitTask = _transactionStore.CommitAsync(cancellationToken);
-            await Task.WhenAll(blockStoreCommitTask, transactionStoreCommitTask);
         }
     }
 }

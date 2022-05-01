@@ -44,7 +44,7 @@ namespace DeepReader
 
             await Task.Delay(5000, cancellationToken);
 
-            this.PriorityClass = ProcessPriorityClass.RealTime;
+            //this.PriorityClass = ProcessPriorityClass.RealTime;
             this.PriorityBoostEnabled = true;
 
             await this.WaitForExitAsync(cancellationToken);

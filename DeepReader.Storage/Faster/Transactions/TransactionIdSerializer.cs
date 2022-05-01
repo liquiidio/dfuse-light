@@ -6,7 +6,7 @@ public class TransactionIdSerializer : BinaryObjectSerializer<TransactionId>
 {
     public override void Deserialize(out TransactionId obj)
     {
-        obj = new TransactionId(reader.ReadBytes(32));
+        obj = new TransactionId();
     }
 
     public override void Serialize(ref TransactionId obj)
