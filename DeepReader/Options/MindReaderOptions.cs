@@ -10,7 +10,7 @@
         public bool HardReplayBlockchain { get; set; }
         public string? Snapshot { get; set; }
         public bool ForceAllChecks { get; set; }
-        public bool RedirectStandardError { get; set; } = true;
+        public bool RedirectStandardError { get; set; } = false;
         public bool RedirectStandardOutput { get; set; } = true;
         public string? ProtocolFeaturesDir { get; set; }
     }

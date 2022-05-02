@@ -45,9 +45,11 @@ namespace DeepReader.Storage.Faster.Blocks
                 LogDevice = log,
                 ObjectLogDevice = objlog,
                 ReadCacheSettings = options.UseReadCache ? new ReadCacheSettings() : null,
-                // Uncomment below for low memory footprint demo
+                // to calculate below:
+                // 12 = 00001111 11111111 = 4095 = 4K
+                // 34 = 11111111 11111111 11111111 11111111 = 17179869183 = 16G
                 PageSizeBits = 12, // (4K pages)
-                // MemorySizeBits = 20 // (1M memory for main log)
+                MemorySizeBits = 32 // (4G memory for main log)
             };
 
             // Define serializers; otherwise FASTER will use the slower DataContract
@@ -63,6 +65,7 @@ namespace DeepReader.Storage.Faster.Blocks
             var checkpointManager = new DeviceLogCommitCheckpointManager(
                 new LocalStorageNamedDeviceFactory(),
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
+
 
             _store = new FasterKV<BlockId, FlattenedBlock>(
                 size: _options.MaxBlocksCacheEntries, // Cache Lines for Blocks
@@ -97,7 +100,6 @@ namespace DeepReader.Storage.Faster.Blocks
                 _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockWriterSession");
             _blockReaderSession ??=
                 _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockReaderSession");
-
 
             new Thread(CommitThread).Start();
         }
@@ -134,6 +136,7 @@ namespace DeepReader.Storage.Faster.Blocks
 
                 // Take index + log checkpoint (longer time)
                 _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                _store.Log.FlushAndEvict(true);
             }
         }
     }
