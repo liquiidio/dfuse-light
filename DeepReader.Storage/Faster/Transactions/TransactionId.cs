@@ -1,5 +1,10 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using FASTER.core;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace DeepReader.Storage.Faster.Transactions
 {
@@ -17,15 +22,15 @@ namespace DeepReader.Storage.Faster.Transactions
             Id = id;
         }
 
-        public unsafe long GetHashCode64(ref TransactionId id)
+        public long GetHashCode64(ref TransactionId id)
         {
-            byte* ptr = (byte*)Unsafe.AsPointer(ref id.Id.Binary);
-            return Utility.HashBytes(ptr, id.Id.Binary.Length);
+
+            return id.Id.Binary.Length >= 8 ? BitConverter.ToInt64(id.Id.Binary.Take(8).ToArray()) : 0 ;
         }
 
         public bool Equals(ref TransactionId k1, ref TransactionId k2)
         {
-            return k1.Id.Binary.SequenceEqual(k2.Id.Binary);
+            return  k1.Id.Binary.SequenceEqual(k2.Id.Binary);
         }
     }
 }

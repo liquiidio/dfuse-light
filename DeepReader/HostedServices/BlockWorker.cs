@@ -135,20 +135,11 @@ public class BlockWorker : BackgroundService
         }
     }
 
-    private Task<(FlattenedBlock, IEnumerable<FlattenedTransactionTrace>)> FlattenAsync(Block block)
+    private Task<(FlattenedBlock, List<FlattenedTransactionTrace>)> FlattenAsync(Block block)
     {
         return Task.Run(() =>
         {
-            var flattenedBlock = new FlattenedBlock()
-            {
-                Number = block.Number,
-                TransactionIds = block.UnfilteredTransactionTraces.Select(ut => ut.Id).ToArray(),
-                Id = block.Id,
-                Producer = block.Header.Producer,
-                ProducerSignature = block.ProducerSignature
-            };
-
-            return (flattenedBlock, block.UnfilteredTransactionTraces.Select(transactionTrace =>
+            var flattenedTransactionTraces = block.UnfilteredTransactionTraces.Select(transactionTrace =>
                 new FlattenedTransactionTrace
                 {
                     BlockNum = block.Number,
@@ -203,7 +194,16 @@ public class BlockWorker : BackgroundService
                                     }).ToArray(),
                         }
                     ).ToArray()
-                }).Where(_filterEmptyTransactionsFilter));
+                }).Where(_filterEmptyTransactionsFilter).ToList();
+
+            return (new FlattenedBlock()
+            {
+                Number = block.Number,
+                TransactionIds = flattenedTransactionTraces.Select(ut => ut.Id).ToArray(),
+                Id = block.Id,
+                Producer = block.Header.Producer,
+                ProducerSignature = block.ProducerSignature
+            }, flattenedTransactionTraces);
         });
     }
 

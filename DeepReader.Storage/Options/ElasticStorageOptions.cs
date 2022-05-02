@@ -1,4 +1,10 @@
-﻿namespace DeepReader.Storage.Options
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DeepReader.Storage.Options
 {
     public class ElasticStorageOptions
     {

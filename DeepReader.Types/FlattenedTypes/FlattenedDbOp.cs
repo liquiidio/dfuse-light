@@ -1,4 +1,5 @@
-﻿using DeepReader.Types.Enums;
+﻿using System.Text.Json.Serialization;
+using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 
@@ -13,7 +14,11 @@ public class FlattenedDbOp
     public byte[] PrimaryKey { get; set; } = Array.Empty<byte>();//string
     public Name OldPayer { get; set; } = string.Empty;//string
     public Name NewPayer { get; set; } = string.Empty;//string
+    
+    [JsonIgnore]
     public ReadOnlyMemory<byte> OldData { get; set; } = Array.Empty<byte>();//[]byte
+
+    [JsonIgnore]
     public ReadOnlyMemory<byte> NewData { get; set; } = Array.Empty<byte>();//[]byte
 
     public FlattenedDbOp()

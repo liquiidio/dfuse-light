@@ -21,7 +21,7 @@ public class TableOp
     public TableOp(BinaryReader reader)
     {
         Operation = (TableOpOperation) reader.ReadByte();
-        ActionIndex = reader.ReadUInt16();
+        ActionIndex = reader.ReadUInt32();
         Payer = reader.ReadName();
         Code = reader.ReadName();
         Scope = reader.ReadName();

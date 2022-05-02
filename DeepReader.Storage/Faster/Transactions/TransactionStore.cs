@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using DeepReader.Storage.Options;
 using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
@@ -10,8 +15,8 @@ namespace DeepReader.Storage.Faster.Transactions
     {
         private readonly FasterKV<TransactionId, FlattenedTransactionTrace> _store;
 
-        private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionWriterSession;
         private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionReaderSession;
+        private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionWriterSession;
 
         private FasterStorageOptions _options;
 
@@ -36,9 +41,11 @@ namespace DeepReader.Storage.Faster.Transactions
                 LogDevice = log,
                 ObjectLogDevice = objlog,
                 ReadCacheSettings = _options.UseReadCache ? new ReadCacheSettings() : null,
-                // Uncomment below for low memory footprint demo
+                // to calculate below:
+                // 12 = 00001111 11111111 = 4095 = 4K
+                // 34 = 00000011 11111111 11111111 11111111 11111111 = 17179869183 = 16G
                 PageSizeBits = 12, // (4K pages)
-                // MemorySizeBits = 20 // (1M memory for main log)
+                MemorySizeBits = 34 // (16G memory for main log)
             };
 
             // Define serializers; otherwise FASTER will use the slower DataContract
@@ -88,7 +95,8 @@ namespace DeepReader.Storage.Faster.Transactions
                 _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionWriterSession");
             _transactionReaderSession ??=
                 _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionReaderSession");
-            //new Thread(CommitThread).Start();
+
+            new Thread(CommitThread).Start();
         }
 
         public async Task<Status> WriteTransaction(FlattenedTransactionTrace transaction)
@@ -107,26 +115,25 @@ namespace DeepReader.Storage.Faster.Transactions
         public async Task<(bool, FlattenedTransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
         {
             var (status, output) = (await _transactionReaderSession.ReadAsync(new TransactionId(transactionId))).Complete();
-            return (status.IsCompletedSuccessfully, output.Value);
+            return (status.Found, output.Value);
         }
 
-        public async Task CommitAsync(CancellationToken cancellationToken)
+        private void CommitThread()
         {
             if (_options.CheckpointInterval is null or 0) 
                 return;
             
-            while (!cancellationToken.IsCancellationRequested)
+            while (true)
             {
-                await Task.Delay(_options.CheckpointInterval.Value, cancellationToken);
+                Thread.Sleep(_options.CheckpointInterval.Value);
 
                 // Take log-only checkpoint (quick - no index save)
                 //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                 // Take index + log checkpoint (longer time)
-                await _store.TakeFullCheckpointAsync(CheckpointType.FoldOver, cancellationToken);
-                //_store.Log.FlushAndEvict(true);
+                _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                _store.Log.FlushAndEvict(true);
             }
-            _store.DisposeRecoverableSessions();
         }
     }
 }

@@ -33,7 +33,7 @@ namespace DeepReader.Storage.Faster
                 {
                     IStorageAdapter storageAdapter = new FasterStorage(provider.GetRequiredService<IOptionsMonitor<FasterStorageOptions>>());
                     return storageAdapter;
-                }).AddHostedService(services => (FasterStorage)services.GetService<IStorageAdapter>()!);
+                });
             });
             return builder;
         }

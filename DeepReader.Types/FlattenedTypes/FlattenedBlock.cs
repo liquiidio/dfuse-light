@@ -30,7 +30,7 @@ public class FlattenedBlock
         var obj = new FlattenedBlock
         {
             Id = reader.ReadBytes(32),
-            Number = reader.ReadUInt16(),
+            Number = reader.ReadUInt32(),
             Producer = reader.ReadName(),
             ProducerSignature = reader.ReadBytes(64),
         };
