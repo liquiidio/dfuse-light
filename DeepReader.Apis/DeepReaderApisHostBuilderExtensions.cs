@@ -40,7 +40,7 @@ namespace DeepReader.Apis
                         .AddType<BlockQueryType>()
                         .AddType<TransactionQueryType>();
                 });
-                webBuilder.Configure(app =>
+                webBuilder.Configure((context, app) =>
                 {
                     app.UseSwagger();
                     app.UseSwaggerUI(options =>
@@ -50,6 +50,9 @@ namespace DeepReader.Apis
                     //app.UseHttpsRedirection();
                     app.UseRouting();
 
+                    // Expose Metrics only on specified port (default 9090)
+                    // so they are not proxied with the api and only used by internal services
+                    app.UseMetricServer(context.Configuration.GetSection("ApiOptions")["MetricsPort"]);
                     // Exposes HTTP metrics to Prometheus using the same endpoint above
                     app.UseHttpMetrics(options =>
                     {
