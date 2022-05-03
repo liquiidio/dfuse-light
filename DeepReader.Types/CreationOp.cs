@@ -11,6 +11,6 @@ public enum CreationOpKind : byte
     UNKNOWN,
     ROOT, 
     NOTIFY, 
-    CFA_INLINE, 
+    CFA_INLINE, // ContextFreeAction_Inline
     INLINE
 }

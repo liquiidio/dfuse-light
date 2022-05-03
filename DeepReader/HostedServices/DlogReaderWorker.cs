@@ -86,6 +86,7 @@ public class DlogReaderWorker : BackgroundService
         // TODO (Corvin) check nodeos version, provide arguments-list
 
         _deepMindProcess.OutputDataReceived += OnNodeosDataReceived;
+        _deepMindProcess.ErrorDataReceived += OnNodeosDataReceived;
         await _deepMindProcess.RunAsync(clt);
     }
 
@@ -98,15 +99,12 @@ public class DlogReaderWorker : BackgroundService
                 if (e.Data.StartsWith("DMLOG START_BLOCK"))
                 {
                     _blockSegmentsListChannel.WriteAsync(_blockSegmentsList);
-                    //while (!_blockSegmentsListChannel.TryWrite(blockLogs))
-                    //{
-                    //    if(_blockSegmentsListChannel.TryWrite(blockLogs))
-                    //        break;
-                    //}
-                    _blockSegmentsList = _blockSegmentListPool.Get();//new List<IList<StringSegment>>(_deepReaderOptions.DlogBlockSegmentListSize);
+                    _blockSegmentsList = _blockSegmentListPool.Get();
                 }
                 _blockSegmentsList.Add(e.Data.AsSegment().Split(' ', 12));
             }
+            else
+                Log.Information(e.Data);
         }
         catch(Exception ex)
         {
