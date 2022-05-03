@@ -30,8 +30,8 @@ public class BlockWorker : BackgroundService
 
     private readonly Func<FlattenedTransactionTrace, bool> _filterEmptyTransactionsFilter;
 
-    private Func<ActionTrace, bool> _actionFilter;
-    private Func<DbOp, bool> _deltaFilter;
+    private readonly Func<ActionTrace, bool> _actionFilter;
+    private readonly Func<DbOp, bool> _deltaFilter;
 
     public BlockWorker(ChannelReader<Block> blocksChannel,
         ChannelReader<List<IList<StringSegment>>> blockSegmentsListChannel, 

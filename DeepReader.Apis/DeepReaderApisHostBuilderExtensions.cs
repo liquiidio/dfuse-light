@@ -25,7 +25,7 @@ namespace DeepReader.Apis
             {
                 webBuilder.ConfigureServices((hostContext, services) =>
                 {
-                    services.Configure<ApiOptions>(config => hostContext.Configuration.GetSection("ElasticStorageOptions").Bind(config));
+                    services.Configure<ApiOptions>(config => hostContext.Configuration.GetSection("ApiOptions").Bind(config));
                     services.AddControllers().AddJsonOptions(options =>
                     {
                         options.JsonSerializerOptions.MaxDepth = Int32.MaxValue;
@@ -52,7 +52,10 @@ namespace DeepReader.Apis
 
                     // Expose Metrics only on specified port (default 9090)
                     // so they are not proxied with the api and only used by internal services
-                    app.UseMetricServer(context.Configuration.GetSection("ApiOptions")["MetricsPort"]);
+                    
+                    // TODO @Haron I would like to have port and url configurable but this doesn't seem to work
+                    // app.UseMetricServer(context.Configuration.Get<ApiOptions>().MetricsPort, context.Configuration.Get<ApiOptions>().MetricsUrl);
+                    
                     // Exposes HTTP metrics to Prometheus using the same endpoint above
                     app.UseHttpMetrics(options =>
                     {

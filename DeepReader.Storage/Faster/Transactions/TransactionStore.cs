@@ -96,6 +96,11 @@ namespace DeepReader.Storage.Faster.Transactions
             _transactionReaderSession ??=
                 _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionReaderSession");
 
+            // TODO @Haron I would like to expose these as metrics (In TransactionStore and BlockStore)
+            //_store.Log.MemorySizeBytes
+            //_store.ReadCache.MemorySizeBytes
+            //_store.EntryCount
+
             new Thread(CommitThread).Start();
         }
 
@@ -114,6 +119,7 @@ namespace DeepReader.Storage.Faster.Transactions
 
         public async Task<(bool, FlattenedTransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
         {
+            // TODO @Haron I would like to measure this as well. like we do with WriteTransaction above (In TransactionStore and BlockStore)
             var (status, output) = (await _transactionReaderSession.ReadAsync(new TransactionId(transactionId))).Complete();
             return (status.Found, output.Value);
         }
@@ -131,6 +137,7 @@ namespace DeepReader.Storage.Faster.Transactions
                 //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                 // Take index + log checkpoint (longer time)
+                // TODO @Haron can we also measure these two method-calls as separate metrics? Similar to the Timers above (In TransactionStore and BlockStore)
                 _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
                 _store.Log.FlushAndEvict(true);
             }
