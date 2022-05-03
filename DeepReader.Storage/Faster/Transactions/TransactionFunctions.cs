@@ -20,7 +20,7 @@ public sealed class TransactionFunctions : FunctionsBase<TransactionId, Flattene
     {
         if (ctx.Type == 0)
         {
-            if (output.Value.Id != id.Id)
+            if (!output.Value.Id.Binary.SequenceEqual(id.Id.Binary))
                 throw new Exception("Read error!");
         }
         else
