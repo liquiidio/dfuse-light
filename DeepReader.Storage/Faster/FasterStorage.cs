@@ -1,7 +1,9 @@
 ﻿using DeepReader.Storage.Faster.Blocks;
 using DeepReader.Storage.Faster.Transactions;
 using DeepReader.Storage.Options;
+using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.FlattenedTypes;
+using FASTER.core;
 using Microsoft.Extensions.Options;
 
 namespace DeepReader.Storage.Faster

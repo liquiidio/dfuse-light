@@ -8,7 +8,7 @@ public class RamOp
 {
     public RamOpOperation Operation = RamOpOperation.UNKNOWN;//RAMOp_Operation
     public uint ActionIndex = 0;// uint32
-    public Name Payer = 0;//string
+    public Name Payer = Name.Empty;//string
     public long Delta = 0;//int64
     public ulong Usage = 0;//uint64
     // To eventually replace `operation`.

@@ -7,18 +7,15 @@
       },
       "hotReloadEnabled": false,
       "dotnetRunMessages": true,
-      "remoteDebugEnabled": false,
-      "remoteDebugMachine": "test:22"
-    },
-    "Docker": {
-      "commandName": "Docker"
+      "nativeDebugging": true
     },
     "WSL : Ubuntu-20.04": {
       "commandName": "WSL",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       },
-      "distributionName": "Ubuntu20.04LTS2",
+      //"distributionName": "Ubuntu20.04LTS2",
+      "distributionName": "Ubuntu-20.04",
       "remoteDebugEnabled": true
     },
     "WSL : Ubuntu-18.04": {
@@ -27,6 +24,16 @@
         "DOTNET_ENVIRONMENT": "Development"
       },
       "distributionName": "Ubuntu-18.04"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/metrics",
+      "environmentVariables": {
+        "ASPNETCORE_URLS": "http://+:5000"
+      },
+      "httpPort": 5000,
+      "publishAllPorts": true
     }
   }
 }

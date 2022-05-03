@@ -1,9 +1,9 @@
 using System.Threading.Channels;
 using DeepReader.Classes;
-using DeepReader.Configuration;
 using DeepReader.Options;
 using DeepReader.Types;
 using KGySoft.CoreLibraries;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Serilog;
 
@@ -11,17 +11,20 @@ namespace DeepReader.HostedServices;
 
 public class DlogParserWorker : BackgroundService
 {
-    private readonly ChannelReader<IList<IList<StringSegment>>> _dlogChannel;
+    private readonly ChannelReader<List<IList<StringSegment>>> _blockSegmentsListChannel;
     private readonly ChannelWriter<Block> _blocksChannel;
 
     private DeepReaderOptions _deepReaderOptions;
     private MindReaderOptions _mindReaderOptions;
 
-    public DlogParserWorker(ChannelReader<IList<IList<StringSegment>>> dlogChannel, ChannelWriter<Block> blocksChannel,
+    private readonly ObjectPool<List<IList<StringSegment>>> _blockSegmentListPool;
+
+    public DlogParserWorker(ChannelReader<List<IList<StringSegment>>> blockSegmentsListChannel, ChannelWriter<Block> blocksChannel,
         IOptionsMonitor<DeepReaderOptions> deepReaderOptionsMonitor,
-        IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor)
+        IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor,
+        ObjectPool<List<IList<StringSegment>>> blockSegmentListPool)
     {
-        _dlogChannel = dlogChannel;
+        _blockSegmentsListChannel = blockSegmentsListChannel;
         _blocksChannel = blocksChannel;
 
         _deepReaderOptions = deepReaderOptionsMonitor.CurrentValue;
@@ -29,6 +32,8 @@ public class DlogParserWorker : BackgroundService
 
         _mindReaderOptions = mindReaderOptionsMonitor.CurrentValue;
         mindReaderOptionsMonitor.OnChange(OnMindReaderOptionsChanged);
+
+        _blockSegmentListPool = blockSegmentListPool;
     }
 
     private void OnDeepReaderOptionsChanged(DeepReaderOptions newOptions)
@@ -43,8 +48,8 @@ public class DlogParserWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        List<Task> parseTasks = new List<Task>();
-        for (int i = 0; i < 8; i++)
+        var parseTasks = new List<Task>();
+        for (var i = 0; i < _deepReaderOptions.DlogParserTasks; i++)
         {
             parseTasks.Add(ConsumeQueue(stoppingToken, i));
         }
@@ -55,11 +60,19 @@ public class DlogParserWorker : BackgroundService
     {
         Thread.CurrentThread.Name = $"ConsumeQueue {i}";
         ParseCtx ctx = new();
-        await foreach (var logs in _dlogChannel.ReadAllAsync(cancellationToken))
+        await foreach (var logs in _blockSegmentsListChannel.ReadAllAsync(cancellationToken))
         {
             try
             {
                 foreach (var data in logs)
+                /*
+                 * TODO can we parallelize this ?
+                 * by running all operations followed by a
+                 * APPLIED_TRANSACTION in parallel until we got the next APPLIED_TRANSACTION
+                 * and by waiting for everything to finish before we process a ACCEPTED_BLOCK
+                 *
+                 * Having individual contexts per TransactionTrace could also work
+                 */
                 {
                     switch ((string) data[1]!)
                     {
@@ -175,6 +188,10 @@ public class DlogParserWorker : BackgroundService
             catch (Exception e)
             {
                 Log.Error(e, "");
+            }
+            finally
+            {
+                _blockSegmentListPool.Return(logs);
             }
         }
     }

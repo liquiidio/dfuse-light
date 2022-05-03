@@ -1,4 +1,5 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -7,8 +8,8 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class AccountDelta : IEosioSerializable<AccountDelta>
 {
-    public Name Account;
-    public long Delta;
+    public Name Account { get; set; }
+    public long Delta { get; set; }
 
     public AccountDelta(BinaryReader reader)
     {
@@ -31,10 +32,6 @@ public class AccountDelta : IEosioSerializable<AccountDelta>
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        if (Account.Binary == null || Account.Binary.Length < 8)
-        {
-            string test = "";
-        }
         writer.Write(Account.Binary);
         writer.Write(Delta);
     }

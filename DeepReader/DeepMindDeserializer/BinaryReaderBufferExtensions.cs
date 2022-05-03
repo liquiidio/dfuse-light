@@ -5,6 +5,7 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc;
 using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.Other;
 using Salar.BinaryBuffers;
 using Serilog;
 
@@ -222,9 +223,7 @@ public static class BinaryBufferReaderExtensions
 
     public static Name ReadName(this BinaryBufferReader reader)
     {
-        var binary = reader.ReadBytes(8);
-
-        return new Name(BitConverter.ToUInt64(binary), SerializationHelper.ByteArrayToName(binary), binary);
+        return NameCache.GetOrCreate(reader.ReadUInt64());
     }
 
     public static string ReadString(this BinaryBufferReader reader)

@@ -1,4 +1,5 @@
 using DeepReader.Types.Enums;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.Fc;
 

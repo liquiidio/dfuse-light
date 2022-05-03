@@ -8,13 +8,13 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class PermissionLevel : IEosioSerializable<PermissionLevel>
 {
-    public Name Actor;
-    public Name Permission;
+    public Name Actor { get; set; }
+    public Name Permission { get; set; }
 
     public PermissionLevel()
     {
-        Actor = 0;
-        Permission = 0;
+        Actor = Name.Empty;
+        Permission = Name.Empty;
     }
 
     public PermissionLevel(BinaryReader reader)

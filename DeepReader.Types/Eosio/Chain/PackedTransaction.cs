@@ -11,7 +11,7 @@ public class PackedTransaction : TransactionVariant, IEosioSerializable<PackedTr
 {
     public Signature[] Signatures = Array.Empty<Signature>();
     // TODO @corvin Compression to enum
-    public byte Compression = 0; //fc::enum_type<uint8_t, compression>
+    public byte Compression; //fc::enum_type<uint8_t, compression>
     public Bytes PackedContextFreeData = new();
     public Bytes PackedTrx = new ();
 

@@ -1,5 +1,6 @@
 using DeepReader.Types.Eosio.Chain.Legacy;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain.Detail;
 

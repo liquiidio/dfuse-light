@@ -1,13 +1,13 @@
 ﻿using System.Text;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc;
 using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.Other;
 using Serilog;
 
-namespace DeepReader.Types
+namespace DeepReader.Types.Extensions
 {
     internal static class BinaryReaderExtensions
     {
@@ -26,6 +26,15 @@ namespace DeepReader.Types
             var type = reader.ReadByte();
             var signBytes = reader.ReadBytes(Constants.SignKeyDataSize); // TODO 64 or 65 bytes ?!
             reader.ReadByte();//read another byte
+
+            return signBytes; 
+            // TODO, returning only 64 bytes here is wrong.
+            // But serialization to faster currently only writes 64 bytes
+            // so returning 65 or 66 bytes would break it
+
+            // TODO we don't need to deserialize to string here all the time
+            // When processing dlogs we only need the binary data
+            // When printing/returning data for the API we need to convert to string.
 
             // TODO, general, is this SignBytesToString using sha or just BytesToString?!
             // yeah, here's probably something wrong.
@@ -221,11 +230,12 @@ namespace DeepReader.Types
         //    return new Name(Convert.ToUInt64(a), result);
         //}
 
-
+        /// <summary>
+        /// Reads 8 bytes from reader, uses Cache to return Name
+        /// </summary>
         public static Name ReadName(this BinaryReader reader)
         {
-            return reader.ReadBytes(8);
-//            return SerializationHelper.ByteArrayToName(binary);
+            return NameCache.GetOrCreate(reader.ReadBytes(8));
         }
 
         public static string ReadString(this BinaryReader reader)
@@ -245,19 +255,24 @@ namespace DeepReader.Types
             var type = reader.ReadByte();
             var keyBytes = reader.ReadBytes(Constants.PubKeyDataSize);
 
-            switch (type)
-            {
-                case (int)KeyType.K1:
-                    return CryptoHelper.PubKeyBytesToString(keyBytes, "K1");
-                case (int)KeyType.R1:
-                    return CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_");
-                case (int)KeyType.WA:
-                    return CryptoHelper.PubKeyBytesToString(keyBytes, "WA", "PUB_WA_");
-                default:
-                    Log.Error(new Exception($"public key type {type} not supported"), "");
-                    Log.Error(CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_"));
-                    return CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_"); // TODO ??
-            }
+            return keyBytes;
+
+            // TODO we don't need to deserialize/convert to string just for the deserialization of dlogs
+            // but we probably need when returning data via API
+
+            //switch (type)
+            //{
+            //    case (int)KeyType.K1:
+            //        return CryptoHelper.PubKeyBytesToString(keyBytes, "K1");
+            //    case (int)KeyType.R1:
+            //        return CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_");
+            //    case (int)KeyType.WA:
+            //        return CryptoHelper.PubKeyBytesToString(keyBytes, "WA", "PUB_WA_");
+            //    default:
+            //        Log.Error(new Exception($"public key type {type} not supported"), "");
+            //        Log.Error(CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_"));
+            //        return CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_"); // TODO ??
+            //}
         }
         #endregion EosTypes
 

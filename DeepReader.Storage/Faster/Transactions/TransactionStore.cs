@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using DeepReader.Storage.Options;
 using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
@@ -10,7 +15,8 @@ namespace DeepReader.Storage.Faster.Transactions
     {
         private readonly FasterKV<TransactionId, FlattenedTransactionTrace> _store;
 
-        private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionStoreSession;
+        private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionReaderSession;
+        private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionWriterSession;
 
         private FasterStorageOptions _options;
 
@@ -35,9 +41,11 @@ namespace DeepReader.Storage.Faster.Transactions
                 LogDevice = log,
                 ObjectLogDevice = objlog,
                 ReadCacheSettings = _options.UseReadCache ? new ReadCacheSettings() : null,
-                // Uncomment below for low memory footprint demo
+                // to calculate below:
+                // 12 = 00001111 11111111 = 4095 = 4K
+                // 34 = 00000011 11111111 11111111 11111111 11111111 = 17179869183 = 16G
                 PageSizeBits = 12, // (4K pages)
-                // MemorySizeBits = 20 // (1M memory for main log)
+                MemorySizeBits = 34 // (16G memory for main log)
             };
 
             // Define serializers; otherwise FASTER will use the slower DataContract
@@ -69,7 +77,29 @@ namespace DeepReader.Storage.Faster.Transactions
                 Log.Information("TransactionStore recovered");
             }
 
-            _transactionStoreSession = _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>();
+            foreach (var recoverableSession in _store.RecoverableSessions)
+            {
+                if (recoverableSession.Item2 == "TransactionWriterSession")
+                {
+                    _transactionWriterSession = _store.For(new TransactionFunctions())
+                        .ResumeSession<TransactionFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
+                }
+                else if (recoverableSession.Item2 == "TransactionReaderSession")
+                {
+                    _transactionReaderSession = _store.For(new TransactionFunctions())
+                        .ResumeSession<TransactionFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
+                }
+            }
+
+            _transactionWriterSession ??=
+                _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionWriterSession");
+            _transactionReaderSession ??=
+                _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionReaderSession");
+
+            // TODO @Haron I would like to expose these as metrics (In TransactionStore and BlockStore)
+            //_store.Log.MemorySizeBytes
+            //_store.ReadCache.MemorySizeBytes
+            //_store.EntryCount
 
             new Thread(CommitThread).Start();
         }
@@ -80,7 +110,7 @@ namespace DeepReader.Storage.Faster.Transactions
 
             using (WritingTransactionDuration.NewTimer())
             {
-                var result = await _transactionStoreSession.UpsertAsync(ref transactionId, ref transaction);
+                var result = await _transactionWriterSession.UpsertAsync(ref transactionId, ref transaction);
                 while (result.Status.IsPending)
                     result = await result.CompleteAsync();
                 return result.Status;
@@ -89,8 +119,9 @@ namespace DeepReader.Storage.Faster.Transactions
 
         public async Task<(bool, FlattenedTransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
         {
-            var (status, output) = (await _transactionStoreSession.ReadAsync(new TransactionId(transactionId))).Complete();
-            return (status.IsCompletedSuccessfully, output.Value);
+            // TODO @Haron I would like to measure this as well. like we do with WriteTransaction above (In TransactionStore and BlockStore)
+            var (status, output) = (await _transactionReaderSession.ReadAsync(new TransactionId(transactionId))).Complete();
+            return (status.Found, output.Value);
         }
 
         private void CommitThread()
@@ -106,7 +137,9 @@ namespace DeepReader.Storage.Faster.Transactions
                 //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                 // Take index + log checkpoint (longer time)
+                // TODO @Haron can we also measure these two method-calls as separate metrics? Similar to the Timers above (In TransactionStore and BlockStore)
                 _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                _store.Log.FlushAndEvict(true);
             }
         }
     }

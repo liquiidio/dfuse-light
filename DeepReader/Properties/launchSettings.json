@@ -9,12 +9,20 @@
       "dotnetRunMessages": true,
       "nativeDebugging": true
     },
-    "WSL : Ubuntu-20.04": {
+    "WSL : Ubuntu-20.04 Corvin": {
       "commandName": "WSL",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       },
       "distributionName": "Ubuntu20.04LTS2",
+      "remoteDebugEnabled": true
+    },    
+	"WSL : Ubuntu-20.04 Haron": {
+      "commandName": "WSL",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "distributionName": "Ubuntu-20.04",
       "remoteDebugEnabled": true
     },
     "WSL : Ubuntu-18.04": {

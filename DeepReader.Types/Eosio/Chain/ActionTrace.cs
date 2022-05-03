@@ -130,7 +130,7 @@ public class ActionTrace : IEosioSerializable<ActionTrace>
         TransactionId.WriteToBinaryWriter(writer);
 
         writer.Write(BlockNum);
-        writer.Write(BlockTime._ticks);
+        writer.Write(BlockTime.Ticks);
 
         if (ProducerBlockId != null)
         {

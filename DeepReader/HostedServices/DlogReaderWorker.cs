@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Threading.Channels;
-using DeepReader.Configuration;
 using DeepReader.Options;
 using KGySoft.CoreLibraries;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Serilog;
 
@@ -10,23 +10,31 @@ namespace DeepReader.HostedServices;
 
 public class DlogReaderWorker : BackgroundService
 {
-    private readonly ChannelWriter<IList<IList<StringSegment>>> _dlogChannel;
-
+    private readonly ChannelWriter<List<IList<StringSegment>>> _blockSegmentsListChannel;
+    
     private readonly DeepMindProcess _deepMindProcess;
+    
     private DeepReaderOptions _deepReaderOptions;
     private MindReaderOptions _mindReaderOptions;
 
-    public DlogReaderWorker(ChannelWriter<IList<IList<StringSegment>>> dlogChannel,
+    private readonly ObjectPool<List<IList<StringSegment>>> _blockSegmentListPool;
+    private List<IList<StringSegment>> _blockSegmentsList;
+
+    public DlogReaderWorker(ChannelWriter<List<IList<StringSegment>>> blockSegmentsListChannel,
         IOptionsMonitor<DeepReaderOptions> deepReaderOptionsMonitor,
-        IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor)
+        IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor,
+        ObjectPool<List<IList<StringSegment>>> blockSegmentListPool)
     {
-        _dlogChannel = dlogChannel;
+        _blockSegmentsListChannel = blockSegmentsListChannel;
 
         _deepReaderOptions = deepReaderOptionsMonitor.CurrentValue;
         deepReaderOptionsMonitor.OnChange(OnDeepReaderOptionsChanged);
 
         _mindReaderOptions = mindReaderOptionsMonitor.CurrentValue;
         mindReaderOptionsMonitor.OnChange(OnMindReaderOptionsChanged);
+
+        _blockSegmentListPool = blockSegmentListPool;
+        _blockSegmentsList = _blockSegmentListPool.Get();
 
         var vars = Environment.GetEnvironmentVariables();
         if (vars.Contains("WSLENV") && vars.Contains("NAME") && (string)vars["NAME"] == "cmadh_desktop")
@@ -36,10 +44,10 @@ public class DlogReaderWorker : BackgroundService
 
             _deepMindProcess = new DeepMindProcess(_mindReaderOptions, mindreaderDir, dataDir);
         }
-        else if (vars.Contains("WSLENV") && vars.Contains("NAME") && (string)vars["NAME"] == "HARON_PC_NAME")
+        else if (vars.Contains("WSLENV") && vars.Contains("NAME") && (string)vars["NAME"] == "DESKTOP-JGBAUO9")
         {
-            var mindreaderDir = "/home/cmadh/testing/config/";
-            var dataDir = "/home/cmadh/testing/data/";
+            var mindreaderDir = "/home/haron/testing/config/";
+            var dataDir = "/home/haron/testing/data/";
 
             _deepMindProcess = new DeepMindProcess(_mindReaderOptions, mindreaderDir, dataDir);
         }
@@ -77,18 +85,10 @@ public class DlogReaderWorker : BackgroundService
     {
         // TODO (Corvin) check nodeos version, provide arguments-list
 
-        await Task.Delay(3000, clt);
-
         _deepMindProcess.OutputDataReceived += OnNodeosDataReceived;
         await _deepMindProcess.RunAsync(clt);
     }
 
-    private void OnNodeosExited(object? sender, EventArgs e)
-    {
-        Log.Warning("Nodeos exited2");
-    }
-
-    IList<IList<StringSegment>> blockLogs = new List<IList<StringSegment>>(20000);
     private void OnNodeosDataReceived(object sender, DataReceivedEventArgs e)
     {
         try
@@ -97,19 +97,15 @@ public class DlogReaderWorker : BackgroundService
             {
                 if (e.Data.StartsWith("DMLOG START_BLOCK"))
                 {
-                    //while (!_dlogChannel.TryWrite(blockLogs))
+                    _blockSegmentsListChannel.WriteAsync(_blockSegmentsList);
+                    //while (!_blockSegmentsListChannel.TryWrite(blockLogs))
                     //{
-                    //    if (_dlogChannel.TryWrite(blockLogs))
+                    //    if(_blockSegmentsListChannel.TryWrite(blockLogs))
                     //        break;
                     //}
-                    while (!_dlogChannel.TryWrite(blockLogs))
-                    {
-                        if(_dlogChannel.TryWrite(blockLogs))
-                            break;
-                    }
-                    blockLogs = new List<IList<StringSegment>>(20000);
+                    _blockSegmentsList = _blockSegmentListPool.Get();//new List<IList<StringSegment>>(_deepReaderOptions.DlogBlockSegmentListSize);
                 }
-                blockLogs.Add(e.Data.AsSegment().Split(' ', 12));
+                _blockSegmentsList.Add(e.Data.AsSegment().Split(' ', 12));
             }
         }
         catch(Exception ex)

@@ -8,9 +8,9 @@ public class DTrxOp
 {
     public DTrxOpOperation Operation = DTrxOpOperation.UNKNOWN;//DTrxOp_Operation
     public uint ActionIndex = 0;//uint32
-    public Name Sender = 0;//string
-    public ulong SenderId;//string
-    public Name Payer = 0;//string
+    public Name Sender = Name.Empty;//string
+    public ReadOnlyMemory<char> SenderId = ReadOnlyMemory<char>.Empty;//string
+    public Name Payer = Name.Empty;//string
     public DateTimeOffset PublishedAt = default;//string
     public DateTimeOffset DelayUntil = default;//string
     public DateTimeOffset ExpirationAt = default;//string

@@ -3,29 +3,27 @@ using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.FlattenedTypes;
 
-public struct FlattenedTransactionTrace
+public class FlattenedTransactionTrace
 {
     // SHA-256 (FIPS 180-4) of the FCBUFFER-encoded packed transaction
-    public TransactionId Id = Array.Empty<byte>();
+    public TransactionId Id { get; set; } = Array.Empty<byte>();
 
-    public uint BlockNum = 0;
+    public uint BlockNum { get; set; } = 0;
 
-    public long Elapsed = 0;
+    public long Elapsed { get; set; } = 0;
 
-    public ulong NetUsage = 0;
+    public ulong NetUsage { get; set; } = 0;
 
-    public FlattenedActionTrace[] ActionTraces = Array.Empty<FlattenedActionTrace>();
+    public FlattenedActionTrace[] ActionTraces { get; set; } = Array.Empty<FlattenedActionTrace>();
 
-    public DbOp[] DbOps = Array.Empty<DbOp>();
+    public DbOp[] DbOps { get; set; } = Array.Empty<DbOp>();
 
-    public TableOp[] TableOps = Array.Empty<TableOp>();
+    public TableOp[] TableOps { get; set; } = Array.Empty<TableOp>();
 
     public FlattenedTransactionTrace()
     {
 
     }
-
-    public static int recovered = 0;
 
     public static FlattenedTransactionTrace ReadFromBinaryReader(BinaryReader reader)
     {
@@ -37,14 +35,7 @@ public struct FlattenedTransactionTrace
             NetUsage = reader.ReadUInt64(),
         };
 
-        Interlocked.Increment(ref recovered);
-
-        var test = reader.ReadInt32();
-        if (test > 400)
-        {
-            string a = "" + recovered;
-        }
-        obj.ActionTraces = new FlattenedActionTrace[test];
+        obj.ActionTraces = new FlattenedActionTrace[reader.ReadInt32()];
         for (int i = 0; i < obj.ActionTraces.Length; i++)
         {
             obj.ActionTraces[i] = FlattenedActionTrace.ReadFromBinaryReader(reader);
@@ -73,10 +64,6 @@ public struct FlattenedTransactionTrace
         writer.Write(Elapsed); // TODO VARINT
         writer.Write(NetUsage); // TODO VARINT
 
-        if (ActionTraces.Length > 10)
-        {
-            string test = "";
-        }
         writer.Write(ActionTraces.Length);
         foreach (var actionTrace in ActionTraces)
         {

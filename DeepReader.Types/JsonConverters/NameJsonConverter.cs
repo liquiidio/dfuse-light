@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.Other;
 
 namespace DeepReader.Types.JsonConverters;
 
@@ -13,16 +14,15 @@ internal class NameJsonConverter : JsonConverter<Name>
         if (nameString != null)
         {
             var binary = SerializationHelper.NameToBytes(nameString);
-            return new Name() { StringVal = nameString, Binary = binary, IntVal = BitConverter.ToUInt64(binary) };
+            return NameCache.GetOrCreate(binary);
         }
-        else if (reader.TryGetUInt64(out var nameLong))
+
+        if (reader.TryGetUInt64(out var nameLong))
         {
-            var binary = BitConverter.GetBytes(nameLong);
-            return new Name()
-            { Binary = binary, StringVal = SerializationHelper.ByteArrayToName(binary), IntVal = nameLong };
+            return NameCache.GetOrCreate(nameLong);
         }
-        else
-            return Name.Empty;
+
+        return Name.Empty;
     }
 
     public override void Write(Utf8JsonWriter writer, Name value, JsonSerializerOptions options)

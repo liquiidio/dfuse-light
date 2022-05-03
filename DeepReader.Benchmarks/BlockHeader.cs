@@ -1,4 +1,6 @@
-﻿public class BlockHeader : IParent<BlockHeader>
+﻿namespace DeepReader.Benchmarks;
+
+public class BlockHeader : IParent<BlockHeader>
 {
     public string Name { get; set; } = "Haron Kipkorir";
 

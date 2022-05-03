@@ -33,13 +33,11 @@
 
 	<ItemGroup>
 		<PackageReference Include="Cryptography.ECDSA.Secp256K1" Version="1.1.3" />
-		<PackageReference Include="HotChocolate.AspNetCore" Version="12.6.0" />
-		<PackageReference Include="HotChocolate.Subscriptions.InMemory" Version="12.6.0" />
 		<PackageReference Include="KGySoft.CoreLibraries" Version="6.0.2" />
 		<PackageReference Include="Lokad.ILPack" Version="0.1.7" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
-		<PackageReference Include="Microsoft.FASTER.Core" Version="2.0.2" />
+		<PackageReference Include="Microsoft.FASTER.Core" Version="2.0.3" />
 		<PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />

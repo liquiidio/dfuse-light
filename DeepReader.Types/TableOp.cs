@@ -7,11 +7,11 @@ namespace DeepReader.Types;
 public class TableOp
 {
     public TableOpOperation Operation = TableOpOperation.UNKNOWN;//TableOp_Operation
-    public uint ActionIndex = 0;//uint32
-    public Name Payer = string.Empty;//string
-    public Name Code = string.Empty;//string
-    public Name Scope = string.Empty;//string
-    public Name TableName = string.Empty;//string
+    public uint ActionIndex;//uint32
+    public Name Payer = Name.Empty;//string
+    public Name Code = Name.Empty;//string
+    public Name Scope = Name.Empty;//string
+    public Name TableName = Name.Empty;//string
 
     public TableOp()
     {
@@ -21,7 +21,7 @@ public class TableOp
     public TableOp(BinaryReader reader)
     {
         Operation = (TableOpOperation) reader.ReadByte();
-        ActionIndex = reader.ReadUInt16();
+        ActionIndex = reader.ReadUInt32();
         Payer = reader.ReadName();
         Code = reader.ReadName();
         Scope = reader.ReadName();

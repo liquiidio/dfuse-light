@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using DeepReader.Configuration;
+using DeepReader.Options;
 using Serilog;
 
 namespace DeepReader
@@ -44,7 +44,7 @@ namespace DeepReader
 
             await Task.Delay(5000, cancellationToken);
 
-            this.PriorityClass = ProcessPriorityClass.RealTime;
+            //this.PriorityClass = ProcessPriorityClass.RealTime;
             this.PriorityBoostEnabled = true;
 
             await this.WaitForExitAsync(cancellationToken);
@@ -58,7 +58,8 @@ namespace DeepReader
             return ExitCode;
         }
 
-        public string BuildArgumentList(MindReaderOptions mindReaderOptions, string? mindReaderDir = null, string? dataDir = null)
+        public string BuildArgumentList(MindReaderOptions mindReaderOptions, string? mindReaderDir = null,
+            string? dataDir = null)
         {
             var sb = new StringBuilder();
             if (mindReaderOptions.DeleteAllBlocks)
@@ -66,33 +67,34 @@ namespace DeepReader
 
             if (mindReaderDir == null && !string.IsNullOrEmpty(mindReaderOptions.ConfigDir))
                 sb.Append($"--config-dir {mindReaderOptions.ConfigDir}");
-            else if(mindReaderDir != null)
+            else if (mindReaderDir != null)
                 sb.Append($"--config-dir {mindReaderDir}");
             else
-                sb.Append("");//TODO default?
+                sb.Append(""); //TODO default?
 
             if (dataDir == null && !string.IsNullOrEmpty(mindReaderOptions.DataDir))
                 sb.Append($" --data-dir {mindReaderOptions.DataDir}");
             else if (dataDir != null)
                 sb.Append($" --data-dir {dataDir}");
             else
-                sb.Append("");//TODO default?
+                sb.Append(""); //TODO default?
 
-            if (mindReaderDir == null && !string.IsNullOrEmpty(mindReaderOptions.GenesisJson))
-                sb.Append($" --genesis-json {mindReaderOptions.GenesisJson}");
-            else if (mindReaderDir != null)
-                sb.Append($" --genesis-json {mindReaderDir}genesis.json");
-            else
-                sb.Append("");//TODO mandatory empty if not replay and no blocks and no snapshot?
+            if (!mindReaderOptions.ReplayBlockchain && !mindReaderOptions.HardReplayBlockchain)
+            {
+                if (mindReaderDir == null && !string.IsNullOrEmpty(mindReaderOptions.GenesisJson))
+                    sb.Append($" --genesis-json {mindReaderOptions.GenesisJson}");
+                else if (mindReaderDir != null)
+                    sb.Append($" --genesis-json {mindReaderDir}genesis.json");
+                else
+                    sb.Append(""); //TODO mandatory empty if not replay and no blocks and no snapshot?
+            }
+            else if (mindReaderOptions.HardReplayBlockchain)
+                sb.Append(" --hard-replay-blockchain"); 
+            else if (mindReaderOptions.ReplayBlockchain)
+                sb.Append(" --replay-blockchain");
 
             if (mindReaderOptions.ForceAllChecks)
                 sb.Append(" --force-all-checks");
-
-            if (mindReaderOptions.ReplayBlockchain)
-                sb.Append(" --replay-blockchain");
-
-            if (mindReaderOptions.HardReplayBlockchain)
-                sb.Append(" --hard-replay-blockchain");
 
             if (!string.IsNullOrEmpty(mindReaderOptions.Snapshot))
                 sb.Append($" --snapshot {mindReaderOptions.Snapshot}");
