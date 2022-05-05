@@ -15,7 +15,7 @@ public class TransactionTrace : IEosioSerializable<TransactionTrace>
     // Reference to the block time this transaction was executed in
     public Timestamp BlockTime;
     // Reference to the block ID this transaction was executed in
-    public Checksum256? ProducerBlockId = Checksum256.Empty;
+    public Checksum256? ProducerBlockId = Checksum256.TypeEmpty;
     // Receipt of execution of this transaction
     public TransactionReceiptHeader? Receipt;
     public long Elapsed;
@@ -64,7 +64,7 @@ public class TransactionTrace : IEosioSerializable<TransactionTrace>
 
     public TransactionTrace()
     {
-        Id = TransactionId.Empty;
+        Id = TransactionId.TypeEmpty;
         BlockTime = Timestamp.Zero;
         ActionTraces = Array.Empty<ActionTrace>();
     }

@@ -29,5 +29,5 @@ public class PublicKey : BinaryType
         return value.Binary;
     }
 
-    public static PublicKey Empty => new();
+    public static readonly PublicKey TypeEmpty = new();
 }

@@ -1,5 +1,6 @@
 ﻿using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
+using Serilog;
 
 namespace DeepReader.Storage.Faster.Blocks;
 
@@ -13,7 +14,7 @@ public sealed class BlockFunctions : FunctionsBase<BlockId, FlattenedBlock, Bloc
 
     public override void CheckpointCompletionCallback(int sessionId, string sessionName, CommitPoint commitPoint)
     {
-        Console.WriteLine("Session {0} reports persistence until {1}", sessionId, commitPoint.UntilSerialNo);
+        Log.Information("Session {0} reports persistence until {1}", sessionName, commitPoint.UntilSerialNo);
     }
 
     public override void ReadCompletionCallback(ref BlockId id, ref BlockInput input, ref BlockOutput output, BlockContext ctx, Status status, RecordMetadata recordMetadata)
@@ -21,19 +22,19 @@ public sealed class BlockFunctions : FunctionsBase<BlockId, FlattenedBlock, Bloc
         if (ctx.Type == 0)
         {
             if (output.Value.Number != id.Id)
-                throw new Exception("Read error!");
+                Log.Error(new Exception("Read error! BlockIds unequal"),"");
         }
         else
         {
             long ticks = DateTime.Now.Ticks - ctx.Ticks;
 
             if (status.Found)
-                Console.WriteLine("Async: Value not found, latency = {0}ms", new TimeSpan(ticks).TotalMilliseconds);
+                Log.Information("Async: Value not found, latency = {0}ms", new TimeSpan(ticks).TotalMilliseconds);
 
             if (output.Value.Number != id.Id)
-                Console.WriteLine("Async: Incorrect value {0} found, latency = {1}ms", output.Value.Number, new TimeSpan(ticks).TotalMilliseconds);
+                Log.Information("Async: Incorrect value {0} found, latency = {1}ms", output.Value.Number, new TimeSpan(ticks).TotalMilliseconds);
             else
-                Console.WriteLine("Async: Correct value {0} found, latency = {1}ms", output.Value.Number, new TimeSpan(ticks).TotalMilliseconds);
+                Log.Information("Async: Correct value {0} found, latency = {1}ms", output.Value.Number, new TimeSpan(ticks).TotalMilliseconds);
         }
     }
 

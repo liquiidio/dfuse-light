@@ -6,6 +6,7 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Helpers;
 using KGySoft.CoreLibraries;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Toolkit.HighPerformance;
 using Serilog;
 namespace DeepReader.Classes;
@@ -22,7 +23,7 @@ public class ParseCtx
 
     private readonly bool _traceEnabled;
 
-    private readonly string[] _supportedVersions = {"13"};
+    private readonly string[] _supportedVersions = {"mandel"};
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
@@ -49,7 +50,7 @@ public class ParseCtx
         _supportedVersions = supportedVersions;
     }
 
-    public void ResetBlock()
+    public void ResetBlock(ObjectPool<Block> blockPool, bool returnBlock)
 	{
 		// The nodeos bootstrap phase at chain initialization happens before the first block is ever
 		// produced. As such, those operations needs to be attached to initial block. Hence, let's
@@ -58,8 +59,11 @@ public class ParseCtx
         {
             ResetTrx();
         }
-		
-        _block = new Block();
+
+        if(returnBlock)
+            blockPool.Return(_block);
+
+        _block = blockPool.Get();
     }
 
 	public void ResetTrx()
@@ -252,7 +256,7 @@ public class ParseCtx
 
 	// Line format:
 	//   START_BLOCK ${block_num}
-    public void ReadStartBlock(in IList<StringSegment> chunks)
+    public void ReadStartBlock(in IList<StringSegment> chunks, ObjectPool<Block> blockPool)
     {
         if (chunks.Count != 3)
         {
@@ -261,7 +265,7 @@ public class ParseCtx
 
         var blockNum = Int64.Parse(chunks[2].AsSpan);
 
-        ResetBlock();
+        ResetBlock(blockPool, false);// TODO either ResetBlock in ReadAcceptedBlock or in ReadStartBlock is unnecessary
         _activeBlockNum = blockNum;
 
         AbiDecoder.StartBlock(blockNum);
@@ -275,7 +279,7 @@ public class ParseCtx
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
 
-    public Block ReadAcceptedBlock(in IList<StringSegment> chunks) {
+    public Block ReadAcceptedBlock(in IList<StringSegment> chunks, ObjectPool<Block> blockPool) {
         if (chunks.Count != 4)
         {
             throw new Exception($"expected 4 fields, got {chunks.Count}");
@@ -294,32 +298,25 @@ public class ParseCtx
 
         var blockState = DeepMindDeserializer.DeepMindDeserializer.Deserialize<BlockState>(Decoder.HexToBytes(chunks[3]));
 
-        var block = new Block()
-        {
-            Id = blockState.Id,
-            Number = blockState.BlockNum,
-            Version = 1,
-            Header = blockState.Header,
-            DposIrreversibleBlocknum = blockState.DPoSIrreversibleBlockNum,
-            DposProposedIrreversibleBlocknum = blockState.DPoSProposedIrreversibleBlockNum,
-            Validated = blockState.Validated,
-            BlockrootMerkle = blockState.BlockrootMerkle,
-            ProducerToLastProduced = blockState.ProducerToLastProduced,
-            ProducerToLastImpliedIrb = blockState.ProducerToLastImpliedIrb,
-            ActivatedProtocolFeatures = blockState.ActivatedProtocolFeatures,
-            PendingSchedule = blockState.PendingSchedule,
-            ActiveSchedule = blockState.ActiveSchedule,
-            ValidBlockSigningAuthority = blockState.ValidBlockSigningAuthority,
-            BlockSigningKey = blockState.ValidBlockSigningAuthority is BlockSigningAuthorityV0 blockSigningAuthority ? blockSigningAuthority.Keys.FirstOrDefault()?.Key ?? PublicKey.Empty : PublicKey.Empty,
-            RlimitOps = _block.RlimitOps,
-            UnfilteredImplicitTransactionOps = _block.UnfilteredImplicitTransactionOps,
-            UnfilteredTransactionTraces = _block.UnfilteredTransactionTraces,
-            ConfirmCount = new uint[blockState.ConfirmCount.Length],
-            BlockExtensions = blockState.Block?.BlockExtensions ?? Array.Empty<KeyValuePair<ushort, char[]>>(),
-            ProducerSignature = blockState.Block?.ProducerSignature ?? Signature.Empty,
-            UnfilteredTransactions = blockState.Block?.Transactions.ToList() ?? new List<TransactionReceipt>(),
-
-        };
+        _block.Id = blockState.Id;
+        _block.Number = blockState.BlockNum;
+        _block.Version = 1;
+        _block.Header = blockState.Header;
+        _block.DposIrreversibleBlocknum = blockState.DPoSIrreversibleBlockNum;
+        _block.DposProposedIrreversibleBlocknum = blockState.DPoSProposedIrreversibleBlockNum;
+        _block.Validated = blockState.Validated;
+        _block.BlockrootMerkle = blockState.BlockrootMerkle;
+        _block.ProducerToLastProduced = blockState.ProducerToLastProduced;
+        _block.ProducerToLastImpliedIrb = blockState.ProducerToLastImpliedIrb;
+        _block.ActivatedProtocolFeatures = blockState.ActivatedProtocolFeatures;
+        _block.PendingSchedule = blockState.PendingSchedule;
+        _block.ActiveSchedule = blockState.ActiveSchedule;
+        _block.ValidBlockSigningAuthority = blockState.ValidBlockSigningAuthority;
+        _block.BlockSigningKey = blockState.ValidBlockSigningAuthority is BlockSigningAuthorityV0 blockSigningAuthority ? blockSigningAuthority.Keys.FirstOrDefault()?.Key ?? PublicKey.TypeEmpty : PublicKey.TypeEmpty;
+        _block.ConfirmCount = blockState.ConfirmCount.ToArray();
+        _block.BlockExtensions = blockState.Block?.BlockExtensions ?? Array.Empty<KeyValuePair<ushort, char[]>>();
+        _block.ProducerSignature = blockState.Block?.ProducerSignature ?? Signature.TypeEmpty;
+        _block.UnfilteredTransactions = blockState.Block?.Transactions.ToList() ?? new List<TransactionReceipt>();
 
         // this is hydrator.hydrateblock ... 
         
@@ -342,10 +339,10 @@ public class ParseCtx
         //block.ProducerToLastImpliedIrb = blockState.ProducerToLastImpliedIRB;
         //block.ActivatedProtocolFeatures = blockState.ActivatedProtocolFeatures;
 
-        for (int i = 0; i < blockState.ConfirmCount.Length; i++)
-        {
-            block.ConfirmCount[i] = blockState.ConfirmCount[i];
-        }
+        //for (int i = 0; i < blockState.ConfirmCount.Length; i++)
+        //{
+        //    block.ConfirmCount[i] = blockState.ConfirmCount[i];
+        //}
 
         //block.PendingSchedule = blockState.PendingSchedule;
 
@@ -384,13 +381,13 @@ public class ParseCtx
 
 //        block.UnfilteredTransactionTraceCount = (uint) block.UnfilteredTransactionTraces.Count;
 
-        for (int idx = 0; idx < block.UnfilteredTransactionTraces.Count; idx++)
+        for (int idx = 0; idx < _block.UnfilteredTransactionTraces.Count; idx++)
         {
-            var el = block.UnfilteredTransactionTraces[idx];
+            var el = _block.UnfilteredTransactionTraces[idx];
             el.Index = (ulong)idx;
             el.BlockTime = 0;// TODO block.Header.Timestamp;
-            el.ProducerBlockId = block.Id;
-            el.BlockNum = block.Number;
+            el.ProducerBlockId = _block.Id;
+            el.BlockNum = _block.Number;
 
             //foreach (var actionTrace in el.ActionTraces)
             //{
@@ -403,8 +400,9 @@ public class ParseCtx
 
 //	        zlog.Debug("blocking until abi decoder has decoded every transaction pushed to it")
 
-        AbiDecoder.EndBlock(block);
-        ResetBlock();
+        AbiDecoder.EndBlock(_block);
+        var block = _block;
+        ResetBlock(blockPool, false);// TODO either ResetBlock in ReadAcceptedBlock or in ReadStartBlock is unnecessary
         return block;
     }
 
@@ -590,7 +588,7 @@ public class ParseCtx
 
         var op = Enum.Parse<DbOpOperation>(chunks[2]);
         ReadOnlyMemory<byte> oldData = default, newData = default;
-        Name oldPayer = Name.Empty, newPayer = Name.Empty;
+        Name oldPayer = Name.TypeEmpty, newPayer = Name.TypeEmpty;
 
         switch (op)
         {

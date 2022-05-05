@@ -8,11 +8,11 @@ namespace DeepReader.Types.FlattenedTypes;
 
 public class FlattenedBlock
 {
-    public Checksum256 Id { get; set; } = Checksum256.Empty;
+    public Checksum256 Id { get; set; } = Checksum256.TypeEmpty;
     public uint Number { get; set; } = 0;
 
-    public Name Producer { get; set; } = Name.Empty;
-    public Signature ProducerSignature { get; set; } = Signature.Empty;
+    public Name Producer { get; set; } = Name.TypeEmpty;
+    public Signature ProducerSignature { get; set; } = Signature.TypeEmpty;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]   // TODO (Corvin) not sure if this works for Collections
     public TransactionId[] TransactionIds { get; set; } = Array.Empty<TransactionId>();

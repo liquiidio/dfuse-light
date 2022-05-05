@@ -46,5 +46,5 @@ public class Signature : BinaryType
         return value.Binary;
     }
 
-    public static Signature Empty => new();
+    public static readonly Signature TypeEmpty = new();
 }

@@ -101,7 +101,7 @@ public class Name : BinaryType
         return Binary.GetHashCode();
     }
 
-    public static Name Empty => NameCache.GetOrCreate(0);
+    public static readonly Name TypeEmpty = NameCache.GetOrCreate(0);
 
-    public static Name Wildcard = new(0, "*", Array.Empty<byte>());
+    public static readonly Name TypeWildcard = new(0, "*", Array.Empty<byte>());
 }
