@@ -22,7 +22,7 @@ internal class NameJsonConverter : JsonConverter<Name>
             return NameCache.GetOrCreate(nameLong);
         }
 
-        return Name.Empty;
+        return Name.TypeEmpty;
     }
 
     public override void Write(Utf8JsonWriter writer, Name value, JsonSerializerOptions options)

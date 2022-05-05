@@ -36,7 +36,7 @@ namespace DeepReader.Options
             if(actionFilter.Count > 0)
                 return trace => !actionFilter.Any(filter =>
                     filter.Contract.Equals(trace.Act.Account) &&
-                    (filter.Action == trace.Act.Name || filter.Action == Name.Wildcard));
+                    (filter.Action == trace.Act.Name || filter.Action == Name.TypeWildcard));
             return _ => true;
         }
 
@@ -56,8 +56,8 @@ namespace DeepReader.Options
             if(deltaFilter.Count > 0)
                 return dbOp => !deltaFilter.Any(filter =>
                     filter.Code.Equals(dbOp.Code) &&
-                    (filter.Scope == dbOp.Scope || filter.Scope == Name.Wildcard) &&
-                    (filter.Table == dbOp.TableName || filter.Table == Name.Wildcard));
+                    (filter.Scope == dbOp.Scope || filter.Scope == Name.TypeWildcard) &&
+                    (filter.Table == dbOp.TableName || filter.Table == Name.TypeWildcard));
             return _ => true;
         }
 
@@ -73,8 +73,8 @@ namespace DeepReader.Options
 
             public ActionFilter(string contract, string action)
             {
-                Contract = contract != "*" ? NameCache.GetOrCreate(contract, false) : Name.Wildcard;
-                Action = action != "*" ? NameCache.GetOrCreate(action, false) : Name.Wildcard;
+                Contract = contract != "*" ? NameCache.GetOrCreate(contract, false) : Name.TypeWildcard;
+                Action = action != "*" ? NameCache.GetOrCreate(action, false) : Name.TypeWildcard;
             }
         }
 
@@ -94,9 +94,9 @@ namespace DeepReader.Options
 
             public DeltaFilter(string code, string table, string scope)
             {
-                Code = code != "*" ? NameCache.GetOrCreate(code, false) : Name.Wildcard;
-                Table = table != "*" ? NameCache.GetOrCreate(table, false) : Name.Wildcard;
-                Scope = scope != "*" ? NameCache.GetOrCreate(scope, false) : Name.Wildcard;
+                Code = code != "*" ? NameCache.GetOrCreate(code, false) : Name.TypeWildcard;
+                Table = table != "*" ? NameCache.GetOrCreate(table, false) : Name.TypeWildcard;
+                Scope = scope != "*" ? NameCache.GetOrCreate(scope, false) : Name.TypeWildcard;
             }
         }
     }

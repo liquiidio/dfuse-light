@@ -18,11 +18,13 @@ public class DlogParserWorker : BackgroundService
     private MindReaderOptions _mindReaderOptions;
 
     private readonly ObjectPool<List<IList<StringSegment>>> _blockSegmentListPool;
+    private readonly ObjectPool<Block> _blockPool;
 
     public DlogParserWorker(ChannelReader<List<IList<StringSegment>>> blockSegmentsListChannel, ChannelWriter<Block> blocksChannel,
         IOptionsMonitor<DeepReaderOptions> deepReaderOptionsMonitor,
         IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor,
-        ObjectPool<List<IList<StringSegment>>> blockSegmentListPool)
+        ObjectPool<List<IList<StringSegment>>> blockSegmentListPool,
+        ObjectPool<Block> blockPool)
     {
         _blockSegmentsListChannel = blockSegmentsListChannel;
         _blocksChannel = blocksChannel;
@@ -34,6 +36,7 @@ public class DlogParserWorker : BackgroundService
         mindReaderOptionsMonitor.OnChange(OnMindReaderOptionsChanged);
 
         _blockSegmentListPool = blockSegmentListPool;
+        _blockPool = blockPool;
     }
 
     private void OnDeepReaderOptionsChanged(DeepReaderOptions newOptions)
@@ -131,16 +134,15 @@ public class DlogParserWorker : BackgroundService
                             ctx.ReadRamCorrectionOp(data);
                             break;
                         case "ACCEPTED_BLOCK":
-                            var block = ctx.ReadAcceptedBlock(data);
+                            var block = ctx.ReadAcceptedBlock(data, _blockPool);
                             var blockWritten = _blocksChannel.TryWrite(block);
                             while (!blockWritten)
                             {
                                 blockWritten = _blocksChannel.TryWrite(block);
                             }
-
                             break;
                         case "START_BLOCK":
-                            ctx.ReadStartBlock(data);
+                            ctx.ReadStartBlock(data, _blockPool);
                             break;
                         case "FEATURE_OP":
                             switch ((string) data[2]!)
@@ -159,7 +161,7 @@ public class DlogParserWorker : BackgroundService
                             break;
                         case "SWITCH_FORK":
                             Log.Warning("fork signal, restarting state accumulation from beginning");
-                            ctx.ResetBlock();
+                            ctx.ResetBlock(_blockPool, true);
                             break;
                         case "ABIDUMP":
                             switch ((string) data[2]!)

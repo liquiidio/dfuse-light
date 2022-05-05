@@ -37,7 +37,7 @@ namespace DeepReader.Apis.GraphQl.CustomScalarTypes
         {
             if (runtimeValue is ActionDataBytes c)
             {
-                return new StringValueNode(null, Convert.ToBase64String(c), false);
+                return new StringValueNode(null, Convert.ToBase64String(c.Binary), false);
             }
             throw new SerializationException($"The specified value has to be of type {typeof(ActionDataBytes)}", this);
         }
@@ -67,7 +67,7 @@ namespace DeepReader.Apis.GraphQl.CustomScalarTypes
 
             if (runtimeValue is ActionDataBytes c)
             {
-                resultValue = Convert.ToBase64String(c);
+                resultValue = Convert.ToBase64String(c.Binary);
                 return true;
             }
 
