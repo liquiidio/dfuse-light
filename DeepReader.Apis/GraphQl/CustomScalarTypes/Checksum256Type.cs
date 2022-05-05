@@ -37,7 +37,7 @@ namespace DeepReader.Apis.GraphQl.CustomScalarTypes
         {
             if (runtimeValue is Checksum256 c)
             {
-                return new StringValueNode(null, c, false);
+                return new StringValueNode(null, c.StringVal, false);
             }
             throw new SerializationException($"The specified value has to be of type {typeof(Checksum256)}", this);
         }
@@ -67,7 +67,7 @@ namespace DeepReader.Apis.GraphQl.CustomScalarTypes
 
             if (runtimeValue is Checksum256 c)
             {
-                resultValue = c;
+                resultValue = c.StringVal;
                 return true;
             }
 

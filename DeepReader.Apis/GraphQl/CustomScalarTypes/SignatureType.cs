@@ -37,7 +37,7 @@ namespace DeepReader.Apis.GraphQl.CustomScalarTypes
         {
             if (runtimeValue is Signature c)
             {
-                return new StringValueNode(null, c, false);
+                return new StringValueNode(null, c.StringVal, false);
             }
             throw new SerializationException($"The specified value has to be of type {typeof(Signature)}", this);
         }
@@ -67,7 +67,7 @@ namespace DeepReader.Apis.GraphQl.CustomScalarTypes
 
             if (runtimeValue is Signature c)
             {
-                resultValue = c;
+                resultValue = c.StringVal;
                 return true;
             }
 
