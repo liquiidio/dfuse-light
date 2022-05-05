@@ -9,6 +9,7 @@ using DeepReader.Types;
 using DeepReader.Types.FlattenedTypes;
  using FASTER.core;
 using Prometheus;
+using Sentry;
 using Serilog;
 
 namespace DeepReader.Storage.Faster.Blocks
@@ -23,7 +24,6 @@ namespace DeepReader.Storage.Faster.Blocks
         private FasterStorageOptions _options;
 
         private static readonly Histogram WritingBlockDuration = Metrics.CreateHistogram("deepreader_storage_faster_write_block_duration", "Histogram of time to store blocks to Faster");
-
 
         public BlockStore(FasterStorageOptions options)
         {
@@ -101,6 +101,11 @@ namespace DeepReader.Storage.Faster.Blocks
             _blockReaderSession ??=
                 _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockReaderSession");
 
+//            _store.Log.SubscribeEvictions(new BlockEvictionObserver());
+
+            // TODO, for some reason I need to manually call the Init
+            SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
+
             new Thread(CommitThread).Start();
         }
 
@@ -127,16 +132,24 @@ namespace DeepReader.Storage.Faster.Blocks
         {
             if (_options.CheckpointInterval is null or 0)
                 return;
+
             while (true)
             {
-                Thread.Sleep(_options.CheckpointInterval.Value);
+                try
+                {
+                    Thread.Sleep(_options.CheckpointInterval.Value);
 
-                // Take log-only checkpoint (quick - no index save)
-                //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                    // Take log-only checkpoint (quick - no index save)
+                    //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
-                // Take index + log checkpoint (longer time)
-                _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                _store.Log.FlushAndEvict(true);
+                    // Take index + log checkpoint (longer time)
+                    _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                    _store.Log.FlushAndEvict(true);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "");
+                }
             }
         }
     }

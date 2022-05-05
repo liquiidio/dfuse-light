@@ -8,8 +8,10 @@ using DeepReader.Types.FlattenedTypes;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.Other;
 using KGySoft.CoreLibraries;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Prometheus;
+using Sentry;
 using Serilog;
 
 namespace DeepReader.HostedServices;
@@ -33,11 +35,14 @@ public class BlockWorker : BackgroundService
     private readonly Func<ActionTrace, bool> _actionFilter;
     private readonly Func<DbOp, bool> _deltaFilter;
 
+    private readonly ObjectPool<Block> _blockPool;
+
     public BlockWorker(ChannelReader<Block> blocksChannel,
         ChannelReader<List<IList<StringSegment>>> blockSegmentsListChannel, 
         IStorageAdapter storageAdapter,
         IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor,
-        IOptionsMonitor<DeepReaderOptions> deepReaderOptionsMonitor)
+        IOptionsMonitor<DeepReaderOptions> deepReaderOptionsMonitor,
+        ObjectPool<Block> blockPool)
     {
         _mindReaderOptions = mindReaderOptionsMonitor.CurrentValue;
         mindReaderOptionsMonitor.OnChange(OnMindReaderOptionsChanged);
@@ -60,6 +65,8 @@ public class BlockWorker : BackgroundService
 
         _actionFilter = _deepReaderOptions.Filter.BuildActionFilter();
         _deltaFilter = _deepReaderOptions.Filter.BuildDeltaFilter();
+
+        _blockPool = blockPool;
     }
 
     private void OnMindReaderOptionsChanged(MindReaderOptions newOptions)
@@ -123,14 +130,20 @@ public class BlockWorker : BackgroundService
 
                 await _storageAdapter.StoreBlockAsync(flattenedBlock);
 
-                await Parallel.ForEachAsync(flattenedTransactionTraces, _blockFlatteningParallelOptions, async (flattenedTransactionTrace, _) =>
-                {
-                    await _storageAdapter.StoreTransactionAsync(flattenedTransactionTrace); // TODO cancellationToken
-                });
+                await Parallel.ForEachAsync(flattenedTransactionTraces, _blockFlatteningParallelOptions,
+                    async (flattenedTransactionTrace, _) =>
+                    {
+                        await _storageAdapter.StoreTransactionAsync(
+                            flattenedTransactionTrace); // TODO cancellationToken
+                    });
             }
             catch (Exception e)
             {
-                Log.Error(e,"");
+                Log.Error(e, "");
+            }
+            finally
+            {
+                _blockPool.Return(block);
             }
         }
     }

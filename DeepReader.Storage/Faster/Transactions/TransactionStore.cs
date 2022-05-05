@@ -7,6 +7,7 @@ using DeepReader.Storage.Options;
 using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
 using Prometheus;
+using Sentry;
 using Serilog;
 
 namespace DeepReader.Storage.Faster.Transactions
@@ -101,6 +102,9 @@ namespace DeepReader.Storage.Faster.Transactions
             //_store.ReadCache.MemorySizeBytes
             //_store.EntryCount
 
+            // TODO, for some reason I need to manually call the Init
+            SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
+
             new Thread(CommitThread).Start();
         }
 
@@ -128,18 +132,25 @@ namespace DeepReader.Storage.Faster.Transactions
         {
             if (_options.CheckpointInterval is null or 0) 
                 return;
-            
+
             while (true)
             {
-                Thread.Sleep(_options.CheckpointInterval.Value);
+                try
+                {
+                    Thread.Sleep(_options.CheckpointInterval.Value);
 
-                // Take log-only checkpoint (quick - no index save)
-                //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                    // Take log-only checkpoint (quick - no index save)
+                    //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
-                // Take index + log checkpoint (longer time)
-                // TODO @Haron can we also measure these two method-calls as separate metrics? Similar to the Timers above (In TransactionStore and BlockStore)
-                _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                _store.Log.FlushAndEvict(true);
+                    // Take index + log checkpoint (longer time)
+                    // TODO @Haron can we also measure these two method-calls as separate metrics? Similar to the Timers above (In TransactionStore and BlockStore)
+                    _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                    _store.Log.FlushAndEvict(true);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "");
+                }
             }
         }
     }

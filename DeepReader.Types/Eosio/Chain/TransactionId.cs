@@ -60,5 +60,5 @@ public class TransactionId : TransactionVariant
         return StringVal;
     }
 
-    public static TransactionId Empty => new();
+    public static readonly TransactionId TypeEmpty = new();
 }

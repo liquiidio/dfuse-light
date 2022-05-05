@@ -39,6 +39,8 @@ namespace DeepReader.Apis
                         .AddQueryType(q => q.Name("Query"))
                         .AddType<BlockQueryType>()
                         .AddType<TransactionQueryType>();
+
+                    services.AddSentry();
                 });
                 webBuilder.Configure((context, app) =>
                 {
@@ -70,6 +72,8 @@ namespace DeepReader.Apis
                         endpoints.MapControllers();
                         endpoints.MapMetrics();
                     });
+
+                    app.UseSentryTracing();
                 });
             });
             return builder;

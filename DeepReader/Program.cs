@@ -9,6 +9,7 @@ using DeepReader.Storage.Faster;
 using DeepReader.Types;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
+using Sentry;
 using Serilog;
 
 
@@ -24,6 +25,8 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();// TODO inject max objects ?
         services.AddSingleton(serviceProvider => serviceProvider.GetRequiredService<ObjectPoolProvider>()
             .Create(new BlockSegmentListPooledObjectPolicy(Convert.ToInt32(hostContext.Configuration.GetSection("DeepReaderOptions")["DlogBlockSegmentListSize"]))));
+        services.AddSingleton(serviceProvider => serviceProvider.GetRequiredService<ObjectPoolProvider>()
+            .Create(new BlockPooledObjectPolicy()));
 
         //services.AddSingleton(Channel.CreateBounded<List<IList<StringSegment>>>(
         //    new BoundedChannelOptions(
@@ -38,6 +41,8 @@ var host = Host.CreateDefaultBuilder(args)
                 new UnboundedChannelOptions() {SingleReader = false, SingleWriter = true,}));
         services.AddSingleton(svc => svc.GetRequiredService<Channel<List<IList<StringSegment>>>>().Reader);
         services.AddSingleton(svc => svc.GetRequiredService<Channel<List<IList<StringSegment>>>>().Writer);
+
+        services.AddSentry();
 
         // Inject Block-Channel
         services.AddSingleton(
