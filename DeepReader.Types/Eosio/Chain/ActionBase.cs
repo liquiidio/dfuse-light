@@ -11,11 +11,11 @@ public class ActionBase
 
     // abi-field-name: account ,abi-field-type: name
     [JsonPropertyName("account")]
-    public Name Account { get; set; } = Name.Empty;
+    public Name Account { get; set; } = Name.TypeEmpty;
 
     // abi-field-name: name ,abi-field-type: name
     [JsonPropertyName("name")]
-    public Name Name { get; set; } = Name.Empty;
+    public Name Name { get; set; } = Name.TypeEmpty;
 
     // abi-field-name: authorization ,abi-field-type: permission_level[]
     [JsonPropertyName("authorization")]

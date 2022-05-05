@@ -9,19 +9,19 @@ namespace DeepReader.Types;
 
 public class Block
 {
-	public Checksum256 Id = Checksum256.Empty;
+	public Checksum256 Id = Checksum256.TypeEmpty;
 	public uint Number = 0;
 	public uint Version = 0;
 	public SignedBlockHeader Header;
-	public Signature ProducerSignature;
+	public Signature ProducerSignature = null;
 	public Extension[] BlockExtensions = Array.Empty<Extension>();
 	public uint DposProposedIrreversibleBlocknum = 0;
 	public uint DposIrreversibleBlocknum = 0;
-	public IncrementalMerkle BlockrootMerkle;
+	public IncrementalMerkle? BlockrootMerkle = null;
 	public PairAccountNameBlockNum[] ProducerToLastProduced = Array.Empty<PairAccountNameBlockNum>();
 	public PairAccountNameBlockNum[] ProducerToLastImpliedIrb = Array.Empty<PairAccountNameBlockNum>();
-	public uint[] ConfirmCount = Array.Empty<uint>();
-    public ScheduleInfo PendingSchedule = new();
+	public byte[] ConfirmCount = Array.Empty<byte>();
+    public ScheduleInfo? PendingSchedule = null;
 	public ProtocolFeatureActivationSet? ActivatedProtocolFeatures;
 	public bool Validated = false;
 	public IList<RlimitOp> RlimitOps = new List<RlimitOp>();
@@ -110,7 +110,7 @@ public class Block
 //	public uint FilteredExecutedTotalActionCount = 0;
 	// This was a single string element representing a public key (eos-go#ecc.PublicKey).
 	// It has been replaced by `valid_block_signing_authority_v2`.
-	public PublicKey BlockSigningKey = PublicKey.Empty;//string
+	public PublicKey BlockSigningKey = PublicKey.TypeEmpty;//string
 	// This was a list of `{name, publicKey}` elements, each block being signed by a single key,
 	// the schedule was simply a list of pair, each pair being the producer name and it's public key
 	// used to sign the block.
@@ -134,7 +134,7 @@ public class Block
 	// counterpart. The inner element for a producer can then be composed with
 	// multiple keys, each with their own weight and the threshold required to
 	// accept the block signature.
-	public ProducerAuthoritySchedule ActiveSchedule;//*ProducerAuthoritySchedule
+	public ProducerAuthoritySchedule? ActiveSchedule;//*ProducerAuthoritySchedule
 	// Wheter or not a filtering process was run on this block. The filtering process sets to nil
 	// the `unfiltered_transaction_traces` to `nil` and populate the `filtered_transaction_traces`
 	// according to the `filtering_include_filter_expr` and `filtering_exclude_filter_expr` CEL

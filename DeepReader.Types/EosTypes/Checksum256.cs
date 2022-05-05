@@ -36,5 +36,5 @@ public class Checksum256 : BinaryType
         return value.Binary;
     }
 
-    public static Checksum256 Empty => new();
+    public static readonly Checksum256 TypeEmpty = new();
 }
