@@ -37,7 +37,7 @@ namespace DeepReader.Apis.GraphQl.CustomScalarTypes
         {
             if (runtimeValue is TransactionId c)
             {
-                return new StringValueNode(null, c, false);
+                return new StringValueNode(null, c.StringVal, false);
             }
             throw new SerializationException($"The specified value has to be of type {typeof(TransactionId)}", this);
         }
@@ -67,7 +67,7 @@ namespace DeepReader.Apis.GraphQl.CustomScalarTypes
 
             if (runtimeValue is TransactionId c)
             {
-                resultValue = c;
+                resultValue = c.StringVal;
                 return true;
             }
 

@@ -37,7 +37,7 @@ namespace DeepReader.Apis.GraphQl.CustomScalarTypes
         {
             if (runtimeValue is Name n)
             {
-                return new StringValueNode(null, n, false);
+                return new StringValueNode(null, n.StringVal, false);
             }
             throw new SerializationException($"The specified value has to be of type {typeof(Name)}", this);
         }
@@ -67,7 +67,7 @@ namespace DeepReader.Apis.GraphQl.CustomScalarTypes
 
             if (runtimeValue is Name c)
             {
-                resultValue = c;
+                resultValue = c.StringVal;
                 return true;
             }
 
