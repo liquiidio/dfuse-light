@@ -4,6 +4,7 @@ using DeepReader.Storage.Options;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
+using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Options;
 
 namespace DeepReader.Storage.Faster
@@ -15,13 +16,13 @@ namespace DeepReader.Storage.Faster
 
         private FasterStorageOptions _fasterStorageOptions;
 
-        public FasterStorage(IOptionsMonitor<FasterStorageOptions> storageOptionsMonitor)
+        public FasterStorage(IOptionsMonitor<FasterStorageOptions> storageOptionsMonitor, ITopicEventSender eventSender)
         {
             _fasterStorageOptions = storageOptionsMonitor.CurrentValue;
             storageOptionsMonitor.OnChange(OnFasterStorageOptionsChanged);
 
-            _blockStore = new BlockStore(_fasterStorageOptions);
-            _transactionStore = new TransactionStore(_fasterStorageOptions);
+            _blockStore = new BlockStore(_fasterStorageOptions, eventSender);
+            _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender);
         }
 
         private void OnFasterStorageOptionsChanged(FasterStorageOptions newOptions)
