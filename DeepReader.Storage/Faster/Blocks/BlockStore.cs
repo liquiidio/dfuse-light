@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DeepReader.Storage.Faster.Transactions;
-using DeepReader.Storage.Options;
-using DeepReader.Types;
+﻿using DeepReader.Storage.Options;
 using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
@@ -118,14 +111,14 @@ namespace DeepReader.Storage.Faster.Blocks
             _blockReaderSession ??=
                 _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockReaderSession");
 
-//            _store.Log.SubscribeEvictions(new BlockEvictionObserver());
-
-            // TODO, for some reason I need to manually call the Init
-            SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
-
             _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
             _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
             _storeEntryCountHistogram.Observe(_store.EntryCount);
+
+            //            _store.Log.SubscribeEvictions(new BlockEvictionObserver());
+
+            // TODO, for some reason I need to manually call the Init
+            SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
 
             new Thread(CommitThread).Start();
         }
@@ -169,19 +162,15 @@ namespace DeepReader.Storage.Faster.Blocks
                     //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                     // Take index + log checkpoint (longer time)
-                    _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                    _store.Log.FlushAndEvict(true);
+                    using (_storeTakeFullCheckpointDurationHistogram.NewTimer())
+                        _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                    using (_storeFlushAndEvictLogDurationHistogram.NewTimer())
+                        _store.Log.FlushAndEvict(true);
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, "");
                 }
-            }
-                // Take index + log checkpoint (longer time)
-                using (_storeTakeFullCheckpointDurationHistogram.NewTimer())
-                    _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                using (_storeFlushAndEvictLogDurationHistogram.NewTimer())
-                    _store.Log.FlushAndEvict(true);
             }
         }
     }

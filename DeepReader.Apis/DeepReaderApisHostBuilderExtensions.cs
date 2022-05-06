@@ -40,15 +40,12 @@ namespace DeepReader.Apis
                         .AddGraphQLServer()
                         .AddInMemorySubscriptions()
                         .AddQueryType(q => q.Name("Query"))
-                        .AddType<BlockQueryType>()
-                        .AddType<TransactionQueryType>();
-
-                    services.AddSentry();
                             .AddType<BlockQueryType>()
                             .AddType<TransactionQueryType>()
                         .AddSubscriptionType(s => s.Name("Subscription"))
                             .AddType<BlockSubscriptionType>()
                             .AddType<TransactionSubscriptionType>();
+                    services.AddSentry();
                 });
                 webBuilder.Configure((context, app) =>
                 {

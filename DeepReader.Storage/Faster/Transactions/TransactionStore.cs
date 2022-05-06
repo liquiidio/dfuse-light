@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DeepReader.Storage.Options;
 using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
@@ -163,20 +158,15 @@ namespace DeepReader.Storage.Faster.Transactions
                     //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                     // Take index + log checkpoint (longer time)
-                    // TODO @Haron can we also measure these two method-calls as separate metrics? Similar to the Timers above (In TransactionStore and BlockStore)
-                    _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                    _store.Log.FlushAndEvict(true);
+                    using (_storeTakeFullCheckpointDurationHistogram.NewTimer())
+                        _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                    using (_storeFlushAndEvictLogDurationHistogram.NewTimer())
+                        _store.Log.FlushAndEvict(true);
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, "");
                 }
-            }
-                // Take index + log checkpoint (longer time)
-                using (_storeTakeFullCheckpointDurationHistogram.NewTimer())
-                    _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                using (_storeFlushAndEvictLogDurationHistogram.NewTimer())
-                    _store.Log.FlushAndEvict(true);
             }
         }
     }
