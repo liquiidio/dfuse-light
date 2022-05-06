@@ -10,6 +10,7 @@ using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
+using Sentry;
 using Serilog;
 
 namespace DeepReader.Storage.Faster.Blocks
@@ -117,6 +118,11 @@ namespace DeepReader.Storage.Faster.Blocks
             _blockReaderSession ??=
                 _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockReaderSession");
 
+//            _store.Log.SubscribeEvictions(new BlockEvictionObserver());
+
+            // TODO, for some reason I need to manually call the Init
+            SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
+
             _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
             _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
             _storeEntryCountHistogram.Observe(_store.EntryCount);
@@ -152,13 +158,25 @@ namespace DeepReader.Storage.Faster.Blocks
         {
             if (_options.CheckpointInterval is null or 0)
                 return;
+
             while (true)
             {
-                Thread.Sleep(_options.CheckpointInterval.Value);
+                try
+                {
+                    Thread.Sleep(_options.CheckpointInterval.Value);
 
-                // Take log-only checkpoint (quick - no index save)
-                //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                    // Take log-only checkpoint (quick - no index save)
+                    //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
+                    // Take index + log checkpoint (longer time)
+                    _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                    _store.Log.FlushAndEvict(true);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "");
+                }
+            }
                 // Take index + log checkpoint (longer time)
                 using (_storeTakeFullCheckpointDurationHistogram.NewTimer())
                     _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();

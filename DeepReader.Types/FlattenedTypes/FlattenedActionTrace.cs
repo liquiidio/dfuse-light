@@ -7,7 +7,7 @@ namespace DeepReader.Types.FlattenedTypes
 {
     public class FlattenedActionTrace
     {
-        public Name Receiver { get; set; } = Name.Empty;
+        public Name Receiver { get; set; } = Name.TypeEmpty;
 
         public Action Act { get; set; } = new();
 

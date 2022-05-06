@@ -40,6 +40,10 @@ namespace DeepReader.Apis
                         .AddGraphQLServer()
                         .AddInMemorySubscriptions()
                         .AddQueryType(q => q.Name("Query"))
+                        .AddType<BlockQueryType>()
+                        .AddType<TransactionQueryType>();
+
+                    services.AddSentry();
                             .AddType<BlockQueryType>()
                             .AddType<TransactionQueryType>()
                         .AddSubscriptionType(s => s.Name("Subscription"))
@@ -78,6 +82,8 @@ namespace DeepReader.Apis
                         endpoints.MapControllers();
                         endpoints.MapMetrics();
                     });
+
+                    app.UseSentryTracing();
                 });
             });
             return builder;

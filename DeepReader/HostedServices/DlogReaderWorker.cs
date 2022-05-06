@@ -4,6 +4,7 @@ using DeepReader.Options;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Sentry;
 using Serilog;
 
 namespace DeepReader.HostedServices;
@@ -76,6 +77,9 @@ public class DlogReaderWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // TODO, for some reason I need to manually call the Init
+        SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
+
         Thread.CurrentThread.Name = $"DlogReaderWorker";
 
         await StartNodeos(stoppingToken);
@@ -83,9 +87,8 @@ public class DlogReaderWorker : BackgroundService
 
     private async Task StartNodeos(CancellationToken clt)
     {
-        // TODO (Corvin) check nodeos version, provide arguments-list
-
         _deepMindProcess.OutputDataReceived += OnNodeosDataReceived;
+        _deepMindProcess.ErrorDataReceived += OnNodeosDataReceived;
         await _deepMindProcess.RunAsync(clt);
     }
 
@@ -98,15 +101,12 @@ public class DlogReaderWorker : BackgroundService
                 if (e.Data.StartsWith("DMLOG START_BLOCK"))
                 {
                     _blockSegmentsListChannel.WriteAsync(_blockSegmentsList);
-                    //while (!_blockSegmentsListChannel.TryWrite(blockLogs))
-                    //{
-                    //    if(_blockSegmentsListChannel.TryWrite(blockLogs))
-                    //        break;
-                    //}
-                    _blockSegmentsList = _blockSegmentListPool.Get();//new List<IList<StringSegment>>(_deepReaderOptions.DlogBlockSegmentListSize);
+                    _blockSegmentsList = _blockSegmentListPool.Get();
                 }
                 _blockSegmentsList.Add(e.Data.AsSegment().Split(' ', 12));
             }
+            else
+                Log.Information(e.Data);
         }
         catch(Exception ex)
         {
