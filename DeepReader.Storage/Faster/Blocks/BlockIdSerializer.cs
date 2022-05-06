@@ -6,7 +6,7 @@ public class BlockIdSerializer : BinaryObjectSerializer<BlockId>
 {
     public override void Deserialize(out BlockId obj)
     {
-        obj = new BlockId(reader.ReadUInt32());
+        obj = new BlockId(reader.ReadInt64());
     }
 
     public override void Serialize(ref BlockId obj)

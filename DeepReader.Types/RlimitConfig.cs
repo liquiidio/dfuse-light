@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace DeepReader.Types;
 
 public class RlimitConfig : RlimitOp
@@ -8,6 +10,7 @@ public class RlimitConfig : RlimitOp
     public uint AccountNetUsageAverageWindow = 0;//uint32
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum RlimitOpKind : byte
 {
     CONFIG = 0,

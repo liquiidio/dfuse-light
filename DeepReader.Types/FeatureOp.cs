@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace DeepReader.Types;
 
 public class FeatureOp
@@ -8,6 +10,7 @@ public class FeatureOp
     public Feature Feature = new();//*Feature
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum FeatureOpKind
 {
 
