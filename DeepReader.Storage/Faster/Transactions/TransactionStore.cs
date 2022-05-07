@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DeepReader.Storage.Options;
 using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
+using HotChocolate.Subscriptions;
 using Prometheus;
 using Sentry;
 using Serilog;
@@ -21,13 +17,29 @@ namespace DeepReader.Storage.Faster.Transactions
 
         private FasterStorageOptions _options;
 
-        private static readonly Histogram WritingTransactionDuration = Metrics.CreateHistogram("deepreader_storage_faster_write_transaction_duration", "Histogram of time to store transactions to Faster");
+        private ITopicEventSender _eventSender;
 
-        public TransactionStore(FasterStorageOptions options)
+        private static readonly Histogram _writingTransactionDurationHistogram =
+            Metrics.CreateHistogram("deepreader_storage_faster_write_transaction_duration", "Histogram of time to store transactions to Faster");
+        private static readonly Histogram _storeLogMemorySizeBytesHistogram =
+            Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_log_memory_size_bytes", "Histogram of the faster transaction store log memory size in bytes");
+        private static readonly Histogram _storeReadCacheMemorySizeBytesHistogram =
+            Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Histogram of the faster transaction store read cache memory size in bytes");
+        private static readonly Histogram _storeEntryCountHistogram =
+           Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Histogram of the faster transaction store entry count");
+        private static readonly Histogram _storeTakeFullCheckpointDurationHistogram =
+          Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_take_full_checkpoint_duration", "Histogram of time to take a full checkpoint of faster transaction store");
+        private static readonly Histogram _storeFlushAndEvictLogDurationHistogram =
+            Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_log_flush_and_evict_duration", "Histogram of time to flush and evict faster transaction store");
+        private static readonly Histogram _transactionReaderSessionReadDurationHistogram =
+          Metrics.CreateHistogram("deepreader_storage_faster_transaction_get_by_id_duration", "Histogram of time to try get transaction trace by id");
+
+        public TransactionStore(FasterStorageOptions options, ITopicEventSender eventSender)
         {
             _options = options;
+            _eventSender = eventSender;
 
-            if(!_options.TransactionStoreDir.EndsWith("/"))
+            if (!_options.TransactionStoreDir.EndsWith("/"))
                 options.TransactionStoreDir += "/";
 
             // Create files for storing data
@@ -97,10 +109,9 @@ namespace DeepReader.Storage.Faster.Transactions
             _transactionReaderSession ??=
                 _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionReaderSession");
 
-            // TODO @Haron I would like to expose these as metrics (In TransactionStore and BlockStore)
-            //_store.Log.MemorySizeBytes
-            //_store.ReadCache.MemorySizeBytes
-            //_store.EntryCount
+            _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
+            _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
+            _storeEntryCountHistogram.Observe(_store.EntryCount);
 
             // TODO, for some reason I need to manually call the Init
             SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
@@ -112,7 +123,9 @@ namespace DeepReader.Storage.Faster.Transactions
         {
             var transactionId = new TransactionId(transaction.Id);
 
-            using (WritingTransactionDuration.NewTimer())
+            await _eventSender.SendAsync("TransactionAdded", transaction);
+
+            using (_writingTransactionDurationHistogram.NewTimer())
             {
                 var result = await _transactionWriterSession.UpsertAsync(ref transactionId, ref transaction);
                 while (result.Status.IsPending)
@@ -123,14 +136,16 @@ namespace DeepReader.Storage.Faster.Transactions
 
         public async Task<(bool, FlattenedTransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
         {
-            // TODO @Haron I would like to measure this as well. like we do with WriteTransaction above (In TransactionStore and BlockStore)
-            var (status, output) = (await _transactionReaderSession.ReadAsync(new TransactionId(transactionId))).Complete();
-            return (status.Found, output.Value);
+            using (_transactionReaderSessionReadDurationHistogram.NewTimer())
+            {
+                var (status, output) = (await _transactionReaderSession.ReadAsync(new TransactionId(transactionId))).Complete();
+                return (status.Found, output.Value);
+            }
         }
 
         private void CommitThread()
         {
-            if (_options.CheckpointInterval is null or 0) 
+            if (_options.CheckpointInterval is null or 0)
                 return;
 
             while (true)
@@ -143,9 +158,10 @@ namespace DeepReader.Storage.Faster.Transactions
                     //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                     // Take index + log checkpoint (longer time)
-                    // TODO @Haron can we also measure these two method-calls as separate metrics? Similar to the Timers above (In TransactionStore and BlockStore)
-                    _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                    _store.Log.FlushAndEvict(true);
+                    using (_storeTakeFullCheckpointDurationHistogram.NewTimer())
+                        _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                    using (_storeFlushAndEvictLogDurationHistogram.NewTimer())
+                        _store.Log.FlushAndEvict(true);
                 }
                 catch (Exception ex)
                 {
