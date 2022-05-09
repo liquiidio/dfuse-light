@@ -33,7 +33,6 @@ namespace DeepReader.Apis
                         options.JsonSerializerOptions.MaxDepth = Int32.MaxValue;
                         options.JsonSerializerOptions.IncludeFields = true;
                         options.JsonSerializerOptions.AddContext<BlockJsonContext>();
-                        options.JsonSerializerOptions.AddContext<TransactionJsonContext>();
                     });
                     services.AddEndpointsApiExplorer();
                     services.AddSwaggerGen();
