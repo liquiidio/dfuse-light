@@ -37,6 +37,7 @@
 		<PackageReference Include="Lokad.ILPack" Version="0.1.7" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="6.0.0" />
 		<PackageReference Include="Microsoft.FASTER.Core" Version="2.0.3" />
 		<PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2" />
@@ -69,6 +70,12 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>Resources.resx</DependentUpon>
 		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Update="appsettings.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>

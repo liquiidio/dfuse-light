@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace DeepReader.Types;
 
 public class CreationOp
@@ -6,6 +8,7 @@ public class CreationOp
     public int ActionIndex = 0;
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum CreationOpKind : byte
 {
     UNKNOWN,

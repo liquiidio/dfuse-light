@@ -8,7 +8,7 @@ namespace DeepReader.Types.EosTypes;
 [JsonConverter(typeof(Checksum512JsonConverter))]
 public class Checksum512 : BinaryType
 {
-    private string? _stringVal = string.Empty;
+    private string? _stringVal;
 
     public string StringVal
     {

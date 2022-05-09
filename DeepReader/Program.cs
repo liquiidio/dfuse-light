@@ -56,11 +56,15 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddHostedService<DlogParserWorker>();
         services.AddHostedService<BlockWorker>();
 
+
     }).UseSerilog((hostingContext, loggerConfiguration) =>
         loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration)
     )
     .UseDeepReaderApis()
     .UseFasterStorage()
+#if !DEBUG
+    .UseSystemd()
+#endif
     .Build();
 
 await host.RunAsync();

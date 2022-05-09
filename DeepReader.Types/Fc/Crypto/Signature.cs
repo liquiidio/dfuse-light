@@ -7,7 +7,7 @@ namespace DeepReader.Types.Fc.Crypto;
 [JsonConverter(typeof(SignatureJsonConverter))]
 public class Signature : BinaryType
 {
-    private string? _stringVal = string.Empty;
+    private string? _stringVal;
 
     public string StringVal
     {

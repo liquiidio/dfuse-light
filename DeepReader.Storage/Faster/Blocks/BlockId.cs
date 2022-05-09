@@ -4,14 +4,14 @@ namespace DeepReader.Storage.Faster.Blocks
 {
     public class BlockId : IFasterEqualityComparer<BlockId>
     {
-        public uint Id;
+        public long Id;
 
         public BlockId()
         {
 
         }
 
-        public BlockId(uint id)
+        public BlockId(long id)
         {
             Id = id;
         }

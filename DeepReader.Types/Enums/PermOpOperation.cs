@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace DeepReader.Types.Enums;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum PermOpOperation
 {
     UNKNOWN = 0,
