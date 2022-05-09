@@ -4,7 +4,7 @@ using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types.JsonConverters;
 
-internal class SignatureJsonConverter : JsonConverter<Signature>
+public class SignatureJsonConverter : JsonConverter<Signature>
 {
     public override Signature Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

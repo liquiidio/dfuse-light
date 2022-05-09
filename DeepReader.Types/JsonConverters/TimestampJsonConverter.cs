@@ -5,7 +5,7 @@ using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.JsonConverters;
 
-internal class TimestampJsonConverter : JsonConverter<Timestamp>
+public class TimestampJsonConverter : JsonConverter<Timestamp>
 {
     public override Timestamp Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

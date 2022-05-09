@@ -2,9 +2,11 @@ using System.Text.Json.Serialization;
 using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.JsonConverters;
 
 namespace DeepReader.Types;
 
+[JsonConverter(typeof(DbOpJsonConverter))]
 public class DbOp
 {
     public DbOpOperation Operation { get; set; } = DbOpOperation.UNKNOWN;//DBOp_Operation
@@ -15,6 +17,7 @@ public class DbOp
     public string PrimaryKey { get; set; } = string.Empty;//string
     public Name OldPayer { get; set; } = string.Empty;//string
     public Name NewPayer { get; set; } = string.Empty;//string
+
     [JsonIgnore]
     public ReadOnlyMemory<byte> OldData { get; set; } = Array.Empty<byte>();//[]byte
     [JsonIgnore]

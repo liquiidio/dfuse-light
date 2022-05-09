@@ -2,9 +2,11 @@
 using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.JsonConverters;
 
 namespace DeepReader.Types.FlattenedTypes;
 
+[JsonConverter(typeof(FlattenedDbOpJsonConverter))]
 public class FlattenedDbOp
 {
     public DbOpOperation Operation { get; set; } = DbOpOperation.UNKNOWN;//DBOp_Operation
