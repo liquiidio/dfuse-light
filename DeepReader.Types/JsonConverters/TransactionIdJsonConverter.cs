@@ -4,7 +4,7 @@ using DeepReader.Types.Eosio.Chain;
 
 namespace DeepReader.Types.JsonConverters;
 
-internal class TransactionIdJsonConverter : JsonConverter<TransactionId>
+public class TransactionIdJsonConverter : JsonConverter<TransactionId>
 {
     public override TransactionId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

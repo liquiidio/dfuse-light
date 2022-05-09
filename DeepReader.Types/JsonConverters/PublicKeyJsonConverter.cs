@@ -4,7 +4,7 @@ using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.JsonConverters;
 
-internal class PublicKeyJsonConverter : JsonConverter<PublicKey>
+public class PublicKeyJsonConverter : JsonConverter<PublicKey>
 {
     public override PublicKey Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
