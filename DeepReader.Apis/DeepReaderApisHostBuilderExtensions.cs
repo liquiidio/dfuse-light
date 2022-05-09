@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using DeepReader.Apis.GraphQl.QueryTypes;
+using DeepReader.Apis.GraphQl.SubscriptionTypes;
 using DeepReader.Apis.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -35,11 +36,15 @@ namespace DeepReader.Apis
                     services.AddEndpointsApiExplorer();
                     services.AddSwaggerGen();
 
-                    services.AddGraphQLServer()
+                    services
+                        .AddGraphQLServer()
+                        .AddInMemorySubscriptions()
                         .AddQueryType(q => q.Name("Query"))
-                        .AddType<BlockQueryType>()
-                        .AddType<TransactionQueryType>();
-
+                            .AddType<BlockQueryType>()
+                            .AddType<TransactionQueryType>()
+                        .AddSubscriptionType(s => s.Name("Subscription"))
+                            .AddType<BlockSubscriptionType>()
+                            .AddType<TransactionSubscriptionType>();
                     services.AddSentry();
                 });
                 webBuilder.Configure((context, app) =>
@@ -50,11 +55,13 @@ namespace DeepReader.Apis
                         options.SwaggerEndpoint("/swagger/v1/swagger.json", "DeepReaderAPI v1");
                     });
                     //app.UseHttpsRedirection();
+
+                    app.UseWebSockets();
                     app.UseRouting();
 
                     // Expose Metrics only on specified port (default 9090)
                     // so they are not proxied with the api and only used by internal services
-                    
+
                     // TODO @Haron I would like to have port and url configurable but this doesn't seem to work
                     // app.UseMetricServer(context.Configuration.Get<ApiOptions>().MetricsPort, context.Configuration.Get<ApiOptions>().MetricsUrl);
                     

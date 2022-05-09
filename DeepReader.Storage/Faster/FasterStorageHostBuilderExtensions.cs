@@ -1,4 +1,5 @@
 ﻿using DeepReader.Storage.Options;
+using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,7 +32,7 @@ namespace DeepReader.Storage.Faster
                 services.Configure<FasterStorageOptions>(config => hostContext.Configuration.GetSection("FasterStorageOptions").Bind(config));
                 services.AddSingleton(provider =>
                 {
-                    IStorageAdapter storageAdapter = new FasterStorage(provider.GetRequiredService<IOptionsMonitor<FasterStorageOptions>>());
+                    IStorageAdapter storageAdapter = new FasterStorage(provider.GetRequiredService<IOptionsMonitor<FasterStorageOptions>>(), provider.GetRequiredService<ITopicEventSender>());
                     return storageAdapter;
                 });
             });
