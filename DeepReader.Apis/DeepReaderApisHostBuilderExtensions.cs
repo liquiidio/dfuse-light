@@ -47,6 +47,7 @@ namespace DeepReader.Apis
                             .AddType<BlockSubscriptionType>()
                             .AddType<TransactionSubscriptionType>();
                     services.AddSentry();
+                    services.AddHealthChecks();
 
                 });
                 webBuilder.Configure((context, app) =>
@@ -80,6 +81,7 @@ namespace DeepReader.Apis
                         endpoints.MapGraphQL();
                         endpoints.MapControllers();
                         endpoints.MapMetrics();
+                        endpoints.MapHealthChecks("/health");
                     });
 
                     app.UseSentryTracing();
