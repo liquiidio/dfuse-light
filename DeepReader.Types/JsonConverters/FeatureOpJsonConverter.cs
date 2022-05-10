@@ -14,7 +14,11 @@ public class FeatureOpJsonConverter : JsonConverter<FeatureOp>
     public override void Write(Utf8JsonWriter writer, FeatureOp value, JsonSerializerOptions options)
     {
         // TODO, just a temporary workaround
-        writer.WriteRawValue(JsonSerializer.SerializeToUtf8Bytes(value));
+        writer.WriteStartObject();
+        writer.WriteString("kind", value.Kind);
+        writer.WriteNumber("actionIndex", value.ActionIndex);
+        writer.WriteString("feature", value.Feature.FeatureDigest);// TODO
+        writer.WriteEndObject();
     }
 
 }
