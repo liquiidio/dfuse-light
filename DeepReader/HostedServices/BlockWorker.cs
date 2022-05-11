@@ -37,12 +37,16 @@ public class BlockWorker : BackgroundService
 
     private readonly ObjectPool<Block> _blockPool;
 
-    public BlockWorker(ChannelReader<Block> blocksChannel,
-        ChannelReader<List<IList<StringSegment>>> blockSegmentsListChannel, 
+    private MetricsCollector _metricsCollector;
+
+    public BlockWorker(
+        ChannelReader<Block> blocksChannel,
+        ChannelReader<List<IList<StringSegment>>> blockSegmentsListChannel,
         IStorageAdapter storageAdapter,
         IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor,
         IOptionsMonitor<DeepReaderOptions> deepReaderOptionsMonitor,
-        ObjectPool<Block> blockPool)
+        ObjectPool<Block> blockPool,
+        MetricsCollector metricsCollector)
     {
         _mindReaderOptions = mindReaderOptionsMonitor.CurrentValue;
         mindReaderOptionsMonitor.OnChange(OnMindReaderOptionsChanged);
@@ -67,6 +71,14 @@ public class BlockWorker : BackgroundService
         _deltaFilter = _deepReaderOptions.Filter.BuildDeltaFilter();
 
         _blockPool = blockPool;
+        _metricsCollector = metricsCollector;
+        _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
+    }
+
+    private void CollectObservableMetrics(object? sender, EventArgs e)
+    {
+        if (_blocksChannel.CanCount)
+            BlocksChannelSize.Observe(_blocksChannel.Count);
     }
 
     private void OnMindReaderOptionsChanged(MindReaderOptions newOptions)
@@ -95,9 +107,6 @@ public class BlockWorker : BackgroundService
         //    IgnoreReadOnlyProperties = false,
         //    MaxDepth = Int32.MaxValue
         //};
-
-        if (_blocksChannel.CanCount)
-            BlocksChannelSize.Observe(_blocksChannel.Count);
 
         await foreach (var block in _blocksChannel.ReadAllAsync(cancellationToken))
         {
