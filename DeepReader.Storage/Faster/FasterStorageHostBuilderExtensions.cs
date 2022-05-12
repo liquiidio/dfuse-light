@@ -32,7 +32,10 @@ namespace DeepReader.Storage.Faster
                 services.Configure<FasterStorageOptions>(config => hostContext.Configuration.GetSection("FasterStorageOptions").Bind(config));
                 services.AddSingleton(provider =>
                 {
-                    IStorageAdapter storageAdapter = new FasterStorage(provider.GetRequiredService<IOptionsMonitor<FasterStorageOptions>>(), provider.GetRequiredService<ITopicEventSender>());
+                    IStorageAdapter storageAdapter = new FasterStorage(
+                        provider.GetRequiredService<IOptionsMonitor<FasterStorageOptions>>(),
+                        provider.GetRequiredService<ITopicEventSender>(),
+                        provider.GetRequiredService<MetricsCollector>());
                     return storageAdapter;
                 });
             });

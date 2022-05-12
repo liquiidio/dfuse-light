@@ -16,13 +16,16 @@ namespace DeepReader.Storage.Faster
 
         private FasterStorageOptions _fasterStorageOptions;
 
-        public FasterStorage(IOptionsMonitor<FasterStorageOptions> storageOptionsMonitor, ITopicEventSender eventSender)
+        public FasterStorage(
+            IOptionsMonitor<FasterStorageOptions> storageOptionsMonitor,
+            ITopicEventSender eventSender,
+            MetricsCollector metricsCollector)
         {
             _fasterStorageOptions = storageOptionsMonitor.CurrentValue;
             storageOptionsMonitor.OnChange(OnFasterStorageOptionsChanged);
 
-            _blockStore = new BlockStore(_fasterStorageOptions, eventSender);
-            _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender);
+            _blockStore = new BlockStore(_fasterStorageOptions, eventSender, metricsCollector);
+            _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender, metricsCollector);
         }
 
         private void OnFasterStorageOptionsChanged(FasterStorageOptions newOptions)

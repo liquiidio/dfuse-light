@@ -18,6 +18,7 @@ namespace DeepReader.Storage.Faster.Blocks
         private FasterStorageOptions _options;
 
         private ITopicEventSender _eventSender;
+        private MetricsCollector _metricsCollector;
 
         private static readonly Histogram WritingBlockDuration =
             Metrics.CreateHistogram("deepreader_storage_faster_write_block_duration", "Histogram of time to store blocks to Faster");
@@ -34,11 +35,13 @@ namespace DeepReader.Storage.Faster.Blocks
         private static readonly Histogram _blockReaderSessionReadDurationHistogram =
           Metrics.CreateHistogram("deepreader_storage_faster_block_get_by_id_duration", "Histogram of time to try get block by id");
 
-        public BlockStore(FasterStorageOptions options, ITopicEventSender eventSender)
+        public BlockStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
         {
             _options = options;
             _eventSender = eventSender;
-
+            _metricsCollector = metricsCollector;
+            _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
+            
             if (!_options.BlockStoreDir.EndsWith("/"))
                 _options.BlockStoreDir += "/";
 
@@ -111,16 +114,19 @@ namespace DeepReader.Storage.Faster.Blocks
             _blockReaderSession ??=
                 _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockReaderSession");
 
-            _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
-            _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
-            _storeEntryCountHistogram.Observe(_store.EntryCount);
-
             //            _store.Log.SubscribeEvictions(new BlockEvictionObserver());
 
             // TODO, for some reason I need to manually call the Init
             SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
 
             new Thread(CommitThread).Start();
+        }
+
+        private void CollectObservableMetrics(object? sender, EventArgs e)
+        {
+            _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
+            _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
+            _storeEntryCountHistogram.Observe(_store.EntryCount);
         }
 
         public async Task<Status> WriteBlock(FlattenedBlock block)
