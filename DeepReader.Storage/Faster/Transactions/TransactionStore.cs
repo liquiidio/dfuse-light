@@ -118,6 +118,8 @@ namespace DeepReader.Storage.Faster.Transactions
             new Thread(CommitThread).Start();
         }
 
+        public long TransactionsIndexed => _store.EntryCount;
+
         private void CollectObservableMetrics(object? sender, EventArgs e)
         {
             _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);

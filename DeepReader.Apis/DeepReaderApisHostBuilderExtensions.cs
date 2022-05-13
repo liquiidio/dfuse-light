@@ -54,7 +54,9 @@ namespace DeepReader.Apis
                         .AddCheck<ReadCacheEnabledHealthCheck>("ReadCacheEnabled")
                         .AddCheck<MaxBlocksCacheEntriesHealthCheck>("MaxBlocksCacheEntries")
                         .AddCheck<MaxTransactionsCacheEntriesHealthCheck>("MaxTransactionsCacheEntries")
-                        .AddCheck<CheckpointIntervalHealthCheck>("CheckpointInterval");
+                        .AddCheck<CheckpointIntervalHealthCheck>("CheckpointInterval")
+                        .AddCheck<BlocksIndexedHealthCheck>("BlocksIndexed")
+                        .AddCheck<TransactionsIndexedHealthCheck>("TransactionsIndexed");
                     services
                         .AddHealthChecksUI()
                         .AddInMemoryStorage();

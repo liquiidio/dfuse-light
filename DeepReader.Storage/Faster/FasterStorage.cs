@@ -1,9 +1,7 @@
 ﻿using DeepReader.Storage.Faster.Blocks;
 using DeepReader.Storage.Faster.Transactions;
 using DeepReader.Storage.Options;
-using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.FlattenedTypes;
-using FASTER.core;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Options;
 
@@ -32,6 +30,10 @@ namespace DeepReader.Storage.Faster
         {
             _fasterStorageOptions = newOptions;
         }
+
+        public long BlocksIndexed => _blockStore.BlocksIndexed;
+
+        public long TransactionsIndexed => _transactionStore.TransactionsIndexed;
 
         public async Task StoreBlockAsync(FlattenedBlock block)
         {
