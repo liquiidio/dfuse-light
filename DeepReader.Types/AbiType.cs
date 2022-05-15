@@ -81,6 +81,13 @@ public class AbiStruct : IEosioSerializable<AbiStruct>
     [JsonPropertyName("fields")]
     public AbiField[] Fields;
 
+    public AbiStruct(string name, List<AbiField> fields)
+    {
+        Name = name;
+        Base = string.Empty;
+        Fields = fields.ToArray();
+    }
+
     public AbiStruct(BinaryReader reader)
     {
         Name = reader.ReadString();

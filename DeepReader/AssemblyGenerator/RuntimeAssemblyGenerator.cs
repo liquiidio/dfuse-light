@@ -23,12 +23,12 @@ public static class RuntimeAssemblyGenerator
 //        await Task.Run(() => CreateAbiAndAssembly(contractName, abiBytes, blockNum), cancellationToken);
     }
 
-    //public static void CreateAbiAndAssembly(Name contractName, byte[] abiBytes, uint blockNum)
-    //{
+    public static void CreateAbiAndAssembly(Name contractName, byte[] abiBytes, uint blockNum)
+    {
 
-    //    var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(abiBytes);
-    //    CreateAssembly(contractName, abi, blockNum);
-    //}
+        var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(abiBytes);
+        //CreateAssembly(contractName, abi, blockNum);
+    }
 
     //public static Assembly CreateAssembly(Name contractName, Abi abi, uint blockNum)
     //{

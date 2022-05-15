@@ -9,7 +9,7 @@ using Serilog;
 
 namespace DeepReader.Types.Extensions
 {
-    internal static class BinaryReaderExtensions
+    public static class BinaryReaderExtensions
     {
 
         public enum KeyType

@@ -2,6 +2,7 @@ using System.Text.Json;
 using DeepReader.AssemblyGenerator;
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.Other;
 using Serilog;
 
 namespace DeepReader.Classes;
@@ -63,6 +64,10 @@ public class AbiDecoder
         {
             Console.WriteLine($"bytesWritten " + bytesWritten + " rawAbiBase64.Length " + rawAbiBase64.Length); // TODO remove
             var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(bytes[Range.EndAt(bytesWritten)]);
+
+            AbiAssemblyGenerator abiAssemblyGenerator = new(abi, NameCache.GetOrCreate(contract.ToString()), 0);
+            var abiAssembly = abiAssemblyGenerator.GenerateAssembly();
+
             Log.Information($"Deserialized Abi for {contract} : {JsonSerializer.Serialize(abi, JsonSerializerOptions)}");
         }
         else
