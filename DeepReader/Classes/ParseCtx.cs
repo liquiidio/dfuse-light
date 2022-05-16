@@ -23,7 +23,7 @@ public class ParseCtx
 
     private readonly bool _traceEnabled;
 
-    private readonly string[] _supportedVersions = {"mandel"};
+    private readonly string[] _supportedVersions = {"mandel", "13" };
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
