@@ -65,7 +65,7 @@ namespace DeepReader.AssemblyGenerator
         {
             foreach (var abiStructWithBaseFields in _abiStructsWithBaseFields)
             {
-                var clrTypeName = $"{_contractName.StringVal}_{abiStructWithBaseFields.Name}";
+                var clrTypeName = $"{abiStructWithBaseFields.Name}";
                 var abiClrFieldType = _moduleBuilder.GetTypes().FirstOrDefault(t => t.FullName == clrTypeName);
                 // Create new ClrType if module does not already contain it
                 // creation of a ClrType can recursively create other ClrTypes so it's possible types are added
@@ -81,7 +81,7 @@ namespace DeepReader.AssemblyGenerator
             return _moduleBuilder.Assembly;
         }
 
-        public static string AssemblyPath = "/app/config/mindreader/";//Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedAssemblies");
+        public static string AssemblyPath = "/app/config/mindreader/abis/";//Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedAssemblies");
 
         private static async void SaveAssemblyAndAbi(Assembly assembly, Abi abi, string contractName, uint blockNum)
         {
@@ -223,7 +223,7 @@ namespace DeepReader.AssemblyGenerator
             }
 
             // TODO EOSIO base types ?
-            var clrTypeName = $"{_contractName.StringVal}_{fieldTypeName}";
+            var clrTypeName = $"{fieldTypeName}";
 
             if (!TypeMap.TryGetValue(fieldTypeName, out var abiClrFieldType))
                 abiClrFieldType = _moduleBuilder.GetTypes().FirstOrDefault(t => t.FullName == clrTypeName);
@@ -251,7 +251,7 @@ namespace DeepReader.AssemblyGenerator
 
                 // Guess we should check that a type-name/class name is not longer than 511 characters + some other checks
                 // https://stackoverflow.com/questions/186523/what-is-the-maximum-length-of-a-c-cli-identifier
-                var clrTypeName = $"{_contractName.StringVal}_{abiStructName}";
+                var clrTypeName = $"{abiStructName}";
                 var dynamicType = _moduleBuilder.DefineType(clrTypeName,
                     TypeAttributes.Public |
                     TypeAttributes.Sealed |
@@ -278,6 +278,7 @@ namespace DeepReader.AssemblyGenerator
                         continue;
 
                     // add new field to type
+//                    DefineProperty(abiField.Name, PropertyAttributes.None, CallingConventions.Standard, abiFieldType, new Type[] { });
                     var fieldBuilder = dynamicType.DefineField(abiField.Name, abiFieldType, FieldAttributes.Public);
 
                     Label readOptionalEnd = default;

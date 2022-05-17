@@ -49,6 +49,7 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
 
     public override bool InitialUpdater(ref AbiId key, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput output, ref RMWInfo rmwInfo)
     {
+        value = new AbiCacheItem();
         value.AbiVersions[input.GlobalSequence] = input.Assembly;
         value.Id = input.Id;
         return true;
@@ -70,6 +71,7 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
 
 }
 
+[Serializable]
 public class AbiCacheItem
 {
     public ulong Id;

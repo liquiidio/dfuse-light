@@ -234,7 +234,7 @@ public class BlockWorker : BackgroundService
                     if (found)  // TODO check GlobalSequence
                     {
                         var assembly = assemblyPair.Value;
-                        var clrType = assembly.GetType(actionTrace.Act.Account);
+                        var clrType = assembly.GetType(actionTrace.Act.Name.StringVal);
                         if (clrType != null)
                         {
                             BinaryReader reader = new BinaryReader(new MemoryStream(actionTrace.Act.Data));
