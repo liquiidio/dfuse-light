@@ -136,6 +136,8 @@ public class BlockWorker : BackgroundService
                         await _storageAdapter.StoreTransactionAsync(
                             flattenedTransactionTrace); // TODO cancellationToken
                     });
+
+                await TestAbiDeserializer(flattenedTransactionTraces);
             }
             catch (Exception e)
             {
@@ -218,6 +220,36 @@ public class BlockWorker : BackgroundService
                 ProducerSignature = block.ProducerSignature
             }, flattenedTransactionTraces);
         });
+    }
+
+    private async Task TestAbiDeserializer(List<FlattenedTransactionTrace> flattenedTransactionTraces)
+    {
+        foreach(FlattenedTransactionTrace trace in flattenedTransactionTraces)
+        {
+            foreach(var actionTrace in trace.ActionTraces)
+            {
+                try
+                {
+                    var (found, assemblyPair) = await _storageAdapter.TryGetActiveAbiAssembly(actionTrace.Act.Account);
+                    if (found)  // TODO check GlobalSequence
+                    {
+                        var assembly = assemblyPair.Value;
+                        var clrType = assembly.GetType(actionTrace.Act.Account);
+                        if (clrType != null)
+                        {
+                            BinaryReader reader = new BinaryReader(new MemoryStream(actionTrace.Act.Data));
+                            var obj = clrType.GetConstructor(new Type[] { typeof(BinaryReader) })!.Invoke(new[] { reader });
+                        }
+                        else
+                            Log.Information($"Type for {actionTrace.Act.Account}.{actionTrace.Act.Name} not found");
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Log.Error(ex, "");
+                }
+            }
+        }
     }
 
 }

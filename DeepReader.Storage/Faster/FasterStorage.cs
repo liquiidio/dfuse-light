@@ -1,11 +1,14 @@
-﻿using DeepReader.Storage.Faster.Blocks;
+﻿using DeepReader.Storage.Faster.Abis;
+using DeepReader.Storage.Faster.Blocks;
 using DeepReader.Storage.Faster.Transactions;
 using DeepReader.Storage.Options;
 using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 
 namespace DeepReader.Storage.Faster
 {
@@ -13,6 +16,7 @@ namespace DeepReader.Storage.Faster
     {
         private readonly BlockStore _blockStore;
         private readonly TransactionStore _transactionStore;
+        private readonly AbiStore _abiStore;
 
         private FasterStorageOptions _fasterStorageOptions;
 
@@ -23,6 +27,7 @@ namespace DeepReader.Storage.Faster
 
             _blockStore = new BlockStore(_fasterStorageOptions, eventSender);
             _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender);
+            _abiStore = new AbiStore(_fasterStorageOptions, eventSender);
         }
 
         private void OnFasterStorageOptionsChanged(FasterStorageOptions newOptions)
@@ -63,6 +68,26 @@ namespace DeepReader.Storage.Faster
         public async Task<(bool, FlattenedTransactionTrace)> GetTransactionAsync(string transactionId)
         {
             return await _transactionStore.TryGetTransactionTraceById(new Types.Eosio.Chain.TransactionId(transactionId));
+        }
+
+        public async Task UpsertAbi(Name account, ulong globalSequence, Assembly assembly)
+        {
+            await _abiStore.UpsertAbi(account, globalSequence, assembly);
+        }
+
+        public async Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Name account)
+        {
+            return await _abiStore.TryGetAbiAssembliesById(account);
+        }
+
+        public async Task<(bool, KeyValuePair<ulong, Assembly>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence)
+        {
+            return await _abiStore.TryGetAbiAssemblyByIdAndGlobalSequence(account, globalSequence);
+        }
+
+        public async Task<(bool, KeyValuePair<ulong, Assembly>)> TryGetActiveAbiAssembly(Name account)
+        {
+            return await _abiStore.TryGetActiveAbiAssembly(account);
         }
     }
 }

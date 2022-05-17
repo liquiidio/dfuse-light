@@ -19,7 +19,7 @@ public static class DeepMindDeserializer
 
     public static T Deserialize<T>(ReadOnlySpan<byte> data) where T : IEosioSerializable<T>
     {
-        DeserializedBlocksCount.Inc();// TODO @Haron this seems not to be correct as it increments not only for Blocks but also for any other Type
+        DeserializedBlocksCount.Inc(); // TODO @Haron this seems not to be correct as it increments not only for Blocks but also for any other Type
 
         using var stream = StreamManager.GetStream(data);
         using var reader = new BinaryReader(stream);

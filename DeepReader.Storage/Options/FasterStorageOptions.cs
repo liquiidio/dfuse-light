@@ -10,10 +10,11 @@ namespace DeepReader.Storage.Options
     {
         public string BlockStoreDir { get; set; }
         public string TransactionStoreDir { get; set; }
-
+        public string AbiStoreDir { get; set; }
         public FasterMode Mode { get; set; }
         public long MaxBlocksCacheEntries { get; set; }
         public long MaxTransactionsCacheEntries { get; set; }
+        public long MaxAbiCacheEntries { get; set; }
         public bool UseReadCache { get; set; }
         public int? CheckpointInterval { get; set; }
     }

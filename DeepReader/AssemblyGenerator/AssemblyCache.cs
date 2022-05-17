@@ -58,40 +58,40 @@ public class AbiTypeCacheEntry
     }
 }
 
-public static class AssemblyCache
-{
-    public static ConcurrentDictionary<ulong, SortedDictionary<uint,AbiTypeCacheEntry>> ContractAssemblyCache = new();
+//public static class AssemblyCache
+//{
+//    public static ConcurrentDictionary<ulong, SortedDictionary<uint,AbiTypeCacheEntry>> ContractAssemblyCache = new();
 
-    public static void LoadAssemblies()
-    {
-        foreach (var directory in Directory.GetDirectories(RuntimeAssemblyGenerator.AssemblyPath))
-        {
-            var abiPaths = Directory.GetFiles(RuntimeAssemblyGenerator.AssemblyPath, "*.abi.bin").Select(a => a.Replace(".abi.bin", ""));// TODO substring with index
-            foreach (var dllPath in Directory.GetFiles(RuntimeAssemblyGenerator.AssemblyPath, "*.dll"))
-            {
-                var assembly = Assembly.LoadFile(dllPath);
-                //var assemblyTypes = new Dictionary<string, Type>();
+//    public static void LoadAssemblies()
+//    {
+//        foreach (var directory in Directory.GetDirectories(RuntimeAssemblyGenerator.AssemblyPath))
+//        {
+//            var abiPaths = Directory.GetFiles(RuntimeAssemblyGenerator.AssemblyPath, "*.abi.bin").Select(a => a.Replace(".abi.bin", ""));// TODO substring with index
+//            foreach (var dllPath in Directory.GetFiles(RuntimeAssemblyGenerator.AssemblyPath, "*.dll"))
+//            {
+//                var assembly = Assembly.LoadFile(dllPath);
+//                //var assemblyTypes = new Dictionary<string, Type>();
 
-                //foreach (var assemblyType in assembly.GetTypes())
-                //{
-                //    assemblyTypes.Add(assemblyType.Name, assemblyType);
-                //}
+//                //foreach (var assemblyType in assembly.GetTypes())
+//                //{
+//                //    assemblyTypes.Add(assemblyType.Name, assemblyType);
+//                //}
 
-                // TODO
+//                // TODO
 
-                var contractName = assembly.GetName().Name ?? assembly.GetName().FullName;
-                if (!ContractAssemblyCache.ContainsKey(SerializationHelper.ConvertNameToLong(contractName)))
-                    Log.Information("duplicate Assembly found");
-            }
-        }
-    }
+//                var contractName = assembly.GetName().Name ?? assembly.GetName().FullName;
+//                if (!ContractAssemblyCache.ContainsKey(SerializationHelper.ConvertNameToLong(contractName)))
+//                    Log.Information("duplicate Assembly found");
+//            }
+//        }
+//    }
 
-    public static void UpsertAbiTypeCacheEntry(Name contractName, AbiTypeCacheEntry abiTypeCacheEntry, uint blockNum)
-    {
-        if(ContractAssemblyCache.ContainsKey(contractName))
-            ContractAssemblyCache[contractName].Add(blockNum, abiTypeCacheEntry);
-        else
-            ContractAssemblyCache[contractName] = new SortedDictionary<uint, AbiTypeCacheEntry>(){{blockNum,abiTypeCacheEntry}};
-    }
+//    public static void UpsertAbiTypeCacheEntry(Name contractName, AbiTypeCacheEntry abiTypeCacheEntry, uint blockNum)
+//    {
+//        if(ContractAssemblyCache.ContainsKey(contractName))
+//            ContractAssemblyCache[contractName].Add(blockNum, abiTypeCacheEntry);
+//        else
+//            ContractAssemblyCache[contractName] = new SortedDictionary<uint, AbiTypeCacheEntry>(){{blockNum,abiTypeCacheEntry}};
+//    }
 
-}
+//}

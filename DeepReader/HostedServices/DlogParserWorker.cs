@@ -1,6 +1,7 @@
 using System.Threading.Channels;
 using DeepReader.Classes;
 using DeepReader.Options;
+using DeepReader.Storage;
 using DeepReader.Types;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
@@ -20,7 +21,10 @@ public class DlogParserWorker : BackgroundService
     private readonly ObjectPool<List<IList<StringSegment>>> _blockSegmentListPool;
     private readonly ObjectPool<Block> _blockPool;
 
+    AbiDecoder _abiDecoder;
+
     public DlogParserWorker(ChannelReader<List<IList<StringSegment>>> blockSegmentsListChannel, ChannelWriter<Block> blocksChannel,
+        IStorageAdapter storageAdapter,
         IOptionsMonitor<DeepReaderOptions> deepReaderOptionsMonitor,
         IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor,
         ObjectPool<List<IList<StringSegment>>> blockSegmentListPool,
@@ -37,6 +41,8 @@ public class DlogParserWorker : BackgroundService
 
         _blockSegmentListPool = blockSegmentListPool;
         _blockPool = blockPool;
+
+        _abiDecoder = new AbiDecoder(storageAdapter);
     }
 
     private void OnDeepReaderOptionsChanged(DeepReaderOptions newOptions)
@@ -62,7 +68,7 @@ public class DlogParserWorker : BackgroundService
     private async Task ConsumeQueue(CancellationToken cancellationToken, int i)
     {
         Thread.CurrentThread.Name = $"ConsumeQueue {i}";
-        ParseCtx ctx = new();
+        ParseCtx ctx = new(_abiDecoder);
         await foreach (var logs in _blockSegmentsListChannel.ReadAllAsync(cancellationToken))
         {
             try
@@ -173,7 +179,7 @@ public class DlogParserWorker : BackgroundService
                                     ctx.ReadAbiDump(data);
                                     break;
                                 case "END":
-                                    // noop
+                                    ctx.AbiDumpEnd();
                                     break;
                             }
 

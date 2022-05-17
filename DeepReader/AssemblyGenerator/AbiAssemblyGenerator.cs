@@ -274,7 +274,7 @@ namespace DeepReader.AssemblyGenerator
                 {
                     var (abiFieldType, isOptional, isArrayType) = GetClrAbiFieldTypeInfo(abiField);
 
-                    if(abiFieldType == null || isOptional || isArrayType)
+                    if(abiFieldType == null || isArrayType)
                         continue;
 
                     // add new field to type
@@ -337,10 +337,11 @@ namespace DeepReader.AssemblyGenerator
                         // Call the Reader/Deserialization-Method
                         binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, readerMethod); // value on stack
 
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, set_method); //call the Set method to set the value
-                                                                                           //binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldloc, local);
+                        // call the Set method to set the value
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, set_method);
 
-
+                        //  binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldloc, local);
+                        
                         // Load "this" onto stack
                         binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
 

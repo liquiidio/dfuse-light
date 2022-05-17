@@ -1,5 +1,6 @@
 using System.Text.Json;
 using DeepReader.AssemblyGenerator;
+using DeepReader.Storage;
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.Other;
@@ -9,11 +10,23 @@ namespace DeepReader.Classes;
 
 public class AbiDecoder
 {
+    private IStorageAdapter _storageAdapter;
+
+    private int _activeBlockNum = 0;
+
+    private ulong _activeGlobalSequence = 0;
+
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         IncludeFields = true,
         PropertyNameCaseInsensitive = true,
     };
+
+
+    public AbiDecoder(IStorageAdapter storageAdapter)
+    {
+        _storageAdapter = storageAdapter;
+    }
 
     public static void ProcessTransactionTrace(TransactionTrace trace)
     {
@@ -22,23 +35,23 @@ public class AbiDecoder
 
     public static async void ProcessSignedTransaction(SignedTransaction signedTransaction)
     {
-        await Parallel.ForEachAsync(signedTransaction.Actions, async (action, token) => 
-        {
-            if (AssemblyCache.ContractAssemblyCache.TryGetValue(action.Account, out var contractTypes) &&
-                contractTypes.Last().Value.TryGetActionType(action.Name, out var actionType))
-            {
-                try
-                {
-                    await action.Data.DeserializeAsync(actionType, token);
-                }
-                catch (Exception e)
-                {
-                    Log.Error(e, "");
-                    if (AssemblyCache.ContractAssemblyCache.TryRemove(action.Account, out contractTypes))
-                        Log.Information(action.Account + " removed from AssemblyCache");
-                }
-            }
-        });
+        //await Parallel.ForEachAsync(signedTransaction.Actions, async (action, token) => 
+        //{
+        //    if (AssemblyCache.ContractAssemblyCache.TryGetValue(action.Account, out var contractTypes) &&
+        //        contractTypes.Last().Value.TryGetActionType(action.Name, out var actionType))
+        //    {
+        //        try
+        //        {
+        //            await action.Data.DeserializeAsync(actionType, token);
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            Log.Error(e, "");
+        //            if (AssemblyCache.ContractAssemblyCache.TryRemove(action.Account, out contractTypes))
+        //                Log.Information(action.Account + " removed from AssemblyCache");
+        //        }
+        //    }
+        //});
     }
 
     public static void StartBlock(long blockNum)
@@ -56,7 +69,7 @@ public class AbiDecoder
         // TODO
     }
 
-    public static void AddInitialAbi(ReadOnlySpan<char> contract, ReadOnlySpan<char> rawAbiBase64)
+    public void AddInitialAbi(ReadOnlySpan<char> contract, ReadOnlySpan<char> rawAbiBase64)
     {
         byte[] bytes = new byte[rawAbiBase64.Length*2]; // TODO calculate bytes-size
 
@@ -65,8 +78,11 @@ public class AbiDecoder
             Console.WriteLine($"bytesWritten " + bytesWritten + " rawAbiBase64.Length " + rawAbiBase64.Length); // TODO remove
             var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(bytes[Range.EndAt(bytesWritten)]);
 
-            AbiAssemblyGenerator abiAssemblyGenerator = new(abi, NameCache.GetOrCreate(contract.ToString()), 0);
+            var contractAccount = NameCache.GetOrCreate(contract.ToString());
+            AbiAssemblyGenerator abiAssemblyGenerator = new(abi, contractAccount, 0);
             var abiAssembly = abiAssemblyGenerator.GenerateAssembly();
+
+            _storageAdapter.UpsertAbi(contractAccount, _activeGlobalSequence, abiAssembly);
 
             Log.Information($"Deserialized Abi for {contract} : {JsonSerializer.Serialize(abi, JsonSerializerOptions)}");
         }
@@ -74,5 +90,17 @@ public class AbiDecoder
         {
             Console.WriteLine($"Deserialization of Abi for {contract} FAILED");
         }
+    }
+
+    internal void AbiDumpStart(int blockNum, ulong globalSequence)
+    {
+        _activeBlockNum = blockNum;
+        _activeGlobalSequence = globalSequence;
+    }
+
+    internal void AbiDumpEnd()
+    {
+        _activeBlockNum = 0;
+        _activeGlobalSequence = 0;
     }
 }
