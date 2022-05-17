@@ -337,15 +337,15 @@ namespace DeepReader.Types.Extensions
 
         public static Asset ReadAsset(this BinaryReader reader)
         {
-            var binaryAmount = reader.ReadBytes(8);
+            var binaryAmount = reader.ReadInt64();
 
             var symbol = reader.ReadSymbol();
-            var amount = SerializationHelper.SignedBinaryToDecimal(binaryAmount, symbol.Precision + 1);
+            //var amount = SerializationHelper.SignedBinaryToDecimal(binaryAmount, symbol.Precision + 1);
 
-            if (symbol.Precision > 0)
-                amount = amount.Substring(0, amount.Length - symbol.Precision) + '.' + amount.Substring(amount.Length - symbol.Precision);
+            //if (symbol.Precision > 0)
+            //    amount = amount.Substring(0, amount.Length - symbol.Precision) + '.' + amount.Substring(amount.Length - symbol.Precision);
 
-            return new Asset() { Symbol = symbol, Amount = amount, };
+            return new Asset() { Symbol = symbol, Amount = binaryAmount, };
         }
 
         public static Symbol ReadSymbol(this BinaryReader reader)

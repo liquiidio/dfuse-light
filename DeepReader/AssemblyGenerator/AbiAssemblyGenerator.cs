@@ -256,10 +256,11 @@ namespace DeepReader.AssemblyGenerator
                     TypeAttributes.Public |
                     TypeAttributes.Sealed |
                     TypeAttributes.SequentialLayout,
-                    typeof(ValueType));
+                    typeof(object));
 
                 // Constructor
                 var binaryReaderAttr = new Type[] { BinaryReaderType };
+                var defaultConstructor = dynamicType.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis | CallingConventions.Standard, Array.Empty<Type>());
                 var binaryReaderConstructor = dynamicType.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis | CallingConventions.Standard, binaryReaderAttr);
                 var binaryReaderConstructorIlGenerator = binaryReaderConstructor.GetILGenerator();
 
@@ -267,7 +268,7 @@ namespace DeepReader.AssemblyGenerator
                 binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
 
                 // Get the constructor of our new type with BinaryReader-Param so we can add generated IL-Code
-                binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, binaryReaderConstructor);
+                binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, defaultConstructor);
 
                 // Iterate all Fields, writes IL-Code to set their values
                 foreach (var abiField in abiStruct.Fields)
@@ -386,7 +387,7 @@ namespace DeepReader.AssemblyGenerator
                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
 
                     // Call the Reader/Deserialization-Method
-                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, GetReaderMethodForType(abiFieldType));
+                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Callvirt, GetReaderMethodForType(abiFieldType));
 
                     // Set value of field to return-value of preious Call (value was put on stack)
                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Stfld, fieldBuilder);
@@ -419,7 +420,10 @@ namespace DeepReader.AssemblyGenerator
             if (PrimitiveTypeReaderMethodMap.TryGetValue(type, out var methodInfo) || PredefinedTypesReaderMethodMap.TryGetValue(type, out methodInfo))
                 return methodInfo;
             else
+            {
+                Log.Information($"ReaderMethod for {type.FullName} not found");
                 return ReadByte;
+            }
         }
 
         #region BinaryReader standard methods
@@ -615,7 +619,7 @@ namespace DeepReader.AssemblyGenerator
 
         public static MethodInfo ReadVarBytes = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadBytes))!; // Bytes, ActionDataBytes
 
-        // Asset
+        public static MethodInfo ReadAsset = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadAsset))!;
 
         public static MethodInfo ReadChecksum160 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadChecksum160))!;
 
@@ -633,8 +637,9 @@ namespace DeepReader.AssemblyGenerator
 
         public static MethodInfo ReadPublicKey = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadPublicKey))!;
 
-        // Symbol
-        // SymbolCode
+        public static MethodInfo ReadSymbol = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadSymbol))!;
+
+        public static MethodInfo ReadSymbolCode = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadSymbolCode))!;
 
         public static MethodInfo ReadTimestamp = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadTimestamp))!;
 
@@ -696,6 +701,10 @@ namespace DeepReader.AssemblyGenerator
             { typeof(PublicKey), ReadPublicKey },
             { typeof(Timestamp), ReadTimestamp },
             { typeof(Uint128), ReadUInt128 },
+
+            { typeof(Asset), ReadAsset },
+            { typeof(Symbol), ReadSymbol },
+            { typeof(SymbolCode), ReadSymbolCode }
         };
 
         #endregion
@@ -712,7 +721,7 @@ namespace DeepReader.AssemblyGenerator
             private static CustomAttributeData GetNullableAttribute()
             {
                 _nullableAttribute = typeof(NullableHelper).GetFields()[0].CustomAttributes.FirstOrDefault(x =>
-                    x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
+                    x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute")!;
                 return _nullableAttribute;
             }
 
@@ -724,7 +733,7 @@ namespace DeepReader.AssemblyGenerator
             public static CustomAttributeBuilder GetNullableAttributeBuilder()
             {
                 _nullableAttribute = typeof(NullableHelper).GetFields()[0].CustomAttributes.FirstOrDefault(x =>
-                    x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
+                    x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute")!;
 
                 var nullableAttr = NullableAttribute;
                 var constructorAttributes = nullableAttr.ConstructorArguments.Select(m => m.Value).ToArray();
