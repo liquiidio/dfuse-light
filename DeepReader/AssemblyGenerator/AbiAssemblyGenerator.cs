@@ -92,7 +92,12 @@ namespace DeepReader.AssemblyGenerator
                 Directory.CreateDirectory(path);
             await using (var fileStream = File.CreateText(Path.Combine(path, contractName + "." + blockNum + ".abi")).BaseStream)
             {
-                await JsonSerializer.SerializeAsync(fileStream, abi, typeof(Abi));
+                await JsonSerializer.SerializeAsync(fileStream, abi, typeof(Abi), new JsonSerializerOptions()
+                {
+                    IncludeFields = true,
+                    MaxDepth = Int32.MaxValue,
+                    WriteIndented = true
+                });
             }
             generator.GenerateAssembly(assembly, Path.Combine(path, contractName + "." + blockNum + ".dll"));
         }
@@ -202,11 +207,12 @@ namespace DeepReader.AssemblyGenerator
         /// </summary>
         /// <param name="abiField"></param>
         /// <returns></returns>
-        private (Type?, bool, bool) GetClrAbiFieldTypeInfo(AbiField abiField)
+        private (Type? abiClrFieldType, bool isOptional, bool isArrayType, bool isModuleType) GetClrAbiFieldTypeInfo(AbiField abiField)
         {
             string fieldTypeName = abiField.Type;
             bool isOptional = false;
             bool isArrayType = false;
+            bool isModuleType = true; // if this type a Type contained in this Assembly
             if (fieldTypeName.EndsWith("[]"))
             {
                 fieldTypeName = abiField.Type.Replace("[]", "");
@@ -225,7 +231,9 @@ namespace DeepReader.AssemblyGenerator
             // TODO EOSIO base types ?
             var clrTypeName = $"{fieldTypeName}";
 
-            if (!TypeMap.TryGetValue(fieldTypeName, out var abiClrFieldType))
+            if (TypeMap.TryGetValue(fieldTypeName, out var abiClrFieldType))
+                isModuleType = false; // if this type was found in the TypeMap it's not a moduleType, in all other cases it is
+            else
                 abiClrFieldType = _moduleBuilder.GetTypes().FirstOrDefault(t => t.FullName == clrTypeName);
 
             if (abiClrFieldType == null)
@@ -235,7 +243,7 @@ namespace DeepReader.AssemblyGenerator
                 Log.Information($"TYPE {fieldTypeName} NOT FOUND");
             // TODO if still null, throw
 
-            return (abiClrFieldType, isOptional, isArrayType);
+            return (abiClrFieldType, isOptional, isArrayType, isModuleType);
         }
 
         static Type BinaryReaderType = typeof(BinaryReader);
@@ -246,8 +254,11 @@ namespace DeepReader.AssemblyGenerator
             {
                 var abiStruct = _abiStructsWithBaseFields.FirstOrDefault(a => a.Name == abiStructName);
                 if (abiStruct == null)
+                {
+                    Log.Information($"abiStruct {abiStructName} not found (255)");
                     // TODO search in eosio base types, throw invalid if not found
                     return null;
+                }
 
                 // Guess we should check that a type-name/class name is not longer than 511 characters + some other checks
                 // https://stackoverflow.com/questions/186523/what-is-the-maximum-length-of-a-c-cli-identifier
@@ -260,7 +271,8 @@ namespace DeepReader.AssemblyGenerator
 
                 // Constructor
                 var binaryReaderAttr = new Type[] { BinaryReaderType };
-                var defaultConstructor = dynamicType.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis | CallingConventions.Standard, Array.Empty<Type>());
+                var defaultConstructor = dynamicType.DefineDefaultConstructor(MethodAttributes.Public);
+                //var defaultConstructorIlGenerator = defaultConstructor.GetILGenerator();
                 var binaryReaderConstructor = dynamicType.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis | CallingConventions.Standard, binaryReaderAttr);
                 var binaryReaderConstructorIlGenerator = binaryReaderConstructor.GetILGenerator();
 
@@ -273,7 +285,7 @@ namespace DeepReader.AssemblyGenerator
                 // Iterate all Fields, writes IL-Code to set their values
                 foreach (var abiField in abiStruct.Fields)
                 {
-                    var (abiFieldType, isOptional, isArrayType) = GetClrAbiFieldTypeInfo(abiField);
+                    var (abiFieldType, isOptional, isArrayType, isModuleType) = GetClrAbiFieldTypeInfo(abiField);
 
                     if(abiFieldType == null || isArrayType)
                         continue;
@@ -310,7 +322,7 @@ namespace DeepReader.AssemblyGenerator
                     if (isArrayType)
                     {
                         // get the readerMethod for this type
-                        var readerMethod = GetReaderMethodForType(abiFieldType);
+                        var readerMethod = GetReaderMethodForType(abiFieldType, abiField);
 
                         // make the type an array
                         var abiArrayFieldType = abiFieldType.MakeArrayType();
@@ -387,7 +399,18 @@ namespace DeepReader.AssemblyGenerator
                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
 
                     // Call the Reader/Deserialization-Method
-                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Callvirt, GetReaderMethodForType(abiFieldType));
+                    // if this type is part of the generated module/assembly, call it's the constructor
+                    // if not, call it's deserialization-method
+                    if(isModuleType)
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, abiFieldType.GetConstructor(new Type[] { typeof(BinaryReader) })!);
+                    else
+                    {
+                        var meth = GetReaderMethodForType(abiFieldType, abiField);
+                        if (meth == null)
+                            Log.Information("Test");
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, meth);
+                    }
+
 
                     // Set value of field to return-value of preious Call (value was put on stack)
                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Stfld, fieldBuilder);
@@ -403,8 +426,8 @@ namespace DeepReader.AssemblyGenerator
             }
             catch (Exception e)
             {
-                Log.Error(e.Message,"");
-                Log.Information($" DUPLICATE: {abiStructName}");
+                Log.Error(e,"");
+                Log.Information($"{abiStructName}");
                 //Log.Information($"TYPES: ");
                 //foreach (var type in _moduleBuilder.GetTypes())
                 //{
@@ -415,13 +438,18 @@ namespace DeepReader.AssemblyGenerator
             return null;
         }
 
-        public MethodInfo GetReaderMethodForType(Type type)
+        public MethodInfo GetReaderMethodForType(Type type, AbiField abiField)
         {
             if (PrimitiveTypeReaderMethodMap.TryGetValue(type, out var methodInfo) || PredefinedTypesReaderMethodMap.TryGetValue(type, out methodInfo))
+            {
+                if (methodInfo == null)
+                    Log.Information("Test");
+
                 return methodInfo;
+            }
             else
             {
-                Log.Information($"ReaderMethod for {type.FullName} not found");
+                Log.Information($"ReaderMethod for {type.FullName} {abiField.Name} not found");
                 return ReadByte;
             }
         }
@@ -444,6 +472,8 @@ namespace DeepReader.AssemblyGenerator
 
         public static MethodInfo ReadDecimal = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadDecimal))!;
 
+        public static MethodInfo ReadFloat = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadSingle))!;
+
         public static MethodInfo ReadDouble = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadDouble))!;
 
         public static MethodInfo ReadHalf = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadHalf))!;
@@ -456,7 +486,7 @@ namespace DeepReader.AssemblyGenerator
 
         public static MethodInfo ReadSByte = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadSByte))!;
 
-        public static MethodInfo ReadSingle = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadSingle))!;
+        //public static MethodInfo ReadSingle = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadSingle))!;
 
         public static MethodInfo ReadString = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadString))!;
 
@@ -476,7 +506,10 @@ namespace DeepReader.AssemblyGenerator
             { "char", typeof(char) },
 //            { "", typeof(char[]) },
             { "decimal", typeof(decimal) },
+            { "float", typeof(float) },
             { "double", typeof(double) },
+            { "float32", typeof(float) },
+            { "float64", typeof(double) },
 //            { "", typeof(Half) },
             { "int16", typeof(Int16) },
             { "int32", typeof(Int32) },
@@ -502,7 +535,6 @@ namespace DeepReader.AssemblyGenerator
             { "uint128", typeof(Uint128) },
             { "time_point_sec", typeof(UInt32) },
             { "block_timestamp_type", typeof(UInt32) },
-            { "float64", typeof(float) },
             { "account_name", typeof(Name) },
             { "producer_key", typeof(ProducerKey) },
             { "varuint32", typeof(VarUint32) },
@@ -517,21 +549,22 @@ namespace DeepReader.AssemblyGenerator
         {
             { typeof(bool), ReadBoolean },
             { typeof(byte), ReadByte },
+            { typeof(sbyte), ReadSByte },
             { typeof(byte[]), ReadBytes },
             { typeof(char), ReadChar },
 //            { typeof(char[]), ReadChars },
             { typeof(decimal), ReadDecimal },
-            { typeof(double), ReadDouble },
 //            { typeof(Half), ReadHalf },
             { typeof(Int16), ReadInt16 },
             { typeof(Int32), ReadInt32 },
             { typeof(Int64), ReadInt64 },
-//            { typeof(sbyte), ReadSByte },
 //            { typeof(Single), ReadSingle },
             { typeof(string), ReadString },
             { typeof(UInt16), ReadInt16 },
             { typeof(UInt32), ReadInt32 },
             { typeof(UInt64), ReadInt64 },
+            { typeof(float), ReadFloat },
+            { typeof(double), ReadDouble },
         };
 
         #endregion
@@ -540,79 +573,79 @@ namespace DeepReader.AssemblyGenerator
 
         public static MethodInfo ReadAbi = typeof(Abi).GetMethod(nameof(Abi.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadAbiType = typeof(AbiType).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadAbiType = typeof(AbiType).GetMethod(nameof(AbiType.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadAbiStruct = typeof(AbiStruct).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadAbiStruct = typeof(AbiStruct).GetMethod(nameof(AbiStruct.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadAbiField = typeof(AbiField).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadAbiField = typeof(AbiField).GetMethod(nameof(AbiField.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadAbiAction = typeof(AbiAction).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadAbiAction = typeof(AbiAction).GetMethod(nameof(AbiAction.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadAbiTable = typeof(AbiTable).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadAbiTable = typeof(AbiTable).GetMethod(nameof(AbiTable.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadAccountRamDelta = typeof(AccountRamDelta).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadAccountRamDelta = typeof(AccountRamDelta).GetMethod(nameof(AccountRamDelta.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadAccountDelta = typeof(AccountDelta).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadAccountDelta = typeof(AccountDelta).GetMethod(nameof(AccountDelta.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadAction = typeof(Action).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadAction = typeof(Action).GetMethod(nameof(Action.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadActionReceipt = typeof(ActionReceipt).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadActionReceipt = typeof(ActionReceipt).GetMethod(nameof(ActionReceipt.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadActionTrace = typeof(ActionTrace).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadActionTrace = typeof(ActionTrace).GetMethod(nameof(ActionTrace.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadBlockHeader = typeof(BlockHeader).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadBlockHeader = typeof(BlockHeader).GetMethod(nameof(BlockHeader.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadBlockSigningAuthorityVariant = typeof(BlockSigningAuthorityVariant).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadBlockSigningAuthorityVariant = typeof(BlockSigningAuthorityVariant).GetMethod(nameof(BlockSigningAuthorityVariant.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadBlockSigningAuthorityV0 = typeof(BlockSigningAuthorityV0).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadBlockSigningAuthorityV0 = typeof(BlockSigningAuthorityV0).GetMethod(nameof(BlockSigningAuthorityV0.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadBlockState = typeof(BlockState).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadBlockState = typeof(BlockState).GetMethod(nameof(BlockState.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadPairAccountNameBlockNum = typeof(PairAccountNameBlockNum).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadPairAccountNameBlockNum = typeof(PairAccountNameBlockNum).GetMethod(nameof(PairAccountNameBlockNum.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadScheduleInfo = typeof(ScheduleInfo).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadScheduleInfo = typeof(ScheduleInfo).GetMethod(nameof(ScheduleInfo.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadIncrementalMerkle = typeof(IncrementalMerkle).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadIncrementalMerkle = typeof(IncrementalMerkle).GetMethod(nameof(IncrementalMerkle.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadBlockHeaderState = typeof(BlockHeaderState).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadBlockHeaderState = typeof(BlockHeaderState).GetMethod(nameof(BlockHeaderState.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadProducerAuthority = typeof(ProducerAuthority).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadProducerAuthority = typeof(ProducerAuthority).GetMethod(nameof(ProducerAuthority.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadProducerAuthoritySchedule = typeof(ProducerAuthoritySchedule).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadProducerAuthoritySchedule = typeof(ProducerAuthoritySchedule).GetMethod(nameof(ProducerAuthoritySchedule.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadProducerKey = typeof(ProducerKey).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadProducerKey = typeof(ProducerKey).GetMethod(nameof(ProducerKey.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadPackedTransaction = typeof(PackedTransaction).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadPackedTransaction = typeof(PackedTransaction).GetMethod(nameof(PackedTransaction.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadPermissionLevel = typeof(PermissionLevel).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadPermissionLevel = typeof(PermissionLevel).GetMethod(nameof(PermissionLevel.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadProducerSchedule = typeof(ProducerSchedule).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadProducerSchedule = typeof(ProducerSchedule).GetMethod(nameof(ProducerSchedule.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadProtocolFeatureActivationSet = typeof(ProtocolFeatureActivationSet).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadProtocolFeatureActivationSet = typeof(ProtocolFeatureActivationSet).GetMethod(nameof(ProtocolFeatureActivationSet.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadSharedKeyWeight = typeof(SharedKeyWeight).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadSharedKeyWeight = typeof(SharedKeyWeight).GetMethod(nameof(SharedKeyWeight.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadSignedBlock = typeof(SignedBlock).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadSignedBlock = typeof(SignedBlock).GetMethod(nameof(SignedBlock.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadSignedBlockHeader = typeof(SignedBlockHeader).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadSignedBlockHeader = typeof(SignedBlockHeader).GetMethod(nameof(SignedBlockHeader.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadSignedTransaction = typeof(SignedTransaction).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadSignedTransaction = typeof(SignedTransaction).GetMethod(nameof(SignedTransaction.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadTransaction = typeof(Transaction).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadTransaction = typeof(Transaction).GetMethod(nameof(Transaction.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadTransactionHeader = typeof(TransactionHeader).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadTransactionHeader = typeof(TransactionHeader).GetMethod(nameof(TransactionHeader.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadTransactionReceipt = typeof(TransactionReceipt).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadTransactionReceipt = typeof(TransactionReceipt).GetMethod(nameof(TransactionReceipt.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadTransactionReceiptHeader = typeof(TransactionReceiptHeader).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadTransactionReceiptHeader = typeof(TransactionReceiptHeader).GetMethod(nameof(TransactionReceiptHeader.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadTransactionTrace = typeof(TransactionTrace).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadTransactionTrace = typeof(TransactionTrace).GetMethod(nameof(TransactionTrace.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadExcept = typeof(Except).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadExcept = typeof(Except).GetMethod(nameof(Except.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadTransactionTraceAuthSequence = typeof(TransactionTraceAuthSequence).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadTransactionTraceAuthSequence = typeof(TransactionTraceAuthSequence).GetMethod(nameof(TransactionTraceAuthSequence.ReadFromBinaryReader))!;
 
-        public static MethodInfo ReadTransactionVariant = typeof(TransactionVariant).GetMethod("ReadFromBinaryReader")!;
+        public static MethodInfo ReadTransactionVariant = typeof(TransactionVariant).GetMethod(nameof(TransactionVariant.ReadFromBinaryReader))!;
 
         // TODO better names for these regions
         #region EosTypes BinaryReaderExtension Methods 
@@ -644,6 +677,13 @@ namespace DeepReader.AssemblyGenerator
         public static MethodInfo ReadTimestamp = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadTimestamp))!;
 
         public static MethodInfo ReadUInt128 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadUInt128))!;
+
+        public static MethodInfo ReadAuthority = typeof(Authority).GetMethod(nameof(Authority.ReadFromBinaryReader))!;
+
+
+        public static MethodInfo ReadVarUint32 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadVarUint32))!;
+
+        public static MethodInfo ReadVarUint64 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadVarUint64))!;
 
 
         #endregion
@@ -704,7 +744,11 @@ namespace DeepReader.AssemblyGenerator
 
             { typeof(Asset), ReadAsset },
             { typeof(Symbol), ReadSymbol },
-            { typeof(SymbolCode), ReadSymbolCode }
+            { typeof(SymbolCode), ReadSymbolCode },
+            { typeof(Authority), ReadAuthority },
+
+            { typeof(VarUint32), ReadVarUint32 },
+            { typeof(VarUint64), ReadVarUint64 }
         };
 
         #endregion

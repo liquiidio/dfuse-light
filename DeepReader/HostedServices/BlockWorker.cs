@@ -228,6 +228,7 @@ public class BlockWorker : BackgroundService
         {
             foreach(var actionTrace in trace.ActionTraces)
             {
+                string clrTypename = "";
                 try
                 {
                     var (found, assemblyPair) = await _storageAdapter.TryGetActiveAbiAssembly(actionTrace.Act.Account);
@@ -238,7 +239,12 @@ public class BlockWorker : BackgroundService
                         if (clrType != null)
                         {
                             BinaryReader reader = new BinaryReader(new MemoryStream(actionTrace.Act.Data));
-                            var obj = clrType.GetConstructor(new Type[] { typeof(BinaryReader) })!.Invoke(new[] { reader });
+
+                            clrTypename = clrType.Name;
+                            var obj = Activator.CreateInstance(clrType, reader);
+
+                            //var ctor = clrType.GetConstructor(new Type[] { typeof(BinaryReader) });
+                            //ctor.Invoke(new[] { reader });
                         }
                         else
                             Log.Information($"Type for {actionTrace.Act.Account}.{actionTrace.Act.Name} not found");
@@ -247,6 +253,7 @@ public class BlockWorker : BackgroundService
                 catch(Exception ex)
                 {
                     Log.Error(ex, "");
+                    Log.Information(clrTypename);
                 }
             }
         }

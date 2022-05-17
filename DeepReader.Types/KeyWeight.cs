@@ -1,7 +1,25 @@
+using DeepReader.Types.EosTypes;
+
 namespace DeepReader.Types;
 
-public class KeyWeight
+/// <summary>
+/// libraries/chain/include/eosio/chain/authority.hpp
+/// </summary>
+public class KeyWeight : IEosioSerializable<KeyWeight>
 {
-    public string Key = string.Empty;//string
+    public PublicKey Key = PublicKey.TypeEmpty;//string
     public uint Weight = 0;//uint32
+
+    public KeyWeight() { }
+
+    public KeyWeight(BinaryReader reader)
+    {
+        Key = PublicKey.ReadFromBinaryReader(reader);
+        Weight = reader.ReadUInt32();
+    }
+
+    public static KeyWeight ReadFromBinaryReader(BinaryReader reader)
+    {
+        return new KeyWeight(reader);
+    }
 }
