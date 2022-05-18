@@ -22,8 +22,8 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
     {
         if (ctx.Type == 0)
         {
-            if (output.Value.Id != id.Id)
-                Log.Error( new Exception("Read error!, AbiId.BinarySequencens unequal"),"");
+            if (output.Value?.Id != id.Id)
+                Log.Error( new Exception("Read error!, Abi not found"),"");
         }
         else
         {
@@ -52,20 +52,36 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
         value = new AbiCacheItem();
         value.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
         value.Id = input.Id;
+
+        output.Value = value;
+        
         return true;
     }
 
     public override bool InPlaceUpdater(ref AbiId key, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput output, ref RMWInfo rmwInfo)
     {
         value.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
+
+        output.Value = value;
+
         return true;
     }
 
     public override bool CopyUpdater(ref AbiId key, ref AbiInput input, ref AbiCacheItem oldValue, ref AbiCacheItem newValue, ref AbiOutput output, ref RMWInfo rmwInfo)
     {
-        oldValue.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
-        newValue.AbiVersions = oldValue.AbiVersions;
-        newValue.Id = oldValue.Id;
+        if (oldValue == null)
+            Log.Information("test");
+
+        if (input.Assembly == null)
+            Log.Information("Test");
+
+        if (newValue != null)
+            Log.Information("Test");
+
+        //oldValue.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
+        newValue = oldValue;
+        newValue.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
+
         return true;
     }
 
@@ -80,11 +96,11 @@ public class AbiCacheItem
 
 public class AssemblyWrapper
 {
-    private byte[] _binary = Array.Empty<byte>();
+    private byte[]? _binary;
 
     private Assembly? _assembly;
 
-    public Assembly Assembly => _assembly ??= Assembly.Load(_binary);
+    public Assembly Assembly => _assembly ??= (_binary != null ? Assembly.Load(_binary) : null);
 
     public byte[] Binary => _binary ??= AssemblyToByteArray();
 

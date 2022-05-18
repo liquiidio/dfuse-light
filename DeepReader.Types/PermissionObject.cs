@@ -1,3 +1,5 @@
+using DeepReader.Types.Eosio.Chain;
+
 namespace DeepReader.Types;
 
 public class PermissionObject

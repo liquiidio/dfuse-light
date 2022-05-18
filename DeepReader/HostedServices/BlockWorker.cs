@@ -1,9 +1,12 @@
-﻿using DeepReader.Options;
+﻿using DeepReader.Classes;
+using DeepReader.Options;
 using DeepReader.Storage;
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.FlattenedTypes;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.Other;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -66,6 +69,8 @@ public class BlockWorker : BackgroundService
         _deltaFilter = _deepReaderOptions.Filter.BuildDeltaFilter();
 
         _blockPool = blockPool;
+
+        abiDecoder = new AbiDecoder(_storageAdapter);
     }
 
     private void OnMindReaderOptionsChanged(MindReaderOptions newOptions)
@@ -168,6 +173,7 @@ public class BlockWorker : BackgroundService
                             AccountRamDeltas = actionTrace.AccountRamDeltas,
                             Act = actionTrace.Act,
                             Console = actionTrace.Console,
+                            GlobalSequence = actionTrace.Receipt?.GlobalSequence ?? 0,
                             ContextFree = actionTrace.ContextFree,
                             DbOps = transactionTrace.DbOps.Where(dbOp => _deltaFilter(dbOp) && dbOp.ActionIndex == actionIndex).Select(dbOp =>
                                 new FlattenedDbOp()
@@ -221,6 +227,10 @@ public class BlockWorker : BackgroundService
         });
     }
 
+    private Name eosio = NameCache.GetOrCreate("eosio");
+    private Name setabi = NameCache.GetOrCreate("setabi");
+    private AbiDecoder abiDecoder;
+
     private async Task TestAbiDeserializer(List<FlattenedTransactionTrace> flattenedTransactionTraces)
     {
         foreach(FlattenedTransactionTrace trace in flattenedTransactionTraces)
@@ -228,13 +238,15 @@ public class BlockWorker : BackgroundService
             foreach(var actionTrace in trace.ActionTraces)
             {
                 string clrTypename = "";
+                string actName = "";
                 try
                 {
                     var (found, assemblyPair) = await _storageAdapter.TryGetActiveAbiAssembly(actionTrace.Act.Account);
                     if (found)  // TODO check GlobalSequence
                     {
+                        actName = actionTrace.Act.Name;
                         var assembly = assemblyPair.Value;
-                        var clrType = assembly.Assembly.GetType(actionTrace.Act.Name.StringVal);
+                        var clrType = assembly.Assembly.GetType(actionTrace.Act.Name.StringVal.Replace('.','_'));
                         if (clrType != null)
                         {
                             BinaryReader reader = new BinaryReader(new MemoryStream(actionTrace.Act.Data));
@@ -242,18 +254,32 @@ public class BlockWorker : BackgroundService
                             clrTypename = clrType.Name;
                             var obj = Activator.CreateInstance(clrType, reader);
 
-                            Log.Information(JsonSerializer.Serialize(obj, new JsonSerializerOptions() { IncludeFields = true, WriteIndented = true }));
+                            //Log.Information(JsonSerializer.Serialize(obj, new JsonSerializerOptions() { IncludeFields = true, WriteIndented = true }));
                             //var ctor = clrType.GetConstructor(new Type[] { typeof(BinaryReader) });
                             //ctor.Invoke(new[] { reader });
+
+                            if (actionTrace.Act.Account == eosio && actionTrace.Act.Name == setabi)
+                            {
+                                var abiField = clrType.GetField("abi");
+                                var abiFieldValue = abiField.GetValue(obj);
+                                var abiBytes = (byte[])abiFieldValue;
+
+                                var accountField = clrType.GetField("account");
+                                var accountFieldValue = accountField.GetValue(obj);
+                                var account = (Name)accountFieldValue;
+
+                                abiDecoder.AddAbi(account, abiBytes, actionTrace.GlobalSequence);
+                            }
                         }
                         else
-                            Log.Information($"Type for {actionTrace.Act.Account}.{actionTrace.Act.Name} not found");
+                            Log.Information($"Type for {actionTrace.Act.Account.StringVal}.{actionTrace.Act.Name.StringVal} not found");
                     }
                 }
                 catch(Exception ex)
                 {
                     Log.Error(ex, "");
-                    Log.Information(clrTypename);
+                    Log.Information(clrTypename); 
+                    Log.Information(actName);
                 }
             }
         }

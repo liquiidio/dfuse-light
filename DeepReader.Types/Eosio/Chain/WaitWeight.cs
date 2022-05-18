@@ -1,4 +1,4 @@
-namespace DeepReader.Types;
+namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/authority.hpp
@@ -6,14 +6,14 @@ namespace DeepReader.Types;
 public class WaitWeight : IEosioSerializable<WaitWeight>
 {
     public uint WaitSec = 0;//uint32
-    public uint Weight = 0;//uint32
+    public WeightType Weight = 0;//uint16
 
     public WaitWeight() { }
 
     public WaitWeight(BinaryReader reader)
     {
         WaitSec = reader.ReadUInt32();
-        Weight = reader.ReadUInt32();
+        Weight = reader.ReadUInt16();
     }
     public static WaitWeight ReadFromBinaryReader(BinaryReader reader)
     {

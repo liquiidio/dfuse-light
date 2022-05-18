@@ -25,7 +25,7 @@ namespace DeepReader.AssemblyGenerator
 
         private Abi _abi;
         private Name _contractName;
-        private uint _blockNum;
+        private ulong _globalSequence;
         // TODO global_sequence
         private ModuleBuilder _moduleBuilder;
         private List<AbiStruct> _abiStructsWithBaseFields = new List<AbiStruct>();
@@ -44,16 +44,16 @@ namespace DeepReader.AssemblyGenerator
          * variants             : TODO
          */
 
-        public AbiAssemblyGenerator(Abi abi, Name contractName, uint blockNum)
+        public AbiAssemblyGenerator(Abi abi, Name contractName, ulong globalSequence)
         {
             _abi = abi;
             _contractName = contractName;
-            _blockNum = blockNum;
+            _globalSequence = globalSequence;
             // TODO global_sequence?
 
             _abiStructsWithBaseFields = AbiStructsWithBaseFields(abi);
 
-            var assemblyName = new AssemblyName(_contractName);
+            var assemblyName = new AssemblyName(_contractName.StringVal.Replace('.','_'));
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
             _moduleBuilder = assemblyBuilder.DefineDynamicModule("Main");
 
@@ -75,7 +75,7 @@ namespace DeepReader.AssemblyGenerator
             }
 
 #if DEBUG
-            SaveAssemblyAndAbi(_moduleBuilder.Assembly, _abi, _contractName, _blockNum);
+            SaveAssemblyAndAbi(_moduleBuilder.Assembly, _abi, _contractName, _globalSequence);
 #endif
 
             return _moduleBuilder.Assembly;
@@ -83,23 +83,30 @@ namespace DeepReader.AssemblyGenerator
 
         public static string AssemblyPath = "/app/config/mindreader/abis/";//Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedAssemblies");
 
-        private static async void SaveAssemblyAndAbi(Assembly assembly, Abi abi, string contractName, uint blockNum)
+        private static async void SaveAssemblyAndAbi(Assembly assembly, Abi abi, string contractName, ulong globalSequence)
         {
-            var generator = new Lokad.ILPack.AssemblyGenerator();
-
-            var path = Path.Combine(AssemblyPath, contractName);
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
-            await using (var fileStream = File.CreateText(Path.Combine(path, contractName + "." + blockNum + ".abi")).BaseStream)
+            try
             {
-                await JsonSerializer.SerializeAsync(fileStream, abi, typeof(Abi), new JsonSerializerOptions()
+                var generator = new Lokad.ILPack.AssemblyGenerator();
+
+                var path = Path.Combine(AssemblyPath, contractName);
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+                await using (var fileStream = File.CreateText(Path.Combine(path, contractName + "." + globalSequence + ".abi")).BaseStream)
                 {
-                    IncludeFields = true,
-                    MaxDepth = Int32.MaxValue,
-                    WriteIndented = true
-                });
+                    await JsonSerializer.SerializeAsync(fileStream, abi, typeof(Abi), new JsonSerializerOptions()
+                    {
+                        IncludeFields = true,
+                        MaxDepth = Int32.MaxValue,
+                        WriteIndented = true
+                    });
+                }
+                generator.GenerateAssembly(assembly, Path.Combine(path, contractName + "." + globalSequence + ".dll"));
             }
-            generator.GenerateAssembly(assembly, Path.Combine(path, contractName + "." + blockNum + ".dll"));
+            catch(Exception ex)
+            {
+                Log.Error(ex, "");
+            }
         }
 
         /// <summary>
@@ -292,35 +299,13 @@ namespace DeepReader.AssemblyGenerator
 
                     // add new field to type
 //                    DefineProperty(abiField.Name, PropertyAttributes.None, CallingConventions.Standard, abiFieldType, new Type[] { });
-                    var fieldBuilder = dynamicType.DefineField(abiField.Name, abiFieldType, FieldAttributes.Public);
-
-                    Label readOptionalEnd = default;
-
-                    // if the Field is optional we need to make it Nullable
-                    // and we need to generate code that handle's it's deserialization with a conditional
-                    if (isOptional)
-                    {
-                        // define label to jump to in case condition is false
-                        readOptionalEnd = binaryReaderConstructorIlGenerator.DefineLabel();
-                        // Load "this" onto stack
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
-                        // Load BinaryReader reference onto stack
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
-                        // Read Byte/Boolean (put on stack)
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, ReadBoolean);
-                        // check value on stack, if false, skip and continue at readOptionalEnd-Label
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Brfalse_S, readOptionalEnd);
-
-                        // if this is a ValueType we make it nullable
-                        // if not a ValueType we need to set a Custom NullableAttribute when adding it as Field to a type
-                        if (abiFieldType.IsValueType)
-                            abiFieldType = typeof(Nullable<>).MakeGenericType(abiFieldType);
-                        else
-                            fieldBuilder.SetCustomAttribute(NullableHelper.NullableAttributeBuilder);
-                    }
 
                     if (isArrayType)
                     {
+                        // make the type an array
+                        var abiArrayFieldType = abiFieldType.MakeArrayType();
+
+                        var fieldBuilder = dynamicType.DefineField(abiField.Name, abiArrayFieldType, FieldAttributes.Public);
 
                         var iLocal = binaryReaderConstructorIlGenerator.DeclareLocal(typeof(int)); // i
                         var condLocal = binaryReaderConstructorIlGenerator.DeclareLocal(typeof(bool)); // loop condition
@@ -331,14 +316,17 @@ namespace DeepReader.AssemblyGenerator
                         // get the readerMethod for this type
                         var readerMethod = GetReaderMethodForType(abiFieldType, abiField);
 
-                        // make the type an array
-                        var abiArrayFieldType = abiFieldType.MakeArrayType();
-
                         // get the constructor that takes in 1 integer (the size of the array)
-                        var arrayConstructor = abiArrayFieldType.GetConstructor(new Type[] {typeof(int)});
+                        //var arrayConstructor = abiArrayFieldType.GetConstructor(new Type[] {typeof(int)});
+
+                        // Load "this" onto stack
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
+
+                        // Load BinaryReader reference onto stack
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
 
                         // Read the length of the array and put it onto the stack
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, Read7BitEncodedInt);
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Callvirt, Read7BitEncodedInt);
 
                         // Call the constructor for the array, length from stack is used to initialize size
                         binaryReaderConstructorIlGenerator.Emit(OpCodes.Newarr, abiFieldType);
@@ -359,7 +347,7 @@ namespace DeepReader.AssemblyGenerator
 
                         binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0); // this
 
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldfld, abiArrayFieldType);// TODO abiFieldType or abiFieldTypeArry ?!
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldfld, fieldBuilder);// TODO abiFieldType or abiFieldTypeArry ?!
 
                         binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldloc_0, iLocal); // i
 
@@ -396,7 +384,7 @@ namespace DeepReader.AssemblyGenerator
 
                         binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0); // this
 
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldfld, abiArrayFieldType);// TODO abiFieldType or abiFieldTypeArry ?!
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldfld, fieldBuilder);// TODO abiFieldType or abiFieldTypeArry ?!
 
                         binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldlen); // push array length onto stack
 
@@ -431,7 +419,7 @@ namespace DeepReader.AssemblyGenerator
                         //  binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldloc, local);
 
                         // Load "this" onto stack
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
+                        //binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
 
 
                         //Label labelCheckCondition = binaryReaderConstructorIlGenerator.DefineLabel();
@@ -465,34 +453,60 @@ namespace DeepReader.AssemblyGenerator
                         //binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldloc_1);
                         //binaryReaderConstructorIlGenerator.Emit(OpCodes.Brtrue_S, loopNext);
                     }
-
-
-                    // Load "this" onto stack
-                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
-                    // Load BinaryReader reference onto stack
-                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
-
-                    // Call the Reader/Deserialization-Method
-                    // if this type is part of the generated module/assembly, call it's the constructor
-                    // if not, call it's deserialization-method
-                    if(isModuleType)
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, abiFieldType.GetConstructor(new Type[] { typeof(BinaryReader) })!);
                     else
                     {
-                        var meth = GetReaderMethodForType(abiFieldType, abiField);
-                        if (meth.IsVirtual)
-                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Callvirt, meth);
+                        var fieldBuilder = dynamicType.DefineField(abiField.Name, abiFieldType, FieldAttributes.Public);
+
+                        Label readOptionalEnd = default;
+                        // if the Field is optional we need to make it Nullable
+                        // and we need to generate code that handle's it's deserialization with a conditional
+                        if (isOptional)
+                        {
+                            // define label to jump to in case condition is false
+                            readOptionalEnd = binaryReaderConstructorIlGenerator.DefineLabel();
+                            // Load "this" onto stack
+                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
+                            // Load BinaryReader reference onto stack
+                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
+                            // Read Byte/Boolean (put on stack)
+                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, ReadBoolean);
+                            // check value on stack, if false, skip and continue at readOptionalEnd-Label
+                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Brfalse_S, readOptionalEnd);
+
+                            // if this is a ValueType we make it nullable
+                            // if not a ValueType we need to set a Custom NullableAttribute when adding it as Field to a type
+                            if (abiFieldType.IsValueType)
+                                abiFieldType = typeof(Nullable<>).MakeGenericType(abiFieldType);
+                            else
+                                fieldBuilder.SetCustomAttribute(NullableHelper.NullableAttributeBuilder);
+                        }
+
+                        // Load "this" onto stack
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
+                        // Load BinaryReader reference onto stack
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
+
+                        // Call the Reader/Deserialization-Method
+                        // if this type is part of the generated module/assembly, call it's the constructor
+                        // if not, call it's deserialization-method
+                        if (isModuleType)
+                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, abiFieldType.GetConstructor(new Type[] { typeof(BinaryReader) })!);
                         else
-                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, meth);
+                        {
+                            var meth = GetReaderMethodForType(abiFieldType, abiField);
+                            if (meth.IsVirtual)
+                                binaryReaderConstructorIlGenerator.Emit(OpCodes.Callvirt, meth);
+                            else
+                                binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, meth);
+                        }
+
+
+                        // Set value of field to return-value of preious Call (value was put on stack)
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Stfld, fieldBuilder);
+
+                        if (isOptional) // mark the label (set it's position) so code can jump here
+                            binaryReaderConstructorIlGenerator.MarkLabel(readOptionalEnd);
                     }
-
-
-                    // Set value of field to return-value of preious Call (value was put on stack)
-                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Stfld, fieldBuilder);
-
-                    if(isOptional) // mark the label (set it's position) so code can jump here
-                        binaryReaderConstructorIlGenerator.MarkLabel(readOptionalEnd); 
-
                 }
                 // End of method - return
                 binaryReaderConstructorIlGenerator.Emit(OpCodes.Ret);
@@ -539,7 +553,7 @@ namespace DeepReader.AssemblyGenerator
 
         public static MethodInfo ReadByte = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadByte))!;
 
-        public static MethodInfo ReadBytes = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadBytes))!;// needs arg
+//        public static MethodInfo ReadBytes = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadBytes))!;// needs arg
 
         public static MethodInfo ReadChar = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadChar))!;
 
@@ -571,6 +585,9 @@ namespace DeepReader.AssemblyGenerator
 
         public static MethodInfo ReadUInt64 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadUInt64))!;
 
+        public static MethodInfo ReadVarBytes = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadBytes))!; // Bytes, ActionDataBytes
+
+
         public static Dictionary<string, Type> TypeMap = new Dictionary<string, Type>()
         {
             { "bool", typeof(bool) },
@@ -600,6 +617,7 @@ namespace DeepReader.AssemblyGenerator
             { "public_key", typeof(PublicKey) },
             { "asset", typeof(Asset) },
             { "permission_level", typeof(PermissionLevel) },
+            { "permission_level_weight", typeof(PermissionLevelWeight) },
             { "key_weight", typeof(KeyWeight) },
             { "wait_weight", typeof(WaitWeight) },
             { "authority", typeof(Authority) },
@@ -625,7 +643,7 @@ namespace DeepReader.AssemblyGenerator
             { typeof(bool), ReadBoolean },
             { typeof(byte), ReadByte },
             { typeof(sbyte), ReadSByte },
-            { typeof(byte[]), ReadBytes },
+            { typeof(byte[]), ReadVarBytes },
             { typeof(char), ReadChar },
 //            { typeof(char[]), ReadChars },
             { typeof(decimal), ReadDecimal },
@@ -725,8 +743,6 @@ namespace DeepReader.AssemblyGenerator
         // TODO better names for these regions
         #region EosTypes BinaryReaderExtension Methods 
 
-        public static MethodInfo ReadVarBytes = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadBytes))!; // Bytes, ActionDataBytes
-
         public static MethodInfo ReadAsset = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadAsset))!;
 
         public static MethodInfo ReadChecksum160 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadChecksum160))!;
@@ -760,6 +776,14 @@ namespace DeepReader.AssemblyGenerator
 
         public static MethodInfo ReadVarUint64 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadVarUint64))!;
 
+
+        public static MethodInfo ReadKeyWeight = typeof(KeyWeight).GetMethod(nameof(KeyWeight.ReadFromBinaryReader))!;
+
+        public static MethodInfo ReadWaitWeight = typeof(WaitWeight).GetMethod(nameof(WaitWeight.ReadFromBinaryReader))!;
+        
+        public static MethodInfo ReadPermissionLevelWeight = typeof(PermissionLevelWeight).GetMethod(nameof(PermissionLevelWeight.ReadFromBinaryReader))!;
+
+        public static MethodInfo ReadExtension = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadExtension))!;
 
         #endregion
 
@@ -823,7 +847,12 @@ namespace DeepReader.AssemblyGenerator
             { typeof(Authority), ReadAuthority },
 
             { typeof(VarUint32), ReadVarUint32 },
-            { typeof(VarUint64), ReadVarUint64 }
+            { typeof(VarUint64), ReadVarUint64 },
+
+            { typeof(KeyWeight), ReadKeyWeight },
+            { typeof(WaitWeight), ReadWaitWeight },
+            { typeof(PermissionLevelWeight), ReadPermissionLevelWeight },
+            { typeof(Extension), ReadExtension },
         };
 
         #endregion

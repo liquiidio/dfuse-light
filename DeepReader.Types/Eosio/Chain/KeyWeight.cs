@@ -1,6 +1,6 @@
 using DeepReader.Types.EosTypes;
 
-namespace DeepReader.Types;
+namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/authority.hpp
@@ -8,14 +8,14 @@ namespace DeepReader.Types;
 public class KeyWeight : IEosioSerializable<KeyWeight>
 {
     public PublicKey Key = PublicKey.TypeEmpty;//string
-    public uint Weight = 0;//uint32
+    public WeightType Weight = 0;//uint32
 
     public KeyWeight() { }
 
     public KeyWeight(BinaryReader reader)
     {
         Key = PublicKey.ReadFromBinaryReader(reader);
-        Weight = reader.ReadUInt32();
+        Weight = reader.ReadUInt16();
     }
 
     public static KeyWeight ReadFromBinaryReader(BinaryReader reader)

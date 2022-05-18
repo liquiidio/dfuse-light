@@ -17,6 +17,8 @@ namespace DeepReader.Types.FlattenedTypes
 
         public string Console { get; set; } = string.Empty;
 
+        public ulong GlobalSequence { get; set; } = 0;
+
         public AccountDelta[] AccountRamDeltas { get; set; } = Array.Empty<AccountDelta>();
 
         public FlattenedRamOp[] RamOps { get; set; } = Array.Empty<FlattenedRamOp>();
@@ -41,7 +43,8 @@ namespace DeepReader.Types.FlattenedTypes
                 Act = Action.ReadFromBinaryReader(reader),
                 ContextFree = reader.ReadBoolean(),
                 ElapsedUs = reader.ReadInt64(),
-                Console = reader.ReadString()
+                Console = reader.ReadString(),
+                GlobalSequence = (ulong)reader.Read7BitEncodedInt64()
             };
 
             obj.AccountRamDeltas = new AccountDelta[reader.ReadInt32()];
@@ -86,6 +89,7 @@ namespace DeepReader.Types.FlattenedTypes
             writer.Write(ContextFree);
             writer.Write(ElapsedUs);
             writer.Write(Console);
+            writer.Write7BitEncodedInt64((long)GlobalSequence);
 
             writer.Write(AccountRamDeltas.Length);
             foreach (var accountRamDelta in AccountRamDeltas)

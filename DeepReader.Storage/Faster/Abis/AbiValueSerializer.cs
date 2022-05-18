@@ -11,12 +11,19 @@ public class AbiValueSerializer : BinaryObjectSerializer<AbiCacheItem>
     {
         obj = new AbiCacheItem();
         obj.Id = reader.ReadUInt64();
-        obj.AbiVersions[reader.ReadUInt64()] = new AssemblyWrapper(reader.ReadBytes(reader.Read7BitEncodedInt()));
+        var abiCount = reader.Read7BitEncodedInt();
+        for(int i = 0; i < abiCount; i++)
+        {
+            var key = reader.ReadUInt64();
+            var bytes = reader.Read7BitEncodedInt();
+            obj.AbiVersions[key] = new AssemblyWrapper(reader.ReadBytes(bytes));
+        }
     }
 
     public override void Serialize(ref AbiCacheItem obj)
     {
         writer.Write(obj.Id);
+        writer.Write7BitEncodedInt(obj.AbiVersions.Count);
         foreach(var item in obj.AbiVersions)
         {
             writer.Write(item.Key);

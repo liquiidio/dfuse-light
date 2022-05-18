@@ -13,11 +13,6 @@ namespace DeepReader.Storage.Faster.Abis
     {
         public ulong Id;
 
-        public AbiId()
-        {
-
-        }
-
         public AbiId(ulong id)
         {
             Id = id;

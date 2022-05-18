@@ -82,7 +82,7 @@ namespace DeepReader.Storage.Faster.Abis
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
-                comparer: new AbiId()
+                comparer: new AbiId(0)
             );
 
             if (Directory.Exists(checkPointsDir))

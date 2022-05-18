@@ -3,6 +3,7 @@ using DeepReader.AssemblyGenerator;
 using DeepReader.Storage;
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.Other;
 using Serilog;
 
@@ -75,21 +76,34 @@ public class AbiDecoder
 
         if (Convert.TryFromBase64Chars(rawAbiBase64, bytes, out var bytesWritten))
         {
-            Console.WriteLine($"bytesWritten " + bytesWritten + " rawAbiBase64.Length " + rawAbiBase64.Length); // TODO remove
             var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(bytes[Range.EndAt(bytesWritten)]);
 
             var contractAccount = NameCache.GetOrCreate(contract.ToString());
-            AbiAssemblyGenerator abiAssemblyGenerator = new(abi, contractAccount, 0);
+            AbiAssemblyGenerator abiAssemblyGenerator = new(abi, contractAccount, _activeGlobalSequence);
             var abiAssembly = abiAssemblyGenerator.GenerateAssembly();
 
             _storageAdapter.UpsertAbi(contractAccount, _activeGlobalSequence, abiAssembly);
 
-            Log.Information($"Deserialized Abi for {contract} : {JsonSerializer.Serialize(abi, JsonSerializerOptions)}");
+            Log.Information($"Deserialized Abi for {contract}");
         }
         else
         {
             Console.WriteLine($"Deserialization of Abi for {contract} FAILED");
         }
+    }
+
+    public void AddAbi(Name contractAccount, byte[] bytes, ulong globalSequence)
+    {
+        _activeGlobalSequence = globalSequence;
+
+        var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(bytes);
+
+        AbiAssemblyGenerator abiAssemblyGenerator = new(abi, contractAccount, _activeGlobalSequence);
+        var abiAssembly = abiAssemblyGenerator.GenerateAssembly();
+
+        _storageAdapter.UpsertAbi(contractAccount, _activeGlobalSequence, abiAssembly);
+
+        Log.Information($"Deserialized Abi for {contractAccount.StringVal}");
     }
 
     internal void AbiDumpStart(int blockNum, ulong globalSequence)

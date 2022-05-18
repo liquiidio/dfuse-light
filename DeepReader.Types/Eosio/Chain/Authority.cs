@@ -1,4 +1,4 @@
-namespace DeepReader.Types;
+namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/authority.hpp
