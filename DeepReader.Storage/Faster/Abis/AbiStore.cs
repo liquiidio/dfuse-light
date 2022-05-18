@@ -150,7 +150,7 @@ namespace DeepReader.Storage.Faster.Abis
             }
         }
 
-        public async Task<(bool, KeyValuePair<ulong, Assembly>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence)
+        public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence)
         {
             using (_AbiReaderSessionReadDurationHistogram.NewTimer())
             {
@@ -168,11 +168,11 @@ namespace DeepReader.Storage.Faster.Abis
                     abiVersionIndex--;
                     return (status.Found, output.Value.AbiVersions.ToArray()[abiVersionIndex]);
                 }
-                return (false, new KeyValuePair<ulong, Assembly>());
+                return (false, new KeyValuePair<ulong, AssemblyWrapper>());
             }
         }
 
-        public async Task<(bool, KeyValuePair<ulong, Assembly>)> TryGetActiveAbiAssembly(Name account)
+        public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Name account)
         {
             using (_AbiReaderSessionReadDurationHistogram.NewTimer())
             {
@@ -182,7 +182,7 @@ namespace DeepReader.Storage.Faster.Abis
                 {
                     return (status.Found, output.Value.AbiVersions.Last());
                 }
-                return (false, new KeyValuePair<ulong, Assembly>());
+                return (false, new KeyValuePair<ulong, AssemblyWrapper>());
             }
         }
 

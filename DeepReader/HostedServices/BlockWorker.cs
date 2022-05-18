@@ -1,18 +1,17 @@
-﻿using System.Diagnostics;
-using System.Threading.Channels;
-using DeepReader.Options;
+﻿using DeepReader.Options;
 using DeepReader.Storage;
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.FlattenedTypes;
 using DeepReader.Types.Helpers;
-using DeepReader.Types.Other;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Prometheus;
-using Sentry;
 using Serilog;
+using System.Diagnostics;
+using System.Text.Json;
+using System.Threading.Channels;
 
 namespace DeepReader.HostedServices;
 
@@ -235,7 +234,7 @@ public class BlockWorker : BackgroundService
                     if (found)  // TODO check GlobalSequence
                     {
                         var assembly = assemblyPair.Value;
-                        var clrType = assembly.GetType(actionTrace.Act.Name.StringVal);
+                        var clrType = assembly.Assembly.GetType(actionTrace.Act.Name.StringVal);
                         if (clrType != null)
                         {
                             BinaryReader reader = new BinaryReader(new MemoryStream(actionTrace.Act.Data));
@@ -243,6 +242,7 @@ public class BlockWorker : BackgroundService
                             clrTypename = clrType.Name;
                             var obj = Activator.CreateInstance(clrType, reader);
 
+                            Log.Information(JsonSerializer.Serialize(obj, new JsonSerializerOptions() { IncludeFields = true, WriteIndented = true }));
                             //var ctor = clrType.GetConstructor(new Type[] { typeof(BinaryReader) });
                             //ctor.Invoke(new[] { reader });
                         }

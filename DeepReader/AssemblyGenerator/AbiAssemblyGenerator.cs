@@ -287,7 +287,7 @@ namespace DeepReader.AssemblyGenerator
                 {
                     var (abiFieldType, isOptional, isArrayType, isModuleType) = GetClrAbiFieldTypeInfo(abiField);
 
-                    if(abiFieldType == null || isArrayType)
+                    if(abiFieldType == null)
                         continue;
 
                     // add new field to type
@@ -321,6 +321,13 @@ namespace DeepReader.AssemblyGenerator
 
                     if (isArrayType)
                     {
+
+                        var iLocal = binaryReaderConstructorIlGenerator.DeclareLocal(typeof(int)); // i
+                        var condLocal = binaryReaderConstructorIlGenerator.DeclareLocal(typeof(bool)); // loop condition
+
+                        var loopStartLabel = binaryReaderConstructorIlGenerator.DefineLabel();
+                        var loopBodyLabel = binaryReaderConstructorIlGenerator.DefineLabel();
+
                         // get the readerMethod for this type
                         var readerMethod = GetReaderMethodForType(abiFieldType, abiField);
 
@@ -330,32 +337,99 @@ namespace DeepReader.AssemblyGenerator
                         // get the constructor that takes in 1 integer (the size of the array)
                         var arrayConstructor = abiArrayFieldType.GetConstructor(new Type[] {typeof(int)});
 
-                        // Read the lenght of the array and put it onto the stack
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, ReadInt32);
+                        // Read the length of the array and put it onto the stack
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, Read7BitEncodedInt);
 
-                        // Call the constructor, length from stack is used to initialize size
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Newobj, abiArrayFieldType); //invoke the constructor to create the array
+                        // Call the constructor for the array, length from stack is used to initialize size
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Newarr, abiFieldType);
 
-                        //get the Set method that takes in 1 integer (index) and one instance of type 
-                        var set_method = abiArrayFieldType.GetMethod("Set", new[] { typeof(int), abiFieldType });
+                        // set array field to created array
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Stfld, fieldBuilder);
 
-                        //binaryReaderConstructorIlGenerator.Emit(OpCodes.Stloc, local);
-                        //binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldloc, local);
+                        // put value 0 as int32 onto the stack
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldc_I4_0);
+                        
+                        // pop 0 from stack into local list at index 0
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Stloc_0);
 
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldc_I4_1); // index
-                        //binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldc_I4_1); // value
+                        // start loop
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Br_S, loopBodyLabel);
 
-                        // Load BinaryReader reference onto stack
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
+                        binaryReaderConstructorIlGenerator.MarkLabel(loopStartLabel); // loop jumps back here
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0); // this
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldfld, abiArrayFieldType);// TODO abiFieldType or abiFieldTypeArry ?!
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldloc_0, iLocal); // i
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1); // reader
 
                         // Call the Reader/Deserialization-Method
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, readerMethod); // value on stack
+                        // if this type is part of the generated module/assembly, call it's the constructor
+                        // if not, call it's deserialization-method
+                        if (isModuleType)
+                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, abiFieldType.GetConstructor(new Type[] { typeof(BinaryReader) })!);
+                        else
+                        {
+                            var meth = GetReaderMethodForType(abiFieldType, abiField);
+                            if (meth.IsVirtual)
+                                binaryReaderConstructorIlGenerator.Emit(OpCodes.Callvirt, meth);
+                            else
+                                binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, meth);
+                        }
 
-                        // call the Set method to set the value
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, set_method);
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Stelem_Ref);
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldloc_0, iLocal); // load i
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldc_I4_1); // push 1 onto stack
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Add); // add 1 to i 
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Stloc_0, iLocal); // pop i
+
+
+                        binaryReaderConstructorIlGenerator.MarkLabel(loopBodyLabel); // loop initially jumps here, loop condition follows
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldloc_0, iLocal); // load i
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0); // this
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldfld, abiArrayFieldType);// TODO abiFieldType or abiFieldTypeArry ?!
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldlen); // push array length onto stack
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Conv_I4); // convert to int32
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Clt); // compare i and length
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Stloc_1, condLocal);
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldloc_1, condLocal);
+
+                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Brtrue_S, loopStartLabel);
+
+                        ////get the Set method that takes in 1 integer (index) and one instance of type 
+                        //var set_method = abiArrayFieldType.GetMethod("Set", new[] { typeof(int), abiFieldType });
+
+                        ////binaryReaderConstructorIlGenerator.Emit(OpCodes.Stloc, local);
+                        ////binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldloc, local);
+
+                        //binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldc_I4_1); // index
+                        ////binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldc_I4_1); // value
+
+                        //// Load BinaryReader reference onto stack
+                        //binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
+
+                        //// Call the Reader/Deserialization-Method
+                        //binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, readerMethod); // value on stack
+
+                        //// call the Set method to set the value
+                        //binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, set_method);
 
                         //  binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldloc, local);
-                        
+
                         // Load "this" onto stack
                         binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
 
@@ -406,9 +480,10 @@ namespace DeepReader.AssemblyGenerator
                     else
                     {
                         var meth = GetReaderMethodForType(abiFieldType, abiField);
-                        if (meth == null)
-                            Log.Information("Test");
-                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, meth);
+                        if (meth.IsVirtual)
+                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Callvirt, meth);
+                        else
+                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, meth);
                     }
 
 

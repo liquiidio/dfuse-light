@@ -50,20 +50,20 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
     public override bool InitialUpdater(ref AbiId key, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput output, ref RMWInfo rmwInfo)
     {
         value = new AbiCacheItem();
-        value.AbiVersions[input.GlobalSequence] = input.Assembly;
+        value.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
         value.Id = input.Id;
         return true;
     }
 
     public override bool InPlaceUpdater(ref AbiId key, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput output, ref RMWInfo rmwInfo)
     {
-        value.AbiVersions[input.GlobalSequence] = input.Assembly;
+        value.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
         return true;
     }
 
     public override bool CopyUpdater(ref AbiId key, ref AbiInput input, ref AbiCacheItem oldValue, ref AbiCacheItem newValue, ref AbiOutput output, ref RMWInfo rmwInfo)
     {
-        oldValue.AbiVersions[input.GlobalSequence] = input.Assembly;
+        oldValue.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
         newValue.AbiVersions = oldValue.AbiVersions;
         newValue.Id = oldValue.Id;
         return true;
@@ -71,9 +71,41 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
 
 }
 
-[Serializable]
+
 public class AbiCacheItem
 {
     public ulong Id;
-    public SortedDictionary<ulong, Assembly> AbiVersions = new();
+    public SortedDictionary<ulong, AssemblyWrapper> AbiVersions = new();
+}
+
+public class AssemblyWrapper
+{
+    private byte[] _binary = Array.Empty<byte>();
+
+    private Assembly? _assembly;
+
+    public Assembly Assembly => _assembly ??= Assembly.Load(_binary);
+
+    public byte[] Binary => _binary ??= AssemblyToByteArray();
+
+    public AssemblyWrapper(Assembly assembly)
+    {
+        _assembly = assembly;
+    }
+
+    public AssemblyWrapper(byte[] binary)
+    {
+        _binary = binary;
+    }
+
+    byte[] AssemblyToByteArray()
+    {
+        var generator = new Lokad.ILPack.AssemblyGenerator();
+        return generator.GenerateAssemblyBytes(_assembly);
+    }
+
+    public static implicit operator Assembly(AssemblyWrapper wrapper)
+    {
+        return wrapper.Assembly;
+    }
 }

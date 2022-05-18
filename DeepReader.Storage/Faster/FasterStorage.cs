@@ -80,12 +80,12 @@ namespace DeepReader.Storage.Faster
             return await _abiStore.TryGetAbiAssembliesById(account);
         }
 
-        public async Task<(bool, KeyValuePair<ulong, Assembly>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence)
+        public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence)
         {
             return await _abiStore.TryGetAbiAssemblyByIdAndGlobalSequence(account, globalSequence);
         }
 
-        public async Task<(bool, KeyValuePair<ulong, Assembly>)> TryGetActiveAbiAssembly(Name account)
+        public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Name account)
         {
             return await _abiStore.TryGetActiveAbiAssembly(account);
         }

@@ -9,20 +9,19 @@ public class AbiValueSerializer : BinaryObjectSerializer<AbiCacheItem>
 {
     public override void Deserialize(out AbiCacheItem obj)
     {
-        // TODO
-        //var assembly = Assembly.Load(reader.ReadBytes(0));
-        //BinaryFormatter formatter = new BinaryFormatter();
-        //obj = (AbiCacheItem)formatter.Deserialize(reader.BaseStream);
         obj = new AbiCacheItem();
+        obj.Id = reader.ReadUInt64();
+        obj.AbiVersions[reader.ReadUInt64()] = new AssemblyWrapper(reader.ReadBytes(reader.Read7BitEncodedInt()));
     }
 
     public override void Serialize(ref AbiCacheItem obj)
     {
-        // TODO
-        writer.Write(0);
-        //var generator = new Lokad.ILPack.AssemblyGenerator();
-        //generator.GenerateAssemblyBytes()
-        //BinaryFormatter formatter = new BinaryFormatter();
-        //formatter.Serialize(writer.BaseStream, obj);
+        writer.Write(obj.Id);
+        foreach(var item in obj.AbiVersions)
+        {
+            writer.Write(item.Key);
+            writer.Write7BitEncodedInt(item.Value.Binary.Length);
+            writer.Write(item.Value.Binary);
+        }
     }
 }

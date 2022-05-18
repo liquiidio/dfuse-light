@@ -21,9 +21,9 @@ namespace DeepReader.Storage
 
         Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Name account);
 
-        Task<(bool, KeyValuePair<ulong, Assembly>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence);
+        Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence);
 
-        Task<(bool, KeyValuePair<ulong, Assembly>)> TryGetActiveAbiAssembly(Name account);
+        Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Name account);
 
     }
 }

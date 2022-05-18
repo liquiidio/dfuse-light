@@ -60,12 +60,12 @@ namespace DeepReader.Storage.Elastic
             throw new NotImplementedException();
         }
 
-        public Task<(bool, KeyValuePair<ulong, Assembly>)> TryGetAbiAssemblyByIdAndGlobalSequence(Types.EosTypes.Name account, ulong globalSequence)
+        public Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Types.EosTypes.Name account, ulong globalSequence)
         {
             throw new NotImplementedException();
         }
 
-        public Task<(bool, KeyValuePair<ulong, Assembly>)> TryGetActiveAbiAssembly(Types.EosTypes.Name account)
+        public Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Types.EosTypes.Name account)
         {
             throw new NotImplementedException();
         }
