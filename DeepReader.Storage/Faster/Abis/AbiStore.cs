@@ -138,7 +138,7 @@ namespace DeepReader.Storage.Faster.Abis
 
         public async Task UpsertAbi(Name account, ulong globalSequence, Assembly assembly)
         {
-            await _AbiWriterSession.RMWAsync(new AbiId(account.IntVal), new AbiInput(account.IntVal, globalSequence, assembly), new AbiContext());
+            (await _AbiWriterSession.RMWAsync(new AbiId(account.IntVal), new AbiInput(account.IntVal, globalSequence, assembly), new AbiContext())).Complete();
         }
 
         public async Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Name account)

@@ -22,8 +22,8 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
     {
         if (ctx.Type == 0)
         {
-            if (output.Value?.Id != id.Id)
-                Log.Error( new Exception("Read error!, Abi not found"),"");
+            if (output.Value.Id != id.Id)
+                Log.Error(new Exception("Read error!, Abi not found"), "");
         }
         else
         {
@@ -49,9 +49,8 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
 
     public override bool InitialUpdater(ref AbiId key, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput output, ref RMWInfo rmwInfo)
     {
-        value = new AbiCacheItem();
+        value = new AbiCacheItem(input.Id);
         value.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
-        value.Id = input.Id;
 
         output.Value = value;
         
@@ -69,18 +68,13 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
 
     public override bool CopyUpdater(ref AbiId key, ref AbiInput input, ref AbiCacheItem oldValue, ref AbiCacheItem newValue, ref AbiOutput output, ref RMWInfo rmwInfo)
     {
-        if (oldValue == null)
-            Log.Information("test");
+        if (oldValue != null)
+            newValue = oldValue;
+        else
+            newValue = new AbiCacheItem(input.Id);
 
-        if (input.Assembly == null)
-            Log.Information("Test");
-
-        if (newValue != null)
-            Log.Information("Test");
-
-        //oldValue.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
-        newValue = oldValue;
         newValue.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
+        output.Value = newValue;
 
         return true;
     }
@@ -92,6 +86,11 @@ public class AbiCacheItem
 {
     public ulong Id;
     public SortedDictionary<ulong, AssemblyWrapper> AbiVersions = new();
+
+    public AbiCacheItem(ulong id)
+    {
+        Id = id;
+    }
 }
 
 public class AssemblyWrapper
