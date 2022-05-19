@@ -80,15 +80,18 @@ public class AbiDecoder
 
             var contractAccount = NameCache.GetOrCreate(contract.ToString());
             AbiAssemblyGenerator abiAssemblyGenerator = new(abi, contractAccount, _activeGlobalSequence);
-            var abiAssembly = abiAssemblyGenerator.GenerateAssembly();
+            if (abiAssemblyGenerator.TryGenerateAssembly(out var abiAssembly))
+            {
+                _storageAdapter.UpsertAbi(contractAccount, _activeGlobalSequence, abiAssembly!);
 
-            _storageAdapter.UpsertAbi(contractAccount, _activeGlobalSequence, abiAssembly);
-
-            Log.Information($"Deserialized Abi for {contract}");
+                Log.Information($"Deserialized Abi for {contractAccount.StringVal}");
+            }
+            else
+                Log.Warning($"Deserialization of Abi for {contractAccount} failed");
         }
         else
         {
-            Console.WriteLine($"Deserialization of Abi for {contract} FAILED");
+            Console.WriteLine($"base64chars to byte-array of Abi for {contract} failed");
         }
     }
 
@@ -99,11 +102,14 @@ public class AbiDecoder
         var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(bytes);
 
         AbiAssemblyGenerator abiAssemblyGenerator = new(abi, contractAccount, _activeGlobalSequence);
-        var abiAssembly = abiAssemblyGenerator.GenerateAssembly();
+        if (abiAssemblyGenerator.TryGenerateAssembly(out var abiAssembly))
+        {
+            _storageAdapter.UpsertAbi(contractAccount, _activeGlobalSequence, abiAssembly!);
 
-        _storageAdapter.UpsertAbi(contractAccount, _activeGlobalSequence, abiAssembly);
-
-        Log.Information($"Deserialized Abi for {contractAccount.StringVal}");
+            Log.Information($"Deserialized Abi for {contractAccount.StringVal}");
+        }
+        else
+            Log.Warning($"Deserialization of Abi for {contractAccount} failed");
     }
 
     internal void AbiDumpStart(int blockNum, ulong globalSequence)
