@@ -296,7 +296,7 @@ public class ParseCtx
             Log.Information($"block_num {blockNum} doesn't match the active block num {_activeBlockNum}");
         }
 
-        var blockState = DeepMindDeserializer.DeepMindDeserializer.Deserialize<BlockState>(Decoder.HexToBytes(chunks[3]));
+        var blockState = DeepMindDeserializer.DeepMindDeserializer.Deserialize<BlockState>(chunks[3]);
 
         _block.Id = blockState.Id;
         _block.Number = blockState.BlockNum;
@@ -531,7 +531,7 @@ public class ParseCtx
             Log.Information($"saw transactions from block {blockNum} while active block is {_activeBlockNum}");
         }
 
-        var trxTrace = DeepMindDeserializer.DeepMindDeserializer.Deserialize<TransactionTrace>(Decoder.HexToBytes(chunks[3]));
+        var trxTrace = DeepMindDeserializer.DeepMindDeserializer.Deserialize<TransactionTrace>(chunks[3]);
 
         RecordTransaction(trxTrace);
     }
@@ -658,7 +658,7 @@ public class ParseCtx
 
         var actionIndex = Int32.Parse(chunks[3].AsSpan);
 
-        var signedTrx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(Decoder.HexToBytes(chunks[11]));
+        var signedTrx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(chunks[11]);
 
         try
         {
@@ -1065,7 +1065,7 @@ public class ParseCtx
             throw new Exception($"expected 6 fields, got {chunks.Count}");
         }
 
-        var trx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(Decoder.HexToBytes(chunks[5]));
+        var trx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(chunks[5]);
 
         RecordTrxOp(new TrxOp()
         {
