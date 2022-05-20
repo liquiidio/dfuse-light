@@ -9,8 +9,7 @@ public class AbiValueSerializer : BinaryObjectSerializer<AbiCacheItem>
 {
     public override void Deserialize(out AbiCacheItem obj)
     {
-        obj = new AbiCacheItem();
-        obj.Id = reader.ReadUInt64();
+        obj = new AbiCacheItem(reader.ReadUInt64());
         var abiCount = reader.Read7BitEncodedInt();
         for(int i = 0; i < abiCount; i++)
         {
