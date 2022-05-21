@@ -383,7 +383,7 @@ namespace DeepReader.AssemblyGenerator
                             }
                             else
                             {
-                                var fieldBuilder = dynamicType.DefineField(abiField.Name, abiFieldType, FieldAttributes.Public);
+                                var fieldBuilder = dynamicType.DefineField(clrFieldName, abiFieldType, FieldAttributes.Public);
 
                                 Label readOptionalEnd = default;
                                 // if the Field is optional we need to make it Nullable
@@ -435,12 +435,12 @@ namespace DeepReader.AssemblyGenerator
                                 if (isOptional) // mark the label (set it's position) so code can jump here
                                     binaryReaderConstructorIlGenerator.MarkLabel(readOptionalEnd);
                             }
-                            // End of method - return
-                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Ret);
-
-                            return dynamicType.CreateType()!;
                         }
                     }
+                    // End of method - return
+                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Ret);
+
+                    return dynamicType.CreateType()!;
                 }
             }
             catch (Exception e)

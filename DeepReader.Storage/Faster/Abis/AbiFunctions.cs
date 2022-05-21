@@ -22,8 +22,9 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
     {
         if (ctx.Type == 0)
         {
-            if (output.Value.Id != id.Id)
-                Log.Error(new Exception("Read error!, Abi not found"), "");
+            // TODO
+            //if (output.Value.Id != id.Id)
+            //    Log.Error(new Exception("Read error!, Abi not found"), "");
         }
         else
         {

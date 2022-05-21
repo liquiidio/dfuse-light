@@ -246,7 +246,7 @@ public class BlockWorker : BackgroundService
                     {
                         actName = actionTrace.Act.Name;
                         var assembly = assemblyPair.Value;
-                        var clrType = assembly.Assembly.GetType(actionTrace.Act.Name.StringVal.Replace('.','_'));
+                        var clrType = assembly.Assembly.GetType($"_{actionTrace.Act.Name.StringVal.Replace('.','_')}");
                         if (clrType != null)
                         {
                             BinaryReader reader = new BinaryReader(new MemoryStream(actionTrace.Act.Data));
@@ -260,11 +260,11 @@ public class BlockWorker : BackgroundService
 
                             if (actionTrace.Act.Account == eosio && actionTrace.Act.Name == setabi)
                             {
-                                var abiField = clrType.GetField("abi");
+                                var abiField = clrType.GetField("_abi");
                                 var abiFieldValue = abiField.GetValue(obj);
                                 var abiBytes = (byte[])abiFieldValue;
 
-                                var accountField = clrType.GetField("account");
+                                var accountField = clrType.GetField("_account");
                                 var accountFieldValue = accountField.GetValue(obj);
                                 var account = (Name)accountFieldValue;
 
