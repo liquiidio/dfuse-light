@@ -1,8 +1,8 @@
-﻿using DeepReader.Storage.Faster.Blocks;
+﻿using DeepReader.Storage.Faster.ActionTraces;
+using DeepReader.Storage.Faster.Blocks;
 using DeepReader.Storage.Faster.Transactions;
 using DeepReader.Storage.Options;
-using DeepReader.Types.Eosio.Chain;
-using DeepReader.Types.FlattenedTypes;
+using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Options;
@@ -13,8 +13,11 @@ namespace DeepReader.Storage.Faster
     {
         private readonly BlockStore _blockStore;
         private readonly TransactionStore _transactionStore;
+        private readonly ActionTraceStore _actionTraceStore;
 
         private FasterStorageOptions _fasterStorageOptions;
+
+        private ParallelOptions _parallelOptions;
 
         public FasterStorage(IOptionsMonitor<FasterStorageOptions> storageOptionsMonitor, ITopicEventSender eventSender)
         {
@@ -23,6 +26,12 @@ namespace DeepReader.Storage.Faster
 
             _blockStore = new BlockStore(_fasterStorageOptions, eventSender);
             _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender);
+            _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender);
+
+            _parallelOptions = new()
+            {
+                MaxDegreeOfParallelism = 6 // TODO, put in config with reasonable name
+            };
         }
 
         private void OnFasterStorageOptionsChanged(FasterStorageOptions newOptions)
@@ -30,39 +39,68 @@ namespace DeepReader.Storage.Faster
             _fasterStorageOptions = newOptions;
         }
 
-        public async Task StoreBlockAsync(FlattenedBlock block)
+        public async Task StoreBlockAsync(Block block)
         {
             await _blockStore.WriteBlock(block);
         }
 
-        public async Task StoreTransactionAsync(FlattenedTransactionTrace transactionTrace)
-        { 
+        public async Task StoreTransactionAsync(TransactionTrace transactionTrace)
+        {
             await _transactionStore.WriteTransaction(transactionTrace);
         }
 
-        public async Task<(bool,FlattenedBlock)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false)
+        public async Task StoreActionTraceAsync(ActionTrace actionTrace)
+        {
+            await _actionTraceStore.WriteActionTrace(actionTrace);
+        }
+
+        public async Task<(bool, Block)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false, bool includeActionTraces = false)
         {
             var (found, block) = await _blockStore.TryGetBlockById(blockNum);
-            if (found && includeTransactionTraces)
+            if (found && includeTransactionTraces) // Todo do not load if already cached
             {
-                block.Transactions = new FlattenedTransactionTrace[block.TransactionIds.Length];
-                int i = 0;
-                foreach (var transactionId in block.TransactionIds)
+                block.Transactions = new TransactionTrace[block.TransactionIds.Length];
+                //int i = 0;
+
+                // not sure if this is clever or over-parallelized
+                await Parallel.ForEachAsync(block.TransactionIds, _parallelOptions, async (transactionId, _) =>
                 {
                     var (foundTrx, trx) =
                         await _transactionStore.TryGetTransactionTraceById(transactionId);
-                    if(foundTrx)
-                        block.Transactions[i++] = trx;
-                }
+                    if (foundTrx)
+                        block.Transactions[Array.IndexOf(block.TransactionIds, transactionId)] = trx;
+                
+                    // TODO ActionTraces
+                });
 
-                block.TransactionIds = Array.Empty<Types.Eosio.Chain.TransactionId>();
+                //foreach (var transactionId in block.TransactionIds)
+                //{
+                //    var (foundTrx, trx) =
+                //        await _transactionStore.TryGetTransactionTraceById(transactionId);
+                //    if(foundTrx)
+                //        block.Transactions[i++] = trx;
+                //}
             }
             return (found, block);
         }
 
-        public async Task<(bool, FlattenedTransactionTrace)> GetTransactionAsync(string transactionId)
+        public async Task<(bool, TransactionTrace)> GetTransactionAsync(string transactionId, bool includeActionTraces = false)
         {
-            return await _transactionStore.TryGetTransactionTraceById(new Types.Eosio.Chain.TransactionId(transactionId));
+            var (found, transaction) = await _transactionStore.TryGetTransactionTraceById(new Types.Eosio.Chain.TransactionId(transactionId));
+            if (found && includeActionTraces) // Todo do not load if already cached
+            {
+                transaction.ActionTraces = new ActionTrace[transaction.ActionTraceIds.Length];
+                await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
+                {
+                    var (foundTrx, action) =
+                        await _actionTraceStore.TryGetActionTraceById(actionTraceId);
+                    if (foundTrx)
+                        transaction.ActionTraces[Array.IndexOf(transaction.ActionTraceIds, actionTraceId)] = action;
+
+                    // TODO recursively load other Actions
+                });
+            }
+            return (found, transaction);
         }
     }
 }

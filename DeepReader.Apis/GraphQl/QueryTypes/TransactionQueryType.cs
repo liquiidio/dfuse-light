@@ -11,7 +11,7 @@ namespace DeepReader.Apis.GraphQl.QueryTypes
             descriptor
                 .Field(f => f.GetTransaction(default!, default!)!)
                 .Argument("transaction_id", a => a.Type<StringType>())
-                .Type<FlattenedTransactionTraceType>()
+                .Type<TransactionTraceType>()
                 .Name("getTransaction");
         }
     }

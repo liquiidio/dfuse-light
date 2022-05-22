@@ -1,5 +1,6 @@
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.Other;
 using KGySoft.CoreLibraries;
 using Serilog;
 
@@ -7,17 +8,17 @@ namespace DeepReader.Classes;
 
 public static class CreationTree
 {
-    public static List<Node> ComputeCreationTree(IReadOnlyList<CreationOp> creationOps)
+    public static List<CreationTreeNode> ComputeCreationTree(IReadOnlyList<CreationOp> creationOps)
     {
         // TODO, not sure if this is converted correctly from dfuse-code
 
         if (creationOps.Count <= 0)
-            return new List<Node>();
+            return new List<CreationTreeNode>();
 
         var actionIndex = -1;
         var opsMap = CreationOpsToMap(creationOps);
 
-        var roots = new List<Node>();
+        var roots = new List<CreationTreeNode>();
 
         var ok = opsMap.Length > (actionIndex + 1);
         var opKinds = opsMap[actionIndex + 1];
@@ -29,7 +30,7 @@ public static class CreationTree
                 Log.Warning($"first exec op kind of execution start should be ROOT, got {opKinds.First()}");
             }
 
-            var root = new Node { Kind = CreationOpKind.ROOT, ActionIndex = -1, Children = new List<Node>() };
+            var root = new CreationTreeNode { Kind = CreationOpKind.ROOT, ActionIndex = -1, Children = new List<CreationTreeNode>() };
             roots.Add(root);
 
             ExecuteAction(ref actionIndex, root, opsMap);
@@ -51,7 +52,7 @@ public static class CreationTree
         return roots;
     }
 
-    private static void ExecuteAction(ref int actionIndex, Node root, CreationOpKind[][] opsMap)
+    private static void ExecuteAction(ref int actionIndex, CreationTreeNode root, CreationOpKind[][] opsMap)
     {
         actionIndex++;
         root.ActionIndex = actionIndex;
@@ -93,7 +94,7 @@ public static class CreationTree
         }
     }
 
-    private static (ICollection<Node> notifies, ICollection<Node> cfas, ICollection<Node> inlines) ExecuteNotify(ref int actionIndex, Node root, CreationOpKind[][] opsMap)
+    private static (ICollection<CreationTreeNode> notifies, ICollection<CreationTreeNode> cfas, ICollection<CreationTreeNode> inlines) ExecuteNotify(ref int actionIndex, CreationTreeNode root, CreationOpKind[][] opsMap)
     {
         actionIndex++;
         root.ActionIndex = actionIndex;
@@ -101,12 +102,12 @@ public static class CreationTree
         return RecordChildCreationOp(root, opsMap[root.ActionIndex]);
     }
 
-    private static (IList<Node> notifies, IList<Node> cfas, IList<Node> inlines) RecordChildCreationOp(Node root, CreationOpKind[] opKinds)
+    private static (IList<CreationTreeNode> notifies, IList<CreationTreeNode> cfas, IList<CreationTreeNode> inlines) RecordChildCreationOp(CreationTreeNode root, CreationOpKind[] opKinds)
     {
-        var notifies = new List<Node>(); var cfas = new List<Node>(); var inlines = new List<Node>();
+        var notifies = new List<CreationTreeNode>(); var cfas = new List<CreationTreeNode>(); var inlines = new List<CreationTreeNode>();
         foreach (var opKind in opKinds)
         {
-            var child = new Node() { Kind = opKind, ActionIndex = -1, Children = new List<Node>() };
+            var child = new CreationTreeNode() { Kind = opKind, ActionIndex = -1, Children = new List<CreationTreeNode>() };
             switch (opKind)
             {
                 case CreationOpKind.ROOT:
@@ -145,13 +146,6 @@ public static class CreationTree
         //     root.children = append(root.children, child)
         // }
     }
-
-    public struct Node
-    {
-        public CreationOpKind Kind;
-        public int ActionIndex;
-        public IList<Node> Children;
-    }
     
     private static CreationOpKind[][] CreationOpsToMap(IReadOnlyList<CreationOp> creationOps)
     {
@@ -167,7 +161,7 @@ public static class CreationTree
         //return mapping;
     }
     
-    public static IList<CreationFlatNode> ToFlatTree(List<Node> roots)
+    public static IList<CreationFlatNode> ToFlatTree(List<CreationTreeNode> roots)
     {
         var tree = new List<CreationFlatNode>();
 
@@ -180,7 +174,7 @@ public static class CreationTree
         return tree;
     }
 
-    private static IList<CreationFlatNode> _ToFlatTree(Node root, int parentIndex, ref int walkIndex)
+    private static IList<CreationFlatNode> _ToFlatTree(CreationTreeNode root, int parentIndex, ref int walkIndex)
     {
         var tree = new List<CreationFlatNode>(){ new(){ WalkIndex = walkIndex, CreatorActionIndex = parentIndex, ExecutionActionIndex = root.ActionIndex}};
         var childRootIndex = walkIndex;

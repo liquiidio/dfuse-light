@@ -77,7 +77,7 @@ public class ParseCtx
         _creationOps.Add(operation);
     }
 
-	public void RecordDbOp(DbOp operation)
+	public void RecordDbOp(ExtendedDbOp operation)
     {
         _trx.DbOps.Add(operation);
     }
@@ -102,7 +102,7 @@ public class ParseCtx
         _trx.PermOps.Add(operation);
     }
 
-    public void RecordRamOp(RamOp operation)
+    public void RecordRamOp(ExtendedRamOp operation)
     {
         _trx.RamOps.Add(operation);
     }
@@ -123,7 +123,7 @@ public class ParseCtx
 	    }
 	}
 
-    public void RecordTableOp(TableOp operation)
+    public void RecordTableOp(ExtendedTableOp operation)
     {
         _trx.TableOps.Add(operation);
     }
@@ -178,7 +178,8 @@ public class ParseCtx
         // All this stiching of ops into trace must be performed after `if` because the if can revert them all
         var creationTreeRoots = CreationTree.ComputeCreationTree((IReadOnlyList<CreationOp>)_creationOps);
 
-        trace.CreationTree = CreationTree.ToFlatTree(creationTreeRoots);
+        trace.CreationTreeRoots = creationTreeRoots;
+        trace.FlatCreationTree = CreationTree.ToFlatTree(creationTreeRoots);
         trace.DtrxOps = _trx.DtrxOps;
         trace.DbOps = _trx.DbOps;
         trace.FeatureOps = _trx.FeatureOps;
@@ -195,9 +196,9 @@ public class ParseCtx
         ResetTrx();
     }
 
-    private IList<RamOp> TransferDeferredRemovedRamOp(ICollection<RamOp> initialRamOps, TransactionTrace target)
+    private IList<ExtendedRamOp> TransferDeferredRemovedRamOp(ICollection<ExtendedRamOp> initialRamOps, TransactionTrace target)
     {
-        IList<RamOp> filteredRamOps = new List<RamOp>();
+        IList<ExtendedRamOp> filteredRamOps = new List<ExtendedRamOp>();
         foreach (var ramOp in initialRamOps)
         {
             if (ramOp.Namespace == RamOpNamespace.DEFERRED_TRX && ramOp.Action == RamOpAction.REMOVE)
@@ -218,7 +219,7 @@ public class ParseCtx
         // as well as the RLimitOps, which happens at a location that does not revert.
         var toRestoreRlimitOps = _trx.RlimitOps;
 
-        RamOp? deferredRemovalRamOp = null;// = new RAMOp();
+        ExtendedRamOp? deferredRemovalRamOp = null;// = new RAMOp();
 
         foreach (var trxRamOp in _trx.RamOps)
         {
@@ -233,13 +234,13 @@ public class ParseCtx
         _trx.RlimitOps = toRestoreRlimitOps;
         if (deferredRemovalRamOp != null)
         {
-            _trx.RamOps = new List<RamOp>() { deferredRemovalRamOp };
+            _trx.RamOps = new List<ExtendedRamOp>() { deferredRemovalRamOp };
         }
     }
 
-    public RamOp[] TransferDeferredRemovedRamOp(RamOp[] initialRamOps, TransactionTrace target)
+    public ExtendedRamOp[] TransferDeferredRemovedRamOp(ExtendedRamOp[] initialRamOps, TransactionTrace target)
     {
-        List<RamOp> filteredRamOps = new List<RamOp>();
+        List<ExtendedRamOp> filteredRamOps = new List<ExtendedRamOp>();
         foreach (var initialRamOp in initialRamOps)
         {
 			if (initialRamOp.Namespace == RamOpNamespace.DEFERRED_TRX && initialRamOp.Action == RamOpAction.REMOVE)
@@ -623,7 +624,7 @@ public class ParseCtx
                 throw new Exception($"unknown operation: {chunks[2]}");
         }
 
-        RecordDbOp(new DbOp()
+        RecordDbOp(new ExtendedDbOp()
         {
             Operation = op,
             ActionIndex = (uint) actionIndex,
@@ -873,7 +874,7 @@ public class ParseCtx
 
         var delta = Int64.Parse(chunks[9]);
 
-        RecordRamOp(new RamOp()
+        RecordRamOp(new ExtendedRamOp()
         {
             ActionIndex = actionIndex,
             UniqueKey = chunks[3].Split(':'),
@@ -1045,7 +1046,7 @@ public class ParseCtx
             throw new Exception($"expected 8 fields, got {chunks.Count}");
         }
 
-        RecordTableOp(new TableOp()
+        RecordTableOp(new ExtendedTableOp()
         {
             Operation = Enum.Parse<TableOpOperation>(chunks[2]),
             ActionIndex = (uint)Int32.Parse(chunks[3]),

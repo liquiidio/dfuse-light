@@ -35,4 +35,7 @@ public class ActionDataBytes : Bytes<object>
 //        Instance = DeepMindDeserializer.DeepMindDeserializer.Deserialize(Binary, targetType);
 
     }
+
+    public string Json { get; set; } // TODO
+    public string Hex { get; set; } // TODO
 }

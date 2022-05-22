@@ -1,5 +1,5 @@
 using DeepReader.Storage.Options;
-using DeepReader.Types.FlattenedTypes;
+using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
@@ -10,10 +10,10 @@ namespace DeepReader.Storage.Faster.Transactions
 {
     public class TransactionStore
     {
-        private readonly FasterKV<TransactionId, FlattenedTransactionTrace> _store;
+        private readonly FasterKV<TransactionId, TransactionTrace> _store;
 
-        private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionReaderSession;
-        private readonly ClientSession<TransactionId, FlattenedTransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionWriterSession;
+        private readonly ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionReaderSession;
+        private readonly ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionWriterSession;
 
         private FasterStorageOptions _options;
 
@@ -63,7 +63,7 @@ namespace DeepReader.Storage.Faster.Transactions
 
             // Define serializers; otherwise FASTER will use the slower DataContract
             // Needed only for class keys/values
-            var serializerSettings = new SerializerSettings<TransactionId, FlattenedTransactionTrace>
+            var serializerSettings = new SerializerSettings<TransactionId, TransactionTrace>
             {
                 keySerializer = () => new TransactionIdSerializer(),
                 valueSerializer = () => new TransactionValueSerializer()
@@ -75,7 +75,7 @@ namespace DeepReader.Storage.Faster.Transactions
                 new LocalStorageNamedDeviceFactory(),
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
-            _store = new FasterKV<TransactionId, FlattenedTransactionTrace>(
+            _store = new FasterKV<TransactionId, TransactionTrace>(
                 size: _options.MaxTransactionsCacheEntries, // Cache Lines for Transactions
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
@@ -119,7 +119,7 @@ namespace DeepReader.Storage.Faster.Transactions
             new Thread(CommitThread).Start();
         }
 
-        public async Task<Status> WriteTransaction(FlattenedTransactionTrace transaction)
+        public async Task<Status> WriteTransaction(TransactionTrace transaction)
         {
             var transactionId = new TransactionId(transaction.Id);
 
@@ -134,7 +134,7 @@ namespace DeepReader.Storage.Faster.Transactions
             }
         }
 
-        public async Task<(bool, FlattenedTransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
+        public async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
         {
             using (_transactionReaderSessionReadDurationHistogram.NewTimer())
             {

@@ -4,30 +4,44 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
 
-namespace DeepReader.Types.FlattenedTypes;
+namespace DeepReader.Types.StorageTypes;
 
-public class FlattenedBlock
+public class Block
 {
     public Checksum256 Id { get; set; } = Checksum256.TypeEmpty;
     public uint Number { get; set; } = 0;
 
+    public Timestamp Timestamp { get; set; }
+
     public Name Producer { get; set; } = Name.TypeEmpty;
+
+    public ushort Confirmed { get; set; }
+
+    public Checksum256 Previous { get; set; }
+
+    public Checksum256 TransactionMroot { get; set; }
+
+    public Checksum256 ActionMroot { get; set; }
+
+    public uint ScheduleVersion { get; set; }
+
+    public ProducerSchedule? NewProducers { get; set; }
     public Signature ProducerSignature { get; set; } = Signature.TypeEmpty;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]   // TODO (Corvin) not sure if this works for Collections
     public TransactionId[] TransactionIds { get; set; } = Array.Empty<TransactionId>();
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]   // TODO (Corvin) not sure if this works for Collections
-    public FlattenedTransactionTrace[] Transactions { get; set; } = Array.Empty<FlattenedTransactionTrace>();
+    public TransactionTrace[] Transactions { get; set; } = Array.Empty<TransactionTrace>();
 
-    public FlattenedBlock()
+    public Block()
     {
 
     }
 
-    public static FlattenedBlock ReadFromBinaryReader(BinaryReader reader)
+    public static Block ReadFromBinaryReader(BinaryReader reader)
     {
-        var obj = new FlattenedBlock
+        var obj = new Block
         {
             Id = reader.ReadBytes(32),
             Number = reader.ReadUInt32(),

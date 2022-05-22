@@ -1,17 +1,17 @@
-﻿using DeepReader.Types;
-using DeepReader.Types.Eosio.Chain;
-using DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Types.StorageTypes;
 
 namespace DeepReader.Storage
 {
     public interface IStorageAdapter
     {
-        Task StoreBlockAsync(FlattenedBlock block);
+        Task StoreBlockAsync(Block block);
 
-        Task StoreTransactionAsync(FlattenedTransactionTrace transactionTrace);
+        Task StoreTransactionAsync(TransactionTrace transactionTrace);
 
-        Task<(bool, FlattenedBlock)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false);
+        Task StoreActionTraceAsync(ActionTrace actionTrace);
 
-        Task<(bool, FlattenedTransactionTrace)> GetTransactionAsync(string transactionId);
+        Task<(bool, Block)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false, bool includeActionTraces = false);
+
+        Task<(bool, TransactionTrace)> GetTransactionAsync(string transactionId, bool includeActionTraces = false);
     }
 }

@@ -1,12 +1,12 @@
-﻿using DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using Serilog;
 
 namespace DeepReader.Storage.Faster.Blocks;
 
-public sealed class BlockFunctions : FunctionsBase<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext>
+public sealed class BlockFunctions : FunctionsBase<BlockId, Block, BlockInput, BlockOutput, BlockContext>
 {
-    public override bool ConcurrentReader(ref BlockId id, ref BlockInput input, ref FlattenedBlock value, ref BlockOutput dst, ref ReadInfo readInfo)
+    public override bool ConcurrentReader(ref BlockId id, ref BlockInput input, ref Block value, ref BlockOutput dst, ref ReadInfo readInfo)
     {
         dst.Value = value;
         return true;
@@ -38,7 +38,7 @@ public sealed class BlockFunctions : FunctionsBase<BlockId, FlattenedBlock, Bloc
         }
     }
 
-    public override bool SingleReader(ref BlockId id, ref BlockInput input, ref FlattenedBlock value, ref BlockOutput dst, ref ReadInfo readInfo)
+    public override bool SingleReader(ref BlockId id, ref BlockInput input, ref Block value, ref BlockOutput dst, ref ReadInfo readInfo)
     {
         dst.Value = value;
         return true;

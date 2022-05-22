@@ -10,7 +10,7 @@ namespace DeepReader.Apis.GraphQl.SubscriptionTypes
             descriptor.Name("Subscription");
             descriptor
                 .Field(f => f.TransactionAdded(default!))
-                .Type<FlattenedTransactionTraceType>()
+                .Type<TransactionTraceType>()
                 .Name("subscribeToTransactionAdded");
         }
     }
