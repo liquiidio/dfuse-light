@@ -23,7 +23,7 @@ public class ParseCtx
 
     private readonly bool _traceEnabled;
 
-    private readonly string[] _supportedVersions = {"mandel"};
+    private readonly string[] _supportedVersions = {"mandel","13"};
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
@@ -549,25 +549,25 @@ public class ParseCtx
             throw new Exception($"expected 4 fields, got {chunks.Count}");
         }
 
-        var kind = chunks[2];
-        if (kind != "ROOT" && kind != "NOTIFY" && kind != "INLINE" && kind != "CFA_INLINE")
-        {
-            throw new Exception($"kind must be one of ROOT, NOTIFY, CFA_INLINE or INLINE, got: {kind}");
-        }
+        //var kind = chunks[2];
+        //if (kind != "ROOT" && kind != "NOTIFY" && kind != "INLINE" && kind != "CFA_INLINE")
+        //{
+        //    throw new Exception($"kind must be one of ROOT, NOTIFY, CFA_INLINE or INLINE, got: {kind}");
+        //}
 
-        var actionIndex = Int32.Parse(chunks[3].AsSpan);
+        //var actionIndex = Int32.Parse(chunks[3].AsSpan);
         /*if err != nil {
 	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
         }*/
 
         RecordCreationOp(new CreationOp()
         {
-            Kind = Enum.Parse<CreationOpKind>(kind),
+            Kind = Enum.Parse<CreationOpKind>(chunks[2]),
             // FIXME: this index is 0-based, whereas `action_ordinal` is 1-based, where 0 means a virtual root node.
             // This is a BIG problem as now we unpack the traces and simply keep that `action_ordinal` field.. so in `eosws`, we need to re-map all of this together.
             // Perhaps we can simply ditch all of this since we'll have the `closest unnotified ancestor`,.. and we could *NOT* compute our own thing anymore.. and always use theirs..
             // then simply re-map their model into ours at the edge (in `eosws`).
-            ActionIndex = actionIndex,
+            ActionIndex = Int32.Parse(chunks[3].AsSpan),
         });
     }
 

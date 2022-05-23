@@ -20,8 +20,8 @@ public static class CreationTree
 
         var roots = new List<CreationTreeNode>();
 
-        var ok = opsMap.Length > (actionIndex + 1);
-        var opKinds = opsMap[actionIndex + 1];
+        bool ok = true;
+        var opKinds = opsMap[0];
 
         while (ok)
         {
@@ -37,10 +37,10 @@ public static class CreationTree
 
 //            opKinds = opsMap[actionIndex + 1];
 
-            if (opsMap.Length <= (actionIndex + 1))
-                ok = false;
-            else
+            if (opsMap.ContainsKey(actionIndex + 1))
                 opKinds = opsMap[actionIndex + 1];
+            else
+                ok = false;
             // TODO: We should check for gaps in action indices here. Assume an exec ops
             //       list of `[{ROOT, 0}, {NOTIFY, 1}, {ROOT, 2}]`. In this list, we would
             //       create a ROOT #0, skip NOTIFY then try to execute ROOT #2. This is incorrect
@@ -52,58 +52,64 @@ public static class CreationTree
         return roots;
     }
 
-    private static void ExecuteAction(ref int actionIndex, CreationTreeNode root, CreationOpKind[][] opsMap)
+    private static void ExecuteAction(ref int actionIndex, CreationTreeNode root, Dictionary<int, List<CreationOpKind>> opsMap)
     {
         actionIndex++;
         root.ActionIndex = actionIndex;
 
         var (notifies, cfas, inlines) = RecordChildCreationOp(root, opsMap[root.ActionIndex]);
 
-        for(var i = 0; i < notifies.Count; i++)
+        for(var i = 0; i < notifies?.Count; i++)
         {
-            if (opsMap.Length > actionIndex + 1)
-            {
+            //if (opsMap.Count > actionIndex + 1)
+            //{
                 var (nestedNotifies, nestedCfas, nestedInlines) = ExecuteNotify(ref actionIndex, notifies[i], opsMap);
 
-                notifies.AddRange(nestedNotifies);
-                cfas.AddRange(nestedCfas);
-                inlines.AddRange(nestedInlines);
-            }
-            else
-                break; // TODO, here seems to be something wrong
+                if(nestedNotifies != null)
+                    notifies.AddRange(nestedNotifies);
+                if(nestedCfas != null)
+                    cfas?.AddRange(nestedCfas);
+                if(nestedInlines != null)
+                    inlines?.AddRange(nestedInlines);
+            //}
+            //else
+            //    break; // TODO, here seems to be something wrong
         }
 
-        foreach (var cfa in cfas)
+        for (int i = 0; i < cfas?.Count; i++)
         {
-            if (opsMap.Length > actionIndex + 1)
-            {
-                ExecuteAction(ref actionIndex, cfa, opsMap);
-            }
-            else
-                break; // TODO, here seems to be something wrong
+            //if (opsMap.Length > actionIndex + 1)
+            //{
+            ExecuteAction(ref actionIndex, cfas[i], opsMap);
+            //}
+            //else
+            //    break; // TODO, here seems to be something wrong
         }
 
-        foreach (var inline in inlines)
+        for (int i = 0; i < inlines?.Count; i++)
         {
-            if (opsMap.Length > actionIndex + 1)
-            {
-                ExecuteAction(ref actionIndex, inline, opsMap);
-            }
-            else
-                break; // TODO, here seems to be something wrong
+            //if (opsMap.Count > actionIndex + 1)
+            //{
+            ExecuteAction(ref actionIndex, inlines[i], opsMap);
+            //}
+            //else
+            //    break; // TODO, here seems to be something wrong
         }
     }
 
-    private static (ICollection<CreationTreeNode> notifies, ICollection<CreationTreeNode> cfas, ICollection<CreationTreeNode> inlines) ExecuteNotify(ref int actionIndex, CreationTreeNode root, CreationOpKind[][] opsMap)
+    private static (ICollection<CreationTreeNode>? notifies, ICollection<CreationTreeNode>? cfas, ICollection<CreationTreeNode>? inlines) ExecuteNotify(ref int actionIndex, CreationTreeNode root, Dictionary<int, List<CreationOpKind>> opsMap)
     {
         actionIndex++;
         root.ActionIndex = actionIndex;
 
-        return RecordChildCreationOp(root, opsMap[root.ActionIndex]);
+        return RecordChildCreationOp(root, opsMap.ContainsKey(root.ActionIndex) ? opsMap[root.ActionIndex] : null);
     }
 
-    private static (IList<CreationTreeNode> notifies, IList<CreationTreeNode> cfas, IList<CreationTreeNode> inlines) RecordChildCreationOp(CreationTreeNode root, CreationOpKind[] opKinds)
+    private static (IList<CreationTreeNode>? notifies, IList<CreationTreeNode>? cfas, IList<CreationTreeNode>? inlines) RecordChildCreationOp(CreationTreeNode root, List<CreationOpKind>? opKinds)
     {
+        if (opKinds == null)
+            return (null, null, null);
+
         var notifies = new List<CreationTreeNode>(); var cfas = new List<CreationTreeNode>(); var inlines = new List<CreationTreeNode>();
         foreach (var opKind in opKinds)
         {
@@ -147,10 +153,20 @@ public static class CreationTree
         // }
     }
     
-    private static CreationOpKind[][] CreationOpsToMap(IReadOnlyList<CreationOp> creationOps)
+    private static Dictionary<int, List<CreationOpKind>> CreationOpsToMap(IReadOnlyList<CreationOp> creationOps)
     {
         // TODO here's something wrong
-        return creationOps.GroupBy(o => o.ActionIndex).Select(o => o.Select(go => go.Kind).ToArray()).ToArray();
+
+        Dictionary<int, List<CreationOpKind>> mapping = new Dictionary<int, List<CreationOpKind>>();
+        foreach(var op in creationOps)
+        {
+            if (!mapping.ContainsKey(op.ActionIndex))
+                mapping[op.ActionIndex] = new List<CreationOpKind>() { op.Kind };
+            else
+                mapping[op.ActionIndex].Add(op.Kind);
+        }
+        return mapping;//.Values.ToArray();
+//        return creationOps.GroupBy(o => o.ActionIndex).Select(o => o.Select(go => go.Kind).ToArray()).ToArray();
         //Dictionary<int, CreationOpKind> mapping = new Dictionary<int, CreationOpKind>();
 
         //for (int i = 0; i < creationOps.Count; i++)

@@ -25,8 +25,9 @@ public static class DeepMindDeserializer
     {
         DeserializedBlocksCount.Inc();// TODO @Haron this seems not to be correct as it increments not only for Blocks but also for any other Type
 
-        var bytes = ArrayPool.Rent(chunk.Length >> 1);// rent bytes from pool
-        Decoder.HexToBytes(chunk, bytes);
+        var length = chunk.Length >> 1;
+        var bytes = ArrayPool.Rent(length);// rent bytes from pool
+        Decoder.HexToBytes(chunk, bytes, length);
         using var stream = StreamManager.GetStream(bytes);// copies buffer/bytes
         using var reader = new BinaryReader(stream);
         ArrayPool<byte>.Shared.Return(bytes);// return buffer/bytes

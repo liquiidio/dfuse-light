@@ -1,9 +1,8 @@
 FROM cmadh/mandel-dfuse-base AS build
 
-RUN wget -q -O - https://packages.grafana.com/gpg.key | apt-key add - && echo "deb https://packages.grafana.com/enterprise/deb stable main" | tee -a /etc/apt/sources.list.d/grafana.list && apt-get update -y && apt-get install -y grafana-enterprise
-RUN service grafana-server start
-
 WORKDIR /app
+EXPOSE 5000
+EXPOSE 5001
 
 WORKDIR /src
 COPY ["DeepReader/DeepReader.csproj", "DeepReader/"]
@@ -19,5 +18,3 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "DeepReader.dll"]
-
-EXPOSE 9876

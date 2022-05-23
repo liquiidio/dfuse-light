@@ -1,4 +1,4 @@
-FROM cmadh/mandel-dfuse-base AS build
+FROM mandel-dfuse-base AS build
 
 WORKDIR /app
 EXPOSE 5000

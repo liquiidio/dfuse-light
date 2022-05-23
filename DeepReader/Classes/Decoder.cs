@@ -4,16 +4,16 @@ namespace DeepReader.Classes;
 
 public static class Decoder
 {
-    public static void HexToBytes(ReadOnlySpan<char> chunk, Span<byte> bytes)
+    public static void HexToBytes(ReadOnlySpan<char> chunk, Span<byte> bytes, int length)
     {
-        TryDecodeFromUtf16(chunk, bytes);
+        TryDecodeFromUtf16(chunk, bytes, length);
     }
 
-    private static void TryDecodeFromUtf16(ReadOnlySpan<char> chars, Span<byte> bytes)
+    private static void TryDecodeFromUtf16(ReadOnlySpan<char> chars, Span<byte> bytes, int length)
     {
         var i = 0;
         var j = 0;
-        while (j < bytes.Length)
+        while (j < length)
         {
             var byteLo = chars[i + 1] >= CharToHexLookup.Length ? 0xFF : CharToHexLookup[chars[i + 1]];
             var byteHi = chars[i] >= CharToHexLookup.Length ? 0xFF : CharToHexLookup[chars[i]];

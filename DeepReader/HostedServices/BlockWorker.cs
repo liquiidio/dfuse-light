@@ -117,14 +117,13 @@ public class BlockWorker : BackgroundService
                 var (block, transactionTraces, actionTraces) = await PostProcessAsync(deepMindBlock);
 
                 await Task.WhenAll(
-
                     _storageAdapter.StoreBlockAsync(block),
 
                     Parallel.ForEachAsync(transactionTraces, _postProcessingParallelOptions,
                         async (transactionTrace, _) =>
                         {
                             await _storageAdapter.StoreTransactionAsync(
-                                transactionTrace); // TODO cancellationToken
+                                transactionTrace);
                         }),
 
                     Parallel.ForEachAsync(actionTraces, _postProcessingParallelOptions,
@@ -145,7 +144,7 @@ public class BlockWorker : BackgroundService
         }
     }
 
-    Types.StorageTypes.ActionTrace ProcessChildActions(CreationTreeNode creationTreeNode, TransactionTrace trx, Types.StorageTypes.ActionTrace creatorAction, BlockingCollection<Types.StorageTypes.ActionTrace> allActions)
+    Types.StorageTypes.ActionTrace ProcessChildActions(CreationTreeNode creationTreeNode, TransactionTrace trx, Types.StorageTypes.ActionTrace creatorAction, ConcurrentBag<Types.StorageTypes.ActionTrace> allActions)
     {
         var createdActionTraces = new List<Types.StorageTypes.ActionTrace>();
         var childActionTrace = new Types.StorageTypes.ActionTrace(trx.ActionTraces[creationTreeNode.ActionIndex]);
@@ -188,18 +187,19 @@ public class BlockWorker : BackgroundService
         return Task.Run(() =>
         {
             var transactionTraces = new Types.StorageTypes.TransactionTrace[block.UnfilteredTransactionTraces.Count];
-            var actionTraces = new BlockingCollection<Types.StorageTypes.ActionTrace>();
+            var actionTraces = new ConcurrentBag<Types.StorageTypes.ActionTrace>();
             
             var res = Parallel.ForEach(block.UnfilteredTransactionTraces, _postProcessingParallelOptions,
                 (trx, _, index) =>
                 {
-                    trx.ActionTraces = trx.ActionTraces.Where(_actionFilter).ToArray();// Filter AcionTraces
+                    //trx.ActionTraces = trx.ActionTraces.Where(_actionFilter).ToArray();// Filter AcionTraces
 
                     var rootActionTraces = new List<Types.StorageTypes.ActionTrace>();
                     foreach (var creationTreeRoot in trx.CreationTreeRoots)
                     {
                         if(creationTreeRoot.Kind == CreationOpKind.ROOT)
                         {
+                            // TODO -1
                             var rootAction = new Types.StorageTypes.ActionTrace(trx.ActionTraces[creationTreeRoot.ActionIndex]);
                             var createdActionTraces = new List<Types.StorageTypes.ActionTrace>();
                             rootActionTraces.Add(rootAction);
