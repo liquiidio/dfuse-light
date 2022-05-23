@@ -1,7 +1,9 @@
-﻿using DeepReader.Storage.Options;
+﻿using DeepReader.Storage.Faster.Abis;
+using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using Microsoft.Extensions.Options;
 using Nest;
+using System.Reflection;
 
 namespace DeepReader.Storage.Elastic
 {
@@ -57,6 +59,26 @@ namespace DeepReader.Storage.Elastic
         }
 
         public Task<(bool, TransactionTrace)> GetTransactionAsync(string transactionId, bool includeActionTraces = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpsertAbi(Types.EosTypes.Name account, ulong globalSequence, Assembly assembly)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Types.EosTypes.Name account)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Types.EosTypes.Name account, ulong globalSequence)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Types.EosTypes.Name account)
         {
             throw new NotImplementedException();
         }

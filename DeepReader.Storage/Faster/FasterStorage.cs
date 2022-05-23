@@ -1,4 +1,5 @@
-﻿using DeepReader.Storage.Faster.ActionTraces;
+﻿using DeepReader.Storage.Faster.Abis;
+using DeepReader.Storage.Faster.ActionTraces;
 using DeepReader.Storage.Faster.Blocks;
 using DeepReader.Storage.Faster.Transactions;
 using DeepReader.Storage.Options;
@@ -6,6 +7,7 @@ using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 
 namespace DeepReader.Storage.Faster
 {
@@ -14,6 +16,7 @@ namespace DeepReader.Storage.Faster
         private readonly BlockStore _blockStore;
         private readonly TransactionStore _transactionStore;
         private readonly ActionTraceStore _actionTraceStore;
+        private readonly AbiStore _abiStore;
 
         private FasterStorageOptions _fasterStorageOptions;
 
@@ -32,6 +35,7 @@ namespace DeepReader.Storage.Faster
             {
                 MaxDegreeOfParallelism = 6 // TODO, put in config with reasonable name
             };
+            _abiStore = new AbiStore(_fasterStorageOptions, eventSender);
         }
 
         private void OnFasterStorageOptionsChanged(FasterStorageOptions newOptions)
@@ -101,6 +105,26 @@ namespace DeepReader.Storage.Faster
                 });
             }
             return (found, transaction);
+        }
+
+        public async Task UpsertAbi(Name account, ulong globalSequence, Assembly assembly)
+        {
+            await _abiStore.UpsertAbi(account, globalSequence, assembly);
+        }
+
+        public async Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Name account)
+        {
+            return await _abiStore.TryGetAbiAssembliesById(account);
+        }
+
+        public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence)
+        {
+            return await _abiStore.TryGetAbiAssemblyByIdAndGlobalSequence(account, globalSequence);
+        }
+
+        public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Name account)
+        {
+            return await _abiStore.TryGetActiveAbiAssembly(account);
         }
     }
 }

@@ -6,7 +6,7 @@ using DeepReader.Types.Other;
 
 namespace DeepReader.Types.JsonConverters;
 
-internal class NameJsonConverter : JsonConverter<Name>
+public class NameJsonConverter : JsonConverter<Name>
 {
     public override Name Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

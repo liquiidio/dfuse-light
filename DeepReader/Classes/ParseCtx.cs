@@ -25,22 +25,25 @@ public class ParseCtx
 
     private readonly string[] _supportedVersions = {"mandel","13"};
 
+    private AbiDecoder _abiDecoder;
+
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         IncludeFields = true,
         PropertyNameCaseInsensitive = true,
     };
 
-    public ParseCtx()
+    public ParseCtx(AbiDecoder abiDecoder)
     {
         _block = new Block();
         _activeBlockNum = 0;
         _trx = new TransactionTrace();
         _creationOps = new List<CreationOp>();
         _traceEnabled = true;
+        _abiDecoder = abiDecoder;
     }
 
-    public ParseCtx(Block block, long activeBlockNum, TransactionTrace trx, List<CreationOp> creationOps, bool traceEnabled, string[] supportedVersions)
+    public ParseCtx(Block block, long activeBlockNum, TransactionTrace trx, List<CreationOp> creationOps, bool traceEnabled, string[] supportedVersions, AbiDecoder abiDecoder)
     {
         _block = block;
         _activeBlockNum = activeBlockNum;
@@ -48,6 +51,7 @@ public class ParseCtx
         _creationOps = creationOps;
         _traceEnabled = traceEnabled;
         _supportedVersions = supportedVersions;
+        _abiDecoder = abiDecoder;
     }
 
     public void ResetBlock(ObjectPool<Block> blockPool, bool returnBlock)
@@ -929,13 +933,14 @@ public class ParseCtx
         switch (chunks.Count) {
             case 5: // Version > 12 ?
                 var blockNum = Int32.Parse(chunks[3].AsSpan);
-                var globalSequence = Int32.Parse(chunks[4].AsSpan);
+                var globalSequence = UInt64.Parse(chunks[4].AsSpan);
+                _abiDecoder.AbiDumpStart(blockNum, globalSequence);
                 Log.Information($"read ABI start marker: block_num {blockNum} global_sequence {globalSequence}");
                 break;
             default:
                 throw new Exception($"expected to have either {{3}} or {{5}} fields, got {chunks.Count}");
             }
-        AbiDecoder.ResetCache();
+        //AbiDecoder.ResetCache();
     }
 
     // Line format:
@@ -965,7 +970,14 @@ public class ParseCtx
             Log.Information($"read initial ABI for contract {contract}");
         }
 
-        AbiDecoder.AddInitialAbi(contract, rawAbi);
+        _abiDecoder.AddInitialAbi(contract, rawAbi);
+    }
+
+    // Line format:
+    //    ABIDUMP END
+    public void AbiDumpEnd()
+    {
+        _abiDecoder.AbiDumpEnd();
     }
 
     // Line format:

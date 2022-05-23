@@ -4,7 +4,7 @@ using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.JsonConverters;
 
-internal class Checksum512JsonConverter : JsonConverter<Checksum512>
+public class Checksum512JsonConverter : JsonConverter<Checksum512>
 {
     public override Checksum512 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

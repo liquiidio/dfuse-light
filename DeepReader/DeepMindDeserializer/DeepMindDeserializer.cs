@@ -23,7 +23,7 @@ public static class DeepMindDeserializer
 
     public static T Deserialize<T>(StringSegment chunk) where T : IEosioSerializable<T>
     {
-        DeserializedBlocksCount.Inc();// TODO @Haron this seems not to be correct as it increments not only for Blocks but also for any other Type
+        DeserializedBlocksCount.Inc(); // TODO @Haron this seems not to be correct as it increments not only for Blocks but also for any other Type
 
         var length = chunk.Length >> 1;
         var bytes = ArrayPool.Rent(length);// rent bytes from pool

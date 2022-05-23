@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using DeepReader.Apis.GraphQl.QueryTypes;
 using DeepReader.Apis.GraphQl.SubscriptionTypes;
+using DeepReader.Apis.JsonSourceGenerators;
 using DeepReader.Apis.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -31,7 +32,7 @@ namespace DeepReader.Apis
                     {
                         options.JsonSerializerOptions.MaxDepth = Int32.MaxValue;
                         options.JsonSerializerOptions.IncludeFields = true;
-                        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                        options.JsonSerializerOptions.AddContext<BlockJsonContext>();
                     });
                     services.AddEndpointsApiExplorer();
                     services.AddSwaggerGen();
@@ -46,6 +47,7 @@ namespace DeepReader.Apis
                             .AddType<BlockSubscriptionType>()
                             .AddType<TransactionSubscriptionType>();
                     services.AddSentry();
+
                 });
                 webBuilder.Configure((context, app) =>
                 {

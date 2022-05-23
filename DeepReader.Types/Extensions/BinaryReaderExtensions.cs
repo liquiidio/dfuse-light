@@ -9,8 +9,12 @@ using Serilog;
 
 namespace DeepReader.Types.Extensions
 {
-    internal static class BinaryReaderExtensions
+    public static class BinaryReaderExtensions
     {
+        public static Extension ReadExtension(this BinaryReader reader)
+        {
+            return new KeyValuePair<ushort, char[]>(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
+        }
 
         public enum KeyType
         {
@@ -104,17 +108,20 @@ namespace DeepReader.Types.Extensions
 
         public static uint ReadVarUint32(this BinaryReader reader)
         {
-            uint v = 0;
-            var bit = 0;
-            while (true)
-            {
-                var b = reader.ReadByte();
-                v |= (uint)((b & 0x7f) << bit);
-                bit += 7;
-                if ((b & 0x80) == 0)
-                    break;
-            }
-            return v >> 0;
+            var vint = reader.Read7BitEncodedInt();
+            return (uint)vint;
+
+            //uint v = 0;
+            //var bit = 0;
+            //while (true)
+            //{
+            //    var b = reader.ReadByte();
+            //    v |= (uint)((b & 0x7f) << bit);
+            //    bit += 7;
+            //    if ((b & 0x80) == 0)
+            //        break;
+            //}
+            //return v >> 0;
         }
 
         public static int ReadVarInt32(this BinaryReader reader)
@@ -134,18 +141,20 @@ namespace DeepReader.Types.Extensions
 
         public static ulong ReadVarUint64(this BinaryReader reader)
         {
-            ulong v = 0;
-            var bit = 0;
-            while (true)
-            {
-                var b = reader.ReadByte();
-                ulong v1 = (ulong)((b & 0x7f) << bit);
-                v |= v1;
-                bit += 7;
-                if ((b & 0x80) == 0)
-                    break;
-            }
-            return v >> 0;
+            var vint = reader.Read7BitEncodedInt64();
+            return (ulong)vint;
+            //ulong v = 0;
+            //var bit = 0;
+            //while (true)
+            //{
+            //    var b = reader.ReadByte();
+            //    ulong v1 = (ulong)((b & 0x7f) << bit);
+            //    v |= v1;
+            //    bit += 7;
+            //    if ((b & 0x80) == 0)
+            //        break;
+            //}
+            //return v >> 0;
         }
 
         public static long ReadVarInt64(this BinaryReader reader)
@@ -240,11 +249,11 @@ namespace DeepReader.Types.Extensions
 
         public static string ReadString(this BinaryReader reader)
         {
-            var length = Convert.ToInt32(reader.ReadVarLength<int>());
+            var length = reader.Read7BitEncodedInt();// Convert.ToInt32(reader.ReadVarLength<int>());
             return length > 0 ? Encoding.UTF8.GetString(reader.ReadBytes(length)) : string.Empty;
         }
 
-        public static Bytes ReadBytes(this BinaryReader reader)
+        public static byte[] ReadBytes(this BinaryReader reader)
         {
             var length = Convert.ToInt32(reader.ReadVarUint32());
             return reader.ReadBytes(length);
@@ -337,15 +346,15 @@ namespace DeepReader.Types.Extensions
 
         public static Asset ReadAsset(this BinaryReader reader)
         {
-            var binaryAmount = reader.ReadBytes(8);
+            var binaryAmount = reader.ReadInt64();
 
             var symbol = reader.ReadSymbol();
-            var amount = SerializationHelper.SignedBinaryToDecimal(binaryAmount, symbol.Precision + 1);
+            //var amount = SerializationHelper.SignedBinaryToDecimal(binaryAmount, symbol.Precision + 1);
 
-            if (symbol.Precision > 0)
-                amount = amount.Substring(0, amount.Length - symbol.Precision) + '.' + amount.Substring(amount.Length - symbol.Precision);
+            //if (symbol.Precision > 0)
+            //    amount = amount.Substring(0, amount.Length - symbol.Precision) + '.' + amount.Substring(amount.Length - symbol.Precision);
 
-            return new Asset() { Symbol = symbol, Amount = amount, };
+            return new Asset() { Symbol = symbol, Amount = binaryAmount, };
         }
 
         public static Symbol ReadSymbol(this BinaryReader reader)
@@ -357,7 +366,7 @@ namespace DeepReader.Types.Extensions
 
         public static SymbolCode ReadSymbolCode(this BinaryReader reader)
         {
-            var a = reader.ReadBytes(8);
+            var a = reader.ReadBytes(7); // this is 7 bytes as a whole symbol_code is 8bytes
 
             int len;
             for (len = 0; len < a.Length; ++len)
