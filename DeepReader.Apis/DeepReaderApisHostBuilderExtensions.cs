@@ -25,11 +25,6 @@ namespace DeepReader.Apis
 
             builder.ConfigureWebHostDefaults(webBuilder =>
             {
-                webBuilder.UseKestrel();
-                webBuilder.ConfigureKestrel((context, options) =>
-                {
-
-                });
                 webBuilder.ConfigureServices((hostContext, services) =>
                 {
                     services.Configure<ApiOptions>(config => hostContext.Configuration.GetSection("ApiOptions").Bind(config));
