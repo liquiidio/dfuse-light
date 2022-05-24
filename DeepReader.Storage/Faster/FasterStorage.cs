@@ -31,8 +31,8 @@ namespace DeepReader.Storage.Faster
             _fasterStorageOptions = storageOptionsMonitor.CurrentValue;
             storageOptionsMonitor.OnChange(OnFasterStorageOptionsChanged);
 
-            _blockStore = new BlockStore(_fasterStorageOptions, eventSender);
-            _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender);
+            _blockStore = new BlockStore(_fasterStorageOptions, eventSender, metricsCollector);
+            _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender, metricsCollector);
             _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender);
             _abiStore = new AbiStore(_fasterStorageOptions, eventSender);
 

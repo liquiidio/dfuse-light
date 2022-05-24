@@ -45,8 +45,6 @@ public class BlockWorker : BackgroundService
     private readonly Name _setabi = NameCache.GetOrCreate("setabi");
     private readonly AbiDecoder _abiDecoder;
 
-    public BlockWorker(ChannelReader<Block> blocksChannel,
-        ChannelReader<List<IList<StringSegment>>> blockSegmentsListChannel, 
     private MetricsCollector _metricsCollector;
 
     public BlockWorker(
@@ -83,14 +81,14 @@ public class BlockWorker : BackgroundService
         _blockPool = blockPool;
         _metricsCollector = metricsCollector;
         _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
+
+        _abiDecoder = new AbiDecoder(_storageAdapter);
     }
 
     private void CollectObservableMetrics(object? sender, EventArgs e)
     {
         if (_blocksChannel.CanCount)
             BlocksChannelSize.Observe(_blocksChannel.Count);
-
-        _abiDecoder = new AbiDecoder(_storageAdapter);
     }
 
     private void OnMindReaderOptionsChanged(MindReaderOptions newOptions)

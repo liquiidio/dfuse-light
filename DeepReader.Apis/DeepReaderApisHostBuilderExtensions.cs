@@ -4,7 +4,6 @@ using DeepReader.Apis.GraphQl.SubscriptionTypes;
 using DeepReader.Apis.JsonSourceGenerators;
 using DeepReader.Apis.Options;
 using DeepReader.Storage;
-using DeepReader.Storage.HealthChecks.Faster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
