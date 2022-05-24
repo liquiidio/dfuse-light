@@ -1,7 +1,5 @@
 using System.Threading.Channels;
 using DeepReader.Apis;
-using DeepReader.Apis.GraphQl;
-using DeepReader.Apis.REST;
 using DeepReader.Classes;
 using DeepReader.HostedServices;
 using DeepReader.Options;
@@ -9,7 +7,6 @@ using DeepReader.Storage.Faster;
 using DeepReader.Types;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
-using Sentry;
 using Serilog;
 
 
@@ -55,7 +52,6 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddHostedService<DlogReaderWorker>();
         services.AddHostedService<DlogParserWorker>();
         services.AddHostedService<BlockWorker>();
-
 
     }).UseSerilog((hostingContext, loggerConfiguration) =>
         loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration)
