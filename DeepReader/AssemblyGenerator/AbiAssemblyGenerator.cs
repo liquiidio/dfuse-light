@@ -18,17 +18,17 @@ namespace DeepReader.AssemblyGenerator
     {
         #region 
 
-        private static Type BinaryReaderType = typeof(BinaryReader);
+        private static readonly Type BinaryReaderType = typeof(BinaryReader);
 
-        private static Type[] binaryReaderAttr = new Type[] { BinaryReaderType };
+        private static readonly Type[] binaryReaderAttr = new Type[] { BinaryReaderType };
 
         #endregion
 
-        private Abi _abi;
-        private Name _contractName;
-        private ulong _globalSequence;
-        private ModuleBuilder _moduleBuilder;
-        private List<AbiStruct> _abiStructsWithBaseFields = new List<AbiStruct>();
+        private readonly Abi _abi;
+        private readonly Name _contractName;
+        private readonly ulong _globalSequence;
+        private readonly ModuleBuilder _moduleBuilder;
+        private readonly List<AbiStruct> _abiStructsWithBaseFields = new List<AbiStruct>();
 
 
         /*                      ABI's
@@ -92,7 +92,7 @@ namespace DeepReader.AssemblyGenerator
         }
 
 #if DEBUG
-        private static string AssemblyPath = "/app/config/mindreader/abis/";//Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedAssemblies");
+        private static readonly string AssemblyPath = "/app/config/mindreader/abis/";//Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedAssemblies");
 
         private static async void SaveAssemblyAndAbi(Assembly assembly, Abi abi, string contractName, ulong globalSequence)
         {
@@ -486,50 +486,50 @@ namespace DeepReader.AssemblyGenerator
 
         #region BinaryReader standard methods
 
-        private static MethodInfo Read7BitEncodedInt = typeof(BinaryReader).GetMethod(nameof(BinaryReader.Read7BitEncodedInt))!;
+        private static readonly MethodInfo Read7BitEncodedInt = typeof(BinaryReader).GetMethod(nameof(BinaryReader.Read7BitEncodedInt))!;
 
         private static MethodInfo Read7BitEncodedInt64 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.Read7BitEncodedInt64))!;
 
-        private static MethodInfo ReadBoolean = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadBoolean))!;
+        private static readonly MethodInfo ReadBoolean = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadBoolean))!;
 
-        private static MethodInfo ReadByte = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadByte))!;
+        private static readonly MethodInfo ReadByte = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadByte))!;
 
 //        private static MethodInfo ReadBytes = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadBytes))!;// needs arg
 
-        private static MethodInfo ReadChar = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadChar))!;
+        private static readonly MethodInfo ReadChar = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadChar))!;
 
         private static MethodInfo ReadChars = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadChars))!;// needs arg
 
-        private static MethodInfo ReadDecimal = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadDecimal))!;
+        private static readonly MethodInfo ReadDecimal = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadDecimal))!;
 
-        private static MethodInfo ReadFloat = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadSingle))!;
+        private static readonly MethodInfo ReadFloat = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadSingle))!;
 
-        private static MethodInfo ReadDouble = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadDouble))!;
+        private static readonly MethodInfo ReadDouble = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadDouble))!;
 
         private static MethodInfo ReadHalf = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadHalf))!;
 
-        private static MethodInfo ReadInt16 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadInt16))!;
+        private static readonly MethodInfo ReadInt16 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadInt16))!;
 
-        private static MethodInfo ReadInt32 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadInt32))!;
+        private static readonly MethodInfo ReadInt32 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadInt32))!;
 
-        private static MethodInfo ReadInt64 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadInt64))!;
+        private static readonly MethodInfo ReadInt64 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadInt64))!;
 
-        private static MethodInfo ReadSByte = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadSByte))!;
+        private static readonly MethodInfo ReadSByte = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadSByte))!;
 
         //private static MethodInfo ReadSingle = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadSingle))!;
 
-        private static MethodInfo ReadString = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadString))!;
+        private static readonly MethodInfo ReadString = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadString))!;
 
-        private static MethodInfo ReadUInt16 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadUInt16))!;
+        private static readonly MethodInfo ReadUInt16 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadUInt16))!;
 
-        private static MethodInfo ReadUInt32 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadUInt32))!;
+        private static readonly MethodInfo ReadUInt32 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadUInt32))!;
 
-        private static MethodInfo ReadUInt64 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadUInt64))!;
+        private static readonly MethodInfo ReadUInt64 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadUInt64))!;
 
-        private static MethodInfo ReadVarBytes = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadBytes))!; // Bytes, ActionDataBytes
+        private static readonly MethodInfo ReadVarBytes = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadBytes))!; // Bytes, ActionDataBytes
 
 
-        private static Dictionary<string, Type> TypeMap = new Dictionary<string, Type>()
+        private static readonly Dictionary<string, Type> TypeMap = new Dictionary<string, Type>()
         {
             { "bool", typeof(bool) },
             { "uint8", typeof(byte) },
@@ -572,139 +572,140 @@ namespace DeepReader.AssemblyGenerator
             { "action", typeof(Name) },
             { "extension", typeof(Extension) },
             { "transaction", typeof(Transaction) },
-            // TODO time_point
-            // TODO symbol
+            { "time_point", typeof(UInt32) },
+            { "symbol", typeof(Symbol) },
+            { "symbol_code", typeof(SymbolCode) },
         };
 
         #endregion
 
         #region IEosioSerializable Methods
 
-        private static MethodInfo ReadAbi = typeof(Abi).GetMethod(nameof(Abi.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadAbi = typeof(Abi).GetMethod(nameof(Abi.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadAbiType = typeof(AbiType).GetMethod(nameof(AbiType.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadAbiType = typeof(AbiType).GetMethod(nameof(AbiType.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadAbiStruct = typeof(AbiStruct).GetMethod(nameof(AbiStruct.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadAbiStruct = typeof(AbiStruct).GetMethod(nameof(AbiStruct.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadAbiField = typeof(AbiField).GetMethod(nameof(AbiField.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadAbiField = typeof(AbiField).GetMethod(nameof(AbiField.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadAbiAction = typeof(AbiAction).GetMethod(nameof(AbiAction.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadAbiAction = typeof(AbiAction).GetMethod(nameof(AbiAction.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadAbiTable = typeof(AbiTable).GetMethod(nameof(AbiTable.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadAbiTable = typeof(AbiTable).GetMethod(nameof(AbiTable.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadAccountRamDelta = typeof(AccountRamDelta).GetMethod(nameof(AccountRamDelta.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadAccountRamDelta = typeof(AccountRamDelta).GetMethod(nameof(AccountRamDelta.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadAccountDelta = typeof(AccountDelta).GetMethod(nameof(AccountDelta.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadAccountDelta = typeof(AccountDelta).GetMethod(nameof(AccountDelta.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadAction = typeof(Action).GetMethod(nameof(Action.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadAction = typeof(Action).GetMethod(nameof(Action.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadActionReceipt = typeof(ActionReceipt).GetMethod(nameof(ActionReceipt.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadActionReceipt = typeof(ActionReceipt).GetMethod(nameof(ActionReceipt.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadActionTrace = typeof(ActionTrace).GetMethod(nameof(ActionTrace.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadActionTrace = typeof(ActionTrace).GetMethod(nameof(ActionTrace.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadBlockHeader = typeof(BlockHeader).GetMethod(nameof(BlockHeader.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadBlockHeader = typeof(BlockHeader).GetMethod(nameof(BlockHeader.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadBlockSigningAuthorityVariant = typeof(BlockSigningAuthorityVariant).GetMethod(nameof(BlockSigningAuthorityVariant.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadBlockSigningAuthorityVariant = typeof(BlockSigningAuthorityVariant).GetMethod(nameof(BlockSigningAuthorityVariant.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadBlockSigningAuthorityV0 = typeof(BlockSigningAuthorityV0).GetMethod(nameof(BlockSigningAuthorityV0.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadBlockSigningAuthorityV0 = typeof(BlockSigningAuthorityV0).GetMethod(nameof(BlockSigningAuthorityV0.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadBlockState = typeof(BlockState).GetMethod(nameof(BlockState.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadBlockState = typeof(BlockState).GetMethod(nameof(BlockState.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadPairAccountNameBlockNum = typeof(PairAccountNameBlockNum).GetMethod(nameof(PairAccountNameBlockNum.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadPairAccountNameBlockNum = typeof(PairAccountNameBlockNum).GetMethod(nameof(PairAccountNameBlockNum.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadScheduleInfo = typeof(ScheduleInfo).GetMethod(nameof(ScheduleInfo.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadScheduleInfo = typeof(ScheduleInfo).GetMethod(nameof(ScheduleInfo.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadIncrementalMerkle = typeof(IncrementalMerkle).GetMethod(nameof(IncrementalMerkle.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadIncrementalMerkle = typeof(IncrementalMerkle).GetMethod(nameof(IncrementalMerkle.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadBlockHeaderState = typeof(BlockHeaderState).GetMethod(nameof(BlockHeaderState.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadBlockHeaderState = typeof(BlockHeaderState).GetMethod(nameof(BlockHeaderState.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadProducerAuthority = typeof(ProducerAuthority).GetMethod(nameof(ProducerAuthority.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadProducerAuthority = typeof(ProducerAuthority).GetMethod(nameof(ProducerAuthority.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadProducerAuthoritySchedule = typeof(ProducerAuthoritySchedule).GetMethod(nameof(ProducerAuthoritySchedule.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadProducerAuthoritySchedule = typeof(ProducerAuthoritySchedule).GetMethod(nameof(ProducerAuthoritySchedule.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadProducerKey = typeof(ProducerKey).GetMethod(nameof(ProducerKey.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadProducerKey = typeof(ProducerKey).GetMethod(nameof(ProducerKey.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadPackedTransaction = typeof(PackedTransaction).GetMethod(nameof(PackedTransaction.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadPackedTransaction = typeof(PackedTransaction).GetMethod(nameof(PackedTransaction.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadPermissionLevel = typeof(PermissionLevel).GetMethod(nameof(PermissionLevel.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadPermissionLevel = typeof(PermissionLevel).GetMethod(nameof(PermissionLevel.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadProducerSchedule = typeof(ProducerSchedule).GetMethod(nameof(ProducerSchedule.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadProducerSchedule = typeof(ProducerSchedule).GetMethod(nameof(ProducerSchedule.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadProtocolFeatureActivationSet = typeof(ProtocolFeatureActivationSet).GetMethod(nameof(ProtocolFeatureActivationSet.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadProtocolFeatureActivationSet = typeof(ProtocolFeatureActivationSet).GetMethod(nameof(ProtocolFeatureActivationSet.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadSharedKeyWeight = typeof(SharedKeyWeight).GetMethod(nameof(SharedKeyWeight.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadSharedKeyWeight = typeof(SharedKeyWeight).GetMethod(nameof(SharedKeyWeight.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadSignedBlock = typeof(SignedBlock).GetMethod(nameof(SignedBlock.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadSignedBlock = typeof(SignedBlock).GetMethod(nameof(SignedBlock.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadSignedBlockHeader = typeof(SignedBlockHeader).GetMethod(nameof(SignedBlockHeader.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadSignedBlockHeader = typeof(SignedBlockHeader).GetMethod(nameof(SignedBlockHeader.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadSignedTransaction = typeof(SignedTransaction).GetMethod(nameof(SignedTransaction.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadSignedTransaction = typeof(SignedTransaction).GetMethod(nameof(SignedTransaction.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadTransaction = typeof(Transaction).GetMethod(nameof(Transaction.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadTransaction = typeof(Transaction).GetMethod(nameof(Transaction.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadTransactionHeader = typeof(TransactionHeader).GetMethod(nameof(TransactionHeader.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadTransactionHeader = typeof(TransactionHeader).GetMethod(nameof(TransactionHeader.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadTransactionReceipt = typeof(TransactionReceipt).GetMethod(nameof(TransactionReceipt.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadTransactionReceipt = typeof(TransactionReceipt).GetMethod(nameof(TransactionReceipt.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadTransactionReceiptHeader = typeof(TransactionReceiptHeader).GetMethod(nameof(TransactionReceiptHeader.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadTransactionReceiptHeader = typeof(TransactionReceiptHeader).GetMethod(nameof(TransactionReceiptHeader.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadTransactionTrace = typeof(TransactionTrace).GetMethod(nameof(TransactionTrace.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadTransactionTrace = typeof(TransactionTrace).GetMethod(nameof(TransactionTrace.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadExcept = typeof(Except).GetMethod(nameof(Except.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadExcept = typeof(Except).GetMethod(nameof(Except.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadTransactionTraceAuthSequence = typeof(TransactionTraceAuthSequence).GetMethod(nameof(TransactionTraceAuthSequence.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadTransactionTraceAuthSequence = typeof(TransactionTraceAuthSequence).GetMethod(nameof(TransactionTraceAuthSequence.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadTransactionVariant = typeof(TransactionVariant).GetMethod(nameof(TransactionVariant.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadTransactionVariant = typeof(TransactionVariant).GetMethod(nameof(TransactionVariant.ReadFromBinaryReader))!;
 
         // TODO better names for these regions
         #region EosTypes BinaryReaderExtension Methods 
 
-        private static MethodInfo ReadAsset = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadAsset))!;
+        private static readonly MethodInfo ReadAsset = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadAsset))!;
 
-        private static MethodInfo ReadChecksum160 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadChecksum160))!;
+        private static readonly MethodInfo ReadChecksum160 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadChecksum160))!;
 
-        private static MethodInfo ReadChecksum256 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadChecksum256))!;
+        private static readonly MethodInfo ReadChecksum256 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadChecksum256))!;
 
-        private static MethodInfo ReadChecksum512 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadChecksum512))!;
+        private static readonly MethodInfo ReadChecksum512 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadChecksum512))!;
 
         // ExtendedAsset
 
-        private static MethodInfo ReadFloat128 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadFloat128))!;
+        private static readonly MethodInfo ReadFloat128 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadFloat128))!;
 
-        private static MethodInfo ReadInt128 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadInt128))!;
+        private static readonly MethodInfo ReadInt128 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadInt128))!;
 
-        private static MethodInfo ReadName = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadName))!;
+        private static readonly MethodInfo ReadName = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadName))!;
 
-        private static MethodInfo ReadPublicKey = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadPublicKey))!;
+        private static readonly MethodInfo ReadPublicKey = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadPublicKey))!;
 
-        private static MethodInfo ReadSymbol = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadSymbol))!;
+        private static readonly MethodInfo ReadSymbol = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadSymbol))!;
 
-        private static MethodInfo ReadSymbolCode = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadSymbolCode))!;
+        private static readonly MethodInfo ReadSymbolCode = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadSymbolCode))!;
 
-        private static MethodInfo ReadTimestamp = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadTimestamp))!;
+        private static readonly MethodInfo ReadTimestamp = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadTimestamp))!;
 
-        private static MethodInfo ReadUInt128 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadUInt128))!;
+        private static readonly MethodInfo ReadUInt128 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadUInt128))!;
 
-        private static MethodInfo ReadAuthority = typeof(Authority).GetMethod(nameof(Authority.ReadFromBinaryReader))!;
-
-
-        private static MethodInfo ReadVarUint32 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadVarUint32))!;
-
-        private static MethodInfo ReadVarUint64 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadVarUint64))!;
+        private static readonly MethodInfo ReadAuthority = typeof(Authority).GetMethod(nameof(Authority.ReadFromBinaryReader))!;
 
 
-        private static MethodInfo ReadKeyWeight = typeof(KeyWeight).GetMethod(nameof(KeyWeight.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadVarUint32 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadVarUint32))!;
 
-        private static MethodInfo ReadWaitWeight = typeof(WaitWeight).GetMethod(nameof(WaitWeight.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadVarUint64 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadVarUint64))!;
+
+
+        private static readonly MethodInfo ReadKeyWeight = typeof(KeyWeight).GetMethod(nameof(KeyWeight.ReadFromBinaryReader))!;
+
+        private static readonly MethodInfo ReadWaitWeight = typeof(WaitWeight).GetMethod(nameof(WaitWeight.ReadFromBinaryReader))!;
         
-        private static MethodInfo ReadPermissionLevelWeight = typeof(PermissionLevelWeight).GetMethod(nameof(PermissionLevelWeight.ReadFromBinaryReader))!;
+        private static readonly MethodInfo ReadPermissionLevelWeight = typeof(PermissionLevelWeight).GetMethod(nameof(PermissionLevelWeight.ReadFromBinaryReader))!;
 
-        private static MethodInfo ReadExtension = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadExtension))!;
+        private static readonly MethodInfo ReadExtension = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadExtension))!;
 
         #endregion
 
         // all EosioSerializable-Types
-        private static Dictionary<Type, MethodInfo> TypeReaderMethodMap = new Dictionary<Type, MethodInfo>()
+        private static readonly Dictionary<Type, MethodInfo> TypeReaderMethodMap = new Dictionary<Type, MethodInfo>()
         {
             { typeof(bool), ReadBoolean },
             { typeof(byte), ReadByte },
@@ -716,9 +717,9 @@ namespace DeepReader.AssemblyGenerator
             { typeof(Int32), ReadInt32 },
             { typeof(Int64), ReadInt64 },
             { typeof(string), ReadString },
-            { typeof(UInt16), ReadInt16 },
-            { typeof(UInt32), ReadInt32 },
-            { typeof(UInt64), ReadInt64 },
+            { typeof(UInt16), ReadUInt16 },
+            { typeof(UInt32), ReadUInt32 },
+            { typeof(UInt64), ReadUInt64 },
             { typeof(float), ReadFloat },
             { typeof(double), ReadDouble },
 

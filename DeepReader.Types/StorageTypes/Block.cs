@@ -50,7 +50,7 @@ public class Block
             Previous = reader.ReadChecksum256(),
             TransactionMroot = reader.ReadChecksum256(),
             ActionMroot = reader.ReadChecksum256(),
-            ScheduleVersion = reader.ReadUInt16(),
+            ScheduleVersion = reader.ReadUInt32(),
             ProducerSignature = reader.ReadBytes(64),
         };
 
@@ -72,7 +72,7 @@ public class Block
         writer.WriteChecksum256(Id);
         writer.Write(Number);
         writer.Write(Timestamp.Ticks);
-        writer.Write(Producer.Binary);
+        writer.WriteName(Producer);
         writer.Write(Confirmed);
         writer.WriteChecksum256(Previous);
         writer.WriteChecksum256(TransactionMroot);

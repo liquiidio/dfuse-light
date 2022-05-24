@@ -29,6 +29,7 @@ public static class DeepMindDeserializer
         var bytes = ArrayPool.Rent(length);// rent bytes from pool
         Decoder.HexToBytes(chunk, bytes, length);
         using var stream = StreamManager.GetStream(bytes);// copies buffer/bytes
+        stream.SetLength(length);
         using var reader = new BinaryReader(stream);
         ArrayPool<byte>.Shared.Return(bytes);// return buffer/bytes
 

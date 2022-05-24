@@ -39,6 +39,12 @@ public class BlockWorker : BackgroundService
 
     private readonly ObjectPool<Block> _blockPool;
 
+    // used to decode ABIs
+
+    private readonly Name _eosio = NameCache.GetOrCreate("eosio");
+    private readonly Name _setabi = NameCache.GetOrCreate("setabi");
+    private readonly AbiDecoder _abiDecoder;
+
     public BlockWorker(ChannelReader<Block> blocksChannel,
         ChannelReader<List<IList<StringSegment>>> blockSegmentsListChannel, 
         IStorageAdapter storageAdapter,
@@ -70,7 +76,7 @@ public class BlockWorker : BackgroundService
 
         _blockPool = blockPool;
 
-        abiDecoder = new AbiDecoder(_storageAdapter);
+        _abiDecoder = new AbiDecoder(_storageAdapter);
     }
 
     private void OnMindReaderOptionsChanged(MindReaderOptions newOptions)
@@ -196,7 +202,7 @@ public class BlockWorker : BackgroundService
             var transactionTraces = new Types.StorageTypes.TransactionTrace[block.UnfilteredTransactionTraces.Count];
             var actionTraces = new ConcurrentBag<Types.StorageTypes.ActionTrace>();
             
-            var res = Parallel.ForEach(block.UnfilteredTransactionTraces, _postProcessingParallelOptions,
+            Parallel.ForEach(block.UnfilteredTransactionTraces, _postProcessingParallelOptions,
                 (trx, _, index) =>
                 {
                     //trx.ActionTraces = trx.ActionTraces.Where(_actionFilter).ToArray();// Filter AcionTraces
@@ -211,7 +217,7 @@ public class BlockWorker : BackgroundService
                             rootActionTraces[actIndex] = rootAction;
                             foreach (var creationTreeChild in creationTreeRoot.Children)
                             {
-                                if (creationTreeChild.Kind == CreationOpKind.INLINE || creationTreeChild.Kind == CreationOpKind.NOTIFY || creationTreeChild.Kind == CreationOpKind.CFA_INLINE)
+                                if (creationTreeChild.Kind is CreationOpKind.INLINE or CreationOpKind.NOTIFY or CreationOpKind.CFA_INLINE)
                                 {
                                     createdActionTraces.Add(ProcessChildActions(creationTreeChild, trx, rootAction, actionTraces));
                                 }
@@ -222,9 +228,9 @@ public class BlockWorker : BackgroundService
                             rootAction.CreatedActions = createdActionTraces.ToArray();
                             rootAction.CreatedActionIds = createdActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
 
-                            rootAction.DbOps = trx.DbOps.Where(dbop => dbop.ActionIndex == creationTreeRoot.ActionIndex).ToArray();
-                            rootAction.RamOps = trx.RamOps.Where(ramop => ramop.ActionIndex == creationTreeRoot.ActionIndex).ToArray();
-                            rootAction.TableOps = trx.TableOps.Where(tableop => tableop.ActionIndex == creationTreeRoot.ActionIndex).ToArray();
+                            rootAction.DbOps = trx.DbOps.Where(dbop => dbop.ActionIndex == creationTreeRoot.ActionIndex).Cast<DbOp>().ToArray();
+                            rootAction.RamOps = trx.RamOps.Where(ramop => ramop.ActionIndex == creationTreeRoot.ActionIndex).Cast<RamOp>().ToArray();
+                            rootAction.TableOps = trx.TableOps.Where(tableop => tableop.ActionIndex == creationTreeRoot.ActionIndex).Cast<TableOp>().ToArray();
                         }
                         else
                             Log.Error($"CreationTreeRoot-Issues in trx {trx.Id.StringVal}");
@@ -265,73 +271,69 @@ public class BlockWorker : BackgroundService
         });
     }
 
-    private Name eosio = NameCache.GetOrCreate("eosio");
-    private Name setabi = NameCache.GetOrCreate("setabi");
-    private AbiDecoder abiDecoder;
+    //private async Task TestAbiDeserializer(List<Types.StorageTypes.TransactionTrace> flattenedTransactionTraces)
+    //{
+    //    foreach(var trace in flattenedTransactionTraces)
+    //    {
+    //        foreach(var actionTrace in trace.ActionTraces)
+    //        {
+    //            string clrTypename = "";
+    //            string actName = "";
+    //            try
+    //            {
+    //                var (found, assemblyPair) = await _storageAdapter.TryGetActiveAbiAssembly(actionTrace.Act.Account);
+    //                if (found)  // TODO check GlobalSequence
+    //                {
+    //                    actName = actionTrace.Act.Name;
+    //                    var assembly = assemblyPair.Value;
+    //                    var clrType = assembly.Assembly.GetType($"_{actionTrace.Act.Name.StringVal.Replace('.','_')}");
+    //                    if (clrType != null)
+    //                    {
+    //                        BinaryReader reader = new BinaryReader(new MemoryStream(actionTrace.Act.Data));
 
-    private async Task TestAbiDeserializer(List<Types.StorageTypes.TransactionTrace> flattenedTransactionTraces)
-    {
-        foreach(var trace in flattenedTransactionTraces)
-        {
-            foreach(var actionTrace in trace.ActionTraces)
-            {
-                string clrTypename = "";
-                string actName = "";
-                try
-                {
-                    var (found, assemblyPair) = await _storageAdapter.TryGetActiveAbiAssembly(actionTrace.Act.Account);
-                    if (found)  // TODO check GlobalSequence
-                    {
-                        actName = actionTrace.Act.Name;
-                        var assembly = assemblyPair.Value;
-                        var clrType = assembly.Assembly.GetType($"_{actionTrace.Act.Name.StringVal.Replace('.','_')}");
-                        if (clrType != null)
-                        {
-                            BinaryReader reader = new BinaryReader(new MemoryStream(actionTrace.Act.Data));
+    //                        clrTypename = clrType.Name;
+    //                        var obj = Activator.CreateInstance(clrType, reader);
 
-                            clrTypename = clrType.Name;
-                            var obj = Activator.CreateInstance(clrType, reader);
+    //                        //Log.Information(JsonSerializer.Serialize(obj, new JsonSerializerOptions() { IncludeFields = true, WriteIndented = true }));
+    //                        //var ctor = clrType.GetConstructor(new Type[] { typeof(BinaryReader) });
+    //                        //ctor.Invoke(new[] { reader });
 
-                            //Log.Information(JsonSerializer.Serialize(obj, new JsonSerializerOptions() { IncludeFields = true, WriteIndented = true }));
-                            //var ctor = clrType.GetConstructor(new Type[] { typeof(BinaryReader) });
-                            //ctor.Invoke(new[] { reader });
+    //                        if (actionTrace.Act.Account == _eosio && actionTrace.Act.Name == _setabi)
+    //                        {
+    //                            var abiField = clrType.GetField("_abi");
+    //                            var abiFieldValue = abiField.GetValue(obj);
+    //                            var abiBytes = (byte[])abiFieldValue;
 
-                            if (actionTrace.Act.Account == eosio && actionTrace.Act.Name == setabi)
-                            {
-                                var abiField = clrType.GetField("_abi");
-                                var abiFieldValue = abiField.GetValue(obj);
-                                var abiBytes = (byte[])abiFieldValue;
+    //                            var accountField = clrType.GetField("_account");
+    //                            var accountFieldValue = accountField.GetValue(obj);
+    //                            var account = (Name)accountFieldValue;
 
-                                var accountField = clrType.GetField("_account");
-                                var accountFieldValue = accountField.GetValue(obj);
-                                var account = (Name)accountFieldValue;
-
-                                abiDecoder.AddAbi(account, abiBytes, actionTrace.GlobalSequence);
-                            }
-                        }
-                        else
-                            Log.Information($"Type for {actionTrace.Act.Account.StringVal}.{actionTrace.Act.Name.StringVal} not found");
-                    }
-                }
-                catch(Exception ex)
-                {
-                    Log.Error(ex, "");
-                    Log.Information(clrTypename); 
-                    Log.Information(actName);
-                }
-            }
-        }
-    }
+    //                            _abiDecoder.AddAbi(account, abiBytes, actionTrace.GlobalSequence);
+    //                        }
+    //                    }
+    //                    else
+    //                        Log.Information($"Type for {actionTrace.Act.Account.StringVal}.{actionTrace.Act.Name.StringVal} not found");
+    //                }
+    //            }
+    //            catch(Exception ex)
+    //            {
+    //                Log.Error(ex, "");
+    //                Log.Information(clrTypename); 
+    //                Log.Information(actName);
+    //            }
+    //        }
+    //    }
+    //}
 
     private static readonly RecyclableMemoryStreamManager StreamManager = new();
 
-    private async Task CheckForAbiUpdates(List<Types.StorageTypes.ActionTrace> actionTraces)
+    private async Task CheckForAbiUpdates(IEnumerable<Types.StorageTypes.ActionTrace> actionTraces)
     {
-        await Parallel.ForEachAsync(actionTraces.Where(at => at.Act.Account == eosio && at.Act.Name == setabi), _postProcessingParallelOptions, async (setAbiTrace, _) =>
+        await Parallel.ForEachAsync(actionTraces.Where(at => at.Act.Account == _eosio && at.Act.Name == _setabi), _postProcessingParallelOptions, async (setAbiTrace, _) =>
         {
             try
             {
-                var (found, assemblyPair) = await _storageAdapter.TryGetActiveAbiAssembly(eosio); // account is always eosio here
+                var (found, assemblyPair) = await _storageAdapter.TryGetActiveAbiAssembly(_eosio); // account is always eosio here
                 if (found)  // TODO check GlobalSequence validity
                 {
                     var clrType = assemblyPair.Value.Assembly.GetType($"_setabi"); // type is always setabi here
@@ -350,7 +352,7 @@ public class BlockWorker : BackgroundService
                         var accountFieldValue = accountField.GetValue(obj)!;
                         var account = (Name)accountFieldValue;
 
-                        abiDecoder.AddAbi(account, abiBytes, setAbiTrace.GlobalSequence);
+                        _abiDecoder.AddAbi(account, abiBytes, setAbiTrace.GlobalSequence);
                     }
                     else
                         Log.Information($"Type for {setAbiTrace.Act.Account.StringVal}.{setAbiTrace.Act.Name.StringVal} not found");

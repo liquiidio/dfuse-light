@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Text.Json;
 using DeepReader.AssemblyGenerator;
 using DeepReader.Storage;
@@ -54,9 +55,10 @@ public class AbiDecoder
         // TODO
     }
 
+    private ArrayPool<byte> ArrayPool = ArrayPool<byte>.Shared;
     public void AddInitialAbi(ReadOnlySpan<char> contract, ReadOnlySpan<char> rawAbiBase64)
     {
-        byte[] bytes = new byte[rawAbiBase64.Length*2]; // TODO calculate bytes-size
+        var bytes = ArrayPool.Rent(rawAbiBase64.Length * 2);
 
         if (Convert.TryFromBase64Chars(rawAbiBase64, bytes, out var bytesWritten))
         {
@@ -77,6 +79,7 @@ public class AbiDecoder
         {
             Console.WriteLine($"base64chars to byte-array of Abi for {contract} failed");
         }
+        ArrayPool.Return(bytes);
     }
 
     public void AddAbi(Name contractAccount, byte[] bytes, ulong globalSequence)
