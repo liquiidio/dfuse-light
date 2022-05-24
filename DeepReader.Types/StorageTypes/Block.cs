@@ -26,12 +26,11 @@ public class Block
     public uint ScheduleVersion { get; set; }
 
     public ProducerSchedule? NewProducers { get; set; }
+
     public Signature ProducerSignature { get; set; } = Signature.TypeEmpty;
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]   // TODO (Corvin) not sure if this works for Collections
     public TransactionId[] TransactionIds { get; set; } = Array.Empty<TransactionId>();
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]   // TODO (Corvin) not sure if this works for Collections
     public TransactionTrace[] Transactions { get; set; } = Array.Empty<TransactionTrace>();
 
     public Block()
@@ -43,19 +42,27 @@ public class Block
     {
         var obj = new Block
         {
-            Id = reader.ReadBytes(32),
+            Id = reader.ReadChecksum256(),
             Number = reader.ReadUInt32(),
+            Timestamp = reader.ReadUInt32(),
             Producer = reader.ReadName(),
+            Confirmed = reader.ReadUInt16(),
+            Previous = reader.ReadChecksum256(),
+            TransactionMroot = reader.ReadChecksum256(),
+            ActionMroot = reader.ReadChecksum256(),
+            ScheduleVersion = reader.ReadUInt16(),
             ProducerSignature = reader.ReadBytes(64),
         };
+
+        var hasNewProducers = reader.ReadBoolean();
+        if (hasNewProducers)
+            obj.NewProducers = ProducerSchedule.ReadFromBinaryReader(reader);
 
         obj.TransactionIds = new TransactionId[reader.ReadInt32()];
         for (int i = 0; i < obj.TransactionIds.Length; i++)
         {
-            obj.TransactionIds[i] = reader.ReadBytes(32);
+            obj.TransactionIds[i] = reader.ReadTransactionId();
         }
-
-        // Ignore TransactionTraces here!
 
         return obj;
     }

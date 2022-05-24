@@ -52,7 +52,7 @@ namespace DeepReader.Types.StorageTypes
 
         public ulong[] CreatedActionIds { get; set; }
 
-        public ActionTrace[] CreatedActions { get; set; }
+        public ActionTrace[] CreatedActions { get; set; } = Array.Empty<ActionTrace>();
 
         public ulong? CreatorActionId { get; set; }
 
@@ -81,28 +81,18 @@ namespace DeepReader.Types.StorageTypes
             var obj = new ActionTrace()
             {
                 Receiver = reader.ReadName(),
+                Receipt = ActionReceipt.ReadFromBinaryReader(reader),
                 Act = Action.ReadFromBinaryReader(reader),
                 ContextFree = reader.ReadBoolean(),
                 ElapsedUs = reader.ReadInt64(),
-                Console = reader.ReadString()
+                Console = reader.ReadString(),
+                IsNotify = reader.ReadBoolean(),
             };
-
-            //obj.AccountRamDeltas = new AccountDelta[reader.ReadInt32()];
-            //for (int i = 0; i < obj.AccountRamDeltas.Length; i++)
-            //{
-            //    obj.AccountRamDeltas[i] = AccountDelta.ReadFromBinaryReader(reader);
-            //}
 
             obj.RamOps = new RamOp[reader.ReadInt32()];
             for (int i = 0; i < obj.RamOps.Length; i++)
             {
                 obj.RamOps[i] = RamOp.ReadFromBinaryReader(reader);
-            }
-
-            obj.DbOps = new DbOp[reader.ReadInt32()];
-            for (int i = 0; i < obj.DbOps.Length; i++)
-            {
-                obj.DbOps[i] = DbOp.ReadFromBinaryReader(reader);
             }
 
             obj.TableOps = new TableOp[reader.ReadInt32()];
@@ -111,11 +101,27 @@ namespace DeepReader.Types.StorageTypes
                 obj.TableOps[i] = TableOp.ReadFromBinaryReader(reader);
             }
 
+            obj.DbOps = new DbOp[reader.ReadInt32()];
+            for (int i = 0; i < obj.DbOps.Length; i++)
+            {
+                obj.DbOps[i] = DbOp.ReadFromBinaryReader(reader);
+            }
+
             obj.ReturnValue = new char[reader.ReadInt32()];
             for (int i = 0; i < obj.ReturnValue.Length; i++)
             {
                 obj.ReturnValue[i] = reader.ReadChar();
             }
+
+            obj.CreatedActionIds = new ulong[reader.ReadInt32()];
+            for (int i = 0; i < obj.CreatedActionIds.Length; i++)
+            {
+                obj.CreatedActionIds[i] = reader.ReadUInt64();
+            }
+
+            var hasCreatorActionId = reader.ReadBoolean();
+            if (hasCreatorActionId)
+                obj.CreatorActionId = reader.ReadUInt64();
 
             return obj;
         }
@@ -124,28 +130,20 @@ namespace DeepReader.Types.StorageTypes
         {
             writer.WriteName(Receiver);
 
+            Receipt.WriteToBinaryWriter(writer);
+
             Act.WriteToBinaryWriter(writer);
             
             writer.Write(ContextFree);
             writer.Write(ElapsedUs);
             writer.Write(Console);
 
-            //writer.Write(AccountRamDeltas.Length);
-            //foreach (var accountRamDelta in AccountRamDeltas)
-            //{
-            //    accountRamDelta.WriteToBinaryWriter(writer);
-            //}
+            writer.Write(IsNotify);
 
             writer.Write(RamOps.Length);
             foreach (var ramOp in RamOps)
             {
                 ramOp.WriteToBinaryWriter(writer);
-            }
-
-            writer.Write(DbOps.Length);
-            foreach (var dbOp in DbOps)
-            {
-                dbOp.WriteToBinaryWriter(writer);
             }
 
             writer.Write(TableOps.Length);
@@ -154,11 +152,27 @@ namespace DeepReader.Types.StorageTypes
                 tableOp.WriteToBinaryWriter(writer);
             }
 
+            writer.Write(DbOps.Length);
+            foreach (var dbOp in DbOps)
+            {
+                dbOp.WriteToBinaryWriter(writer);
+            }
+
             writer.Write(ReturnValue.Length);
             foreach (var returnVal in ReturnValue)
             {
                 writer.Write(returnVal);
             }
+
+            writer.Write(CreatedActionIds.Length);
+            foreach (var createdActionId in CreatedActionIds)
+            {
+                writer.Write(createdActionId);
+            }
+
+            writer.Write(CreatorActionId.HasValue);
+            if (CreatorActionId.HasValue)
+                writer.Write(CreatorActionId.Value);
         }
     }
 }

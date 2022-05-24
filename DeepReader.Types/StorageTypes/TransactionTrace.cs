@@ -49,25 +49,16 @@ public class TransactionTrace
             BlockNum = reader.ReadUInt32(),
             Elapsed = reader.ReadInt64(),
             NetUsage = reader.ReadUInt64(),
+            Scheduled = reader.ReadBoolean(),
         };
 
-        obj.ActionTraces = new ActionTrace[reader.ReadInt32()];
+        obj.Receipt = TransactionReceiptHeader.ReadFromBinaryReader(reader);
+
+        obj.ActionTraceIds = new ulong[reader.ReadInt32()];
         for (int i = 0; i < obj.ActionTraces.Length; i++)
         {
-            obj.ActionTraces[i] = ActionTrace.ReadFromBinaryReader(reader);
+            obj.ActionTraceIds[i] = reader.ReadUInt64();
         }
-
-        //obj.DbOps = new DbOp[reader.ReadInt32()];
-        //for (int i = 0; i < obj.DbOps.Length; i++)
-        //{
-        //    obj.DbOps[i] = DbOp.ReadFromBinaryReader(reader);
-        //}
-
-        //obj.TableOps = new TableOp[reader.ReadInt32()];
-        //for (int i = 0; i < obj.TableOps.Length; i++)
-        //{
-        //    obj.TableOps[i] = TableOp.ReadFromBinaryReader(reader);
-        //}
 
         return obj;
     }
@@ -79,23 +70,14 @@ public class TransactionTrace
         writer.Write(BlockNum); // TODO VARINT
         writer.Write(Elapsed); // TODO VARINT
         writer.Write(NetUsage); // TODO VARINT
+        writer.Write(Scheduled); // TODO VARINT
 
-        writer.Write(ActionTraces.Length);
-        foreach (var actionTrace in ActionTraces)
+        Receipt.WriteToBinaryWriter(writer);
+
+        writer.Write(ActionTraceIds.Length);
+        foreach (var actionTraceId in ActionTraceIds)
         {
-            actionTrace.WriteToBinaryWriter(writer);
+            writer.Write(actionTraceId);
         }
-
-        //writer.Write(DbOps.Length);
-        //foreach (var dbOp in DbOps)
-        //{
-        //    dbOp.WriteToBinaryWriter(writer);
-        //}
-
-        //writer.Write(TableOps.Length);
-        //foreach (var tableOp in TableOps)
-        //{
-        //    tableOp.WriteToBinaryWriter(writer);
-        //}
     }
 }

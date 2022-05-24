@@ -5,15 +5,15 @@
 /// </summary>
 public class VarUint32 : BinaryType
 {
-    private uint _value;
+    public uint Value;
 
     public static implicit operator VarUint32(uint value)
     {
-        return new VarUint32 { _value = value };
+        return new VarUint32 { Value = value };
     }
 
     public static implicit operator uint(VarUint32 value)
     {
-        return value._value;
+        return value.Value;
     }
 }

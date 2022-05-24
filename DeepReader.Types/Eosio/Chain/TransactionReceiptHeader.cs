@@ -35,4 +35,11 @@ public class TransactionReceiptHeader : IEosioSerializable<TransactionReceiptHea
     {
         return new TransactionReceiptHeader(reader);
     }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.Write((byte)Status);
+        writer.Write(CpuUsageUs);
+        writer.Write7BitEncodedInt((int)NetUsageWords.Value);
+    }
 }

@@ -62,11 +62,9 @@ namespace DeepReader.Storage.Faster
         public async Task<(bool, Block)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false, bool includeActionTraces = false)
         {
             var (found, block) = await _blockStore.TryGetBlockById(blockNum);
-            if (found && includeTransactionTraces) // Todo do not load if already cached
+            if (found && includeTransactionTraces && block.Transactions.Length == 0) // if length != 0 values are already loaded and referenced
             {
                 block.Transactions = new TransactionTrace[block.TransactionIds.Length];
-                //int i = 0;
-
                 // not sure if this is clever or over-parallelized
                 await Parallel.ForEachAsync(block.TransactionIds, _parallelOptions, async (transactionId, _) =>
                 {
@@ -75,8 +73,10 @@ namespace DeepReader.Storage.Faster
                     if (foundTrx)
                         block.Transactions[Array.IndexOf(block.TransactionIds, transactionId)] = transaction;
 
-                    if (foundTrx && includeActionTraces)
+                    if (foundTrx && includeActionTraces && transaction.ActionTraces.Length == 0) // if length != 0 values are already loaded and referenced
                     {
+                        transaction.ActionTraces = new ActionTrace[transaction.ActionTraces.Length];
+                        // not sure if this is clever or over-parallelized
                         await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
                         {
                             var (foundTrx, action) =
@@ -86,14 +86,6 @@ namespace DeepReader.Storage.Faster
                         });
                     }
                 });
-
-                //foreach (var transactionId in block.TransactionIds)
-                //{
-                //    var (foundTrx, trx) =
-                //        await _transactionStore.TryGetTransactionTraceById(transactionId);
-                //    if(foundTrx)
-                //        block.Transactions[i++] = trx;
-                //}
             }
             return (found, block);
         }
@@ -101,9 +93,10 @@ namespace DeepReader.Storage.Faster
         public async Task<(bool, TransactionTrace)> GetTransactionAsync(string transactionId, bool includeActionTraces = false)
         {
             var (found, transaction) = await _transactionStore.TryGetTransactionTraceById(new Types.Eosio.Chain.TransactionId(transactionId));
-            if (found && includeActionTraces) // Todo do not load if already cached
+            if (found && includeActionTraces && transaction.ActionTraces.Length == 0)  // if length != 0 values are already loaded and referenced
             {
                 transaction.ActionTraces = new ActionTrace[transaction.ActionTraceIds.Length];
+                // not sure if this is clever or over-parallelized
                 await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
                 {
                     var (foundTrx, action) =
