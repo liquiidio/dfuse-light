@@ -110,7 +110,8 @@ namespace DeepReader.Storage.Faster.Transactions
                 _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionReaderSession");
 
             _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
-            _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
+            if (options.UseReadCache)
+                _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
             _storeEntryCountHistogram.Observe(_store.EntryCount);
 
             // TODO, for some reason I need to manually call the Init

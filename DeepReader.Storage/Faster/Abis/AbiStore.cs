@@ -111,7 +111,8 @@ namespace DeepReader.Storage.Faster.Abis
                 _store.For(new AbiFunctions()).NewSession<AbiFunctions>("AbiReaderSession");
 
             _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
-            _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
+            if (options.UseReadCache)
+                _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
             _storeEntryCountHistogram.Observe(_store.EntryCount);
 
             // TODO, for some reason I need to manually call the Init

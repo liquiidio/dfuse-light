@@ -69,10 +69,23 @@ public class Block
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        writer.Write(Id.Binary);
+        writer.WriteChecksum256(Id);
         writer.Write(Number);
+        writer.Write(Timestamp.Ticks);
         writer.Write(Producer.Binary);
+        writer.Write(Confirmed);
+        writer.WriteChecksum256(Previous);
+        writer.WriteChecksum256(TransactionMroot);
+        writer.WriteChecksum256(ActionMroot);
+        writer.Write(ScheduleVersion);
         writer.Write(ProducerSignature.Binary);
+        
+        writer.Write(NewProducers != null);
+        if (NewProducers != null)
+        {
+            NewProducers.WriteToBinaryWriter(writer);
+        }
+
         writer.Write(TransactionIds.Length);
         foreach (var transactionId in TransactionIds)
         {

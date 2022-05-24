@@ -25,4 +25,15 @@ public class ProducerSchedule : IEosioSerializable<ProducerSchedule>
     {
         return new ProducerSchedule(reader);
     }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.Write(Version);
+
+        writer.Write7BitEncodedInt(Producers.Length);
+        foreach (var producer in Producers)
+        {
+            producer.WriteToBinaryWriter(writer);
+        }
+    }
 }

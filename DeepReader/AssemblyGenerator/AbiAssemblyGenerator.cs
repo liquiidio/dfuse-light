@@ -572,6 +572,8 @@ namespace DeepReader.AssemblyGenerator
             { "action", typeof(Name) },
             { "extension", typeof(Extension) },
             { "transaction", typeof(Transaction) },
+            // TODO time_point
+            // TODO symbol
         };
 
         #endregion

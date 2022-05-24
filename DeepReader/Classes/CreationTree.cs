@@ -57,6 +57,9 @@ public static class CreationTree
         actionIndex++;
         root.ActionIndex = actionIndex;
 
+        if (!opsMap.ContainsKey(root.ActionIndex))
+            return;
+
         var (notifies, cfas, inlines) = RecordChildCreationOp(root, opsMap[root.ActionIndex]);
 
         for(var i = 0; i < notifies?.Count; i++)

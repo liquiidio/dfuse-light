@@ -112,7 +112,8 @@ namespace DeepReader.Storage.Faster.Blocks
                 _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockReaderSession");
 
             _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
-            _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
+            if(options.UseReadCache)
+                _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);// must be optional
             _storeEntryCountHistogram.Observe(_store.EntryCount);
 
             //            _store.Log.SubscribeEvictions(new BlockEvictionObserver());

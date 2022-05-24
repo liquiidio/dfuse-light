@@ -30,4 +30,10 @@ public class ProducerKey : IEosioSerializable<ProducerKey>
     {
         return new ProducerKey(reader);
     }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.WriteName(AccountName);
+        writer.Write(BlockSigningKey.Binary);
+    }
 }
