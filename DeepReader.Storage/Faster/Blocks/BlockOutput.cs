@@ -1,8 +1,8 @@
-﻿using DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Types.StorageTypes;
 
 namespace DeepReader.Storage.Faster.Blocks;
 
 public struct BlockOutput
 {
-    public FlattenedBlock Value;
+    public Block Value;
 }

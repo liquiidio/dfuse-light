@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace DeepReader.Types.EosTypes;
 
 /// <summary>
@@ -35,4 +37,7 @@ public class ActionDataBytes : Bytes<object>
 //        Instance = DeepMindDeserializer.DeepMindDeserializer.Deserialize(Binary, targetType);
 
     }
+
+    public JsonElement? Json { get; set; } // TODO
+    public string Hex { get; set; } // TODO
 }

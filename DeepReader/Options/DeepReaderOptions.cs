@@ -40,7 +40,7 @@ namespace DeepReader.Options
             return _ => true;
         }
 
-        public Func<DbOp, bool> BuildDeltaFilter()
+        public Func<ExtendedDbOp, bool> BuildDeltaFilter()
         {
             List<DeltaFilter> deltaFilter = new();
             foreach (var contractAction in Deltas)

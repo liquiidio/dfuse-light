@@ -1,16 +1,16 @@
-﻿using DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Types.StorageTypes;
 using FASTER.core;
 
 namespace DeepReader.Storage.Faster.Transactions;
 
-public class TransactionValueSerializer : BinaryObjectSerializer<FlattenedTransactionTrace>
+public class TransactionValueSerializer : BinaryObjectSerializer<TransactionTrace>
 {
-    public override void Deserialize(out FlattenedTransactionTrace obj)
+    public override void Deserialize(out TransactionTrace obj)
     {
-        obj = FlattenedTransactionTrace.ReadFromBinaryReader(reader);
+        obj = TransactionTrace.ReadFromBinaryReader(reader);
     }
 
-    public override void Serialize(ref FlattenedTransactionTrace obj)
+    public override void Serialize(ref TransactionTrace obj)
     {
         obj.WriteToBinaryWriter(writer);
     }

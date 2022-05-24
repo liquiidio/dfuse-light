@@ -3,8 +3,9 @@ using DeepReader.Types.Eosio.Chain.Detail;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
+using DeepReader.Types.Eosio.Chain.Legacy;
 
-namespace DeepReader.Types.Eosio.Chain.Legacy;
+namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/block_header_state.hpp

@@ -1,5 +1,6 @@
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -39,7 +40,7 @@ public class TransactionTrace : IEosioSerializable<TransactionTrace>
     public ulong? ErrorCode;
 
     // List of database operations this transaction entailed
-    public IList<DbOp> DbOps { get; set; } = new List<DbOp>();//[]*DBOp
+    public IList<ExtendedDbOp> DbOps { get; set; } = new List<ExtendedDbOp>();//[]*DBOp
                                                               // List of deferred transactions operations this transaction entailed
     public IList<DTrxOp> DtrxOps { get; set; } = new List<DTrxOp>();//[]*DTrxOp
                                                                     // List of feature switching operations (changes to feature switches in
@@ -48,16 +49,18 @@ public class TransactionTrace : IEosioSerializable<TransactionTrace>
                                                                              // List of permission changes operations
     public IList<PermOp> PermOps { get; set; } = new List<PermOp>();//[]*PermOp
                                                                     // List of RAM consumption/redemption
-    public IList<RamOp> RamOps { get; set; } = new List<RamOp>();//[]*RAMOp
+    public IList<ExtendedRamOp> RamOps { get; set; } = new List<ExtendedRamOp>();//[]*RAMOp
                                                                  // List of RAM correction operations (happens only once upon feature
                                                                  // activation)
     public IList<RamCorrectionOp> RamCorrectionOps { get; set; } = new List<RamCorrectionOp>();//[]*RAMCorrectionOp
                                                                                                // List of changes to rate limiting values
     public IList<RlimitOp> RlimitOps { get; set; } = new List<RlimitOp>();//[]*RlimitOp
                                                                           // List of table creations/deletions
-    public IList<TableOp> TableOps { get; set; } = new List<TableOp>();//[]*TableOp
+    public IList<ExtendedTableOp> TableOps { get; set; } = new List<ExtendedTableOp>();//[]*TableOp
                                                                        // Tree of creation, rather than execution
-    public IList<CreationFlatNode> CreationTree { get; set; } = new List<CreationFlatNode>();//[]*CreationFlatNode
+    public IList<CreationTreeNode> CreationTreeRoots { get; set; } = new List<CreationTreeNode>();//[]*CreationFlatNode
+
+    public IList<CreationFlatNode> FlatCreationTree { get; set; } = new List<CreationFlatNode>();//[]*CreationFlatNode
 
     // Index within block's unfiltered execution traces
     public ulong Index { get; set; } = 0;

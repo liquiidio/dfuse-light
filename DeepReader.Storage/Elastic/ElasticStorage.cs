@@ -1,9 +1,9 @@
-﻿using DeepReader.Storage.Options;
-using DeepReader.Types;
-using DeepReader.Types.Eosio.Chain;
-using DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Storage.Faster.Abis;
+using DeepReader.Storage.Options;
+using DeepReader.Types.StorageTypes;
 using Microsoft.Extensions.Options;
 using Nest;
+using System.Reflection;
 
 namespace DeepReader.Storage.Elastic
 {
@@ -28,22 +28,62 @@ namespace DeepReader.Storage.Elastic
             _elasticStorageOptions = newOptions;
         }
 
-        public async Task StoreBlockAsync(FlattenedBlock block) // compress, store, index
-        {
-            await _elasticClient.IndexDocumentAsync(new FlattenedBlockWrapper(){ Block = block });
-        }
-
-        public async Task StoreTransactionAsync(FlattenedTransactionTrace transactionTrace)  // compress, store, index
-        {
-            await _elasticClient.IndexDocumentAsync(new FlattenedTransactionTraceWrapper(){ TransactionTrace = transactionTrace });
-        }
-
-        public Task<(bool, FlattenedBlock)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false)
+        public Task StoreBlockAsync(Block block) // compress, store, index
         {
             throw new NotImplementedException();
         }
 
-        public Task<(bool, FlattenedTransactionTrace)> GetTransactionAsync(string transactionId)
+        public Task StoreTransactionAsync(TransactionTrace transactionTrace)  // compress, store, index
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool, Block)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool, TransactionTrace)> GetTransactionAsync(string transactionId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task StoreActionTraceAsync(ActionTrace actionTrace)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool, Block)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false, bool includeActionTraces = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool, TransactionTrace)> GetTransactionAsync(string transactionId, bool includeActionTraces = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpsertAbi(Types.EosTypes.Name account, ulong globalSequence, Assembly assembly)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Types.EosTypes.Name account)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Types.EosTypes.Name account, ulong globalSequence)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Types.EosTypes.Name account)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool, ActionTrace)> GetActionTraceAsync(ulong globalSequence)
         {
             throw new NotImplementedException();
         }

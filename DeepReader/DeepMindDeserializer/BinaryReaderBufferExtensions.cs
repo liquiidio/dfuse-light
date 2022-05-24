@@ -320,13 +320,8 @@ public static class BinaryBufferReaderExtensions
 
     public static Asset ReadAsset(this BinaryBufferReader reader)
     {
-        var binaryAmount = reader.ReadBytes(8);
-
+        var amount = reader.ReadInt64();
         var symbol = reader.ReadSymbol();
-        var amount = SerializationHelper.SignedBinaryToDecimal(binaryAmount, symbol.Precision + 1);
-
-        if (symbol.Precision > 0)
-            amount = amount.Substring(0, amount.Length - symbol.Precision) + '.' + amount.Substring(amount.Length - symbol.Precision);
 
         return new Asset() { Symbol = symbol, Amount = amount, };
     }

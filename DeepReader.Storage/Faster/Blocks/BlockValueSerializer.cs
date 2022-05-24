@@ -1,16 +1,16 @@
-﻿using DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Types.StorageTypes;
 using FASTER.core;
 
 namespace DeepReader.Storage.Faster.Blocks;
 
-public class BlockValueSerializer : BinaryObjectSerializer<FlattenedBlock>
+public class BlockValueSerializer : BinaryObjectSerializer<Block>
 {
-    public override void Deserialize(out FlattenedBlock obj)
+    public override void Deserialize(out Block obj)
     {
-        obj = FlattenedBlock.ReadFromBinaryReader(reader);
+        obj = Block.ReadFromBinaryReader(reader);
     }
 
-    public override void Serialize(ref FlattenedBlock obj)
+    public override void Serialize(ref Block obj)
     {
         obj.WriteToBinaryWriter(writer);
     }

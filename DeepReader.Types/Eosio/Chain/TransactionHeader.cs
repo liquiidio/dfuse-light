@@ -46,7 +46,6 @@ public class TransactionHeader : IEosioSerializable<TransactionHeader>
         Expiration = reader.ReadTimestamp();
         RefBlockNum = reader.ReadUInt16();
         RefBlockPrefix = reader.ReadUInt32();
-        MaxNetUsageWords = 0;
         MaxNetUsageWords = reader.ReadVarUint32Obj();
         MaxCpuUsageMs = reader.ReadByte();
         DelaySec = reader.ReadVarUint32Obj();

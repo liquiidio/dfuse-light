@@ -10,7 +10,7 @@ namespace DeepReader.Apis.GraphQl.SubscriptionTypes
             descriptor.Name("Subscription");
             descriptor
                 .Field(f => f.BlockAdded(default!))
-                .Type<FlattenedBlockType>()
+                .Type<BlockType>()
                 .Name("subscribeToBlockAdded");
         }
     }

@@ -1,10 +1,10 @@
-﻿using DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Types.StorageTypes;
 
 namespace DeepReader.Apis.GraphQl.Subscriptions
 {
     internal class TransactionSubscription
     {
         [Subscribe]
-        public FlattenedTransactionTrace? TransactionAdded([EventMessage] FlattenedTransactionTrace transaction) => transaction;
+        public TransactionTrace? TransactionAdded([EventMessage] TransactionTrace transaction) => transaction;
     }
 }

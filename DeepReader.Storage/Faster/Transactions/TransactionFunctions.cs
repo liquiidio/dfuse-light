@@ -1,12 +1,12 @@
-﻿using DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using Serilog;
 
 namespace DeepReader.Storage.Faster.Transactions;
 
-public sealed class TransactionFunctions : FunctionsBase<TransactionId, FlattenedTransactionTrace, TransactionInput,TransactionOutput, TransactionContext>
+public sealed class TransactionFunctions : FunctionsBase<TransactionId, TransactionTrace, TransactionInput,TransactionOutput, TransactionContext>
 {
-    public override bool ConcurrentReader(ref TransactionId id, ref TransactionInput input, ref FlattenedTransactionTrace value, ref TransactionOutput dst, ref ReadInfo readInfo)
+    public override bool ConcurrentReader(ref TransactionId id, ref TransactionInput input, ref TransactionTrace value, ref TransactionOutput dst, ref ReadInfo readInfo)
     {
         dst.Value = value;
         return true;
@@ -40,7 +40,7 @@ public sealed class TransactionFunctions : FunctionsBase<TransactionId, Flattene
         }
     }
 
-    public override bool SingleReader(ref TransactionId id, ref TransactionInput input, ref FlattenedTransactionTrace value, ref TransactionOutput dst, ref ReadInfo readInfo)
+    public override bool SingleReader(ref TransactionId id, ref TransactionInput input, ref TransactionTrace value, ref TransactionOutput dst, ref ReadInfo readInfo)
     {
         dst.Value = value;
         return true;

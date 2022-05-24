@@ -11,12 +11,12 @@ namespace DeepReader.Apis.GraphQl.QueryTypes
             descriptor
                 .Field(f => f.GetBlock(default, default!)!)
                 .Argument("block_num", a => a.Type<UnsignedIntType>())
-                .Type<FlattenedBlockType>()
+                .Type<BlockType>()
                 .Name("getBlock");
             descriptor
                 .Field(f => f.GetBlockWithTraces(default, default!))
                 .Argument("block_num", a => a.Type<UnsignedIntType>())
-                .Type<FlattenedBlockType>()
+                .Type<BlockType>()
                 .Name("getBlockWithTraces");
         }
     }

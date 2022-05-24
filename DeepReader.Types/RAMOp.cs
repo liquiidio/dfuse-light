@@ -1,18 +1,39 @@
-using DeepReader.Types.Enums;
+﻿using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
-using KGySoft.CoreLibraries;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types;
 
 public class RamOp
 {
-    public RamOpOperation Operation = RamOpOperation.UNKNOWN;//RAMOp_Operation
-    public uint ActionIndex = 0;// uint32
-    public Name Payer = Name.TypeEmpty;//string
-    public long Delta = 0;//int64
-    public ulong Usage = 0;//uint64
-    // To eventually replace `operation`.
-    public RamOpNamespace Namespace = RamOpNamespace.UNKNOWN;//RAMOp_Namespace
-    public IList<StringSegment> UniqueKey = new List<StringSegment>();//string
-    public RamOpAction Action = RamOpAction.UNKNOWN;//RAMOp_Action
+    public RamOpOperation Operation { get; set; } = RamOpOperation.UNKNOWN;//RAMOp_Operation
+    public Name Payer { get; set; } = string.Empty;//string
+    public long Delta { get; set; } = 0;//int64
+    public ulong Usage { get; set; } = 0;//uint64
+
+    public RamOp()
+    {
+
+    }
+
+    public static RamOp ReadFromBinaryReader(BinaryReader reader)
+    {
+        var obj = new RamOp()
+        {
+            Operation = (RamOpOperation)reader.ReadByte(),
+            Payer = reader.ReadName(),
+            Delta = reader.ReadInt64(),
+            Usage = reader.ReadUInt64()
+        };
+
+        return obj;
+    }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.Write((byte)Operation);
+        writer.WriteName(Payer);
+        writer.Write(Delta);
+        writer.Write(Usage);
+    }
 }

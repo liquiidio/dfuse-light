@@ -1,5 +1,5 @@
 ﻿using DeepReader.Storage.Options;
-using DeepReader.Types.FlattenedTypes;
+using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
@@ -10,10 +10,10 @@ namespace DeepReader.Storage.Faster.Blocks
 {
     public class BlockStore
     {
-        private readonly FasterKV<BlockId, FlattenedBlock> _store;
+        private readonly FasterKV<BlockId, Block> _store;
 
-        private readonly ClientSession<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockWriterSession;
-        private readonly ClientSession<BlockId, FlattenedBlock, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockReaderSession;
+        private readonly ClientSession<BlockId, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockWriterSession;
+        private readonly ClientSession<BlockId, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockReaderSession;
 
         private FasterStorageOptions _options;
 
@@ -67,7 +67,7 @@ namespace DeepReader.Storage.Faster.Blocks
 
             // Define serializers; otherwise FASTER will use the slower DataContract
             // Needed only for class keys/values
-            var serializerSettings = new SerializerSettings<BlockId, FlattenedBlock>
+            var serializerSettings = new SerializerSettings<BlockId, Block>
             {
                 keySerializer = () => new BlockIdSerializer(),
                 valueSerializer = () => new BlockValueSerializer()
@@ -80,7 +80,7 @@ namespace DeepReader.Storage.Faster.Blocks
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
 
-            _store = new FasterKV<BlockId, FlattenedBlock>(
+            _store = new FasterKV<BlockId, Block>(
                 size: _options.MaxBlocksCacheEntries, // Cache Lines for Blocks
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
@@ -114,6 +114,11 @@ namespace DeepReader.Storage.Faster.Blocks
             _blockReaderSession ??=
                 _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockReaderSession");
 
+            _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
+            if(options.UseReadCache)
+                _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);// must be optional
+            _storeEntryCountHistogram.Observe(_store.EntryCount);
+
             //            _store.Log.SubscribeEvictions(new BlockEvictionObserver());
 
             // TODO, for some reason I need to manually call the Init
@@ -129,7 +134,7 @@ namespace DeepReader.Storage.Faster.Blocks
             _storeEntryCountHistogram.Observe(_store.EntryCount);
         }
 
-        public async Task<Status> WriteBlock(FlattenedBlock block)
+        public async Task<Status> WriteBlock(Block block)
         {
             var blockId = new BlockId(block.Number);
 
@@ -144,7 +149,7 @@ namespace DeepReader.Storage.Faster.Blocks
             }
         }
 
-        public async Task<(bool, FlattenedBlock)> TryGetBlockById(uint blockNum)
+        public async Task<(bool, Block)> TryGetBlockById(uint blockNum)
         {
             using (_blockReaderSessionReadDurationHistogram.NewTimer())
             {

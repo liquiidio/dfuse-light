@@ -14,8 +14,8 @@ public class ActionReceipt : IEosioSerializable<ActionReceipt>
     public ulong GlobalSequence;
     public ulong ReceiveSequence;
     public TransactionTraceAuthSequence[] AuthSequence;
-    public VarUint32 CodeSequence;
-    public VarUint32 AbiSequence;
+    public uint CodeSequence;
+    public uint AbiSequence;
 
     public ActionReceipt(BinaryReader reader)
     {
@@ -25,15 +25,13 @@ public class ActionReceipt : IEosioSerializable<ActionReceipt>
         ReceiveSequence = reader.ReadUInt64();
 
         AuthSequence = new TransactionTraceAuthSequence[reader.Read7BitEncodedInt()];
-        CodeSequence = 0;
-        AbiSequence = 0;
         for (int i = 0; i < AuthSequence.Length; i++)
         {
             AuthSequence[i] = TransactionTraceAuthSequence.ReadFromBinaryReader(reader);
         }
 
-        CodeSequence = reader.ReadVarUint32Obj();
-        AbiSequence = reader.ReadVarUint32Obj();
+        CodeSequence = (uint)reader.Read7BitEncodedInt();
+        AbiSequence = (uint)reader.Read7BitEncodedInt();
     }
 
     public static ActionReceipt ReadFromBinaryReader(BinaryReader reader)
@@ -48,13 +46,13 @@ public class ActionReceipt : IEosioSerializable<ActionReceipt>
         writer.Write(GlobalSequence);
         writer.Write(ReceiveSequence);
 
-        writer.Write(AuthSequence.Length);
+        writer.Write7BitEncodedInt(AuthSequence.Length);
         foreach (var transactionTraceAuthSequence in AuthSequence)
         {
             transactionTraceAuthSequence.WriteToBinaryWriter(writer);
         }
 
-        writer.Write(CodeSequence);
-        writer.Write(AbiSequence);
+        writer.Write7BitEncodedInt((int)CodeSequence);
+        writer.Write7BitEncodedInt((int)AbiSequence);
     }
 }

@@ -34,7 +34,8 @@ public class Action : ActionBase, IEosioSerializable<Action>
             Authorization[i] = PermissionLevel.ReadFromBinaryReader(reader);
         }
 
-        Data = reader.ReadActionDataBytes();
+        var length = reader.Read7BitEncodedInt();
+        Data = reader.ReadBytes(length);
     }
 
     public static Action ReadFromBinaryReader(BinaryReader reader)

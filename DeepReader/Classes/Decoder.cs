@@ -1,22 +1,19 @@
-﻿namespace DeepReader.Classes;
+﻿using System.Buffers;
 
-public class Decoder
+namespace DeepReader.Classes;
+
+public static class Decoder
 {
-    public static Span<byte> HexToBytes(ReadOnlySpan<char> chunk)
+    public static void HexToBytes(ReadOnlySpan<char> chunk, Span<byte> bytes, int length)
     {
-        //ArrayPool<byte> pool = ArrayPool<byte>.Create();
-        //Span<byte> b = pool.Rent(1);
-
-        Span<byte> bytes = new Span<byte>(new byte[chunk.Length >> 1]);//GC.AllocateUninitializedArray<byte>(chunk.Length >> 1));
-        TryDecodeFromUtf16(chunk, bytes);
-        return bytes;
+        TryDecodeFromUtf16(chunk, bytes, length);
     }
 
-    private static void TryDecodeFromUtf16(ReadOnlySpan<char> chars, Span<byte> bytes)
+    private static void TryDecodeFromUtf16(ReadOnlySpan<char> chars, Span<byte> bytes, int length)
     {
         var i = 0;
         var j = 0;
-        while (j < bytes.Length)
+        while (j < length)
         {
             var byteLo = chars[i + 1] >= CharToHexLookup.Length ? 0xFF : CharToHexLookup[chars[i + 1]];
             var byteHi = chars[i] >= CharToHexLookup.Length ? 0xFF : CharToHexLookup[chars[i]];

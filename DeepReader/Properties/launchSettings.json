@@ -16,8 +16,8 @@
       },
       "distributionName": "Ubuntu20.04LTS2",
       "remoteDebugEnabled": true
-    },    
-	"WSL : Ubuntu-20.04 Haron": {
+    },
+    "WSL : Ubuntu-20.04 Haron": {
       "commandName": "WSL",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
@@ -34,7 +34,6 @@
     },
     "Docker": {
       "commandName": "Docker",
-      "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/metrics",
       "environmentVariables": {
         "ASPNETCORE_URLS": "http://+:5000"

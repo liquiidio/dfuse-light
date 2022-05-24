@@ -33,4 +33,6 @@ public class PermissionLevel : IEosioSerializable<PermissionLevel>
         writer.WriteName(Actor);
         writer.WriteName(Permission);
     }
+
+    public static PermissionLevel TypeEmpty = new();
 }

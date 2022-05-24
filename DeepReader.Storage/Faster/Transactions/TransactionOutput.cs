@@ -1,8 +1,8 @@
-﻿using DeepReader.Types.FlattenedTypes;
+﻿using DeepReader.Types.StorageTypes;
 
 namespace DeepReader.Storage.Faster.Transactions;
 
 public struct TransactionOutput
 {
-    public FlattenedTransactionTrace Value;
+    public TransactionTrace Value;
 }

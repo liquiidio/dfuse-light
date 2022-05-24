@@ -25,6 +25,7 @@ public class Block
 	public ProtocolFeatureActivationSet? ActivatedProtocolFeatures;
 	public bool Validated = false;
 	public IList<RlimitOp> RlimitOps = new List<RlimitOp>();
+
 	// The unfiltered transactions in this block when NO filtering has been applied,
 	// (i.e. `filtering_applied = false`). When filtering has been applied on this block,
 	// (i.e. `filtering_applied = true`), this field will be set to `nil` and instead, the

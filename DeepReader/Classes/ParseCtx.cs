@@ -23,7 +23,9 @@ public class ParseCtx
 
     private readonly bool _traceEnabled;
 
-    private readonly string[] _supportedVersions = {"mandel"};
+    private readonly string[] _supportedVersions = {"mandel","13"};
+
+    private AbiDecoder _abiDecoder;
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
@@ -31,16 +33,17 @@ public class ParseCtx
         PropertyNameCaseInsensitive = true,
     };
 
-    public ParseCtx()
+    public ParseCtx(AbiDecoder abiDecoder)
     {
         _block = new Block();
         _activeBlockNum = 0;
         _trx = new TransactionTrace();
         _creationOps = new List<CreationOp>();
         _traceEnabled = true;
+        _abiDecoder = abiDecoder;
     }
 
-    public ParseCtx(Block block, long activeBlockNum, TransactionTrace trx, List<CreationOp> creationOps, bool traceEnabled, string[] supportedVersions)
+    public ParseCtx(Block block, long activeBlockNum, TransactionTrace trx, List<CreationOp> creationOps, bool traceEnabled, string[] supportedVersions, AbiDecoder abiDecoder)
     {
         _block = block;
         _activeBlockNum = activeBlockNum;
@@ -48,6 +51,7 @@ public class ParseCtx
         _creationOps = creationOps;
         _traceEnabled = traceEnabled;
         _supportedVersions = supportedVersions;
+        _abiDecoder = abiDecoder;
     }
 
     public void ResetBlock(ObjectPool<Block> blockPool, bool returnBlock)
@@ -77,7 +81,7 @@ public class ParseCtx
         _creationOps.Add(operation);
     }
 
-	public void RecordDbOp(DbOp operation)
+	public void RecordDbOp(ExtendedDbOp operation)
     {
         _trx.DbOps.Add(operation);
     }
@@ -102,7 +106,7 @@ public class ParseCtx
         _trx.PermOps.Add(operation);
     }
 
-    public void RecordRamOp(RamOp operation)
+    public void RecordRamOp(ExtendedRamOp operation)
     {
         _trx.RamOps.Add(operation);
     }
@@ -123,7 +127,7 @@ public class ParseCtx
 	    }
 	}
 
-    public void RecordTableOp(TableOp operation)
+    public void RecordTableOp(ExtendedTableOp operation)
     {
         _trx.TableOps.Add(operation);
     }
@@ -178,7 +182,8 @@ public class ParseCtx
         // All this stiching of ops into trace must be performed after `if` because the if can revert them all
         var creationTreeRoots = CreationTree.ComputeCreationTree((IReadOnlyList<CreationOp>)_creationOps);
 
-        trace.CreationTree = CreationTree.ToFlatTree(creationTreeRoots);
+        trace.CreationTreeRoots = creationTreeRoots;
+        trace.FlatCreationTree = CreationTree.ToFlatTree(creationTreeRoots);
         trace.DtrxOps = _trx.DtrxOps;
         trace.DbOps = _trx.DbOps;
         trace.FeatureOps = _trx.FeatureOps;
@@ -195,9 +200,9 @@ public class ParseCtx
         ResetTrx();
     }
 
-    private IList<RamOp> TransferDeferredRemovedRamOp(ICollection<RamOp> initialRamOps, TransactionTrace target)
+    private IList<ExtendedRamOp> TransferDeferredRemovedRamOp(ICollection<ExtendedRamOp> initialRamOps, TransactionTrace target)
     {
-        IList<RamOp> filteredRamOps = new List<RamOp>();
+        IList<ExtendedRamOp> filteredRamOps = new List<ExtendedRamOp>();
         foreach (var ramOp in initialRamOps)
         {
             if (ramOp.Namespace == RamOpNamespace.DEFERRED_TRX && ramOp.Action == RamOpAction.REMOVE)
@@ -218,7 +223,7 @@ public class ParseCtx
         // as well as the RLimitOps, which happens at a location that does not revert.
         var toRestoreRlimitOps = _trx.RlimitOps;
 
-        RamOp? deferredRemovalRamOp = null;// = new RAMOp();
+        ExtendedRamOp? deferredRemovalRamOp = null;// = new RAMOp();
 
         foreach (var trxRamOp in _trx.RamOps)
         {
@@ -233,13 +238,13 @@ public class ParseCtx
         _trx.RlimitOps = toRestoreRlimitOps;
         if (deferredRemovalRamOp != null)
         {
-            _trx.RamOps = new List<RamOp>() { deferredRemovalRamOp };
+            _trx.RamOps = new List<ExtendedRamOp>() { deferredRemovalRamOp };
         }
     }
 
-    public RamOp[] TransferDeferredRemovedRamOp(RamOp[] initialRamOps, TransactionTrace target)
+    public ExtendedRamOp[] TransferDeferredRemovedRamOp(ExtendedRamOp[] initialRamOps, TransactionTrace target)
     {
-        List<RamOp> filteredRamOps = new List<RamOp>();
+        List<ExtendedRamOp> filteredRamOps = new List<ExtendedRamOp>();
         foreach (var initialRamOp in initialRamOps)
         {
 			if (initialRamOp.Namespace == RamOpNamespace.DEFERRED_TRX && initialRamOp.Action == RamOpAction.REMOVE)
@@ -296,7 +301,7 @@ public class ParseCtx
             Log.Information($"block_num {blockNum} doesn't match the active block num {_activeBlockNum}");
         }
 
-        var blockState = DeepMindDeserializer.DeepMindDeserializer.Deserialize<BlockState>(Decoder.HexToBytes(chunks[3]));
+        var blockState = DeepMindDeserializer.DeepMindDeserializer.Deserialize<BlockState>(chunks[3]);
 
         _block.Id = blockState.Id;
         _block.Number = blockState.BlockNum;
@@ -531,7 +536,7 @@ public class ParseCtx
             Log.Information($"saw transactions from block {blockNum} while active block is {_activeBlockNum}");
         }
 
-        var trxTrace = DeepMindDeserializer.DeepMindDeserializer.Deserialize<TransactionTrace>(Decoder.HexToBytes(chunks[3]));
+        var trxTrace = DeepMindDeserializer.DeepMindDeserializer.Deserialize<TransactionTrace>(chunks[3]);
 
         RecordTransaction(trxTrace);
     }
@@ -548,25 +553,25 @@ public class ParseCtx
             throw new Exception($"expected 4 fields, got {chunks.Count}");
         }
 
-        var kind = chunks[2];
-        if (kind != "ROOT" && kind != "NOTIFY" && kind != "INLINE" && kind != "CFA_INLINE")
-        {
-            throw new Exception($"kind must be one of ROOT, NOTIFY, CFA_INLINE or INLINE, got: {kind}");
-        }
+        //var kind = chunks[2];
+        //if (kind != "ROOT" && kind != "NOTIFY" && kind != "INLINE" && kind != "CFA_INLINE")
+        //{
+        //    throw new Exception($"kind must be one of ROOT, NOTIFY, CFA_INLINE or INLINE, got: {kind}");
+        //}
 
-        var actionIndex = Int32.Parse(chunks[3].AsSpan);
+        //var actionIndex = Int32.Parse(chunks[3].AsSpan);
         /*if err != nil {
 	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
         }*/
 
         RecordCreationOp(new CreationOp()
         {
-            Kind = Enum.Parse<CreationOpKind>(kind),
+            Kind = Enum.Parse<CreationOpKind>(chunks[2]),
             // FIXME: this index is 0-based, whereas `action_ordinal` is 1-based, where 0 means a virtual root node.
             // This is a BIG problem as now we unpack the traces and simply keep that `action_ordinal` field.. so in `eosws`, we need to re-map all of this together.
             // Perhaps we can simply ditch all of this since we'll have the `closest unnotified ancestor`,.. and we could *NOT* compute our own thing anymore.. and always use theirs..
             // then simply re-map their model into ours at the edge (in `eosws`).
-            ActionIndex = actionIndex,
+            ActionIndex = Int32.Parse(chunks[3].AsSpan),
         });
     }
 
@@ -623,7 +628,7 @@ public class ParseCtx
                 throw new Exception($"unknown operation: {chunks[2]}");
         }
 
-        RecordDbOp(new DbOp()
+        RecordDbOp(new ExtendedDbOp()
         {
             Operation = op,
             ActionIndex = (uint) actionIndex,
@@ -658,7 +663,7 @@ public class ParseCtx
 
         var actionIndex = Int32.Parse(chunks[3].AsSpan);
 
-        var signedTrx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(Decoder.HexToBytes(chunks[11]));
+        var signedTrx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(chunks[11]);
 
         try
         {
@@ -873,7 +878,7 @@ public class ParseCtx
 
         var delta = Int64.Parse(chunks[9]);
 
-        RecordRamOp(new RamOp()
+        RecordRamOp(new ExtendedRamOp()
         {
             ActionIndex = actionIndex,
             UniqueKey = chunks[3].Split(':'),
@@ -928,13 +933,14 @@ public class ParseCtx
         switch (chunks.Count) {
             case 5: // Version > 12 ?
                 var blockNum = Int32.Parse(chunks[3].AsSpan);
-                var globalSequence = Int32.Parse(chunks[4].AsSpan);
+                var globalSequence = UInt64.Parse(chunks[4].AsSpan);
+                _abiDecoder.AbiDumpStart(blockNum, globalSequence);
                 Log.Information($"read ABI start marker: block_num {blockNum} global_sequence {globalSequence}");
                 break;
             default:
                 throw new Exception($"expected to have either {{3}} or {{5}} fields, got {chunks.Count}");
             }
-        AbiDecoder.ResetCache();
+        //AbiDecoder.ResetCache();
     }
 
     // Line format:
@@ -964,7 +970,14 @@ public class ParseCtx
             Log.Information($"read initial ABI for contract {contract}");
         }
 
-        AbiDecoder.AddInitialAbi(contract, rawAbi);
+        _abiDecoder.AddInitialAbi(contract, rawAbi);
+    }
+
+    // Line format:
+    //    ABIDUMP END
+    public void AbiDumpEnd()
+    {
+        _abiDecoder.AbiDumpEnd();
     }
 
     // Line format:
@@ -1045,7 +1058,7 @@ public class ParseCtx
             throw new Exception($"expected 8 fields, got {chunks.Count}");
         }
 
-        RecordTableOp(new TableOp()
+        RecordTableOp(new ExtendedTableOp()
         {
             Operation = Enum.Parse<TableOpOperation>(chunks[2]),
             ActionIndex = (uint)Int32.Parse(chunks[3]),
@@ -1065,7 +1078,7 @@ public class ParseCtx
             throw new Exception($"expected 6 fields, got {chunks.Count}");
         }
 
-        var trx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(Decoder.HexToBytes(chunks[5]));
+        var trx = DeepMindDeserializer.DeepMindDeserializer.Deserialize<SignedTransaction>(chunks[5]);
 
         RecordTrxOp(new TrxOp()
         {
