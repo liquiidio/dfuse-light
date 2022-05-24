@@ -47,17 +47,6 @@ namespace DeepReader.Apis
                             .AddType<BlockSubscriptionType>()
                             .AddType<TransactionSubscriptionType>();
                     services.AddSentry();
-                    services
-                        .AddHealthChecks()
-                        .AddCheck<ReadCacheEnabledHealthCheck>("ReadCacheEnabled")
-                        .AddCheck<MaxBlocksCacheEntriesHealthCheck>("MaxBlocksCacheEntries")
-                        .AddCheck<MaxTransactionsCacheEntriesHealthCheck>("MaxTransactionsCacheEntries")
-                        .AddCheck<CheckpointIntervalHealthCheck>("CheckpointInterval")
-                        .AddCheck<BlocksIndexedHealthCheck>("BlocksIndexed")
-                        .AddCheck<TransactionsIndexedHealthCheck>("TransactionsIndexed");
-                    //services
-                    //    .AddHealthChecksUI()
-                    //    .AddInMemoryStorage();
                     services.AddSingleton<MetricsCollector>();
 
                 });
@@ -92,7 +81,6 @@ namespace DeepReader.Apis
                         endpoints.MapGraphQL();
                         endpoints.MapControllers();
                         endpoints.MapMetrics();
-                        endpoints.MapHealthChecks("/health");
                     });
 
                     app.UseSentryTracing();
