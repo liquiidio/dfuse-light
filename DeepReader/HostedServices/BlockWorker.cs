@@ -3,12 +3,15 @@ using DeepReader.Options;
 using DeepReader.Storage;
 using DeepReader.Types;
 using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.Other;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Microsoft.IO;
 using Prometheus;
 using Serilog;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Threading.Channels;
@@ -132,7 +135,9 @@ public class BlockWorker : BackgroundService
                         async (actionTrace, _) =>
                         {
                             await _storageAdapter.StoreActionTraceAsync(actionTrace); // TODO cancellationToken
-                        })
+                        }),
+
+                    CheckForAbiUpdates(actionTraces)
                 );
             }
             catch (Exception e)
@@ -196,18 +201,17 @@ public class BlockWorker : BackgroundService
                 {
                     //trx.ActionTraces = trx.ActionTraces.Where(_actionFilter).ToArray();// Filter AcionTraces
 
-                    var rootActionTraces = new List<Types.StorageTypes.ActionTrace>();
-                    foreach (var creationTreeRoot in trx.CreationTreeRoots)
+                    var rootActionTraces = new Types.StorageTypes.ActionTrace[trx.CreationTreeRoots.Count];
+                    Parallel.ForEach(trx.CreationTreeRoots, _postProcessingParallelOptions, (creationTreeRoot, _, actIndex) =>
                     {
-                        if(creationTreeRoot.Kind == CreationOpKind.ROOT)
+                        if (creationTreeRoot.Kind == CreationOpKind.ROOT)
                         {
-                            // TODO -1
                             var rootAction = new Types.StorageTypes.ActionTrace(trx.ActionTraces[creationTreeRoot.ActionIndex]);
                             var createdActionTraces = new List<Types.StorageTypes.ActionTrace>();
-                            rootActionTraces.Add(rootAction);
-                            foreach(var creationTreeChild in creationTreeRoot.Children)
+                            rootActionTraces[actIndex] = rootAction;
+                            foreach (var creationTreeChild in creationTreeRoot.Children)
                             {
-                                if(creationTreeChild.Kind == CreationOpKind.INLINE || creationTreeChild.Kind == CreationOpKind.NOTIFY || creationTreeChild.Kind == CreationOpKind.CFA_INLINE)
+                                if (creationTreeChild.Kind == CreationOpKind.INLINE || creationTreeChild.Kind == CreationOpKind.NOTIFY || creationTreeChild.Kind == CreationOpKind.CFA_INLINE)
                                 {
                                     createdActionTraces.Add(ProcessChildActions(creationTreeChild, trx, rootAction, actionTraces));
                                 }
@@ -224,7 +228,7 @@ public class BlockWorker : BackgroundService
                         }
                         else
                             Log.Error($"CreationTreeRoot-Issues in trx {trx.Id.StringVal}");
-                    }
+                    });
                     var transactionTrace = new Types.StorageTypes.TransactionTrace(trx)
                     {
                         ActionTraces = rootActionTraces.ToArray(),
@@ -265,9 +269,9 @@ public class BlockWorker : BackgroundService
     private Name setabi = NameCache.GetOrCreate("setabi");
     private AbiDecoder abiDecoder;
 
-    private async Task TestAbiDeserializer(List<FlattenedTransactionTrace> flattenedTransactionTraces)
+    private async Task TestAbiDeserializer(List<Types.StorageTypes.TransactionTrace> flattenedTransactionTraces)
     {
-        foreach(FlattenedTransactionTrace trace in flattenedTransactionTraces)
+        foreach(var trace in flattenedTransactionTraces)
         {
             foreach(var actionTrace in trace.ActionTraces)
             {
@@ -317,6 +321,46 @@ public class BlockWorker : BackgroundService
                 }
             }
         }
+    }
+
+    private static readonly RecyclableMemoryStreamManager StreamManager = new();
+
+    private async Task CheckForAbiUpdates(List<Types.StorageTypes.ActionTrace> actionTraces)
+    {
+        await Parallel.ForEachAsync(actionTraces.Where(at => at.Act.Account == eosio && at.Act.Name == setabi), _postProcessingParallelOptions, async (setAbiTrace, _) =>
+        {
+            try
+            {
+                var (found, assemblyPair) = await _storageAdapter.TryGetActiveAbiAssembly(eosio); // account is always eosio here
+                if (found)  // TODO check GlobalSequence validity
+                {
+                    var clrType = assemblyPair.Value.Assembly.GetType($"_setabi"); // type is always setabi here
+                    if (clrType != null)
+                    {                
+                        using var stream = StreamManager.GetStream(setAbiTrace.Act.Data);// copies buffer/bytes
+                        using var reader = new BinaryReader(stream);
+
+                        var obj = Activator.CreateInstance(clrType, reader);
+
+                        var abiField = clrType.GetField("_abi")!;
+                        var abiFieldValue = abiField.GetValue(obj)!;
+                        var abiBytes = (byte[])abiFieldValue;
+
+                        var accountField = clrType.GetField("_account")!;
+                        var accountFieldValue = accountField.GetValue(obj)!;
+                        var account = (Name)accountFieldValue;
+
+                        abiDecoder.AddAbi(account, abiBytes, setAbiTrace.GlobalSequence);
+                    }
+                    else
+                        Log.Information($"Type for {setAbiTrace.Act.Account.StringVal}.{setAbiTrace.Act.Name.StringVal} not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "");
+            }
+        });
     }
 
 }

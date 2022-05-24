@@ -1,5 +1,4 @@
-﻿using DeepReader.Types.FlattenedTypes;
-using FASTER.core;
+﻿using FASTER.core;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 

@@ -93,7 +93,6 @@ namespace DeepReader.AssemblyGenerator
 
 #if DEBUG
         private static string AssemblyPath = "/app/config/mindreader/abis/";//Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedAssemblies");
-#endif
 
         private static async void SaveAssemblyAndAbi(Assembly assembly, Abi abi, string contractName, ulong globalSequence)
         {
@@ -120,6 +119,7 @@ namespace DeepReader.AssemblyGenerator
                 Log.Error(ex, "");
             }
         }
+#endif
 
         /// <summary>
         /// returns a new List of AbiStructs with all base-fields (if any)

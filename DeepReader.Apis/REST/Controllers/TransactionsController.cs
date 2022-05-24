@@ -33,5 +33,14 @@ namespace DeepReader.Apis.REST.Controllers
                 return Ok(transaction);
             return NotFound();
         }
+
+        [HttpGet("transaction_with_actions/{transaction_id}")]
+        public async Task<IActionResult> GetTransactionWithActions(string transaction_id)
+        {
+            var (found, transaction) = await _storage.GetTransactionAsync(transaction_id, true);
+            if (found)
+                return Ok(transaction);
+            return NotFound();
+        }
     }
 }

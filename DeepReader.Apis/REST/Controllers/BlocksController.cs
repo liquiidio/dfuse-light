@@ -44,5 +44,14 @@ namespace DeepReader.Apis.REST.Controllers
                 return Ok(block);
             return NotFound();
         }
+
+        [HttpGet("block_with_traces_and_actions/{block_num}")]
+        public async Task<IActionResult> GetBlockWithTracesAndActions(uint block_num)
+        {
+            var (found, block) = await _storage.GetBlockAsync(block_num, true, true);
+            if (found)
+                return Ok(block);
+            return NotFound();
+        }
     }
 }

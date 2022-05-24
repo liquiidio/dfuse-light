@@ -82,5 +82,10 @@ namespace DeepReader.Storage.Elastic
         {
             throw new NotImplementedException();
         }
+
+        public Task<(bool, ActionTrace)> GetActionTraceAsync(ulong globalSequence)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

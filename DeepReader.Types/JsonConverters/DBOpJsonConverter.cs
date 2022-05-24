@@ -16,7 +16,6 @@ public class DbOpJsonConverter : JsonConverter<DbOp>
         // TODO, just a temporary workaround
         writer.WriteStartObject();
         writer.WriteString("operation", value.Operation.ToString());
-        writer.WriteNumber("actionIndex", value.ActionIndex);
         writer.WriteString("code", value.Code);
         writer.WriteString("scope", value.Scope);
         writer.WriteString("primaryKey", value.PrimaryKey);

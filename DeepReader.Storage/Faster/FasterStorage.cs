@@ -3,6 +3,7 @@ using DeepReader.Storage.Faster.ActionTraces;
 using DeepReader.Storage.Faster.Blocks;
 using DeepReader.Storage.Faster.Transactions;
 using DeepReader.Storage.Options;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
@@ -69,12 +70,21 @@ namespace DeepReader.Storage.Faster
                 // not sure if this is clever or over-parallelized
                 await Parallel.ForEachAsync(block.TransactionIds, _parallelOptions, async (transactionId, _) =>
                 {
-                    var (foundTrx, trx) =
+                    var (foundTrx, transaction) =
                         await _transactionStore.TryGetTransactionTraceById(transactionId);
                     if (foundTrx)
-                        block.Transactions[Array.IndexOf(block.TransactionIds, transactionId)] = trx;
-                
-                    // TODO ActionTraces
+                        block.Transactions[Array.IndexOf(block.TransactionIds, transactionId)] = transaction;
+
+                    if (foundTrx && includeActionTraces)
+                    {
+                        await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
+                        {
+                            var (foundTrx, action) =
+                                await _actionTraceStore.TryGetActionTraceById(actionTraceId);
+                            if (foundTrx)
+                                transaction.ActionTraces[Array.IndexOf(transaction.ActionTraceIds, actionTraceId)] = action;
+                        });
+                    }
                 });
 
                 //foreach (var transactionId in block.TransactionIds)
@@ -100,8 +110,6 @@ namespace DeepReader.Storage.Faster
                         await _actionTraceStore.TryGetActionTraceById(actionTraceId);
                     if (foundTrx)
                         transaction.ActionTraces[Array.IndexOf(transaction.ActionTraceIds, actionTraceId)] = action;
-
-                    // TODO recursively load other Actions
                 });
             }
             return (found, transaction);
@@ -125,6 +133,11 @@ namespace DeepReader.Storage.Faster
         public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Name account)
         {
             return await _abiStore.TryGetActiveAbiAssembly(account);
+        }
+
+        public async Task<(bool, ActionTrace)> GetActionTraceAsync(ulong globalSequence)
+        {
+            return await _actionTraceStore.TryGetActionTraceById(globalSequence);
         }
     }
 }

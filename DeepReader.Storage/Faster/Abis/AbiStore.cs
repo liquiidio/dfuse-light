@@ -1,6 +1,5 @@
 using DeepReader.Storage.Options;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.FlattenedTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
