@@ -80,7 +80,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
-                comparer: new ActionTraceId()
+                comparer: new ActionTraceId(0)
             );
 
             if (Directory.Exists(checkPointsDir))

@@ -92,6 +92,7 @@ namespace DeepReader.AssemblyGenerator
         }
 
 #if DEBUG
+//        private static readonly string AssemblyPath = "/mnt/e/source/repos/deepreader/DeepReader/config/mindreader/abis/";//Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedAssemblies");
         private static readonly string AssemblyPath = "/app/config/mindreader/abis/";//Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedAssemblies");
 
         private static async void SaveAssemblyAndAbi(Assembly assembly, Abi abi, string contractName, ulong globalSequence)
@@ -575,6 +576,7 @@ namespace DeepReader.AssemblyGenerator
             { "time_point", typeof(UInt32) },
             { "symbol", typeof(Symbol) },
             { "symbol_code", typeof(SymbolCode) },
+            { "block_header", typeof(BlockHeader) },
         };
 
         #endregion

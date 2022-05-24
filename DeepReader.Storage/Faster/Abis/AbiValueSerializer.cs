@@ -13,8 +13,8 @@ public class AbiValueSerializer : BinaryObjectSerializer<AbiCacheItem>
         for(int i = 0; i < abiCount; i++)
         {
             var key = reader.ReadUInt64();
-            var bytes = reader.Read7BitEncodedInt();
-            obj.AbiVersions[key] = new AssemblyWrapper(reader.ReadBytes(bytes));
+            var length = reader.Read7BitEncodedInt();
+            obj.AbiVersions[key] = new AssemblyWrapper(reader.ReadBytes(length));
         }
     }
 

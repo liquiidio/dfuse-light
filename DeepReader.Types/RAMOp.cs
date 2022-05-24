@@ -32,7 +32,7 @@ public class RamOp
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
         writer.Write((byte)Operation);
-        writer.Write(Payer.Binary);
+        writer.WriteName(Payer);
         writer.Write(Delta);
         writer.Write(Usage);
     }

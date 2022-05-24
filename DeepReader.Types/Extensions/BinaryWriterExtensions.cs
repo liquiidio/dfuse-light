@@ -1,6 +1,7 @@
 ﻿using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
+using Serilog;
 
 namespace DeepReader.Types.Extensions
 {
@@ -8,6 +9,8 @@ namespace DeepReader.Types.Extensions
     {
         public static void WriteName(this BinaryWriter writer, Name name)
         {
+            if (name.Binary.Length != 8)
+                Log.Error($"Name {name.StringVal} Bytes.Lenght != 8 !");
             writer.Write(name.Binary);
         }
         

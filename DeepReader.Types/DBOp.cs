@@ -69,7 +69,6 @@ public class DbOp
         writer.WriteName(Code);
         writer.WriteName(Scope);
         writer.WriteName(TableName);
-        writer.Write(PrimaryKey.Length);
         writer.Write(PrimaryKey);
         switch (Operation)
         {

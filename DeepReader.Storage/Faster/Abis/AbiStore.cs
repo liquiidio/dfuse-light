@@ -156,7 +156,7 @@ namespace DeepReader.Storage.Faster.Abis
             {
                 var (status, output) = (await _AbiReaderSession.ReadAsync(new AbiId(account.IntVal))).Complete();
 
-                if(status.Found && output.Value.AbiVersions.Any(av => av.Key >= globalSequence))
+                if(status.Found && output.Value.AbiVersions.Any(av => av.Key <= globalSequence))
                 {
                     // returns the index of the Abi matching the globalSequence or binary complement of the next item (negative)
                     var abiVersionIndex = output.Value.AbiVersions.Keys.ToList().BinarySearch(globalSequence);
@@ -165,8 +165,12 @@ namespace DeepReader.Storage.Faster.Abis
                     if (abiVersionIndex < 0)
                         abiVersionIndex = ~abiVersionIndex;
                     // we always want the previous Abi-version
-                    abiVersionIndex--;
-                    return (status.Found, output.Value.AbiVersions.ToArray()[abiVersionIndex]);
+                    if(abiVersionIndex > 0)
+                        abiVersionIndex--;
+
+                    var abiVersionsArry = output.Value.AbiVersions.ToArray();
+                    if (abiVersionIndex >= 0 && abiVersionsArry.Length > abiVersionIndex)
+                        return (status.Found, abiVersionsArry[abiVersionIndex]);
                 }
                 return (false, new KeyValuePair<ulong, AssemblyWrapper>());
             }

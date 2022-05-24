@@ -35,8 +35,8 @@ public class TableOp
     {
         writer.Write((byte)Operation);
         //        writer.Write(Payer.Binary);
-        writer.Write(Code.Binary);
-        writer.Write(Scope.Binary);
-        writer.Write(TableName.Binary);
+        writer.WriteName(Code);
+        writer.WriteName(Scope);
+        writer.WriteName(TableName);
     }
 }

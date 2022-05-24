@@ -1,4 +1,5 @@
 ﻿using DeepReader.Apis.Options;
+using DeepReader.Apis.Other;
 using DeepReader.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -45,12 +46,21 @@ namespace DeepReader.Apis.REST.Controllers
             return NotFound();
         }
 
-        [HttpGet("block_with_traces_and_actions/{block_num}")]
-        public async Task<IActionResult> GetBlockWithTracesAndActions(uint block_num)
+        [HttpGet("block_with_traces_and_actions/{block_num}&{deserialize_actions}")]
+        public async Task<IActionResult> GetBlockWithTracesAndActions(uint block_num, bool deserialize_actions = false)
         {
             var (found, block) = await _storage.GetBlockAsync(block_num, true, true);
             if (found)
+            {
+                if (deserialize_actions)
+                {
+                    await Parallel.ForEachAsync(block.Transactions, async (transaction, _) =>
+                    {
+                        await ActionTraceDeserializer.DeserializeActions(transaction.ActionTraces, _storage);
+                    });
+                }
                 return Ok(block);
+            }
             return NotFound();
         }
     }

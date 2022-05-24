@@ -288,7 +288,7 @@ namespace DeepReader.Types.Extensions
 
         public static ActionDataBytes ReadActionDataBytes(this BinaryReader reader)
         {
-            var length = Convert.ToInt32(reader.ReadVarUint32());
+            var length = reader.Read7BitEncodedInt();
             return new ActionDataBytes(reader.ReadBytes(length));
         }
 

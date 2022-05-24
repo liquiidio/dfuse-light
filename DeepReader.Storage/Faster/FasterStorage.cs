@@ -70,19 +70,34 @@ namespace DeepReader.Storage.Faster
                 {
                     var (foundTrx, transaction) =
                         await _transactionStore.TryGetTransactionTraceById(transactionId);
-                    if (foundTrx)
-                        block.Transactions[Array.IndexOf(block.TransactionIds, transactionId)] = transaction;
-
-                    if (foundTrx && includeActionTraces && transaction.ActionTraces.Length == 0) // if length != 0 values are already loaded and referenced
+                    var index = 0;
+                    if (foundTrx && (index = Array.IndexOf(block.TransactionIds, transactionId)) >= 0)
+                        block.Transactions[index] = transaction;
+                });
+            }
+            if (found && includeActionTraces && block.Transactions?.FirstOrDefault()?.ActionTraces.Length == 0) // if length != 0 values are already loaded and referenced
+            {
+                await Parallel.ForEachAsync(block.Transactions, _parallelOptions, async (transaction, _) =>
+                {
+                    if(transaction != null)
                     {
-                        transaction.ActionTraces = new ActionTrace[transaction.ActionTraces.Length];
+                        transaction.ActionTraces = new ActionTrace[transaction.ActionTraceIds.Length];
                         // not sure if this is clever or over-parallelized
                         await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
                         {
-                            var (foundTrx, action) =
+                            var (found, action) =
                                 await _actionTraceStore.TryGetActionTraceById(actionTraceId);
-                            if (foundTrx)
-                                transaction.ActionTraces[Array.IndexOf(transaction.ActionTraceIds, actionTraceId)] = action;
+                            var index = 0;
+                            try
+                            {
+                                if (found && (index = Array.IndexOf(transaction.ActionTraceIds, actionTraceId)) >= 0)
+                                    transaction.ActionTraces[index] = action;
+                            }
+                            catch (Exception ex)
+                            {
+                                string test = index.ToString();
+                                string a = transaction.ActionTraces.Length.ToString();
+                            }
                         });
                     }
                 });

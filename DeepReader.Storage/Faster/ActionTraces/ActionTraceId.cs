@@ -12,11 +12,6 @@ namespace DeepReader.Storage.Faster.ActionTraces
     {
         public ulong GlobalSequence = 0;
 
-        public ActionTraceId()
-        {
-
-        }
-
         public ActionTraceId(ulong globalSequence)
         {
             GlobalSequence = globalSequence;

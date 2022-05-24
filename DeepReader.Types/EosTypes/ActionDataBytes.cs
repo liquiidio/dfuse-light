@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace DeepReader.Types.EosTypes;
 
 /// <summary>
@@ -36,6 +38,6 @@ public class ActionDataBytes : Bytes<object>
 
     }
 
-    public string Json { get; set; } // TODO
+    public JsonElement? Json { get; set; } // TODO
     public string Hex { get; set; } // TODO
 }

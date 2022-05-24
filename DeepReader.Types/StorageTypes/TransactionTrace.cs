@@ -55,7 +55,7 @@ public class TransactionTrace
         obj.Receipt = TransactionReceiptHeader.ReadFromBinaryReader(reader);
 
         obj.ActionTraceIds = new ulong[reader.ReadInt32()];
-        for (int i = 0; i < obj.ActionTraces.Length; i++)
+        for (int i = 0; i < obj.ActionTraceIds.Length; i++)
         {
             obj.ActionTraceIds[i] = reader.ReadUInt64();
         }
