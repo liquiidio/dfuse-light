@@ -40,6 +40,9 @@ namespace DeepReader.Apis.Other
 
         public static async Task DeserializeAction(ActionTrace actionTrace, IStorageAdapter storage)
         {
+            if (actionTrace.Act.Data.Json != null) // Don't do the same job twice
+                return;
+
             string clrTypename = "";
             string actName = "";
             try

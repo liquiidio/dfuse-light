@@ -579,6 +579,14 @@ namespace DeepReader.AssemblyGenerator
             { "block_header", typeof(BlockHeader) },
         };
 
+        // setaccountcpu
+        // setaccountnet
+        // setaccountram ?
+
+        // cpu_weight
+        // net_weight
+        // ram_bytes
+
         #endregion
 
         #region IEosioSerializable Methods
