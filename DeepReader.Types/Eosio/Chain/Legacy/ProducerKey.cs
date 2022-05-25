@@ -8,8 +8,8 @@ namespace DeepReader.Types.Eosio.Chain.Legacy;
 /// </summary>
 public class ProducerKey : IEosioSerializable<ProducerKey>
 {
-    public Name AccountName;
-    public PublicKey BlockSigningKey;//ecc.PublicKey
+    public Name AccountName { get; set; }
+    public PublicKey BlockSigningKey { get; set; }//ecc.PublicKey
 
     // TODO mandel 3.0 release will allow multiple keys and therefore will be an array,
     // current EOS and mandel have a single key instead. Probably a case for build-variable dependant builds (DEFINES injected at build time etc.?!)

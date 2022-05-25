@@ -1,6 +1,5 @@
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
-using DeepReader.Types.Fc;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -9,13 +8,13 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class ActionReceipt : IEosioSerializable<ActionReceipt>
 {
-    public Name Receiver;
-    public Checksum256 ActionDigest;
-    public ulong GlobalSequence;
-    public ulong ReceiveSequence;
-    public TransactionTraceAuthSequence[] AuthSequence;
-    public uint CodeSequence;
-    public uint AbiSequence;
+    public Name Receiver { get; set; }
+    public Checksum256 ActionDigest { get; set; }
+    public ulong GlobalSequence { get; set; }
+    public ulong ReceiveSequence { get; set; }
+    public TransactionTraceAuthSequence[] AuthSequence { get; set; }
+    public uint CodeSequence { get; set; }
+    public uint AbiSequence { get; set; }
 
     public ActionReceipt(BinaryReader reader)
     {

@@ -7,8 +7,8 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class ProducerSchedule : IEosioSerializable<ProducerSchedule>
 {
-    public uint Version;//uint32
-    public ProducerKey[] Producers;//[]*ProducerKey
+    public uint Version { get; set; }//uint32
+    public ProducerKey[] Producers { get; set; }//[]*ProducerKey
 
     public ProducerSchedule(BinaryReader reader)
     {
