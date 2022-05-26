@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Helpers;
 
@@ -51,11 +52,9 @@ public class SerializationHelper
         return arr;
     }
 
-    public static Name CharSpanToName(ReadOnlySpan<char> chars)
+    public static Name CharSpanToName(ReadOnlySpan<char> nameChars)
     {
-        var name = chars.ToString();
-        var nameBytes = SerializationHelper.NameToBytes(name);
-        return new Name(BitConverter.ToUInt64(nameBytes), name, nameBytes);
+        return NameCache.GetOrCreate(nameChars.ToString());
     }
 
     public static int GetHexVal(char hex)

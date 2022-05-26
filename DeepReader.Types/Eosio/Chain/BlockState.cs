@@ -7,9 +7,8 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class BlockState : BlockHeaderState, IEosioSerializable<BlockState>
 {
-    [SortOrder(15)]
     public SignedBlock? Block;
-    [SortOrder(16)]
+
     public bool Validated;
 
     public BlockState(BinaryReader reader) : base(reader)

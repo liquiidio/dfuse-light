@@ -8,30 +8,30 @@ using Serilog;
 
 namespace DeepReader.Storage.Faster.ActionTraces
 {
-    public class ActionTraceStore
+    public sealed class ActionTraceStore
     {
         private readonly FasterKV<ActionTraceId, ActionTrace> _store;
 
         private readonly ClientSession<ActionTraceId, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions> _actionTraceReaderSession;
         private readonly ClientSession<ActionTraceId, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions> _actionTraceWriterSession;
 
-        private FasterStorageOptions _options;
+        private readonly FasterStorageOptions _options;
 
-        private ITopicEventSender _eventSender;
+        private readonly ITopicEventSender _eventSender;
 
-        private static readonly Histogram _writingActionTraceDurationHistogram =
+        private static readonly Histogram WritingActionTraceDurationHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_write_action_trace_duration", "Histogram of time to store actionTraces to Faster");
-        private static readonly Histogram _storeLogMemorySizeBytesHistogram =
+        private static readonly Histogram StoreLogMemorySizeBytesHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_action_trace_store_log_memory_size_bytes", "Histogram of the faster actionTrace store log memory size in bytes");
-        private static readonly Histogram _storeReadCacheMemorySizeBytesHistogram =
+        private static readonly Histogram StoreReadCacheMemorySizeBytesHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_action_trace_store_read_cache_memory_size_bytes", "Histogram of the faster actionTrace store read cache memory size in bytes");
-        private static readonly Histogram _storeEntryCountHistogram =
+        private static readonly Histogram StoreEntryCountHistogram =
            Metrics.CreateHistogram("deepreader_storage_faster_action_trace_store_read_cache_memory_size_bytes", "Histogram of the faster actionTrace store entry count");
-        private static readonly Histogram _storeTakeFullCheckpointDurationHistogram =
+        private static readonly Histogram StoreTakeFullCheckpointDurationHistogram =
           Metrics.CreateHistogram("deepreader_storage_faster_action_trace_store_take_full_checkpoint_duration", "Histogram of time to take a full checkpoint of faster actionTrace store");
-        private static readonly Histogram _storeFlushAndEvictLogDurationHistogram =
+        private static readonly Histogram StoreFlushAndEvictLogDurationHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_action_trace_store_log_flush_and_evict_duration", "Histogram of time to flush and evict faster actionTrace store");
-        private static readonly Histogram _actionTraceReaderSessionReadDurationHistogram =
+        private static readonly Histogram ActionTraceReaderSessionReadDurationHistogram =
           Metrics.CreateHistogram("deepreader_storage_faster_action_trace_get_by_id_duration", "Histogram of time to try get actionTrace trace by id");
 
         public ActionTraceStore(FasterStorageOptions options, ITopicEventSender eventSender)
@@ -109,10 +109,10 @@ namespace DeepReader.Storage.Faster.ActionTraces
             _actionTraceReaderSession ??=
                 _store.For(new ActionTraceFunctions()).NewSession<ActionTraceFunctions>("ActionTraceReaderSession");
 
-            _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
+            StoreLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
             if (options.UseReadCache)
-                _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
-            _storeEntryCountHistogram.Observe(_store.EntryCount);
+                StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
+            StoreEntryCountHistogram.Observe(_store.EntryCount);
 
             // TODO, for some reason I need to manually call the Init
             SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
@@ -126,7 +126,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
 
             await _eventSender.SendAsync("ActionTraceAdded", actionTrace);
 
-            using (_writingActionTraceDurationHistogram.NewTimer())
+            using (WritingActionTraceDurationHistogram.NewTimer())
             {
                 var result = await _actionTraceWriterSession.UpsertAsync(ref actionTraceId, ref actionTrace);
                 while (result.Status.IsPending)
@@ -137,7 +137,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
 
         public async Task<(bool, ActionTrace)> TryGetActionTraceById(ulong globalSequence)
         {
-            using (_actionTraceReaderSessionReadDurationHistogram.NewTimer())
+            using (ActionTraceReaderSessionReadDurationHistogram.NewTimer())
             {
                 var (status, output) = (await _actionTraceReaderSession.ReadAsync(new ActionTraceId(globalSequence))).Complete();
                 return (status.Found, output.Value);
@@ -159,9 +159,9 @@ namespace DeepReader.Storage.Faster.ActionTraces
                     //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                     // Take index + log checkpoint (longer time)
-                    using (_storeTakeFullCheckpointDurationHistogram.NewTimer())
+                    using (StoreTakeFullCheckpointDurationHistogram.NewTimer())
                         _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                    using (_storeFlushAndEvictLogDurationHistogram.NewTimer())
+                    using (StoreFlushAndEvictLogDurationHistogram.NewTimer())
                         _store.Log.FlushAndEvict(true);
                 }
                 catch (Exception ex)

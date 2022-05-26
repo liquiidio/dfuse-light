@@ -8,7 +8,7 @@ using Microsoft.VisualBasic.CompilerServices;
 
 namespace DeepReader.Storage.Faster.Transactions
 {
-    public class TransactionId : IFasterEqualityComparer<TransactionId>
+    public sealed class TransactionId : IFasterEqualityComparer<TransactionId>
     {
         public Types.Eosio.Chain.TransactionId Id = Types.Eosio.Chain.TransactionId.TypeEmpty;
 

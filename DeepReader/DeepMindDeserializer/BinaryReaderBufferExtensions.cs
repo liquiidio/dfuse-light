@@ -226,12 +226,6 @@ public static class BinaryBufferReaderExtensions
         return NameCache.GetOrCreate(reader.ReadUInt64());
     }
 
-    public static string ReadString(this BinaryBufferReader reader)
-    {
-        var length = Convert.ToInt32(reader.ReadVarLength<int>());
-        return length > 0 ? Encoding.UTF8.GetString(reader.ReadBytes(length)) : string.Empty;
-    }
-
     public static Bytes ReadBytes(this BinaryBufferReader reader)
     {
         var length = Convert.ToInt32(reader.ReadVarUint32());
@@ -442,27 +436,5 @@ public static class BinaryBufferReaderExtensions
         result |= (ulong)byteReadJustNow << maxBytesWithoutOverflow * 7;
         return (long)result;
 
-    }
-
-    public static T ReadVarLength<T>(this BinaryBufferReader reader)
-    {
-        return (T)reader.ReadVarLength(typeof(T));
-    }
-
-    public static object ReadVarLength(this BinaryBufferReader reader, Type type)
-    {
-        if (type == CommonTypes.TypeOfShort)
-            return reader.ReadVarInt16();
-        else if (type == CommonTypes.TypeOfUshort)
-            return reader.ReadVarUint16();
-        else if (type == CommonTypes.TypeOfInt)
-            return reader.ReadVarInt32();
-        else if (type == CommonTypes.TypeOfUint)
-            return reader.ReadVarUint32();
-        else if (type == CommonTypes.TypeOfLong)
-            return reader.ReadVarInt64();
-        else if (type == CommonTypes.TypeOfUlong)
-            return reader.ReadVarUint64();
-        return null;
     }
 }

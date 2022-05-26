@@ -2,7 +2,7 @@
 
 namespace DeepReader.Storage.Faster.ActionTraces;
 
-public class ActionTraceIdSerializer : BinaryObjectSerializer<ActionTraceId>
+public sealed class ActionTraceIdSerializer : BinaryObjectSerializer<ActionTraceId>
 {
     public override void Deserialize(out ActionTraceId obj)
     {

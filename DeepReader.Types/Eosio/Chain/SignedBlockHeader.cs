@@ -9,7 +9,6 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class SignedBlockHeader : BlockHeader, IEosioSerializable<SignedBlockHeader>
 {
-    [SortOrder(10)]
     public Signature ProducerSignature;// ecc.Signature // no pointer!!
 
     public SignedBlockHeader(BinaryReader reader) : base(reader)

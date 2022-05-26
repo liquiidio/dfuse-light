@@ -3,7 +3,7 @@ using FASTER.core;
 
 namespace DeepReader.Storage.Faster.Blocks;
 
-public class BlockValueSerializer : BinaryObjectSerializer<Block>
+public sealed class BlockValueSerializer : BinaryObjectSerializer<Block>
 {
     public override void Deserialize(out Block obj)
     {

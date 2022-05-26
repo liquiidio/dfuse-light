@@ -12,6 +12,8 @@ namespace DeepReader.Options
         public int DlogReaderBlockQueueSize { get; set; }
         public int FlatteningMaxDegreeOfParallelism { get; set; }
         public int DlogParserTasks { get; set; }
+
+        public int BlockProcessingTasks { get; set; }
         public bool FilterEmptyTransactions { get; set; } = true;
 
         public Filter Filter { get; set; }

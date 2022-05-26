@@ -10,10 +10,8 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class SignedTransaction : Transaction, IEosioSerializable<SignedTransaction>
 {
-    [SortOrder(10)]
     public Signature[] Signatures;
 
-    [SortOrder(11)]
     public Bytes[] ContextFreeData; //< for each context-free action, there is an entry here
 
     public SignedTransaction(BinaryReader reader) : base(reader)

@@ -12,7 +12,7 @@ using System.Reflection;
 
 namespace DeepReader.Storage.Faster
 {
-    internal class FasterStorage : IStorageAdapter
+    internal sealed class FasterStorage : IStorageAdapter
     {
         private readonly BlockStore _blockStore;
         private readonly TransactionStore _transactionStore;
@@ -21,7 +21,7 @@ namespace DeepReader.Storage.Faster
 
         private FasterStorageOptions _fasterStorageOptions;
 
-        private ParallelOptions _parallelOptions;
+        private readonly ParallelOptions _parallelOptions;
 
         public FasterStorage(IOptionsMonitor<FasterStorageOptions> storageOptionsMonitor, ITopicEventSender eventSender)
         {
@@ -32,7 +32,7 @@ namespace DeepReader.Storage.Faster
             _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender);
             _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender);
 
-            _parallelOptions = new()
+            _parallelOptions = new ParallelOptions
             {
                 MaxDegreeOfParallelism = 6 // TODO, put in config with reasonable name
             };
@@ -70,7 +70,7 @@ namespace DeepReader.Storage.Faster
                 {
                     var (foundTrx, transaction) =
                         await _transactionStore.TryGetTransactionTraceById(transactionId);
-                    var index = 0;
+                    int index;
                     if (foundTrx && (index = Array.IndexOf(block.TransactionIds, transactionId)) >= 0)
                         block.Transactions[index] = transaction;
                 });
@@ -79,27 +79,16 @@ namespace DeepReader.Storage.Faster
             {
                 await Parallel.ForEachAsync(block.Transactions, _parallelOptions, async (transaction, _) =>
                 {
-                    if(transaction != null)
+                    transaction.ActionTraces = new ActionTrace[transaction.ActionTraceIds.Length];
+                    // not sure if this is clever or over-parallelized
+                    await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
                     {
-                        transaction.ActionTraces = new ActionTrace[transaction.ActionTraceIds.Length];
-                        // not sure if this is clever or over-parallelized
-                        await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
-                        {
-                            var (found, action) =
-                                await _actionTraceStore.TryGetActionTraceById(actionTraceId);
-                            var index = 0;
-                            try
-                            {
-                                if (found && (index = Array.IndexOf(transaction.ActionTraceIds, actionTraceId)) >= 0)
-                                    transaction.ActionTraces[index] = action;
-                            }
-                            catch (Exception ex)
-                            {
-                                string test = index.ToString();
-                                string a = transaction.ActionTraces.Length.ToString();
-                            }
-                        });
-                    }
+                        var (foundAct, action) =
+                            await _actionTraceStore.TryGetActionTraceById(actionTraceId);
+                        int index;
+                        if (foundAct && (index = Array.IndexOf(transaction.ActionTraceIds, actionTraceId)) >= 0)
+                            transaction.ActionTraces[index] = action;
+                    });
                 });
             }
             return (found, block);

@@ -9,23 +9,22 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class BlockHeader : IEosioSerializable<BlockHeader>
 {
-    [SortOrder(1)]
     public Timestamp Timestamp;
-    [SortOrder(2)]
+
     public Name Producer;
-    [SortOrder(3)]
+
     public ushort Confirmed;
-    [SortOrder(4)]
+
     public Checksum256 Previous;
-    [SortOrder(5)]
+
     public Checksum256 TransactionMroot;
-    [SortOrder(6)]
+
     public Checksum256 ActionMroot;
-    [SortOrder(7)]
+
     public uint ScheduleVersion;
-    [SortOrder(8)]
+
     public ProducerSchedule? NewProducers;
-    [SortOrder(9)]
+
     public Extension[] HeaderExtensions;
 
     public BlockHeader(BinaryReader reader)

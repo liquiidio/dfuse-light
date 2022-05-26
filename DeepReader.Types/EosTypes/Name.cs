@@ -13,17 +13,42 @@ public class Name : BinaryType
 
     private ulong? _intVal;
 
-    public Name(ulong intVal, byte[] binary)
+    public Name()
+    {
+
+    }
+
+    //public Name(ulong intVal, byte[] binary)
+    //{
+    //    _intVal = intVal;
+    //    Binary = binary;
+    //}
+
+    //public Name(ulong intVal, string stringVal, byte[] binary)
+    //{
+    //    _intVal = intVal;
+    //    _stringVal = stringVal;
+    //    Binary = binary;
+    //}
+
+    public void Set(ulong intVal, byte[] binary)
     {
         _intVal = intVal;
         Binary = binary;
     }
 
-    public Name(ulong intVal, string stringVal, byte[] binary)
+    public void Set(ulong intVal, string stringVal, byte[] binary)
     {
         _intVal = intVal;
         _stringVal = stringVal;
         Binary = binary;
+    }
+
+    public void Clear()
+    {
+        _intVal = 0;
+        _stringVal = null;
+        Binary = Array.Empty<byte>();
     }
 
     public string StringVal 
@@ -50,7 +75,9 @@ public class Name : BinaryType
 
     public static implicit operator Name(string value)
     {
-        return new Name(0, value, Array.Empty<byte>()); // TODO ?
+        var name = new Name();
+        name.Set(0, value, Array.Empty<byte>());
+        return name;
     }
 
     public override bool Equals(object? obj)
@@ -103,5 +130,10 @@ public class Name : BinaryType
 
     public static readonly Name TypeEmpty = NameCache.GetOrCreate(0);
 
-    public static readonly Name TypeWildcard = new(0, "*", Array.Empty<byte>());
+    public static readonly Name TypeWildcard = new()
+    {
+        _intVal = 0,
+        _stringVal = "*",
+        Binary = new byte[8]
+    };
 }

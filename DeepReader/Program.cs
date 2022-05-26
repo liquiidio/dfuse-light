@@ -5,6 +5,7 @@ using DeepReader.Apis.REST;
 using DeepReader.Classes;
 using DeepReader.HostedServices;
 using DeepReader.Options;
+using DeepReader.Pools;
 using DeepReader.Storage.Faster;
 using DeepReader.Types;
 using KGySoft.CoreLibraries;
@@ -22,11 +23,13 @@ var host = Host.CreateDefaultBuilder(args)
         services.Configure<MindReaderOptions>(config =>
             hostContext.Configuration.GetSection("MindReaderOptions").Bind(config));
 
-        services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();// TODO inject max objects ?
+        services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
         services.AddSingleton(serviceProvider => serviceProvider.GetRequiredService<ObjectPoolProvider>()
             .Create(new BlockSegmentListPooledObjectPolicy(Convert.ToInt32(hostContext.Configuration.GetSection("DeepReaderOptions")["DlogBlockSegmentListSize"]))));
         services.AddSingleton(serviceProvider => serviceProvider.GetRequiredService<ObjectPoolProvider>()
             .Create(new BlockPooledObjectPolicy()));
+        services.AddSingleton(serviceProvider => serviceProvider.GetRequiredService<ObjectPoolProvider>()
+            .Create(new ActionTraceListPooledObjectPolicy()));
 
         //services.AddSingleton(Channel.CreateBounded<List<IList<StringSegment>>>(
         //    new BoundedChannelOptions(
@@ -38,7 +41,7 @@ var host = Host.CreateDefaultBuilder(args)
         // Inject BlockSegment-Channel
         services.AddSingleton(
             Channel.CreateUnbounded<List<IList<StringSegment>>>(
-                new UnboundedChannelOptions() {SingleReader = false, SingleWriter = true,}));
+                new UnboundedChannelOptions() {SingleReader = false, SingleWriter = true}));
         services.AddSingleton(svc => svc.GetRequiredService<Channel<List<IList<StringSegment>>>>().Reader);
         services.AddSingleton(svc => svc.GetRequiredService<Channel<List<IList<StringSegment>>>>().Writer);
 

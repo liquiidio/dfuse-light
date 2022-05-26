@@ -9,7 +9,7 @@ using Microsoft.VisualBasic.CompilerServices;
 
 namespace DeepReader.Storage.Faster.Abis
 {
-    public class AbiId : IFasterEqualityComparer<AbiId>
+    public sealed class AbiId : IFasterEqualityComparer<AbiId>
     {
         public ulong Id;
 

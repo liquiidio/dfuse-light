@@ -7,7 +7,6 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class TransactionReceipt : TransactionReceiptHeader, IEosioSerializable<TransactionReceipt>
 {
-    [SortOrder(4)]
     public TransactionVariant Trx;
 
     public TransactionReceipt(BinaryReader reader) : base(reader)

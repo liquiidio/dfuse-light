@@ -2,7 +2,7 @@
 
 namespace DeepReader.Storage.Faster.Blocks
 {
-    public class BlockId : IFasterEqualityComparer<BlockId>
+    public sealed class BlockId : IFasterEqualityComparer<BlockId>
     {
         public long Id;
 

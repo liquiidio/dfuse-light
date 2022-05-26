@@ -7,9 +7,8 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class SignedBlock : SignedBlockHeader, IEosioSerializable<SignedBlock>
 {
-    [SortOrder(11)]
     public TransactionReceipt[] Transactions;
-    [SortOrder(12)]
+
     public Extension[] BlockExtensions;
 
     public SignedBlock(BinaryReader reader) : base(reader)

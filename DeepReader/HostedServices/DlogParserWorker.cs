@@ -67,6 +67,7 @@ public class DlogParserWorker : BackgroundService
 
     private async Task ConsumeQueue(CancellationToken cancellationToken, int i)
     {
+        var block = _blockPool.Get();
         Thread.CurrentThread.Name = $"ConsumeQueue {i}";
         ParseCtx ctx = new(_abiDecoder);
         await foreach (var logs in _blockSegmentsListChannel.ReadAllAsync(cancellationToken))
@@ -140,15 +141,17 @@ public class DlogParserWorker : BackgroundService
                             ctx.ReadRamCorrectionOp(data);
                             break;
                         case "ACCEPTED_BLOCK":
-                            var block = ctx.ReadAcceptedBlock(data, _blockPool);
-                            var blockWritten = _blocksChannel.TryWrite(block);
+                            block = _blockPool.Get();
+                            var acceptedBlock = ctx.ReadAcceptedBlock(data);
+                            var blockWritten = _blocksChannel.TryWrite(acceptedBlock);
                             while (!blockWritten)
                             {
                                 blockWritten = _blocksChannel.TryWrite(block);
                             }
                             break;
                         case "START_BLOCK":
-                            ctx.ReadStartBlock(data, _blockPool);
+                            block = _blockPool.Get();
+                            ctx.ReadStartBlock(data, block);
                             break;
                         case "FEATURE_OP":
                             switch ((string) data[2]!)
@@ -167,7 +170,9 @@ public class DlogParserWorker : BackgroundService
                             break;
                         case "SWITCH_FORK":
                             Log.Warning("fork signal, restarting state accumulation from beginning");
-                            ctx.ResetBlock(_blockPool, true);
+                            _blockPool.Return(block);
+                            block = _blockPool.Get();
+                            ctx.ResetBlock(block);
                             break;
                         case "ABIDUMP":
                             switch ((string) data[2]!)
@@ -196,6 +201,7 @@ public class DlogParserWorker : BackgroundService
             catch (Exception e)
             {
                 Log.Error(e, "");
+                _blockPool.Return(block);
             }
             finally
             {

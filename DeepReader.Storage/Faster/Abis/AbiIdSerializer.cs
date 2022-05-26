@@ -3,7 +3,7 @@ using FASTER.core;
 
 namespace DeepReader.Storage.Faster.Abis;
 
-public class AbiIdSerializer : BinaryObjectSerializer<AbiId>
+public sealed class AbiIdSerializer : BinaryObjectSerializer<AbiId>
 {
     public override void Deserialize(out AbiId obj)
     {

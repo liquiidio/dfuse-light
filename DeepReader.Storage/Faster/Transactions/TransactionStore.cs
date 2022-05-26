@@ -8,30 +8,30 @@ using Serilog;
 
 namespace DeepReader.Storage.Faster.Transactions
 {
-    public class TransactionStore
+    public sealed class TransactionStore
     {
         private readonly FasterKV<TransactionId, TransactionTrace> _store;
 
         private readonly ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionReaderSession;
         private readonly ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionWriterSession;
 
-        private FasterStorageOptions _options;
+        private readonly FasterStorageOptions _options;
 
-        private ITopicEventSender _eventSender;
+        private readonly ITopicEventSender _eventSender;
 
-        private static readonly Histogram _writingTransactionDurationHistogram =
+        private static readonly Histogram WritingTransactionDurationHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_write_transaction_duration", "Histogram of time to store transactions to Faster");
-        private static readonly Histogram _storeLogMemorySizeBytesHistogram =
+        private static readonly Histogram StoreLogMemorySizeBytesHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_log_memory_size_bytes", "Histogram of the faster transaction store log memory size in bytes");
-        private static readonly Histogram _storeReadCacheMemorySizeBytesHistogram =
+        private static readonly Histogram StoreReadCacheMemorySizeBytesHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Histogram of the faster transaction store read cache memory size in bytes");
-        private static readonly Histogram _storeEntryCountHistogram =
+        private static readonly Histogram StoreEntryCountHistogram =
            Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Histogram of the faster transaction store entry count");
-        private static readonly Histogram _storeTakeFullCheckpointDurationHistogram =
+        private static readonly Histogram StoreTakeFullCheckpointDurationHistogram =
           Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_take_full_checkpoint_duration", "Histogram of time to take a full checkpoint of faster transaction store");
-        private static readonly Histogram _storeFlushAndEvictLogDurationHistogram =
+        private static readonly Histogram StoreFlushAndEvictLogDurationHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_log_flush_and_evict_duration", "Histogram of time to flush and evict faster transaction store");
-        private static readonly Histogram _transactionReaderSessionReadDurationHistogram =
+        private static readonly Histogram TransactionReaderSessionReadDurationHistogram =
           Metrics.CreateHistogram("deepreader_storage_faster_transaction_get_by_id_duration", "Histogram of time to try get transaction trace by id");
 
         public TransactionStore(FasterStorageOptions options, ITopicEventSender eventSender)
@@ -109,10 +109,10 @@ namespace DeepReader.Storage.Faster.Transactions
             _transactionReaderSession ??=
                 _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionReaderSession");
 
-            _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
+            StoreLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
             if (options.UseReadCache)
-                _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
-            _storeEntryCountHistogram.Observe(_store.EntryCount);
+                StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
+            StoreEntryCountHistogram.Observe(_store.EntryCount);
 
             // TODO, for some reason I need to manually call the Init
             SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
@@ -126,7 +126,7 @@ namespace DeepReader.Storage.Faster.Transactions
 
             await _eventSender.SendAsync("TransactionAdded", transaction);
 
-            using (_writingTransactionDurationHistogram.NewTimer())
+            using (WritingTransactionDurationHistogram.NewTimer())
             {
                 var result = await _transactionWriterSession.UpsertAsync(ref transactionId, ref transaction);
                 while (result.Status.IsPending)
@@ -137,7 +137,7 @@ namespace DeepReader.Storage.Faster.Transactions
 
         public async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
         {
-            using (_transactionReaderSessionReadDurationHistogram.NewTimer())
+            using (TransactionReaderSessionReadDurationHistogram.NewTimer())
             {
                 var (status, output) = (await _transactionReaderSession.ReadAsync(new TransactionId(transactionId))).Complete();
                 return (status.Found, output.Value);
@@ -159,9 +159,9 @@ namespace DeepReader.Storage.Faster.Transactions
                     //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                     // Take index + log checkpoint (longer time)
-                    using (_storeTakeFullCheckpointDurationHistogram.NewTimer())
+                    using (StoreTakeFullCheckpointDurationHistogram.NewTimer())
                         _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                    using (_storeFlushAndEvictLogDurationHistogram.NewTimer())
+                    using (StoreFlushAndEvictLogDurationHistogram.NewTimer())
                         _store.Log.FlushAndEvict(true);
                 }
                 catch (Exception ex)

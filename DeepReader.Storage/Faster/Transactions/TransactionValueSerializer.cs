@@ -3,7 +3,7 @@ using FASTER.core;
 
 namespace DeepReader.Storage.Faster.Transactions;
 
-public class TransactionValueSerializer : BinaryObjectSerializer<TransactionTrace>
+public sealed class TransactionValueSerializer : BinaryObjectSerializer<TransactionTrace>
 {
     public override void Deserialize(out TransactionTrace obj)
     {

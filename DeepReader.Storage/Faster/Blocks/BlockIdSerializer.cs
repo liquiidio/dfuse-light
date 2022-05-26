@@ -2,7 +2,7 @@
 
 namespace DeepReader.Storage.Faster.Blocks;
 
-public class BlockIdSerializer : BinaryObjectSerializer<BlockId>
+public sealed class BlockIdSerializer : BinaryObjectSerializer<BlockId>
 {
     public override void Deserialize(out BlockId obj)
     {

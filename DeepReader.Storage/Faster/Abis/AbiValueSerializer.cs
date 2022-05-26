@@ -4,7 +4,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace DeepReader.Storage.Faster.Abis;
 
-public class AbiValueSerializer : BinaryObjectSerializer<AbiCacheItem>
+public sealed class AbiValueSerializer : BinaryObjectSerializer<AbiCacheItem>
 {
     public override void Deserialize(out AbiCacheItem obj)
     {

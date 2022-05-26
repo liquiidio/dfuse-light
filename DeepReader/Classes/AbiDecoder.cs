@@ -12,18 +12,7 @@ namespace DeepReader.Classes;
 
 public class AbiDecoder
 {
-    private IStorageAdapter _storageAdapter;
-
-    private int _activeBlockNum = 0;
-
-    private ulong _activeGlobalSequence = 0;
-
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
-    {
-        IncludeFields = true,
-        PropertyNameCaseInsensitive = true,
-    };
-
+    private readonly IStorageAdapter _storageAdapter;
 
     public AbiDecoder(IStorageAdapter storageAdapter)
     {
@@ -32,66 +21,74 @@ public class AbiDecoder
 
     public static void ProcessTransactionTrace(TransactionTrace trace)
     {
-        // TODO
+        // REMOVE
     }
 
-    public static async void ProcessSignedTransaction(SignedTransaction signedTransaction)
+    public static void ProcessSignedTransaction(SignedTransaction signedTransaction)
     {
-
+        // REMOVE
     }
 
     public static void StartBlock(long blockNum)
     {
-        // TODO
+        // REMOVE
     }
 
     public static void EndBlock(Block block)
     {
-        // TODO
+        // REMOVE
     }
 
     public static void ResetCache()
     {
-        // TODO
+        // REMOVE
     }
 
-    private ArrayPool<byte> ArrayPool = ArrayPool<byte>.Shared;
-    public void AddInitialAbi(ReadOnlySpan<char> contract, ReadOnlySpan<char> rawAbiBase64)
+    private readonly ArrayPool<byte> _arrayPool = ArrayPool<byte>.Shared;
+
+    public void AddInitialAbi(ReadOnlySpan<char> contract, ReadOnlySpan<char> rawAbiBase64, ulong globalSequence)
     {
-        var bytes = ArrayPool.Rent(rawAbiBase64.Length * 2);
-
-        if (Convert.TryFromBase64Chars(rawAbiBase64, bytes, out var bytesWritten))
+        var bytes = _arrayPool.Rent(rawAbiBase64.Length * 2);
+        try
         {
-            var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(bytes[Range.EndAt(bytesWritten)]);
-
-            var contractAccount = NameCache.GetOrCreate(contract.ToString());
-            AbiAssemblyGenerator abiAssemblyGenerator = new(abi, contractAccount, _activeGlobalSequence);
-            if (abiAssemblyGenerator.TryGenerateAssembly(out var abiAssembly))
+            if (Convert.TryFromBase64Chars(rawAbiBase64, bytes, out var bytesWritten))
             {
-                _storageAdapter.UpsertAbi(contractAccount, _activeGlobalSequence, abiAssembly!);
+                var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(bytes[Range.EndAt(bytesWritten)]);
 
-                Log.Information($"Deserialized Abi for {contractAccount.StringVal}");
+                var contractAccount = NameCache.GetOrCreate(contract.ToString());
+                AbiAssemblyGenerator abiAssemblyGenerator = new(abi, contractAccount, globalSequence);
+                if (abiAssemblyGenerator.TryGenerateAssembly(out var abiAssembly))
+                {
+                    _storageAdapter.UpsertAbi(contractAccount, globalSequence, abiAssembly!);
+
+                    Log.Information($"Deserialized Abi for {contractAccount.StringVal}");
+                }
+                else
+                    Log.Warning($"Deserialization of Abi for {contractAccount} failed");
             }
             else
-                Log.Warning($"Deserialization of Abi for {contractAccount} failed");
+            {
+                Console.WriteLine($"base64chars to byte-array of Abi for {contract} failed");
+            }
         }
-        else
+        catch (Exception e)
         {
-            Console.WriteLine($"base64chars to byte-array of Abi for {contract} failed");
+            Console.WriteLine(e);
         }
-        ArrayPool.Return(bytes);
+        finally
+        {
+            _arrayPool.Return(bytes);
+        }
     }
 
     public void AddAbi(Name contractAccount, byte[] bytes, ulong globalSequence)
     {
-        _activeGlobalSequence = globalSequence;
-
         var abi = DeepMindDeserializer.DeepMindDeserializer.Deserialize<Abi>(bytes);
 
-        AbiAssemblyGenerator abiAssemblyGenerator = new(abi, contractAccount, _activeGlobalSequence);
+        AbiAssemblyGenerator abiAssemblyGenerator = new(abi, contractAccount, globalSequence);
         if (abiAssemblyGenerator.TryGenerateAssembly(out var abiAssembly))
         {
-            _storageAdapter.UpsertAbi(contractAccount, _activeGlobalSequence, abiAssembly!);
+            _storageAdapter.UpsertAbi(contractAccount, globalSequence, abiAssembly!);
 
             Log.Information($"Deserialized Abi for {contractAccount.StringVal}");
         }
@@ -101,13 +98,11 @@ public class AbiDecoder
 
     internal void AbiDumpStart(int blockNum, ulong globalSequence)
     {
-        _activeBlockNum = blockNum;
-        _activeGlobalSequence = globalSequence;
+        // REMOVE
     }
 
     internal void AbiDumpEnd()
     {
-        _activeBlockNum = 0;
-        _activeGlobalSequence = 0;
+        // REMOVE
     }
 }

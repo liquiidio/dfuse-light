@@ -8,7 +8,7 @@ using Microsoft.VisualBasic.CompilerServices;
 
 namespace DeepReader.Storage.Faster.ActionTraces
 {
-    public class ActionTraceId : IFasterEqualityComparer<ActionTraceId>
+    public sealed class ActionTraceId : IFasterEqualityComparer<ActionTraceId>
     {
         public ulong GlobalSequence = 0;
 

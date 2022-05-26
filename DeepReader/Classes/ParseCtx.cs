@@ -54,20 +54,10 @@ public class ParseCtx
         _abiDecoder = abiDecoder;
     }
 
-    public void ResetBlock(ObjectPool<Block> blockPool, bool returnBlock)
+    public void ResetBlock(Block? block)
 	{
-		// The nodeos bootstrap phase at chain initialization happens before the first block is ever
-		// produced. As such, those operations needs to be attached to initial block. Hence, let's
-		// reset recorded ops only if a block existed previously.
-		if (_activeBlockNum != 0)
-        {
-            ResetTrx();
-        }
-
-        if(returnBlock)
-            blockPool.Return(_block);
-
-        _block = blockPool.Get();
+        ResetTrx();
+        _block = block;
     }
 
 	public void ResetTrx()
@@ -261,7 +251,7 @@ public class ParseCtx
 
 	// Line format:
 	//   START_BLOCK ${block_num}
-    public void ReadStartBlock(in IList<StringSegment> chunks, ObjectPool<Block> blockPool)
+    public void ReadStartBlock(in IList<StringSegment> chunks, Block block)
     {
         if (chunks.Count != 3)
         {
@@ -270,7 +260,7 @@ public class ParseCtx
 
         var blockNum = Int64.Parse(chunks[2].AsSpan);
 
-        ResetBlock(blockPool, false);// TODO either ResetBlock in ReadAcceptedBlock or in ReadStartBlock is unnecessary
+        ResetBlock(block); // empty block from blockpool set to _block
         _activeBlockNum = blockNum;
 
         AbiDecoder.StartBlock(blockNum);
@@ -284,7 +274,7 @@ public class ParseCtx
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
 
-    public Block ReadAcceptedBlock(in IList<StringSegment> chunks, ObjectPool<Block> blockPool) {
+    public Block ReadAcceptedBlock(in IList<StringSegment> chunks) {
         if (chunks.Count != 4)
         {
             throw new Exception($"expected 4 fields, got {chunks.Count}");
@@ -406,9 +396,10 @@ public class ParseCtx
 //	        zlog.Debug("blocking until abi decoder has decoded every transaction pushed to it")
 
         AbiDecoder.EndBlock(_block);
-        var block = _block;
-        ResetBlock(blockPool, false);// TODO either ResetBlock in ReadAcceptedBlock or in ReadStartBlock is unnecessary
-        return block;
+        // _block becomes block, acceptedBlock is returned and added to the queue and after PostProcessing returned to the BlockPool
+        var acceptedBlock = _block;
+        ResetBlock(null);
+        return acceptedBlock;
     }
 
     //private PendingProducerSchedule PendingScheduleToDEOS(PendingSchedule blockStatePendingSchedule)
@@ -925,6 +916,7 @@ public class ParseCtx
     //
     //  Version 13
     //    ABIDUMP START ${block_num} ${global_sequence_num}
+    private ulong _tempGlobalSequence = 0;
     public void ReadAbiStart(in IList<StringSegment> chunks)
     {
         // RANGE 3!
@@ -935,12 +927,12 @@ public class ParseCtx
                 var blockNum = Int32.Parse(chunks[3].AsSpan);
                 var globalSequence = UInt64.Parse(chunks[4].AsSpan);
                 _abiDecoder.AbiDumpStart(blockNum, globalSequence);
+                _tempGlobalSequence = globalSequence;
                 Log.Information($"read ABI start marker: block_num {blockNum} global_sequence {globalSequence}");
                 break;
             default:
                 throw new Exception($"expected to have either {{3}} or {{5}} fields, got {chunks.Count}");
             }
-        //AbiDecoder.ResetCache();
     }
 
     // Line format:
@@ -970,7 +962,7 @@ public class ParseCtx
             Log.Information($"read initial ABI for contract {contract}");
         }
 
-        _abiDecoder.AddInitialAbi(contract, rawAbi);
+        _abiDecoder.AddInitialAbi(contract, rawAbi, _tempGlobalSequence);
     }
 
     // Line format:

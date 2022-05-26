@@ -8,30 +8,30 @@ using Serilog;
 
 namespace DeepReader.Storage.Faster.Blocks
 {
-    public class BlockStore
+    public sealed class BlockStore
     {
         private readonly FasterKV<BlockId, Block> _store;
 
         private readonly ClientSession<BlockId, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockWriterSession;
         private readonly ClientSession<BlockId, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockReaderSession;
 
-        private FasterStorageOptions _options;
+        private readonly FasterStorageOptions _options;
 
-        private ITopicEventSender _eventSender;
+        private readonly ITopicEventSender _eventSender;
 
         private static readonly Histogram WritingBlockDuration =
             Metrics.CreateHistogram("deepreader_storage_faster_write_block_duration", "Histogram of time to store blocks to Faster");
-        private static readonly Histogram _storeLogMemorySizeBytesHistogram =
+        private static readonly Histogram StoreLogMemorySizeBytesHistogram =
            Metrics.CreateHistogram("deepreader_storage_faster_block_store_log_memory_size_bytes", "Histogram of the faster block store log memory size in bytes");
-        private static readonly Histogram _storeReadCacheMemorySizeBytesHistogram =
+        private static readonly Histogram StoreReadCacheMemorySizeBytesHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_block_store_read_cache_memory_size_bytes", "Histogram of the faster block store read cache memory size in bytes");
-        private static readonly Histogram _storeEntryCountHistogram =
+        private static readonly Histogram StoreEntryCountHistogram =
            Metrics.CreateHistogram("deepreader_storage_faster_block_store_read_cache_memory_size_bytes", "Histogram of the faster block store entry count");
-        private static readonly Histogram _storeTakeFullCheckpointDurationHistogram =
+        private static readonly Histogram StoreTakeFullCheckpointDurationHistogram =
            Metrics.CreateHistogram("deepreader_storage_faster_block_store_take_full_checkpoint_duration", "Histogram of time to take a full checkpoint of faster block store");
-        private static readonly Histogram _storeFlushAndEvictLogDurationHistogram =
+        private static readonly Histogram StoreFlushAndEvictLogDurationHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_block_store_log_flush_and_evict_duration", "Histogram of time to flush and evict faster block store");
-        private static readonly Histogram _blockReaderSessionReadDurationHistogram =
+        private static readonly Histogram BlockReaderSessionReadDurationHistogram =
           Metrics.CreateHistogram("deepreader_storage_faster_block_get_by_id_duration", "Histogram of time to try get block by id");
 
         public BlockStore(FasterStorageOptions options, ITopicEventSender eventSender)
@@ -111,10 +111,10 @@ namespace DeepReader.Storage.Faster.Blocks
             _blockReaderSession ??=
                 _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockReaderSession");
 
-            _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
+            StoreLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
             if(options.UseReadCache)
-                _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);// must be optional
-            _storeEntryCountHistogram.Observe(_store.EntryCount);
+                StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);// must be optional
+            StoreEntryCountHistogram.Observe(_store.EntryCount);
 
             //            _store.Log.SubscribeEvictions(new BlockEvictionObserver());
 
@@ -141,7 +141,7 @@ namespace DeepReader.Storage.Faster.Blocks
 
         public async Task<(bool, Block)> TryGetBlockById(uint blockNum)
         {
-            using (_blockReaderSessionReadDurationHistogram.NewTimer())
+            using (BlockReaderSessionReadDurationHistogram.NewTimer())
             {
                 var (status, output) = (await _blockReaderSession.ReadAsync(new BlockId(blockNum))).Complete();
                 return (status.Found, output.Value);
@@ -163,9 +163,9 @@ namespace DeepReader.Storage.Faster.Blocks
                     //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                     // Take index + log checkpoint (longer time)
-                    using (_storeTakeFullCheckpointDurationHistogram.NewTimer())
+                    using (StoreTakeFullCheckpointDurationHistogram.NewTimer())
                         _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                    using (_storeFlushAndEvictLogDurationHistogram.NewTimer())
+                    using (StoreFlushAndEvictLogDurationHistogram.NewTimer())
                         _store.Log.FlushAndEvict(true);
                 }
                 catch (Exception ex)

@@ -12,15 +12,14 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class BlockHeaderState : BlockHeaderStateCommon, IEosioSerializable<BlockHeaderState>
 {
-    [SortOrder(10)]
     public Checksum256 Id;
-    [SortOrder(11)]
+
     public SignedBlockHeader Header;
-    [SortOrder(12)]
+
     public ScheduleInfo PendingSchedule;
-    [SortOrder(13)]
+
     public ProtocolFeatureActivationSet? ActivatedProtocolFeatures;
-    [SortOrder(14)]
+
     public Signature[] AdditionalSignatures;
 
     public BlockHeaderState(BinaryReader reader)
