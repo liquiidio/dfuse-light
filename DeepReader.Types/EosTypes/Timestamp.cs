@@ -5,7 +5,7 @@ using DeepReader.Types.JsonConverters;
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(TimestampJsonConverter))]
-public class Timestamp : BinaryType
+public sealed class Timestamp : BinaryType
 {
     public uint Ticks;
 

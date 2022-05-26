@@ -6,7 +6,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/incremental_merkle.hpp
 /// </summary>
-public class IncrementalMerkle : IEosioSerializable<IncrementalMerkle>
+public sealed class IncrementalMerkle : IEosioSerializable<IncrementalMerkle>
 {
     public Checksum256[] ActiveNodes;
     public ulong NodeCount;

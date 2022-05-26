@@ -3,7 +3,7 @@
 /// <summary>
 /// libraries/fc/include/fc/io/varint.hpp
 /// </summary>
-public class VarInt64 : BinaryType
+public sealed class VarInt64 : BinaryType
 {
     private long _value;
 

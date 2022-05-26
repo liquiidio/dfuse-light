@@ -1,6 +1,6 @@
 namespace DeepReader.Types;
 
-public class RlimitAccountLimits : RlimitOp
+public sealed class RlimitAccountLimits : RlimitOp
 {
     public string Owner = string.Empty;//string
     public bool Pending = false;//bool

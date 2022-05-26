@@ -6,7 +6,7 @@ using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types.StorageTypes;
 
-public class Block
+public sealed class Block
 {
     public Checksum256 Id { get; set; } = Checksum256.TypeEmpty;
     public uint Number { get; set; } = 0;

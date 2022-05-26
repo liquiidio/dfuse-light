@@ -3,7 +3,7 @@ using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types;
 
-public class AccountRamDelta : IEosioSerializable<AccountRamDelta>
+public sealed class AccountRamDelta : IEosioSerializable<AccountRamDelta>
 {
     public Name Account;// string
     public long Delta;// int64

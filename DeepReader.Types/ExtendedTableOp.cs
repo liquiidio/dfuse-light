@@ -4,7 +4,7 @@ using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types;
 
-public class ExtendedTableOp : TableOp
+public sealed class ExtendedTableOp : TableOp
 {
     public uint ActionIndex { get; set; }//uint32
     public Name Payer { get; set; } = Name.TypeEmpty;//string

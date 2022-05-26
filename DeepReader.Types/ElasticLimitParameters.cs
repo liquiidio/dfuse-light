@@ -1,6 +1,6 @@
 namespace DeepReader.Types;
 
-public class ElasticLimitParameters
+public sealed class ElasticLimitParameters
 {
     public ulong Target = 0;//uint64
     public ulong Max = 0;//uint64

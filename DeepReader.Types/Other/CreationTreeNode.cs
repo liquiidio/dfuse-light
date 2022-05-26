@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DeepReader.Types.Other
 {
-    public class CreationTreeNode
+    public sealed class CreationTreeNode
     {
         public CreationOpKind Kind;
         public int ActionIndex;

@@ -1,6 +1,6 @@
 namespace DeepReader.Types;
 
-public class Feature
+public sealed class Feature
 {
     public string FeatureDigest = string.Empty;//string
     public SubjectiveRestrictions SubjectiveRestrictions = new();//*SubjectiveRestrictions

@@ -5,7 +5,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public class ProducerSchedule : IEosioSerializable<ProducerSchedule>
+public sealed class ProducerSchedule : IEosioSerializable<ProducerSchedule>
 {
     public uint Version;//uint32
     public ProducerKey[] Producers;//[]*ProducerKey

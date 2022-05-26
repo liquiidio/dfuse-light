@@ -7,7 +7,7 @@ using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types;
 
-public class Block
+public sealed class Block
 {
 	public Checksum256 Id = Checksum256.TypeEmpty;
 	public uint Number = 0;

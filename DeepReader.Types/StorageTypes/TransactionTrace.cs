@@ -3,7 +3,7 @@ using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.StorageTypes;
 
-public class TransactionTrace
+public sealed class TransactionTrace
 {
     // SHA-256 (FIPS 180-4) of the FCBUFFER-encoded packed transaction
     public TransactionId Id { get; set; } = Array.Empty<byte>();

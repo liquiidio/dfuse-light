@@ -5,7 +5,7 @@ using DeepReader.Types.Helpers;
 
 namespace DeepReader.Types.JsonConverters;
 
-public class PublicKeyJsonConverter : JsonConverter<PublicKey>
+public sealed class PublicKeyJsonConverter : JsonConverter<PublicKey>
 {
     public override PublicKey Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

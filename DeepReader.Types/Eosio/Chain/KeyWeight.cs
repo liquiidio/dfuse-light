@@ -5,7 +5,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/authority.hpp
 /// </summary>
-public class KeyWeight : IEosioSerializable<KeyWeight>
+public sealed class KeyWeight : IEosioSerializable<KeyWeight>
 {
     public PublicKey Key = PublicKey.TypeEmpty;//string
     public WeightType Weight = 0;//uint32

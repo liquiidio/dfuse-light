@@ -1,6 +1,6 @@
 ﻿namespace DeepReader.Types.EosTypes;
 
-public class Float128
+public sealed class Float128
 {
     private byte[] _binary = Array.Empty<byte>();
 

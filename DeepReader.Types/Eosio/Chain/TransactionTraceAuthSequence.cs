@@ -6,7 +6,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// flat_map<account_name,uint64_t>
 /// </summary>
-public class TransactionTraceAuthSequence : IEosioSerializable<TransactionTraceAuthSequence>
+public sealed class TransactionTraceAuthSequence : IEosioSerializable<TransactionTraceAuthSequence>
 {
     public Name Account;
     public ulong Sequence;

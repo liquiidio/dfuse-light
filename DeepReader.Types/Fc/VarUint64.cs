@@ -3,7 +3,7 @@
 /// <summary>
 /// libraries/fc/include/fc/io/varint.hpp
 /// </summary>
-public class VarUint64 : BinaryType
+public sealed class VarUint64 : BinaryType
 {
     private ulong _value;
 

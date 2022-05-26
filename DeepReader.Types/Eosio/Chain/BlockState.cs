@@ -5,7 +5,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/block_state.hpp
 /// </summary>
-public class BlockState : BlockHeaderState, IEosioSerializable<BlockState>
+public sealed class BlockState : BlockHeaderState, IEosioSerializable<BlockState>
 {
     public SignedBlock? Block;
 

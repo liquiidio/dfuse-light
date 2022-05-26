@@ -5,7 +5,7 @@ using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.Types.StorageTypes
 {
-    public class ActionTrace
+    public sealed class ActionTrace
     {
         public ulong GlobalSequence => Receipt.GlobalSequence;
 

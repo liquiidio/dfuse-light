@@ -6,7 +6,7 @@ using DeepReader.Types.JsonConverters;
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(Checksum512JsonConverter))]
-public class Checksum512 : BinaryType
+public sealed class Checksum512 : BinaryType
 {
     private string? _stringVal;
 

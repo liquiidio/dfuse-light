@@ -4,7 +4,7 @@ using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Helpers;
 
-public class SerializationHelper
+public sealed class SerializationHelper
 {
     /// <summary>
     /// Combina multiple arrays into one

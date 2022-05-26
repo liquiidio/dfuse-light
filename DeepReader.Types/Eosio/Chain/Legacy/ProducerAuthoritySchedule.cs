@@ -3,7 +3,7 @@ namespace DeepReader.Types.Eosio.Chain.Legacy;
 /// <summary>
 /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public class ProducerAuthoritySchedule : IEosioSerializable<ProducerAuthoritySchedule>
+public sealed class ProducerAuthoritySchedule : IEosioSerializable<ProducerAuthoritySchedule>
 {
     public uint Version;
     public ProducerAuthority[] Producers;

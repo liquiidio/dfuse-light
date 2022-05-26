@@ -8,7 +8,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/transaction.hpp
 /// </summary>
-public class SignedTransaction : Transaction, IEosioSerializable<SignedTransaction>
+public sealed class SignedTransaction : Transaction, IEosioSerializable<SignedTransaction>
 {
     public Signature[] Signatures;
 

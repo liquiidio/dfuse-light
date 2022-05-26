@@ -1,6 +1,6 @@
 namespace DeepReader.Types;
 
-public class RlimitAccountUsage : RlimitOp
+public sealed class RlimitAccountUsage : RlimitOp
 {
     public string Owner = string.Empty;//string
     public UsageAccumulator NetUsage = new();//*UsageAccumulator

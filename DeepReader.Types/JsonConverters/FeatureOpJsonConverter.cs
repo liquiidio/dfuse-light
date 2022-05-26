@@ -4,7 +4,7 @@ using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.JsonConverters;
 
-public class FeatureOpJsonConverter : JsonConverter<FeatureOp>
+public sealed class FeatureOpJsonConverter : JsonConverter<FeatureOp>
 {
     public override FeatureOp Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

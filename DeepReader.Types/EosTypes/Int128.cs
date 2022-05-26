@@ -2,7 +2,7 @@
 
 namespace DeepReader.Types.EosTypes;
 
-public class Int128 : BinaryType
+public sealed class Int128 : BinaryType
 {
     public static implicit operator Int128(byte[] binary)
     {

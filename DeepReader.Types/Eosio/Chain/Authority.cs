@@ -3,7 +3,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/authority.hpp
 /// </summary>
-public class Authority : IEosioSerializable<Authority>
+public sealed class Authority : IEosioSerializable<Authority>
 {
     public uint Threshold = 0;//uint32
     public KeyWeight[] Keys = Array.Empty<KeyWeight>();//[]*KeyWeight

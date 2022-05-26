@@ -7,7 +7,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/trace.hpp
 /// </summary>
-public class ActionTrace : IEosioSerializable<ActionTrace>
+public sealed class ActionTrace : IEosioSerializable<ActionTrace>
 {
     public VarUint32 ActionOrdinal;
 

@@ -5,7 +5,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/block.hpp
 /// </summary>
-public class SignedBlock : SignedBlockHeader, IEosioSerializable<SignedBlock>
+public sealed class SignedBlock : SignedBlockHeader, IEosioSerializable<SignedBlock>
 {
     public TransactionReceipt[] Transactions;
 

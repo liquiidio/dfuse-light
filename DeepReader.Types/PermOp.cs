@@ -2,7 +2,7 @@ using DeepReader.Types.Enums;
 
 namespace DeepReader.Types;
 
-public class PermOp
+public sealed class PermOp
 {
     public PermOpOperation Operation = PermOpOperation.UNKNOWN;//PermOp_Operation
     public uint ActionIndex = 0;//uint32

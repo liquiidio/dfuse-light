@@ -7,7 +7,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/transaction.hpp
 /// </summary>
-public class PackedTransaction : TransactionVariant, IEosioSerializable<PackedTransaction>
+public sealed class PackedTransaction : TransactionVariant, IEosioSerializable<PackedTransaction>
 {
     public Signature[] Signatures = Array.Empty<Signature>();
     // TODO @corvin Compression to enum

@@ -4,7 +4,7 @@ using DeepReader.Types.JsonConverters;
 namespace DeepReader.Types;
 
 [JsonConverter(typeof(FeatureOpJsonConverter))]
-public class FeatureOp
+public sealed class FeatureOp
 {
     public string Kind = string.Empty;//string
     public uint ActionIndex = 0;//uint32

@@ -3,7 +3,7 @@
 /// <summary>
 /// libraries/fc/include/fc/io/varint.hpp
 /// </summary>
-public class VarInt32 : BinaryType
+public sealed class VarInt32 : BinaryType
 {
     private int _value;
 

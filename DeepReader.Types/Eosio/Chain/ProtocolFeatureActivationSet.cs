@@ -6,7 +6,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/protocol_feature_activation.hpp
 /// </summary>
-public class ProtocolFeatureActivationSet : IEosioSerializable<ProtocolFeatureActivationSet>
+public sealed class ProtocolFeatureActivationSet : IEosioSerializable<ProtocolFeatureActivationSet>
 {
     public Checksum256[] ProtocolFeatures;
 

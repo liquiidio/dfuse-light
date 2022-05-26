@@ -21,7 +21,7 @@ public abstract class BlockSigningAuthorityVariant : IEosioSerializable<BlockSig
 /// <summary>
 /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant, IEosioSerializable<BlockSigningAuthorityV0>
+public sealed class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant, IEosioSerializable<BlockSigningAuthorityV0>
 {
     public uint Threshold;
     public SharedKeyWeight[] Keys;

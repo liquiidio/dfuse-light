@@ -7,7 +7,7 @@ using DeepReader.Types.Other;
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(NameJsonConverter))]
-public class Name : BinaryType
+public sealed class Name : BinaryType
 {
     private string? _stringVal;
 

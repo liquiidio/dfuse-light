@@ -6,7 +6,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/authority.hpp
 /// </summary>
-public class SharedKeyWeight : IEosioSerializable<SharedKeyWeight>
+public sealed class SharedKeyWeight : IEosioSerializable<SharedKeyWeight>
 {
     public PublicKey Key;   // for now public key, is SharedPublicKey in EOSIO (see below)
     public WeightType Weight;

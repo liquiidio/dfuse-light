@@ -4,9 +4,9 @@ using System.Reflection.Emit;
 
 namespace DeepReader.Types.Helpers;
 
-public class NullableHelper
+public sealed class NullableHelper
 {
-    //public class NullableHelperHelper
+    //public sealed class NullableHelperHelper
     //{
     //    public static object? Helper;
 

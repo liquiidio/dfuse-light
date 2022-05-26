@@ -8,7 +8,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// Custom type due to Variant-Handling
 /// </summary>
 [JsonConverter(typeof(TransactionIdJsonConverter))]
-public class TransactionId : TransactionVariant
+public sealed class TransactionId : TransactionVariant
 {
     public byte[] Binary = Array.Empty<byte>();
 

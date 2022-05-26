@@ -7,7 +7,7 @@ namespace DeepReader.Types.Eosio.Chain.Detail;
 /// replaces key and value of flat_map<account_name, uint32_t>
 /// libraries/chain/include/eosio/chain/block_header_state.hpp
 /// </summary>
-public class PairAccountNameBlockNum : IEosioSerializable<PairAccountNameBlockNum>
+public sealed class PairAccountNameBlockNum : IEosioSerializable<PairAccountNameBlockNum>
 {
     public Name AccountName;
     public uint BlockNum;

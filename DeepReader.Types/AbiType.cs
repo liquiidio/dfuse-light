@@ -5,7 +5,7 @@ using DeepReader.Types.Extensions;
 namespace DeepReader.Types;
 
 [Serializable]
-public class Abi : IEosioSerializable<Abi>
+public sealed class Abi : IEosioSerializable<Abi>
 {
     public string Version;
     public AbiType[] AbiTypes;
@@ -49,7 +49,7 @@ public class Abi : IEosioSerializable<Abi>
 }
 
 [Serializable]
-public class AbiType : IEosioSerializable<AbiType>
+public sealed class AbiType : IEosioSerializable<AbiType>
 {
     [JsonPropertyName("new_type_name")]
     public string NewTypeName;
@@ -70,7 +70,7 @@ public class AbiType : IEosioSerializable<AbiType>
 }
 
 [Serializable]
-public class AbiStruct : IEosioSerializable<AbiStruct>
+public sealed class AbiStruct : IEosioSerializable<AbiStruct>
 {
     [JsonPropertyName("name")]
     public string Name;
@@ -107,7 +107,7 @@ public class AbiStruct : IEosioSerializable<AbiStruct>
 }
 
 [Serializable]
-public class AbiField : IEosioSerializable<AbiField>
+public sealed class AbiField : IEosioSerializable<AbiField>
 {
     [JsonPropertyName("name")]
     public string Name;
@@ -128,7 +128,7 @@ public class AbiField : IEosioSerializable<AbiField>
 }
 
 [Serializable]
-public class AbiAction : IEosioSerializable<AbiAction>
+public sealed class AbiAction : IEosioSerializable<AbiAction>
 {
     [JsonPropertyName("name")]
     public Name Name;
@@ -153,7 +153,7 @@ public class AbiAction : IEosioSerializable<AbiAction>
 }
 
 [Serializable]
-public class AbiTable : IEosioSerializable<AbiTable>
+public sealed class AbiTable : IEosioSerializable<AbiTable>
 {
     [JsonPropertyName("name")]
     public Name Name;

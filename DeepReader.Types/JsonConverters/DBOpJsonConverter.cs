@@ -4,7 +4,7 @@ using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.JsonConverters;
 
-public class DbOpJsonConverter : JsonConverter<DbOp>
+public sealed class DbOpJsonConverter : JsonConverter<DbOp>
 {
     public override DbOp Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

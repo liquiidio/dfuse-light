@@ -6,7 +6,7 @@ namespace DeepReader.Types.Eosio.Chain.Legacy;
 /// <summary>
 /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public class ProducerKey : IEosioSerializable<ProducerKey>
+public sealed class ProducerKey : IEosioSerializable<ProducerKey>
 {
     public Name AccountName;
     public PublicKey BlockSigningKey;//ecc.PublicKey

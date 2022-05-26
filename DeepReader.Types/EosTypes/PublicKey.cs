@@ -6,7 +6,7 @@ using DeepReader.Types.JsonConverters;
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(PublicKeyJsonConverter))]
-public class PublicKey : BinaryType, IEosioSerializable<PublicKey>
+public sealed class PublicKey : BinaryType, IEosioSerializable<PublicKey>
 {
     private string _stringVal = string.Empty;
 

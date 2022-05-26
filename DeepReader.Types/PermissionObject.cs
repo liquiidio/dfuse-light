@@ -2,7 +2,7 @@ using DeepReader.Types.Eosio.Chain;
 
 namespace DeepReader.Types;
 
-public class PermissionObject
+public sealed class PermissionObject
 {
     // UsageId represents the EOSIO internal id of this permission object.
     public ulong UsageId = 0;//uint64

@@ -5,7 +5,7 @@ using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types;
 
-public class ExtendedDbOp : DbOp
+public sealed class ExtendedDbOp : DbOp
 {
     public uint ActionIndex { get; set; } = 0;//uint32
     public ExtendedDbOp() : base()

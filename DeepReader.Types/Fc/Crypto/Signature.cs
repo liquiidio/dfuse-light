@@ -5,7 +5,7 @@ using DeepReader.Types.JsonConverters;
 namespace DeepReader.Types.Fc.Crypto;
 
 [JsonConverter(typeof(SignatureJsonConverter))]
-public class Signature : BinaryType
+public sealed class Signature : BinaryType
 {
     private string? _stringVal;
 

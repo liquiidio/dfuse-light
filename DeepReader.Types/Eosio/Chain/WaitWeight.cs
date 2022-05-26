@@ -3,7 +3,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/authority.hpp
 /// </summary>
-public class WaitWeight : IEosioSerializable<WaitWeight>
+public sealed class WaitWeight : IEosioSerializable<WaitWeight>
 {
     public uint WaitSec = 0;//uint32
     public WeightType Weight = 0;//uint16

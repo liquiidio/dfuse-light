@@ -5,7 +5,7 @@ namespace DeepReader.Types.EosTypes;
 /// <summary>
 /// Wraps Action-bytes (byte-array) to be Abi-deserialized to specific Type
 /// </summary>
-public class ActionDataBytes : Bytes<object>
+public sealed class ActionDataBytes : Bytes<object>
 {
     public ActionDataBytes()
     {
