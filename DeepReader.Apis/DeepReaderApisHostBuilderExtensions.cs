@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using DeepReader.Apis.GraphQl.DataLoaders;
 using DeepReader.Apis.GraphQl.QueryTypes;
 using DeepReader.Apis.GraphQl.SubscriptionTypes;
 using DeepReader.Apis.JsonSourceGenerators;
@@ -49,7 +50,10 @@ namespace DeepReader.Apis
                             .AddType<TransactionQueryType>()
                         .AddSubscriptionType(s => s.Name("Subscription"))
                             .AddType<BlockSubscriptionType>()
-                            .AddType<TransactionSubscriptionType>();
+                            .AddType<TransactionSubscriptionType>()
+                        .AddDataLoader<BlockByIdDataLoader>()
+                        .AddDataLoader<BlocksWithTracesByIdDataLoader>()
+                        .AddDataLoader<TransactionByIdDataLoader>();
                     services.AddSentry();
                     services
                         .AddHealthChecks();

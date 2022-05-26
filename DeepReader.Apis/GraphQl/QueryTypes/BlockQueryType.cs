@@ -9,15 +9,15 @@ namespace DeepReader.Apis.GraphQl.QueryTypes
         {
             descriptor.Name("Query");
             descriptor
-                .Field(f => f.GetBlock(default, default!)!)
+                .Field(f => f.GetBlock(default, default!, default)!)
                 .Argument("block_num", a => a.Type<UnsignedIntType>())
                 .Type<BlockType>()
-                .Name("getBlock");
+                .Name("block");
             descriptor
-                .Field(f => f.GetBlockWithTraces(default, default!))
+                .Field(f => f.GetBlockWithTraces(default, default!, default))
                 .Argument("block_num", a => a.Type<UnsignedIntType>())
                 .Type<BlockType>()
-                .Name("getBlockWithTraces");
+                .Name("blockWithTraces");
         }
     }
 }
