@@ -7,11 +7,10 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class TransactionReceiptHeader : IEosioSerializable<TransactionReceiptHeader>
 {
-    public TransactionStatus Status;    // fc::enum_type<uint8_t,status_enum> v
 
-    public uint CpuUsageUs;
-
-    public uint NetUsageWords;
+    public TransactionStatus Status { get; set; }    // fc::enum_type<uint8_t,status_enum> v
+    public uint CpuUsageUs { get; set; }
+    public uint NetUsageWords { get; set; }
 
     public TransactionReceiptHeader()
     {

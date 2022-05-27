@@ -1,4 +1,6 @@
+
 ﻿using DeepReader.Apis.GraphQl.QueryTypes;
+using DeepReader.Apis.GraphQl.DataLoaders;
 using DeepReader.Apis.GraphQl.SubscriptionTypes;
 using DeepReader.Apis.JsonSourceGenerators;
 using DeepReader.Apis.Options;
@@ -38,13 +40,20 @@ namespace DeepReader.Apis
                     services.AddSwaggerGen();
                     services
                         .AddGraphQLServer()
+                         .ModifyOptions(options =>
+                         {
+                             options.DefaultBindingBehavior = BindingBehavior.Explicit;
+                         })
                         .AddInMemorySubscriptions()
                         .AddQueryType(q => q.Name("Query"))
                             .AddType<BlockQueryType>()
                             .AddType<TransactionQueryType>()
                         .AddSubscriptionType(s => s.Name("Subscription"))
                             .AddType<BlockSubscriptionType>()
-                            .AddType<TransactionSubscriptionType>();
+                            .AddType<TransactionSubscriptionType>()
+                        .AddDataLoader<BlockByIdDataLoader>()
+                        .AddDataLoader<BlocksWithTracesByIdDataLoader>()
+                        .AddDataLoader<TransactionByIdDataLoader>();
                     services.AddSentry();
                     services
                         .AddHealthChecks();

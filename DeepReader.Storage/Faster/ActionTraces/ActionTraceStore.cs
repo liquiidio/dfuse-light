@@ -57,8 +57,8 @@ namespace DeepReader.Storage.Faster.ActionTraces
                 // to calculate below:
                 // 12 = 00001111 11111111 = 4095 = 4K
                 // 34 = 00000011 11111111 11111111 11111111 11111111 = 17179869183 = 16G
-                PageSizeBits = 12, // (4K pages)
-                MemorySizeBits = 34 // (16G memory for main log)
+                PageSizeBits = 14, // (4K pages)
+                MemorySizeBits = 35 // (16G memory for main log)
             };
 
             // Define serializers; otherwise FASTER will use the slower DataContract
