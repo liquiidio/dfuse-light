@@ -27,7 +27,7 @@ namespace DeepReader.Storage.Faster.Transactions
         private static readonly Histogram _storeReadCacheMemorySizeBytesHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Histogram of the faster transaction store read cache memory size in bytes");
         private static readonly Histogram _storeEntryCountHistogram =
-           Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Histogram of the faster transaction store entry count");
+           Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_entry_count", "Histogram of the faster transaction store entry count");
         private static readonly Histogram _storeTakeFullCheckpointDurationHistogram =
           Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_take_full_checkpoint_duration", "Histogram of time to take a full checkpoint of faster transaction store");
         private static readonly Histogram _storeFlushAndEvictLogDurationHistogram =

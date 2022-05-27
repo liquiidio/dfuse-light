@@ -27,7 +27,7 @@ namespace DeepReader.Storage.Faster.Blocks
         private static readonly Histogram _storeReadCacheMemorySizeBytesHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_block_store_read_cache_memory_size_bytes", "Histogram of the faster block store read cache memory size in bytes");
         private static readonly Histogram _storeEntryCountHistogram =
-           Metrics.CreateHistogram("deepreader_storage_faster_block_store_read_cache_memory_size_bytes", "Histogram of the faster block store entry count");
+           Metrics.CreateHistogram("deepreader_storage_faster_block_store_entry_count", "Histogram of the faster block store entry count");
         private static readonly Histogram _storeTakeFullCheckpointDurationHistogram =
            Metrics.CreateHistogram("deepreader_storage_faster_block_store_take_full_checkpoint_duration", "Histogram of time to take a full checkpoint of faster block store");
         private static readonly Histogram _storeFlushAndEvictLogDurationHistogram =
