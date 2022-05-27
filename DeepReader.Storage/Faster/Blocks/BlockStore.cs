@@ -10,10 +10,10 @@ namespace DeepReader.Storage.Faster.Blocks
 {
     public sealed class BlockStore
     {
-        private readonly FasterKV<BlockId, Block> _store;
+        private readonly FasterKV<long, Block> _store;
 
-        private readonly ClientSession<BlockId, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockWriterSession;
-        private readonly ClientSession<BlockId, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockReaderSession;
+        private readonly ClientSession<long, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockWriterSession;
+        private readonly ClientSession<long, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockReaderSession;
 
         private readonly FasterStorageOptions _options;
 
@@ -68,9 +68,8 @@ namespace DeepReader.Storage.Faster.Blocks
 
             // Define serializers; otherwise FASTER will use the slower DataContract
             // Needed only for class keys/values
-            var serializerSettings = new SerializerSettings<BlockId, Block>
+            var serializerSettings = new SerializerSettings<long, Block>
             {
-                keySerializer = () => new BlockIdSerializer(),
                 valueSerializer = () => new BlockValueSerializer()
             };
 
@@ -81,12 +80,11 @@ namespace DeepReader.Storage.Faster.Blocks
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
 
-            _store = new FasterKV<BlockId, Block>(
+            _store = new FasterKV<long, Block>(
                 size: _options.MaxBlocksCacheEntries, // Cache Lines for Blocks
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
-                serializerSettings: serializerSettings,
-                comparer: new BlockId(0)
+                serializerSettings: serializerSettings
             );
 
             if (Directory.Exists(checkPointsDir))
@@ -137,7 +135,7 @@ namespace DeepReader.Storage.Faster.Blocks
 
         public async Task<Status> WriteBlock(Block block)
         {
-            var blockId = new BlockId(block.Number);
+            long blockId = block.Number;
 
             await _eventSender.SendAsync("BlockAdded", block);
 
@@ -154,7 +152,7 @@ namespace DeepReader.Storage.Faster.Blocks
         {
             using (BlockReaderSessionReadDurationHistogram.NewTimer())
             {
-                var (status, output) = (await _blockReaderSession.ReadAsync(new BlockId(blockNum))).Complete();
+                var (status, output) = (await _blockReaderSession.ReadAsync(blockNum)).Complete();
                 return (status.Found, output.Value);
             }
         }

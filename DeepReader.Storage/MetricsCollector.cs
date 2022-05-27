@@ -9,7 +9,7 @@ namespace DeepReader.Storage
 
         public MetricsCollector()
         {
-            _timer = new System.Timers.Timer(2000);
+            _timer = new System.Timers.Timer(5000);
             _timer.Elapsed += CollectObservableMetrics;
             _timer.AutoReset = true;
             _timer.Enabled = true;

@@ -158,7 +158,6 @@ public class BlockWorker : BackgroundService
 
                     CheckForAbiUpdates(actionTraces)
                 );
-
             }
             catch (Exception e)
             {
@@ -206,7 +205,7 @@ public class BlockWorker : BackgroundService
             if (creationTreeNode.Kind == CreationOpKind.NOTIFY)
                 childActionTrace.IsNotify = true;
             
-            childActionTrace.CreatorAction = creatorAction;
+//            childActionTrace.CreatorAction = creatorAction;
             childActionTrace.CreatorActionId = creatorAction.Receipt.GlobalSequence;
 
             childActionTrace.CreatedActions = childCreatedActionTraces.ToArray();

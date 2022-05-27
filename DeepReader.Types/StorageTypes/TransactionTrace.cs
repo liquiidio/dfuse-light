@@ -9,9 +9,6 @@ public sealed class TransactionTrace : PooledObject<TransactionTrace>
     public TransactionId Id { get; set; } = Array.Empty<byte>();
 
     public uint BlockNum { get; set; } = 0;
-
-    public Block Block { get; set; }
-
     // Status
 
     public TransactionReceiptHeader Receipt { get; set; }
@@ -80,6 +77,9 @@ public sealed class TransactionTrace : PooledObject<TransactionTrace>
         {
             writer.Write(actionTraceId);
         }
+
+        // as we return this Object to the pool we need to reset Lists and nullables;
+        //nothing to see here
 
         // when Faster wants to deserialize and Object, we take an Object from the Pool
         // when Faster evicts the Object we return it to the Pool

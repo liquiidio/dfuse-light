@@ -163,6 +163,10 @@ namespace DeepReader.Types.StorageTypes
             if (CreatorActionId.HasValue)
                 writer.Write(CreatorActionId.Value);
 
+            // as we return this Object to the pool we need to reset Lists and nullables;
+            CreatorActionId = null;
+            CreatorAction = null;
+
             // when Faster wants to deserialize and Object, we take an Object from the Pool
             // when Faster evicts the Object we return it to the Pool
             TypeObjectPool.Return(this);
