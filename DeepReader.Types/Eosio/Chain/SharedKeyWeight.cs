@@ -1,5 +1,4 @@
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -13,10 +12,10 @@ public sealed class SharedKeyWeight : IEosioSerializable<SharedKeyWeight>
 
     public SharedKeyWeight(BinaryReader reader)
     {
-        Key = reader.ReadPublicKey();
+        Key = PublicKey.ReadFromBinaryReader(reader);
         Weight = reader.ReadUInt16();
     }
-    public static SharedKeyWeight ReadFromBinaryReader(BinaryReader reader)
+    public static SharedKeyWeight ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new SharedKeyWeight(reader);
     }

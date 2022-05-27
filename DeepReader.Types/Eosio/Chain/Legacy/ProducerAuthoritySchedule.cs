@@ -19,7 +19,7 @@ public sealed class ProducerAuthoritySchedule : IEosioSerializable<ProducerAutho
         }
     }
 
-    public static ProducerAuthoritySchedule ReadFromBinaryReader(BinaryReader reader)
+    public static ProducerAuthoritySchedule ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new ProducerAuthoritySchedule(reader);
     }

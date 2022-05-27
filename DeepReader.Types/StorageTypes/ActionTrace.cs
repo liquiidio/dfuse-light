@@ -1,11 +1,11 @@
 ﻿using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
+using DeepReader.Types.Other;
 using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.Types.StorageTypes
 {
-    public sealed class ActionTrace
+    public sealed class ActionTrace : PooledObject<ActionTrace>
     {
         public ulong GlobalSequence => Receipt.GlobalSequence;
 
@@ -16,20 +16,6 @@ namespace DeepReader.Types.StorageTypes
         public Name Receiver { get; set; } = Name.TypeEmpty;
 
         public Action Act { get; set; } = new();
-
-        //public Name Account;
-
-        //public Name Name;
-
-        //public PermissionLevel[] Authorization;
-
-        //public ActionDataBytes Data;
-
-        // json
-
-        // hexdata
-
-        // end act
 
         public RamOp[] RamOps { get; set; } = Array.Empty<RamOp>();
 
@@ -65,7 +51,7 @@ namespace DeepReader.Types.StorageTypes
 
         }
 
-        public ActionTrace(DeepReader.Types.Eosio.Chain.ActionTrace actionTrace)
+        public void CopyFrom(DeepReader.Types.Eosio.Chain.ActionTrace actionTrace)
         {
             Receipt = actionTrace.Receipt!;
             Receiver = actionTrace.Receiver;
@@ -76,18 +62,19 @@ namespace DeepReader.Types.StorageTypes
             ReturnValue = actionTrace.ReturnValue;
         }
 
-        public static ActionTrace ReadFromBinaryReader(BinaryReader reader)
+        public static ActionTrace ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
         {
-            var obj = new ActionTrace()
-            {
-                Receiver = reader.ReadName(),
-                Receipt = ActionReceipt.ReadFromBinaryReader(reader),
-                Act = Action.ReadFromBinaryReader(reader),
-                ContextFree = reader.ReadBoolean(),
-                ElapsedUs = reader.ReadInt64(),
-                Console = reader.ReadString(),
-                IsNotify = reader.ReadBoolean(),
-            };
+            // when Faster wants to deserialize and Object, we take an Object from the Pool
+            // when Faster evicts the Object we return it to the Pool
+            var obj = TypeObjectPool.Get();
+
+            obj.Receiver = Name.ReadFromBinaryReader(reader);
+            obj.Receipt = ActionReceipt.ReadFromBinaryReader(reader);
+            obj.Act = Action.ReadFromBinaryReader(reader);
+            obj.ContextFree = reader.ReadBoolean();
+            obj.ElapsedUs = reader.ReadInt64();
+            obj.Console = reader.ReadString();
+            obj.IsNotify = reader.ReadBoolean();
 
             obj.RamOps = new RamOp[reader.ReadInt32()];
             for (int i = 0; i < obj.RamOps.Length; i++)
@@ -122,13 +109,15 @@ namespace DeepReader.Types.StorageTypes
             var hasCreatorActionId = reader.ReadBoolean();
             if (hasCreatorActionId)
                 obj.CreatorActionId = reader.ReadUInt64();
+            else
+                obj.CreatorActionId = null;
 
             return obj;
         }
 
         public void WriteToBinaryWriter(BinaryWriter writer)
         {
-            writer.WriteName(Receiver);
+            Receiver.WriteToBinaryWriter(writer);
 
             Receipt.WriteToBinaryWriter(writer);
 
@@ -173,6 +162,10 @@ namespace DeepReader.Types.StorageTypes
             writer.Write(CreatorActionId.HasValue);
             if (CreatorActionId.HasValue)
                 writer.Write(CreatorActionId.Value);
+
+            // when Faster wants to deserialize and Object, we take an Object from the Pool
+            // when Faster evicts the Object we return it to the Pool
+            TypeObjectPool.Return(this);
         }
     }
 }

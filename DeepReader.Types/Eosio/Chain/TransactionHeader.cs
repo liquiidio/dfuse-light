@@ -1,8 +1,5 @@
 using System.Text.Json.Serialization;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
-using DeepReader.Types.Helpers;
-using DeepReader.Types.Fc;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -25,7 +22,7 @@ public class TransactionHeader : IEosioSerializable<TransactionHeader>
 
     // abi-field-name: max_net_usage_words ,abi-field-type: varuint32
     [JsonPropertyName("max_net_usage_words")]
-    public VarUint32 MaxNetUsageWords;
+    public uint MaxNetUsageWords;
 
     // abi-field-name: max_cpu_usage_ms ,abi-field-type: uint8
     [JsonPropertyName("max_cpu_usage_ms")]
@@ -33,19 +30,19 @@ public class TransactionHeader : IEosioSerializable<TransactionHeader>
 
     // abi-field-name: delay_sec ,abi-field-type: varuint32
     [JsonPropertyName("delay_sec")]
-    public VarUint32 DelaySec;
+    public uint DelaySec;
 
     public TransactionHeader(BinaryReader reader)
     {
-        Expiration = reader.ReadTimestamp();
+        Expiration = Timestamp.ReadFromBinaryReader(reader);
         RefBlockNum = reader.ReadUInt16();
         RefBlockPrefix = reader.ReadUInt32();
-        MaxNetUsageWords = reader.ReadVarUint32Obj();
+        MaxNetUsageWords = (uint)reader.Read7BitEncodedInt();
         MaxCpuUsageMs = reader.ReadByte();
-        DelaySec = reader.ReadVarUint32Obj();
+        DelaySec = (uint)reader.Read7BitEncodedInt();
     }
 
-    public static TransactionHeader ReadFromBinaryReader(BinaryReader reader)
+    public static TransactionHeader ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new TransactionHeader(reader);
     }

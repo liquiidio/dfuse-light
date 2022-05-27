@@ -1,11 +1,8 @@
 ﻿using DeepReader.Apis.Options;
 using DeepReader.Apis.Other;
 using DeepReader.Storage;
-using DeepReader.Types.StorageTypes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Serilog;
-using System.Text.Json;
 
 namespace DeepReader.Apis.REST.Controllers
 {

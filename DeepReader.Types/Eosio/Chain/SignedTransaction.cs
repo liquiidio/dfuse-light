@@ -1,6 +1,4 @@
-using DeepReader.Types.Helpers;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -26,17 +24,17 @@ public sealed class SignedTransaction : Transaction, IEosioSerializable<SignedTr
         Signatures = new Signature[reader.Read7BitEncodedInt()];
         for (int i = 0; i < Signatures.Length; i++)
         {
-            Signatures[i] = reader.ReadSignature();
+            Signatures[i] = Signature.ReadFromBinaryReader(reader);
         }
 
         ContextFreeData = new Bytes[reader.Read7BitEncodedInt()];
         for (int i = 0; i != ContextFreeData.Length; i++)
         {
-            ContextFreeData[i] = reader.ReadBytes();
+            ContextFreeData[i] = Bytes.ReadFromBinaryReader(reader);
         }
     }
 
-    public new static SignedTransaction ReadFromBinaryReader(BinaryReader reader)
+    public new static SignedTransaction ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new SignedTransaction(reader);
     }

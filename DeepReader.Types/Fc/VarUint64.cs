@@ -3,7 +3,7 @@
 /// <summary>
 /// libraries/fc/include/fc/io/varint.hpp
 /// </summary>
-public sealed class VarUint64 : BinaryType
+public sealed class VarUint64 : BinaryType, IEosioSerializable<VarUint64>
 {
     private ulong _value;
 
@@ -15,5 +15,10 @@ public sealed class VarUint64 : BinaryType
     public static implicit operator ulong(VarUint64 value)
     {
         return value._value;
+    }
+
+    public static VarUint64 ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    {
+        return (ulong)reader.Read7BitEncodedInt64();
     }
 }

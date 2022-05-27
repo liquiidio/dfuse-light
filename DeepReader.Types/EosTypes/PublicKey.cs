@@ -1,18 +1,42 @@
 ﻿using System.Text.Json.Serialization;
-using DeepReader.Types.Fc;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
+using DeepReader.Types.Other;
+using Serilog;
 
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(PublicKeyJsonConverter))]
-public sealed class PublicKey : BinaryType, IEosioSerializable<PublicKey>
+public sealed class PublicKey : PooledObject<PublicKey>, IEosioSerializable<PublicKey>
 {
-    private string _stringVal = string.Empty;
+    [JsonIgnore]
+    public byte[] Binary { get; set; } = Array.Empty<byte>();
+
+    private byte Type { get; set; }
+
+    private string? _stringVal;
 
     public string StringVal {
-        get => _stringVal ??= CryptoHelper.PubKeyBytesToString(Binary);
+        get => _stringVal ??= ToString();
         set => _stringVal = value;
+    }
+
+    public override string ToString()
+    {
+        switch (Type)
+        {
+            case (int)BinaryReaderExtensions.KeyType.K1:
+                return CryptoHelper.PubKeyBytesToString(Binary, "K1");
+            case (int)BinaryReaderExtensions.KeyType.R1:
+                return CryptoHelper.PubKeyBytesToString(Binary, "R1", "PUB_R1_");
+            case (int)BinaryReaderExtensions.KeyType.WA:
+                return CryptoHelper.PubKeyBytesToString(Binary, "WA", "PUB_WA_");
+            default:
+                Log.Error(new Exception($"public key type {Type} not supported"), "");
+                Log.Error(CryptoHelper.PubKeyBytesToString(Binary, "R1", "PUB_R1_"));
+                return CryptoHelper.PubKeyBytesToString(Binary, "R1", "PUB_R1_"); // TODO ??
+        }
     }
 
     public static implicit operator PublicKey(string value)
@@ -41,31 +65,21 @@ public sealed class PublicKey : BinaryType, IEosioSerializable<PublicKey>
     {
     }
 
-    public PublicKey(BinaryReader reader)
+    public static PublicKey ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
-        var type = reader.ReadByte();// TODO
-        Binary = reader.ReadBytes(Constants.PubKeyDataSize);
+        var obj = fromPool ? TypeObjectPool.Get() : new PublicKey();
 
-        // TODO we don't need to deserialize/convert to string just for the deserialization of dlogs
-        // but we probably need when returning data via API
+        obj.Type = reader.ReadByte();
+        obj.Binary = reader.ReadBytes(Constants.PubKeyDataSize);
 
-        //switch (type)
-        //{
-        //    case (int)KeyType.K1:
-        //        return CryptoHelper.PubKeyBytesToString(keyBytes, "K1");
-        //    case (int)KeyType.R1:
-        //        return CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_");
-        //    case (int)KeyType.WA:
-        //        return CryptoHelper.PubKeyBytesToString(keyBytes, "WA", "PUB_WA_");
-        //    default:
-        //        Log.Error(new Exception($"public key type {type} not supported"), "");
-        //        Log.Error(CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_"));
-        //        return CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_"); // TODO ??
-        //}
+        return obj;
     }
 
-    public static PublicKey ReadFromBinaryReader(BinaryReader reader)
+    public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        return new PublicKey(reader);
+        writer.Write(Type);
+        writer.Write(Binary);
+
+        TypeObjectPool.Return(this);
     }
 }

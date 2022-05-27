@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using DeepReader.Apis.GraphQl.QueryTypes;
+﻿using DeepReader.Apis.GraphQl.QueryTypes;
 using DeepReader.Apis.GraphQl.SubscriptionTypes;
 using DeepReader.Apis.JsonSourceGenerators;
 using DeepReader.Apis.Options;

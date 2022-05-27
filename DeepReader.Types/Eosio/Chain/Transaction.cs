@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using DeepReader.Types.Helpers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -41,7 +40,7 @@ public class Transaction : TransactionHeader, IEosioSerializable<Transaction>
         }
     }
 
-    public new static Transaction ReadFromBinaryReader(BinaryReader reader)
+    public new static Transaction ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new Transaction(reader);
     }

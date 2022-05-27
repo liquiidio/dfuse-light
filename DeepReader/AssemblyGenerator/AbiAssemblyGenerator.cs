@@ -92,8 +92,8 @@ namespace DeepReader.AssemblyGenerator
         }
 
 #if DEBUG
-//        private static readonly string AssemblyPath = "/mnt/e/source/repos/deepreader/DeepReader/config/mindreader/abis/";//Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedAssemblies");
-        private static readonly string AssemblyPath = "/app/config/mindreader/abis/";//Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedAssemblies");
+        private static readonly string AssemblyPath = "/mnt/e/source/repos/deepreader/DeepReader/config/mindreader/abis/";//Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedAssemblies");
+        //        private static readonly string AssemblyPath = "/app/config/mindreader/abis/";//Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedAssemblies");
 
         private static async void SaveAssemblyAndAbi(Assembly assembly, Abi abi, string contractName, ulong globalSequence)
         {
@@ -284,8 +284,8 @@ namespace DeepReader.AssemblyGenerator
                                 // loop body label, first iteration jumps here (where it's marked)
                                 var loopBodyLabel = binaryReaderConstructorIlGenerator.DefineLabel();
 
-                                // get the readerMethod for this type
-                                var readerMethod = GetReaderMethodForType(abiFieldType, abiField);
+                                //// get the readerMethod for this type
+                                //var readerMethod = GetReaderMethodForType(abiFieldType, abiField);
 
                                 // Load "this" onto stack
                                 binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
@@ -334,6 +334,10 @@ namespace DeepReader.AssemblyGenerator
                                 else
                                 {
                                     var meth = GetReaderMethodForType(abiFieldType, abiField);
+
+                                    if(meth.GetParameters().Length == 2) // if method has 2 parameters then second parameter is boolean fromPool which we need to set to false here
+                                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldc_I4_0);
+
                                     if (meth.IsVirtual)
                                         binaryReaderConstructorIlGenerator.Emit(OpCodes.Callvirt, meth);
                                     else
@@ -384,13 +388,24 @@ namespace DeepReader.AssemblyGenerator
                             }
                             else
                             {
-                                var fieldBuilder = dynamicType.DefineField(clrFieldName, abiFieldType, FieldAttributes.Public);
-
-                                Label readOptionalEnd = default;
-                                // if the Field is optional we need to make it Nullable
-                                // and we need to generate code that handle's it's deserialization with a conditional
-                                if (isOptional)
+                                if (isOptional) // TODO this could be cleaned up further, no complete separate branch for optionals needed
                                 {
+                                    FieldBuilder fieldBuilder;
+
+                                    // if this is a ValueType we make it nullable
+                                    // if not a ValueType we need to set a Custom NullableAttribute when adding it as Field to a type
+                                    if (abiFieldType.IsValueType)
+                                        fieldBuilder = dynamicType.DefineField(clrFieldName, typeof(Nullable<>).MakeGenericType(abiFieldType), FieldAttributes.Public);
+                                    else
+                                    {
+                                        fieldBuilder = dynamicType.DefineField(clrFieldName, abiFieldType, FieldAttributes.Public);
+                                        fieldBuilder.SetCustomAttribute(NullableHelper.NullableAttributeBuilder);
+                                    }
+
+                                    Label readOptionalEnd = default;
+                                    // if the Field is optional we need to make it Nullable
+                                    // and we need to generate code that handle's it's deserialization with a conditional
+                                   
                                     // define label to jump to in case condition is false
                                     readOptionalEnd = binaryReaderConstructorIlGenerator.DefineLabel();
                                     // Load "this" onto stack
@@ -402,39 +417,70 @@ namespace DeepReader.AssemblyGenerator
                                     // check value on stack, if false, skip and continue at readOptionalEnd-Label
                                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Brfalse_S, readOptionalEnd);
 
-                                    // if this is a ValueType we make it nullable
-                                    // if not a ValueType we need to set a Custom NullableAttribute when adding it as Field to a type
-                                    if (abiFieldType.IsValueType)
-                                        abiFieldType = typeof(Nullable<>).MakeGenericType(abiFieldType);
+                                    // Load "this" onto stack
+                                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
+                                    // Load BinaryReader reference onto stack
+                                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
+
+                                    // Call the Reader/Deserialization-Method
+                                    // if this type is part of the generated module/assembly, call it's the constructor
+                                    // if not, call it's deserialization-method
+                                    if (isModuleType)
+                                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call,
+                                            abiFieldType.GetConstructor(binaryReaderAttr)!);
                                     else
-                                        fieldBuilder.SetCustomAttribute(NullableHelper.NullableAttributeBuilder);
+                                    {
+                                        var meth = GetReaderMethodForType(abiFieldType, abiField);
+
+                                        if (meth.GetParameters().Length ==
+                                            2) // if method has 2 parameters then second parameter is boolean fromPool which we need to set to false here
+                                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldc_I4_0);
+
+                                        if (meth.IsVirtual)
+                                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Callvirt, meth);
+                                        else
+                                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, meth);
+                                    }
+
+
+                                    // Set value of field to return-value of preious Call (value was put on stack)
+                                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Stfld, fieldBuilder);
+
+                                    binaryReaderConstructorIlGenerator.MarkLabel(readOptionalEnd);
                                 }
-
-                                // Load "this" onto stack
-                                binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
-                                // Load BinaryReader reference onto stack
-                                binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
-
-                                // Call the Reader/Deserialization-Method
-                                // if this type is part of the generated module/assembly, call it's the constructor
-                                // if not, call it's deserialization-method
-                                if (isModuleType)
-                                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, abiFieldType.GetConstructor(binaryReaderAttr)!);
                                 else
                                 {
-                                    var meth = GetReaderMethodForType(abiFieldType, abiField);
-                                    if (meth.IsVirtual)
-                                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Callvirt, meth);
+                                    var fieldBuilder = dynamicType.DefineField(clrFieldName, abiFieldType, FieldAttributes.Public);
+
+                                    // Load "this" onto stack
+                                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
+                                    // Load BinaryReader reference onto stack
+                                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
+
+                                    // Call the Reader/Deserialization-Method
+                                    // if this type is part of the generated module/assembly, call it's the constructor
+                                    // if not, call it's deserialization-method
+                                    if (isModuleType)
+                                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call,
+                                            abiFieldType.GetConstructor(binaryReaderAttr)!);
                                     else
-                                        binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, meth);
+                                    {
+                                        var meth = GetReaderMethodForType(abiFieldType, abiField);
+
+                                        if (meth.GetParameters().Length ==
+                                            2) // if method has 2 parameters then second parameter is boolean fromPool which we need to set to false here
+                                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldc_I4_0);
+
+                                        if (meth.IsVirtual)
+                                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Callvirt, meth);
+                                        else
+                                            binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, meth);
+                                    }
+
+
+                                    // Set value of field to return-value of preious Call (value was put on stack)
+                                    binaryReaderConstructorIlGenerator.Emit(OpCodes.Stfld, fieldBuilder);
                                 }
-
-
-                                // Set value of field to return-value of preious Call (value was put on stack)
-                                binaryReaderConstructorIlGenerator.Emit(OpCodes.Stfld, fieldBuilder);
-
-                                if (isOptional) // mark the label (set it's position) so code can jump here
-                                    binaryReaderConstructorIlGenerator.MarkLabel(readOptionalEnd);
                             }
                         }
                     }
@@ -527,7 +573,7 @@ namespace DeepReader.AssemblyGenerator
 
         private static readonly MethodInfo ReadUInt64 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadUInt64))!;
 
-        private static readonly MethodInfo ReadVarBytes = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadBytes))!; // Bytes, ActionDataBytes
+        private static readonly MethodInfo ReadVarBytes = typeof(Bytes).GetMethod(nameof(Bytes.ReadFromBinaryReader))!; // Bytes, ActionDataBytes
 
 
         private static readonly Dictionary<string, Type> TypeMap = new Dictionary<string, Type>()
@@ -579,9 +625,9 @@ namespace DeepReader.AssemblyGenerator
             { "block_header", typeof(BlockHeader) },
         };
 
-        // setaccountcpu
-        // setaccountnet
-        // setaccountram ?
+        // setacctcpu
+        // setacctnet
+        // setacctram ?
 
         // cpu_weight
         // net_weight
@@ -670,38 +716,38 @@ namespace DeepReader.AssemblyGenerator
         // TODO better names for these regions
         #region EosTypes BinaryReaderExtension Methods 
 
-        private static readonly MethodInfo ReadAsset = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadAsset))!;
+        private static readonly MethodInfo ReadAsset = typeof(Asset).GetMethod(nameof(Asset.ReadFromBinaryReader))!;
 
-        private static readonly MethodInfo ReadChecksum160 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadChecksum160))!;
+        private static readonly MethodInfo ReadChecksum160 = typeof(Checksum160).GetMethod(nameof(Checksum160.ReadFromBinaryReader))!;
 
-        private static readonly MethodInfo ReadChecksum256 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadChecksum256))!;
+        private static readonly MethodInfo ReadChecksum256 = typeof(Checksum256).GetMethod(nameof(Checksum256.ReadFromBinaryReader))!;
 
-        private static readonly MethodInfo ReadChecksum512 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadChecksum512))!;
+        private static readonly MethodInfo ReadChecksum512 = typeof(Checksum512).GetMethod(nameof(Checksum512.ReadFromBinaryReader))!;
 
         // ExtendedAsset
 
-        private static readonly MethodInfo ReadFloat128 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadFloat128))!;
+        private static readonly MethodInfo ReadFloat128 = typeof(Float128).GetMethod(nameof(Float128.ReadFromBinaryReader))!;
 
-        private static readonly MethodInfo ReadInt128 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadInt128))!;
+        private static readonly MethodInfo ReadInt128 = typeof(Int128).GetMethod(nameof(Int128.ReadFromBinaryReader))!;
 
-        private static readonly MethodInfo ReadName = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadName))!;
+        private static readonly MethodInfo ReadName = typeof(Name).GetMethod(nameof(Name.ReadFromBinaryReader))!;
 
-        private static readonly MethodInfo ReadPublicKey = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadPublicKey))!;
+        private static readonly MethodInfo ReadPublicKey = typeof(PublicKey).GetMethod(nameof(PublicKey.ReadFromBinaryReader))!;
 
-        private static readonly MethodInfo ReadSymbol = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadSymbol))!;
+        private static readonly MethodInfo ReadSymbol = typeof(Symbol).GetMethod(nameof(Symbol.ReadFromBinaryReader))!;
 
-        private static readonly MethodInfo ReadSymbolCode = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadSymbolCode))!;
+        private static readonly MethodInfo ReadSymbolCode = typeof(SymbolCode).GetMethod(nameof(SymbolCode.ReadFromBinaryReader))!;
 
-        private static readonly MethodInfo ReadTimestamp = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadTimestamp))!;
+        private static readonly MethodInfo ReadTimestamp = typeof(Timestamp).GetMethod(nameof(Timestamp.ReadFromBinaryReader))!;
 
-        private static readonly MethodInfo ReadUInt128 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadUInt128))!;
+        private static readonly MethodInfo ReadUInt128 = typeof(Uint128).GetMethod(nameof(Uint128.ReadFromBinaryReader))!;
 
         private static readonly MethodInfo ReadAuthority = typeof(Authority).GetMethod(nameof(Authority.ReadFromBinaryReader))!;
 
 
-        private static readonly MethodInfo ReadVarUint32 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadVarUint32))!;
+        private static readonly MethodInfo ReadVarUint32 = typeof(VarUint32).GetMethod(nameof(VarUint32.ReadFromBinaryReader))!;
 
-        private static readonly MethodInfo ReadVarUint64 = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadVarUint64))!;
+        private static readonly MethodInfo ReadVarUint64 = typeof(VarUint64).GetMethod(nameof(VarUint64.ReadFromBinaryReader))!;
 
 
         private static readonly MethodInfo ReadKeyWeight = typeof(KeyWeight).GetMethod(nameof(KeyWeight.ReadFromBinaryReader))!;

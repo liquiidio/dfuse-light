@@ -1,6 +1,5 @@
 ﻿using DeepReader.Apis.GraphQl.CustomScalarTypes;
 using DeepReader.Types.Eosio.Chain;
-using DeepReader.Types.StorageTypes;
 
 namespace DeepReader.Apis.GraphQl.ObjectTypes
 {

@@ -1,7 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 using DeepReader.Types.JsonConverters;
 
 namespace DeepReader.Types;
@@ -31,26 +30,26 @@ public class DbOp
     public DbOp(BinaryReader reader)
     {
         Operation = (DbOpOperation)reader.ReadByte();
-        Code = reader.ReadName();
-        Scope = reader.ReadName();
-        TableName = reader.ReadName();
+        Code = Name.ReadFromBinaryReader(reader);
+        Scope = Name.ReadFromBinaryReader(reader);
+        TableName = Name.ReadFromBinaryReader(reader);
         PrimaryKey = reader.ReadString();
         switch (Operation)
         {
             case DbOpOperation.UNKNOWN:
                 break;
             case DbOpOperation.INS: // has only newpayer and newdata
-                NewPayer = reader.ReadName();
+                NewPayer = Name.ReadFromBinaryReader(reader);
                 NewData = reader.ReadBytes(reader.Read7BitEncodedInt());
                 break;
             case DbOpOperation.UPD: // has all
-                NewPayer = reader.ReadName();
+                NewPayer = Name.ReadFromBinaryReader(reader);
                 NewData = reader.ReadBytes(reader.Read7BitEncodedInt());
-                OldPayer = reader.ReadName();
+                OldPayer = Name.ReadFromBinaryReader(reader);
                 OldData = reader.ReadBytes(reader.Read7BitEncodedInt());
                 break;
             case DbOpOperation.REM: // has only oldpayer and olddata
-                OldPayer = reader.ReadName();
+                OldPayer = Name.ReadFromBinaryReader(reader);
                 OldData = reader.ReadBytes(reader.Read7BitEncodedInt());
                 break;
             default:
@@ -58,7 +57,7 @@ public class DbOp
         }
     }
 
-    public static DbOp ReadFromBinaryReader(BinaryReader reader)
+    public static DbOp ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new DbOp(reader);
     }
@@ -66,29 +65,29 @@ public class DbOp
     internal void WriteToBinaryWriter(BinaryWriter writer)
     {
         writer.Write((byte)Operation);
-        writer.WriteName(Code);
-        writer.WriteName(Scope);
-        writer.WriteName(TableName);
+        Code.WriteToBinaryWriter(writer);
+        Scope.WriteToBinaryWriter(writer);
+        TableName.WriteToBinaryWriter(writer);
         writer.Write(PrimaryKey);
         switch (Operation)
         {
             case DbOpOperation.UNKNOWN:
                 break;
             case DbOpOperation.INS: // has only newpayer and newdata
-                writer.WriteName(NewPayer);
+                NewPayer.WriteToBinaryWriter(writer);
                 writer.Write7BitEncodedInt(NewData.Length);
                 writer.Write(NewData.Span);
                 break;
             case DbOpOperation.UPD: // has all
-                writer.WriteName(NewPayer);
+                NewPayer.WriteToBinaryWriter(writer);
                 writer.Write7BitEncodedInt(NewData.Length);
                 writer.Write(NewData.Span);
-                writer.WriteName(OldPayer);
+                OldPayer.WriteToBinaryWriter(writer);
                 writer.Write7BitEncodedInt(OldData.Length);
                 writer.Write(OldData.Span);
                 break;
             case DbOpOperation.REM: // has only oldpayer and olddata
-                writer.WriteName(OldPayer);
+                OldPayer.WriteToBinaryWriter(writer);
                 writer.Write7BitEncodedInt(OldData.Length);
                 writer.Write(OldData.Span);
                 break;

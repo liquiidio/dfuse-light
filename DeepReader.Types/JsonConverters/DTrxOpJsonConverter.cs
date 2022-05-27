@@ -1,8 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using DeepReader.Types.Enums;
-using DeepReader.Types.Eosio.Chain;
-using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.JsonConverters;
 

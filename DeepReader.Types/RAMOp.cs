@@ -1,6 +1,5 @@
 ﻿using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types;
 
@@ -16,12 +15,12 @@ public class RamOp
 
     }
 
-    public static RamOp ReadFromBinaryReader(BinaryReader reader)
+    public static RamOp ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         var obj = new RamOp()
         {
             Operation = (RamOpOperation)reader.ReadByte(),
-            Payer = reader.ReadName(),
+            Payer = Name.ReadFromBinaryReader(reader),
             Delta = reader.ReadInt64(),
             Usage = reader.ReadUInt64()
         };
@@ -32,7 +31,7 @@ public class RamOp
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
         writer.Write((byte)Operation);
-        writer.WriteName(Payer);
+        Payer.WriteToBinaryWriter(writer);
         writer.Write(Delta);
         writer.Write(Usage);
     }

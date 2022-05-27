@@ -1,5 +1,3 @@
-using DeepReader.Types.Helpers;
-
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
@@ -13,7 +11,7 @@ public sealed class TransactionReceipt : TransactionReceiptHeader, IEosioSeriali
     {
         Trx = TransactionVariant.ReadFromBinaryReader(reader);
     }
-    public new static TransactionReceipt ReadFromBinaryReader(BinaryReader reader)
+    public new static TransactionReceipt ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new TransactionReceipt(reader);
     }

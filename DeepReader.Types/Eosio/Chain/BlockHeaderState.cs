@@ -1,7 +1,5 @@
-using DeepReader.Types.Helpers;
 using DeepReader.Types.Eosio.Chain.Detail;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Eosio.Chain.Legacy;
 
@@ -46,7 +44,7 @@ public class BlockHeaderState : BlockHeaderStateCommon, IEosioSerializable<Block
 
         ConfirmCount = reader.ReadBytes(reader.Read7BitEncodedInt());
 
-        Id = reader.ReadChecksum256();
+        Id = Checksum256.ReadFromBinaryReader(reader);
         Header = SignedBlockHeader.ReadFromBinaryReader(reader);
         PendingSchedule = ScheduleInfo.ReadFromBinaryReader(reader);
 
@@ -58,11 +56,11 @@ public class BlockHeaderState : BlockHeaderStateCommon, IEosioSerializable<Block
         AdditionalSignatures = new Signature[reader.Read7BitEncodedInt()];
         for (var i = 0; i < AdditionalSignatures.Length; i++)
         {
-            AdditionalSignatures[i] = reader.ReadSignature();
+            AdditionalSignatures[i] = Signature.ReadFromBinaryReader(reader);
         }
     }
 
-    public new static BlockHeaderState ReadFromBinaryReader(BinaryReader reader)
+    public new static BlockHeaderState ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new BlockHeaderState(reader);
     }

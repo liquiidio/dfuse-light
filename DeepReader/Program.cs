@@ -1,8 +1,5 @@
 using System.Threading.Channels;
 using DeepReader.Apis;
-using DeepReader.Apis.GraphQl;
-using DeepReader.Apis.REST;
-using DeepReader.Classes;
 using DeepReader.HostedServices;
 using DeepReader.Options;
 using DeepReader.Pools;
@@ -10,7 +7,6 @@ using DeepReader.Storage.Faster;
 using DeepReader.Types;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
-using Sentry;
 using Serilog;
 
 

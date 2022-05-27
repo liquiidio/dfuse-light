@@ -1,8 +1,3 @@
-using System.Text.Json.Serialization;
-using DeepReader.Types.Enums;
-using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
-
 namespace DeepReader.Types;
 
 public sealed class ExtendedDbOp : DbOp
@@ -17,26 +12,26 @@ public sealed class ExtendedDbOp : DbOp
     //{
     //    Operation = (DbOpOperation)reader.ReadByte();
     //    ActionIndex = reader.ReadUInt32();
-    //    Code = reader.ReadName();
-    //    Scope = reader.ReadName();
-    //    TableName = reader.ReadName();
+    //    Code = Name.ReadFromBinaryReader(reader);
+    //    Scope = Name.ReadFromBinaryReader(reader);
+    //    TableName = Name.ReadFromBinaryReader(reader);
     //    PrimaryKey = reader.ReadString();
     //    switch (Operation)
     //    {
     //        case DbOpOperation.UNKNOWN:
     //            break;
     //        case DbOpOperation.INS: // has only newpayer and newdata
-    //            NewPayer = reader.ReadName();
+    //            NewPayer = Name.ReadFromBinaryReader(reader);
     //            NewData = reader.ReadBytes(reader.Read7BitEncodedInt());
     //            break;
     //        case DbOpOperation.UPD: // has all
-    //            NewPayer = reader.ReadName();
+    //            NewPayer = Name.ReadFromBinaryReader(reader);
     //            NewData = reader.ReadBytes(reader.Read7BitEncodedInt());
-    //            OldPayer = reader.ReadName();
+    //            OldPayer = Name.ReadFromBinaryReader(reader);
     //            OldData = reader.ReadBytes(reader.Read7BitEncodedInt());
     //            break;
     //        case DbOpOperation.REM: // has only oldpayer and olddata
-    //            OldPayer = reader.ReadName();
+    //            OldPayer = Name.ReadFromBinaryReader(reader);
     //            OldData = reader.ReadBytes(reader.Read7BitEncodedInt());
     //            break;
     //        default:
@@ -44,7 +39,7 @@ public sealed class ExtendedDbOp : DbOp
     //    }
     //}
 
-    //internal static ExtendedDbOp ReadFromBinaryReader(BinaryReader reader)
+    //internal static ExtendedDbOp ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     //{
     //    return new ExtendedDbOp(reader);
     //}

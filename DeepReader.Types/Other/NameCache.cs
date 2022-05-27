@@ -1,8 +1,6 @@
-﻿using System.Text;
-using DeepReader.Types.EosTypes;
+﻿using DeepReader.Types.EosTypes;
 using DeepReader.Types.Helpers;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.ObjectPool;
 
 // TODO, circular dependencies made me put this here (into DeepReader.Types) which feels like the wrong place

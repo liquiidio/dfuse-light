@@ -1,6 +1,4 @@
-using DeepReader.Types.Helpers;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -29,12 +27,12 @@ public class BlockHeader : IEosioSerializable<BlockHeader>
 
     public BlockHeader(BinaryReader reader)
     {
-        Timestamp = reader.ReadTimestamp();
-        Producer = reader.ReadName();
+        Timestamp = Timestamp.ReadFromBinaryReader(reader);
+        Producer = Name.ReadFromBinaryReader(reader);
         Confirmed = reader.ReadUInt16();
-        Previous = reader.ReadChecksum256();
-        TransactionMroot = reader.ReadChecksum256();
-        ActionMroot = reader.ReadChecksum256();
+        Previous = Checksum256.ReadFromBinaryReader(reader);
+        TransactionMroot = Checksum256.ReadFromBinaryReader(reader);
+        ActionMroot = Checksum256.ReadFromBinaryReader(reader);
         ScheduleVersion = reader.ReadUInt32();
 
         var readProducer = reader.ReadBoolean();
@@ -49,7 +47,7 @@ public class BlockHeader : IEosioSerializable<BlockHeader>
         }
     }
 
-    public static BlockHeader ReadFromBinaryReader(BinaryReader reader)
+    public static BlockHeader ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new BlockHeader(reader);
     }

@@ -1,5 +1,3 @@
-using DeepReader.Types.Helpers;
-
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
@@ -21,7 +19,7 @@ public sealed class BlockState : BlockHeaderState, IEosioSerializable<BlockState
         Validated = reader.ReadBoolean();
     }
 
-    public new static BlockState ReadFromBinaryReader(BinaryReader reader)
+    public new static BlockState ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new BlockState(reader);
     }

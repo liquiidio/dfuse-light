@@ -1,11 +1,4 @@
 ﻿using System.Text;
-using DeepReader.Types.Eosio.Chain;
-using DeepReader.Types.EosTypes;
-using DeepReader.Types.Fc;
-using DeepReader.Types.Fc.Crypto;
-using DeepReader.Types.Helpers;
-using DeepReader.Types.Other;
-using Serilog;
 
 namespace DeepReader.Types.Extensions
 {
@@ -25,182 +18,145 @@ namespace DeepReader.Types.Extensions
 
         #region EosTypes
 
-        public static Signature ReadSignature(this BinaryReader reader)
-        {
-            var type = reader.ReadByte();
-            var signBytes = reader.ReadBytes(Constants.SignKeyDataSize); // TODO 64 or 65 bytes ?!
-            reader.ReadByte();//read another byte
+        //public static Signature ReadSignature(this BinaryReader reader)
+        //{
+        //    var type = reader.ReadByte();
+        //    var signBytes = reader.ReadBytes(Constants.SignKeyDataSize); // TODO 64 or 65 bytes ?!
+        //    reader.ReadByte();//read another byte
 
-            return signBytes; 
-            // TODO, returning only 64 bytes here is wrong.
-            // But serialization to faster currently only writes 64 bytes
-            // so returning 65 or 66 bytes would break it
+        //    return signBytes; 
+        //    // TODO, returning only 64 bytes here is wrong.
+        //    // But serialization to faster currently only writes 64 bytes
+        //    // so returning 65 or 66 bytes would break it
 
-            // TODO we don't need to deserialize to string here all the time
-            // When processing dlogs we only need the binary data
-            // When printing/returning data for the API we need to convert to string.
+        //    // TODO we don't need to deserialize to string here all the time
+        //    // When processing dlogs we only need the binary data
+        //    // When printing/returning data for the API we need to convert to string.
 
-            // TODO, general, is this SignBytesToString using sha or just BytesToString?!
-            // yeah, here's probably something wrong.
-            // https://github.com/eosnetworkfoundation/mandel-fc/blob/main/include/fc/crypto/elliptic.hpp
-            switch (type)
-            {
-                case (int)KeyType.R1:
-                    return new Signature(signBytes, CryptoHelper.SignBytesToString(signBytes, "R1", "SIG_R1_"));
-                case (int)KeyType.K1:
-                    return new Signature(signBytes, CryptoHelper.SignBytesToString(signBytes, "K1", "SIG_K1_"));
-                default:
-                    Log.Error(new Exception($"Signature type {type} not supported"), "");
-                    Log.Error(new Exception(CryptoHelper.SignBytesToString(signBytes, "K1", "SIG_K1_")), "");
-                    return new Signature(signBytes, CryptoHelper.SignBytesToString(signBytes, "K1", "SIG_K1_"));  // TODO ??
-            }
-        }
+        //    // TODO, general, is this SignBytesToString using sha or just BytesToString?!
+        //    // yeah, here's probably something wrong.
+        //    // https://github.com/eosnetworkfoundation/mandel-fc/blob/main/include/fc/crypto/elliptic.hpp
+        //    switch (type)
+        //    {
+        //        case (int)KeyType.R1:
+        //            return new Signature(signBytes, CryptoHelper.SignBytesToString(signBytes, "R1", "SIG_R1_"));
+        //        case (int)KeyType.K1:
+        //            return new Signature(signBytes, CryptoHelper.SignBytesToString(signBytes, "K1", "SIG_K1_"));
+        //        default:
+        //            Log.Error(new Exception($"Signature type {type} not supported"), "");
+        //            Log.Error(new Exception(CryptoHelper.SignBytesToString(signBytes, "K1", "SIG_K1_")), "");
+        //            return new Signature(signBytes, CryptoHelper.SignBytesToString(signBytes, "K1", "SIG_K1_"));  // TODO ??
+        //    }
+        //}
 
-        public static Checksum160 ReadChecksum160(this BinaryReader reader)
-        {
-            return reader.ReadBytes(20);
-        }
+        //public static Checksum160 ReadChecksum160(this BinaryReader reader)
+        //{
+        //    return reader.ReadBytes(20);
+        //}
 
-        public static Checksum256 ReadChecksum256(this BinaryReader reader)
-        {
-            return reader.ReadBytes(32);
-        }
+        //public static Checksum256 ReadChecksum256(this BinaryReader reader)
+        //{
+        //}
 
-        public static TransactionId ReadTransactionId(this BinaryReader reader)
-        {
-            return reader.ReadBytes(32);
-        }
+        //public static TransactionId ReadTransactionId(this BinaryReader reader)
+        //{
+        //    return reader.ReadBytes(32);
+        //}
 
-        public static Checksum512 ReadChecksum512(this BinaryReader reader)
-        {
-            return reader.ReadBytes(64);
-        }
+        //public static Checksum512 ReadChecksum512(this BinaryReader reader)
+        //{
+        //    return reader.ReadBytes(64);
+        //}
 
-        public static ushort ReadVarUint16(this BinaryReader reader)
-        {
-            ushort v = 0;
-            var bit = 0;
-            while (true)
-            {
-                var b = reader.ReadByte();
-                v |= (ushort)((b & 0x7f) << bit);
-                bit += 7;
-                if ((b & 0x80) == 0)
-                    break;
-            }
-            return (ushort)(v >> 0);
-        }
+        //public static ushort ReadVarUint16(this BinaryReader reader)
+        //{
+        //    ushort v = 0;
+        //    var bit = 0;
+        //    while (true)
+        //    {
+        //        var b = reader.ReadByte();
+        //        v |= (ushort)((b & 0x7f) << bit);
+        //        bit += 7;
+        //        if ((b & 0x80) == 0)
+        //            break;
+        //    }
+        //    return (ushort)(v >> 0);
+        //}
 
-        public static short ReadVarInt16(this BinaryReader reader)
-        {
-            short v = 0;
-            var bit = 0;
-            while (true)
-            {
-                var b = reader.ReadByte();
-                v |= (short)((b & 0x7f) << bit);
-                bit += 7;
-                if ((b & 0x80) == 0)
-                    break;
-            }
-            return (short)(v >> 0);
-        }
+        //public static short ReadVarInt16(this BinaryReader reader)
+        //{
+        //    short v = 0;
+        //    var bit = 0;
+        //    while (true)
+        //    {
+        //        var b = reader.ReadByte();
+        //        v |= (short)((b & 0x7f) << bit);
+        //        bit += 7;
+        //        if ((b & 0x80) == 0)
+        //            break;
+        //    }
+        //    return (short)(v >> 0);
+        //}
 
-        public static uint ReadVarUint32(this BinaryReader reader)
-        {
-            var vint = reader.Read7BitEncodedInt();
-            return (uint)vint;
+        //public static int ReadVarInt32(this BinaryReader reader)
+        //{
+        //    int v = 0;
+        //    var bit = 0;
+        //    while (true)
+        //    {
+        //        var b = reader.ReadByte();
+        //        v |= (int)((b & 0x7f) << bit);
+        //        bit += 7;
+        //        if ((b & 0x80) == 0)
+        //            break;
+        //    }
+        //    return v >> 0;
+        //}
 
-            //uint v = 0;
-            //var bit = 0;
-            //while (true)
-            //{
-            //    var b = reader.ReadByte();
-            //    v |= (uint)((b & 0x7f) << bit);
-            //    bit += 7;
-            //    if ((b & 0x80) == 0)
-            //        break;
-            //}
-            //return v >> 0;
-        }
+        //public static long ReadVarInt64(this BinaryReader reader)
+        //{
+        //    long v = 0;
+        //    var bit = 0;
+        //    while (true)
+        //    {
+        //        var b = reader.ReadByte();
+        //        v |= (long)((b & 0x7f) << bit);
+        //        bit += 7;
+        //        if ((b & 0x80) == 0)
+        //            break;
+        //    }
+        //    return v >> 0;
+        //}
 
-        public static int ReadVarInt32(this BinaryReader reader)
-        {
-            int v = 0;
-            var bit = 0;
-            while (true)
-            {
-                var b = reader.ReadByte();
-                v |= (int)((b & 0x7f) << bit);
-                bit += 7;
-                if ((b & 0x80) == 0)
-                    break;
-            }
-            return v >> 0;
-        }
+        //public static VarUint32 ReadVarUint32Obj(this BinaryReader reader)
+        //{
+        //    return reader.ReadVarUint32();
+        //}
 
-        public static ulong ReadVarUint64(this BinaryReader reader)
-        {
-            var vint = reader.Read7BitEncodedInt64();
-            return (ulong)vint;
-            //ulong v = 0;
-            //var bit = 0;
-            //while (true)
-            //{
-            //    var b = reader.ReadByte();
-            //    ulong v1 = (ulong)((b & 0x7f) << bit);
-            //    v |= v1;
-            //    bit += 7;
-            //    if ((b & 0x80) == 0)
-            //        break;
-            //}
-            //return v >> 0;
-        }
+        //public static VarInt32 ReadVarInt32Obj(this BinaryReader reader)
+        //{
+        //    return reader.ReadVarInt32();
+        //}
 
-        public static long ReadVarInt64(this BinaryReader reader)
-        {
-            long v = 0;
-            var bit = 0;
-            while (true)
-            {
-                var b = reader.ReadByte();
-                v |= (long)((b & 0x7f) << bit);
-                bit += 7;
-                if ((b & 0x80) == 0)
-                    break;
-            }
-            return v >> 0;
-        }
+        //public static VarUint64 ReadVarUint64Obj(this BinaryReader reader)
+        //{
+        //    return reader.ReadVarUint64();
+        //}
 
-        public static VarUint32 ReadVarUint32Obj(this BinaryReader reader)
-        {
-            return reader.ReadVarUint32();
-        }
+        //public static VarInt64 ReadVarInt64Obj(this BinaryReader reader)
+        //{
+        //    return reader.ReadVarInt64();
+        //}
 
-        public static VarInt32 ReadVarInt32Obj(this BinaryReader reader)
-        {
-            return reader.ReadVarInt32();
-        }
+        //public static Uint128 ReadUInt128(this BinaryReader reader)
+        //{
+        //    return reader.ReadBytes(16);
+        //}
 
-        public static VarUint64 ReadVarUint64Obj(this BinaryReader reader)
-        {
-            return reader.ReadVarUint64();
-        }
-
-        public static VarInt64 ReadVarInt64Obj(this BinaryReader reader)
-        {
-            return reader.ReadVarInt64();
-        }
-
-        public static Uint128 ReadUInt128(this BinaryReader reader)
-        {
-            return reader.ReadBytes(16);
-        }
-
-        public static Int128 ReadInt128(this BinaryReader reader)
-        {
-            return reader.ReadBytes(16);
-        }
+        //public static Int128 ReadInt128(this BinaryReader reader)
+        //{
+        //    return reader.ReadBytes(16);
+        //}
 
         /// <summary>
         /// Slower, old ReadName-Method
@@ -242,10 +198,10 @@ namespace DeepReader.Types.Extensions
         /// <summary>
         /// Reads 8 bytes from reader, uses Cache to return Name
         /// </summary>
-        public static Name ReadName(this BinaryReader reader)
-        {
-            return NameCache.GetOrCreate(reader.ReadBytes(8));
-        }
+        //public static Name ReadName(this BinaryReader reader)
+        //{
+        //    return ;
+        //}
 
         public static string ReadString(this BinaryReader reader)
         {
@@ -253,44 +209,40 @@ namespace DeepReader.Types.Extensions
             return length > 0 ? Encoding.UTF8.GetString(reader.ReadBytes(length)) : string.Empty;
         }
 
-        public static byte[] ReadBytes(this BinaryReader reader)
-        {
-            var length = Convert.ToInt32(reader.ReadVarUint32());
-            return reader.ReadBytes(length);
-        }
+        //public static byte[] ReadBytes(this BinaryReader reader)
+        //{
+        //    var length = reader.Read7BitEncodedInt();
+        //    return reader.ReadBytes(length);
+        //}
 
-        public static PublicKey ReadPublicKey(this BinaryReader reader)
-        {
-            var type = reader.ReadByte();
-            var keyBytes = reader.ReadBytes(Constants.PubKeyDataSize);
+        //public static PublicKey ReadPublicKey(this BinaryReader reader)
+        //{
 
-            return keyBytes;
+        //    // TODO we don't need to deserialize/convert to string just for the deserialization of dlogs
+        //    // but we probably need when returning data via API
 
-            // TODO we don't need to deserialize/convert to string just for the deserialization of dlogs
-            // but we probably need when returning data via API
-
-            //switch (type)
-            //{
-            //    case (int)KeyType.K1:
-            //        return CryptoHelper.PubKeyBytesToString(keyBytes, "K1");
-            //    case (int)KeyType.R1:
-            //        return CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_");
-            //    case (int)KeyType.WA:
-            //        return CryptoHelper.PubKeyBytesToString(keyBytes, "WA", "PUB_WA_");
-            //    default:
-            //        Log.Error(new Exception($"public key type {type} not supported"), "");
-            //        Log.Error(CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_"));
-            //        return CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_"); // TODO ??
-            //}
-        }
+        //    //switch (type)
+        //    //{
+        //    //    case (int)KeyType.K1:
+        //    //        return CryptoHelper.PubKeyBytesToString(keyBytes, "K1");
+        //    //    case (int)KeyType.R1:
+        //    //        return CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_");
+        //    //    case (int)KeyType.WA:
+        //    //        return CryptoHelper.PubKeyBytesToString(keyBytes, "WA", "PUB_WA_");
+        //    //    default:
+        //    //        Log.Error(new Exception($"public key type {type} not supported"), "");
+        //    //        Log.Error(CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_"));
+        //    //        return CryptoHelper.PubKeyBytesToString(keyBytes, "R1", "PUB_R1_"); // TODO ??
+        //    //}
+        //}
         #endregion EosTypes
 
 
-        public static ActionDataBytes ReadActionDataBytes(this BinaryReader reader)
-        {
-            var length = reader.Read7BitEncodedInt();
-            return new ActionDataBytes(reader.ReadBytes(length));
-        }
+        //public static ActionDataBytes ReadActionDataBytes(this BinaryReader reader)
+        //{
+        //    var length = reader.Read7BitEncodedInt();
+        //    return new ActionDataBytes(reader.ReadBytes(length));
+        //}
 
         //public static TracesBytes ReadTracesBytes(this BinaryBufferReader reader)
         //{
@@ -328,57 +280,57 @@ namespace DeepReader.Types.Extensions
         //    return new PackedTransactionBytes(reader.ReadBytes(length));
         //}
 
-        public static float ReadFloat32(this BinaryReader reader)
-        {
-            return BitConverter.ToSingle(reader.ReadBytes(4));
-        }
+        //public static float ReadFloat32(this BinaryReader reader)
+        //{
+        //    return BitConverter.ToSingle(reader.ReadBytes(4));
+        //}
 
-        public static double ReadFloat64(this BinaryReader reader)
-        {
-            return BitConverter.ToDouble(reader.ReadBytes(8));
-        }
+        //public static double ReadFloat64(this BinaryReader reader)
+        //{
+        //    return BitConverter.ToDouble(reader.ReadBytes(8));
+        //}
 
-        public static Float128 ReadFloat128(this BinaryReader reader)
-        {
-            var bytes = reader.ReadBytes(16);
-            return bytes;
-        }
+        //public static Float128 ReadFloat128(this BinaryReader reader)
+        //{
+        //    var bytes = reader.ReadBytes(16);
+        //    return bytes;
+        //}
 
-        public static Asset ReadAsset(this BinaryReader reader)
-        {
-            var binaryAmount = reader.ReadInt64();
+        //public static Asset ReadAsset(this BinaryReader reader)
+        //{
+        //    var binaryAmount = reader.ReadInt64();
 
-            var symbol = reader.ReadSymbol();
-            //var amount = SerializationHelper.SignedBinaryToDecimal(binaryAmount, symbol.Precision + 1);
+        //    var symbol = reader.ReadSymbol();
+        //    //var amount = SerializationHelper.SignedBinaryToDecimal(binaryAmount, symbol.Precision + 1);
 
-            //if (symbol.Precision > 0)
-            //    amount = amount.Substring(0, amount.Length - symbol.Precision) + '.' + amount.Substring(amount.Length - symbol.Precision);
+        //    //if (symbol.Precision > 0)
+        //    //    amount = amount.Substring(0, amount.Length - symbol.Precision) + '.' + amount.Substring(amount.Length - symbol.Precision);
 
-            return new Asset() { Symbol = symbol, Amount = binaryAmount, };
-        }
+        //    return new Asset() { Symbol = symbol, Amount = binaryAmount, };
+        //}
 
-        public static Symbol ReadSymbol(this BinaryReader reader)
-        {
-            var precision = reader.ReadByte();
+        //public static Symbol ReadSymbol(this BinaryReader reader)
+        //{
+        //    var precision = reader.ReadByte();
 
-            return new Symbol(reader.ReadSymbolCode(), precision);
-        }
+        //    return new Symbol(reader.ReadSymbolCode(), precision);
+        //}
 
-        public static SymbolCode ReadSymbolCode(this BinaryReader reader)
-        {
-            var a = reader.ReadBytes(7); // this is 7 bytes as a whole symbol_code is 8bytes
+        //public static SymbolCode ReadSymbolCode(this BinaryReader reader)
+        //{
+        //    var a = reader.ReadBytes(7); // this is 7 bytes as a whole symbol_code is 8bytes
 
-            int len;
-            for (len = 0; len < a.Length; ++len)
-                if (a[len] == 0)
-                    break;
+        //    int len;
+        //    for (len = 0; len < a.Length; ++len)
+        //        if (a[len] == 0)
+        //            break;
 
-            return new SymbolCode(a, string.Join("", a.Take(len)));
-        }
+        //    return new SymbolCode(a, string.Join("", a.Take(len)));
+        //}
 
-        public static Timestamp ReadTimestamp(this BinaryReader reader)
-        {
-            return reader.ReadUInt32();
-        }
+        //public static Timestamp ReadTimestamp(this BinaryReader reader)
+        //{
+        //    return reader.ReadUInt32();
+        //}
     }
 }

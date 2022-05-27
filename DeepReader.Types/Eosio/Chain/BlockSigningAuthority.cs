@@ -5,7 +5,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public abstract class BlockSigningAuthorityVariant : IEosioSerializable<BlockSigningAuthorityVariant>
 {
-    public static BlockSigningAuthorityVariant ReadFromBinaryReader(BinaryReader reader)
+    public static BlockSigningAuthorityVariant ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         var type = reader.ReadByte();
         switch (type)
@@ -37,7 +37,7 @@ public sealed class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant, IEos
         }
     }
 
-    public new static BlockSigningAuthorityV0 ReadFromBinaryReader(BinaryReader reader)
+    public new static BlockSigningAuthorityV0 ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new BlockSigningAuthorityV0(reader);
     }

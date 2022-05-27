@@ -1,5 +1,4 @@
 using DeepReader.Types.Enums;
-using DeepReader.Types.EosTypes;
 using KGySoft.CoreLibraries;
 
 namespace DeepReader.Types;

@@ -1,6 +1,4 @@
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
-using DeepReader.Types.Fc;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -9,11 +7,11 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public sealed class ActionTrace : IEosioSerializable<ActionTrace>
 {
-    public VarUint32 ActionOrdinal;
+    public uint ActionOrdinal;
 
-    public VarUint32 CreatorActionOrdinal;
+    public uint CreatorActionOrdinal;
 
-    public VarUint32 ClosestUnnotifiedAncestorActionOrdinal;
+    public uint ClosestUnnotifiedAncestorActionOrdinal;
 
     public ActionReceipt? Receipt;
 
@@ -46,40 +44,30 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>
 
     public char[] ReturnValue;	// TODO, string?
 
-    public bool IsInput()
-    {
-        return GetCreatorActionOrdinal() == 0;
-    }
-
-    private uint GetCreatorActionOrdinal()
-    {
-        return CreatorActionOrdinal;
-    }
-
     public ActionTrace(BinaryReader reader)
     {
-        ActionOrdinal = reader.ReadVarUint32Obj();
-        CreatorActionOrdinal = reader.ReadVarUint32Obj();
-        ClosestUnnotifiedAncestorActionOrdinal = reader.ReadVarUint32Obj();
+        ActionOrdinal = (uint)reader.Read7BitEncodedInt();
+        CreatorActionOrdinal = (uint)reader.Read7BitEncodedInt();
+        ClosestUnnotifiedAncestorActionOrdinal = (uint)reader.Read7BitEncodedInt();
 
         var readActionReceipt = reader.ReadBoolean();
 
         if (readActionReceipt)
             Receipt = ActionReceipt.ReadFromBinaryReader(reader);
 
-        Receiver = reader.ReadName();
+        Receiver = Name.ReadFromBinaryReader(reader);
         Act = Action.ReadFromBinaryReader(reader);
         ContextFree = reader.ReadBoolean();
         ElapsedUs = reader.ReadInt64();
         Console = reader.ReadString();
-        TransactionId = reader.ReadTransactionId();
+        TransactionId = TransactionId.ReadFromBinaryReader(reader);
         BlockNum = reader.ReadUInt32();
-        BlockTime = reader.ReadTimestamp();
+        BlockTime = Timestamp.ReadFromBinaryReader(reader);
 
         var readProducerBlockId = reader.ReadBoolean();
 
         if (readProducerBlockId)
-            ProducerBlockId = reader.ReadChecksum256();
+            ProducerBlockId = Checksum256.ReadFromBinaryReader(reader);
 
         AccountRamDeltas = new AccountDelta[reader.Read7BitEncodedInt()];
         for (int i = 0; i < AccountRamDeltas.Length; i++)
@@ -100,7 +88,7 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>
         ReturnValue = reader.ReadChars(reader.Read7BitEncodedInt());
     }
 
-    public static ActionTrace ReadFromBinaryReader(BinaryReader reader)
+    public static ActionTrace ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new ActionTrace(reader);
     }
@@ -119,7 +107,7 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>
         else
             writer.Write(false);
 
-        writer.WriteName(Receiver);
+        Receiver.WriteToBinaryWriter(writer);
 
         Act.WriteToBinaryWriter(writer);
 
@@ -130,12 +118,12 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>
         TransactionId.WriteToBinaryWriter(writer);
 
         writer.Write(BlockNum);
-        writer.Write(BlockTime.Ticks);
+        BlockTime.WriteToBinaryWriter(writer);
 
         if (ProducerBlockId != null)
         {
             writer.Write(true);
-            writer.WriteChecksum256(ProducerBlockId);
+            ProducerBlockId.WriteToBinaryWriter(writer);
         }
         else
             writer.Write(false);

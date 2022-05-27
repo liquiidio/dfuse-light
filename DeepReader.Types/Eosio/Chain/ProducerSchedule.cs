@@ -1,29 +1,36 @@
 using DeepReader.Types.Eosio.Chain.Legacy;
+using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public sealed class ProducerSchedule : IEosioSerializable<ProducerSchedule>
+public sealed class ProducerSchedule : PooledObject<ProducerSchedule>, IEosioSerializable<ProducerSchedule>
 {
     public uint Version;//uint32
     public ProducerKey[] Producers;//[]*ProducerKey
 
-    public ProducerSchedule(BinaryReader reader)
+    public ProducerSchedule()
     {
-        Version = reader.ReadUInt32();
-
-        Producers = new ProducerKey[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < Producers.Length; i++)
-        {
-            Producers[i] = ProducerKey.ReadFromBinaryReader(reader);
-        }
+        Producers = Array.Empty<ProducerKey>();
     }
 
-    public static ProducerSchedule ReadFromBinaryReader(BinaryReader reader)
+    public static ProducerSchedule ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
-        return new ProducerSchedule(reader);
+        // when Faster wants to deserialize and Object, we take an Object from the Pool
+        // when Faster evicts the Object we return it to the Pool
+        var obj = fromPool ? TypeObjectPool.Get() : new ProducerSchedule();
+
+        obj.Version = reader.ReadUInt32();
+
+        obj.Producers = new ProducerKey[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < obj.Producers.Length; i++)
+        {
+            obj.Producers[i] = ProducerKey.ReadFromBinaryReader(reader);
+        }
+
+        return obj;
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)
@@ -35,5 +42,9 @@ public sealed class ProducerSchedule : IEosioSerializable<ProducerSchedule>
         {
             producer.WriteToBinaryWriter(writer);
         }
+
+        // when Faster wants to deserialize and Object, we take an Object from the Pool
+        // when Faster evicts the Object we return it to the Pool
+        TypeObjectPool.Return(this);
     }
 }

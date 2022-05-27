@@ -1,30 +1,37 @@
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
+using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// flat_map<account_name,uint64_t>
 /// </summary>
-public sealed class TransactionTraceAuthSequence : IEosioSerializable<TransactionTraceAuthSequence>
+public sealed class TransactionTraceAuthSequence : PooledObject<TransactionTraceAuthSequence>, IEosioSerializable<TransactionTraceAuthSequence>
 {
     public Name Account;
     public ulong Sequence;
 
-    public TransactionTraceAuthSequence(BinaryReader reader)
+    public TransactionTraceAuthSequence()
     {
-        Account = reader.ReadName();
-        Sequence = reader.ReadUInt64();
+        Account = Name.TypeEmpty;
+        Sequence = 0;
     }
 
-    public static TransactionTraceAuthSequence ReadFromBinaryReader(BinaryReader reader)
+    public static TransactionTraceAuthSequence ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
-        return new TransactionTraceAuthSequence(reader);
+        var obj = fromPool ? TypeObjectPool.Get() : new TransactionTraceAuthSequence();
+
+        obj.Account = Name.ReadFromBinaryReader(reader);
+        obj.Sequence = reader.ReadUInt64();
+
+        return obj;
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        writer.WriteName(Account);
+        Account.WriteToBinaryWriter(writer);
         writer.Write(Sequence);
+
+        TypeObjectPool.Return(this);
     }
 }

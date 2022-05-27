@@ -3,7 +3,7 @@
 /// <summary>
 /// libraries/fc/include/fc/io/varint.hpp
 /// </summary>
-public sealed class VarUint32 : BinaryType
+public sealed class VarUint32 : BinaryType, IEosioSerializable<VarUint32>
 {
     public uint Value;
 
@@ -15,5 +15,10 @@ public sealed class VarUint32 : BinaryType
     public static implicit operator uint(VarUint32 value)
     {
         return value.Value;
+    }
+
+    public static VarUint32 ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    { 
+        return (uint)reader.Read7BitEncodedInt();
     }
 }

@@ -1,4 +1,3 @@
-using DeepReader.Types.Helpers;
 using DeepReader.Types.Eosio.Chain.Legacy;
 
 namespace DeepReader.Types.Eosio.Chain.Detail;
@@ -26,7 +25,7 @@ public class BlockHeaderStateCommon
 
     public byte[] ConfirmCount = Array.Empty<byte>();
 
-    public static BlockHeaderStateCommon ReadFromBinaryReader(BinaryReader reader)
+    public static BlockHeaderStateCommon ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         var blockStateHeaderCommon = new BlockHeaderStateCommon()
         {

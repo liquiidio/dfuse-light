@@ -7,8 +7,10 @@ using DeepReader.Types.Other;
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(NameJsonConverter))]
-public sealed class Name : BinaryType
+public sealed class Name : BinaryType, IEosioSerializable<Name>
 {
+    private const int NameByteLength = 8;
+
     private string? _stringVal;
 
     private ulong? _intVal;
@@ -30,6 +32,15 @@ public sealed class Name : BinaryType
     //    _stringVal = stringVal;
     //    Binary = binary;
     //}
+    public static Name ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    {
+        return NameCache.GetOrCreate(reader.ReadBytes(NameByteLength));
+    }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.Write(Binary);
+    }
 
     public void Set(ulong intVal, byte[] binary)
     {

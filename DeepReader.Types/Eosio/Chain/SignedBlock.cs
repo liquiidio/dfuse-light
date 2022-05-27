@@ -1,5 +1,3 @@
-using DeepReader.Types.Helpers;
-
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
@@ -26,7 +24,7 @@ public sealed class SignedBlock : SignedBlockHeader, IEosioSerializable<SignedBl
         }
     }
 
-    public new static SignedBlock ReadFromBinaryReader(BinaryReader reader)
+    public new static SignedBlock ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new SignedBlock(reader);
     }

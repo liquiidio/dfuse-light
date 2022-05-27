@@ -35,7 +35,7 @@ public sealed class Authority : IEosioSerializable<Authority>
         }
     }
 
-    public static Authority ReadFromBinaryReader(BinaryReader reader)
+    public static Authority ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new Authority(reader);
     }

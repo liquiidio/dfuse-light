@@ -1,5 +1,3 @@
-using DeepReader.Types.Extensions;
-
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
@@ -7,15 +5,15 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public abstract class TransactionVariant : IEosioSerializable<TransactionVariant>
 {
-    public static TransactionVariant ReadFromBinaryReader(BinaryReader reader)
+    public static TransactionVariant ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         var type = reader.ReadByte();
         switch (type)
         {
             case 0:
-                return reader.ReadTransactionId();
+                return TransactionId.ReadFromBinaryReader(reader, fromPool);
             case 1:
-                return PackedTransaction.ReadFromBinaryReader(reader);
+                return PackedTransaction.ReadFromBinaryReader(reader, fromPool);
             default:
                 throw new Exception("BlockSigningAuthorityVariant {type} unknown");
         }

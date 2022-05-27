@@ -1,5 +1,4 @@
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain.Detail;
 
@@ -14,10 +13,10 @@ public sealed class PairAccountNameBlockNum : IEosioSerializable<PairAccountName
 
     public PairAccountNameBlockNum(BinaryReader reader)
     {
-        AccountName = reader.ReadName();
+        AccountName = Name.ReadFromBinaryReader(reader);
         BlockNum = reader.ReadUInt32();
     }
-    public static PairAccountNameBlockNum ReadFromBinaryReader(BinaryReader reader)
+    public static PairAccountNameBlockNum ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new PairAccountNameBlockNum(reader);
     }

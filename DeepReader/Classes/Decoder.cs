@@ -1,6 +1,4 @@
-﻿using System.Buffers;
-
-namespace DeepReader.Classes;
+﻿namespace DeepReader.Classes;
 
 public static class Decoder
 {

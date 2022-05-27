@@ -1,6 +1,6 @@
 ﻿namespace DeepReader.Types.EosTypes;
 
-public struct Symbol
+public struct Symbol : IEosioSerializable<Symbol>
 {
     public byte[] Binary = Array.Empty<byte>();
 
@@ -12,5 +12,15 @@ public struct Symbol
     {
         Code = code;
         Precision = precision;
+    }
+
+    public static Symbol ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    {
+        var symbol = new Symbol
+        {
+            Precision = reader.ReadByte(),
+            Code = SymbolCode.ReadFromBinaryReader(reader)
+        };
+        return symbol;
     }
 }

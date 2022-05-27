@@ -5,7 +5,6 @@ using DeepReader.Storage.Faster.Transactions;
 using DeepReader.Storage.Options;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.StorageTypes;
-using FASTER.core;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Options;
 using System.Reflection;
@@ -62,18 +61,19 @@ namespace DeepReader.Storage.Faster
         public async Task<(bool, Block)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false, bool includeActionTraces = false)
         {
             var (found, block) = await _blockStore.TryGetBlockById(blockNum);
-            if (found && includeTransactionTraces && block.Transactions.Length == 0) // if length != 0 values are already loaded and referenced
+            if (found && includeTransactionTraces && block.Transactions.Count == 0) // if length != 0 values are already loaded and referenced
             {
-                block.Transactions = new TransactionTrace[block.TransactionIds.Length];
+                var transactionTraceArray = new TransactionTrace[block.TransactionIds.Count];
                 // not sure if this is clever or over-parallelized
                 await Parallel.ForEachAsync(block.TransactionIds, _parallelOptions, async (transactionId, _) =>
                 {
                     var (foundTrx, transaction) =
                         await _transactionStore.TryGetTransactionTraceById(transactionId);
                     int index;
-                    if (foundTrx && (index = Array.IndexOf(block.TransactionIds, transactionId)) >= 0)
-                        block.Transactions[index] = transaction;
+                    if (foundTrx && (index = block.TransactionIds.IndexOf(transactionId)) >= 0)
+                        transactionTraceArray[index] = transaction;
                 });
+                block.Transactions = transactionTraceArray.ToList();
             }
             if (found && includeActionTraces && block.Transactions?.FirstOrDefault()?.ActionTraces.Length == 0) // if length != 0 values are already loaded and referenced
             {

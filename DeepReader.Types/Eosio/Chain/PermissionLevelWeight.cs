@@ -16,7 +16,7 @@ public sealed class PermissionLevelWeight : IEosioSerializable<PermissionLevelWe
         Weight = reader.ReadUInt16();
     }
 
-    public static PermissionLevelWeight ReadFromBinaryReader(BinaryReader reader)
+    public static PermissionLevelWeight ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new PermissionLevelWeight(reader);
     }

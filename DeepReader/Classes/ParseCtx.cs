@@ -6,7 +6,6 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Helpers;
 using KGySoft.CoreLibraries;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Toolkit.HighPerformance;
 using Serilog;
 namespace DeepReader.Classes;
@@ -380,7 +379,7 @@ public class ParseCtx
         {
             var el = _block.UnfilteredTransactionTraces[idx];
             el.Index = (ulong)idx;
-            el.BlockTime = 0;// TODO block.Header.Timestamp;
+            el.BlockTime = _block.Header.Timestamp;// TODO block.Header.Timestamp;
             el.ProducerBlockId = _block.Id;
             el.BlockNum = _block.Number;
 

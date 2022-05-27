@@ -1,5 +1,4 @@
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -74,14 +73,14 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
 
     public TransactionTrace(BinaryReader reader)
     {
-        Id = reader.ReadTransactionId();
+        Id = TransactionId.ReadFromBinaryReader(reader);
         BlockNum = reader.ReadUInt32();
-        BlockTime = reader.ReadTimestamp();
+        BlockTime = Timestamp.ReadFromBinaryReader(reader);
 
         var readProducerBlockId = reader.ReadBoolean();
 
         if (readProducerBlockId)
-            ProducerBlockId = reader.ReadChecksum256();
+            ProducerBlockId = Checksum256.ReadFromBinaryReader(reader);
 
         var readReceipt = reader.ReadBoolean();
 
@@ -119,7 +118,7 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
 
     }
 
-    public static TransactionTrace ReadFromBinaryReader(BinaryReader reader)
+    public static TransactionTrace ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new TransactionTrace(reader);
     }
@@ -132,7 +131,7 @@ public sealed class Except : IEosioSerializable<Except>
     public string Message = string.Empty;
     public ExceptLogMessage[] Stack = Array.Empty<ExceptLogMessage>();
 
-    public static Except? ReadFromBinaryReader(BinaryReader reader)
+    public static Except? ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         // TODO: (Corvin) 
         // Corvin: "This is something that was missing my version as well, need to do some research to understand how it's serialized"

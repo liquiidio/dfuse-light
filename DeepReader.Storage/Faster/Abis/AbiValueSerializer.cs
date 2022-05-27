@@ -1,6 +1,4 @@
 ﻿using FASTER.core;
-using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace DeepReader.Storage.Faster.Abis;
 
@@ -21,8 +19,9 @@ public sealed class AbiValueSerializer : BinaryObjectSerializer<AbiCacheItem>
     public override void Serialize(ref AbiCacheItem obj)
     {
         writer.Write(obj.Id);
-        writer.Write7BitEncodedInt(obj.AbiVersions.Count);
-        foreach(var item in obj.AbiVersions)
+        var abiVerions = obj.AbiVersions.ToArray();
+        writer.Write7BitEncodedInt(abiVerions.Length);
+        foreach(var item in abiVerions)
         {
             writer.Write(item.Key);
             writer.Write7BitEncodedInt(item.Value.Binary.Length);

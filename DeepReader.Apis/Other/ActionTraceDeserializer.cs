@@ -3,20 +3,15 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Other;
 using DeepReader.Types.StorageTypes;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace DeepReader.Apis.Other
 {
     internal static class ActionTraceDeserializer
     {
-        private static readonly Name _eosio = NameCache.GetOrCreate("eosio");
+        private static readonly Name Eosio = NameCache.GetOrCreate("eosio");
 
-        private static JsonSerializerOptions _actionTraceSerializerSettings = new JsonSerializerOptions()
+        private static readonly JsonSerializerOptions ActionTraceSerializerSettings = new JsonSerializerOptions()
         {
             IncludeFields = true,
             IgnoreReadOnlyFields = false,
@@ -25,14 +20,14 @@ namespace DeepReader.Apis.Other
             WriteIndented = true,
         };
 
-        private static ParallelOptions _actionTraceSerializerParallelOptions = new ParallelOptions()
+        private static readonly ParallelOptions ActionTraceSerializerParallelOptions = new ParallelOptions()
         {
             MaxDegreeOfParallelism = 3
         };
 
         public static async Task DeserializeActions(ActionTrace[] actionTraces, IStorageAdapter storage)
         {
-            await Parallel.ForEachAsync(actionTraces, _actionTraceSerializerParallelOptions, async (actionTrace, _) =>
+            await Parallel.ForEachAsync(actionTraces, ActionTraceSerializerParallelOptions, async (actionTrace, _) =>
             {
                 await DeserializeAction(actionTrace, storage);
             });
@@ -43,8 +38,8 @@ namespace DeepReader.Apis.Other
             if (actionTrace.Act.Data.Json != null) // Don't do the same job twice
                 return;
 
-            string clrTypename = "";
-            string actName = "";
+            var clrTypename = "";
+            var actName = "";
             try
             {
                 var (found, assemblyPair) = await storage.TryGetAbiAssemblyByIdAndGlobalSequence(actionTrace.Act.Account, actionTrace.GlobalSequence);
@@ -57,13 +52,13 @@ namespace DeepReader.Apis.Other
                     var clrType = assembly.Assembly.GetType($"_{actionTrace.Act.Name.StringVal.Replace('.', '_')}");
                     if (clrType != null)
                     {
-                        BinaryReader reader = new BinaryReader(new MemoryStream(actionTrace.Act.Data));
+                        var reader = new BinaryReader(new MemoryStream(actionTrace.Act.Data));
 
                         clrTypename = clrType.Name;
                         var obj = Activator.CreateInstance(clrType, reader);
-                        actionTrace.Act.Data.Json = JsonSerializer.SerializeToElement(obj, clrType, _actionTraceSerializerSettings);
+                        actionTrace.Act.Data.Json = JsonSerializer.SerializeToElement(obj, clrType, ActionTraceSerializerSettings);
                     }
-                    else if(actionTrace.Act.Account == _eosio) // EOSIO global_sequence 0 contains system-actions like onblock
+                    else if(actionTrace.Act.Account == Eosio) // EOSIO global_sequence 0 contains system-actions like onblock
                     {
                         (found, assemblyPair) = await storage.TryGetAbiAssemblyByIdAndGlobalSequence(actionTrace.Act.Account, 0);
                         if (found)  // TODO check GlobalSequence
@@ -72,11 +67,11 @@ namespace DeepReader.Apis.Other
                             clrType = assembly.Assembly.GetType($"_{actionTrace.Act.Name.StringVal.Replace('.', '_')}");
                             if (clrType != null)
                             {
-                                BinaryReader reader = new BinaryReader(new MemoryStream(actionTrace.Act.Data));
+                                var reader = new BinaryReader(new MemoryStream(actionTrace.Act.Data));
 
                                 clrTypename = clrType.Name;
                                 var obj = Activator.CreateInstance(clrType, reader);
-                                actionTrace.Act.Data.Json = JsonSerializer.SerializeToElement(obj, clrType, _actionTraceSerializerSettings);
+                                actionTrace.Act.Data.Json = JsonSerializer.SerializeToElement(obj, clrType, ActionTraceSerializerSettings);
                             }
                         }
                         else

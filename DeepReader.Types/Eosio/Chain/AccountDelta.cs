@@ -1,5 +1,4 @@
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -15,7 +14,7 @@ public sealed class AccountDelta : IEosioSerializable<AccountDelta>
     {
         try
         {
-            Account = reader.ReadName(); // TODO
+            Account = Name.ReadFromBinaryReader(reader); // TODO
             Delta = reader.ReadInt64();
         }
         catch (Exception e)
@@ -25,7 +24,7 @@ public sealed class AccountDelta : IEosioSerializable<AccountDelta>
         }
     }
 
-    public static AccountDelta ReadFromBinaryReader(BinaryReader reader)
+    public static AccountDelta ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new AccountDelta(reader);
     }

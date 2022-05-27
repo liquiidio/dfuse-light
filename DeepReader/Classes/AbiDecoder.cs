@@ -1,5 +1,4 @@
 using System.Buffers;
-using System.Text.Json;
 using DeepReader.AssemblyGenerator;
 using DeepReader.Storage;
 using DeepReader.Types;

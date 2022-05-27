@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -25,8 +24,8 @@ public sealed class Action : ActionBase, IEosioSerializable<Action>
 
     public Action(BinaryReader reader)
     {
-        Account = reader.ReadName();
-        Name = reader.ReadName();
+        Account = Name.ReadFromBinaryReader(reader);
+        Name = Name.ReadFromBinaryReader(reader);
 
         Authorization = new PermissionLevel[reader.Read7BitEncodedInt()];
         for (int i = 0; i < Authorization.Length; i++)
@@ -38,15 +37,15 @@ public sealed class Action : ActionBase, IEosioSerializable<Action>
         Data = reader.ReadBytes(length);
     }
 
-    public static Action ReadFromBinaryReader(BinaryReader reader)
+    public static Action ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new Action(reader);
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        writer.WriteName(Account);
-        writer.WriteName(Name);
+        Account.WriteToBinaryWriter(writer);
+        Name.WriteToBinaryWriter(writer);
 
         writer.Write7BitEncodedInt(Authorization.Length);
         foreach (var auth in Authorization)

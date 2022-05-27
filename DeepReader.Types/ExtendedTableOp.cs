@@ -1,6 +1,4 @@
-using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types;
 
@@ -18,13 +16,13 @@ public sealed class ExtendedTableOp : TableOp
     //{
     //    Operation = (TableOpOperation) reader.ReadByte();
     //    ActionIndex = reader.ReadUInt32();
-    //    Payer = reader.ReadName();
-    //    Code = reader.ReadName();
-    //    Scope = reader.ReadName();
-    //    TableName = reader.ReadName();
+    //    Payer = Name.ReadFromBinaryReader(reader);
+    //    Code = Name.ReadFromBinaryReader(reader);
+    //    Scope = Name.ReadFromBinaryReader(reader);
+    //    TableName = Name.ReadFromBinaryReader(reader);
     //}
 
-    //public static ExtendedTableOp ReadFromBinaryReader(BinaryReader reader)
+    //public static ExtendedTableOp ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     //{
     //    return new ExtendedTableOp(reader);
     //}

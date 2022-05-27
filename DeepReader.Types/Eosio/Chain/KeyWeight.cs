@@ -18,7 +18,7 @@ public sealed class KeyWeight : IEosioSerializable<KeyWeight>
         Weight = reader.ReadUInt16();
     }
 
-    public static KeyWeight ReadFromBinaryReader(BinaryReader reader)
+    public static KeyWeight ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new KeyWeight(reader);
     }

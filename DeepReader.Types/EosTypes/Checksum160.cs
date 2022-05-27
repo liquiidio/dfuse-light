@@ -1,19 +1,41 @@
 ﻿using System.Text.Json.Serialization;
-using DeepReader.Types.Fc;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
+using DeepReader.Types.Other;
 
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(Checksum160JsonConverter))]
-public sealed class Checksum160 : BinaryType
+public sealed class Checksum160 : PooledObject<Checksum160>, IEosioSerializable<Checksum160>
 {
+    private const int Checksum160ByteLength = 20;
+
+    [JsonIgnore]
+    public byte[] Binary { get; set; } = Array.Empty<byte>();
+
     private string? _stringVal;
 
     public string StringVal
     {
         get => _stringVal ??= SerializationHelper.ByteArrayToHexString(Binary);
         set => _stringVal = value;
+    }
+
+    public static Checksum160 ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    {
+        var obj = fromPool ? TypeObjectPool.Get() : new Checksum160();
+
+        obj.Binary = reader.ReadBytes(Checksum160ByteLength);
+
+        return obj;
+    }
+
+    public void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.Write(Binary);
+        _stringVal = null;
+
+        ReturnToPool(this);
     }
 
     public static implicit operator string(Checksum160 value)
