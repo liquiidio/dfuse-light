@@ -9,7 +9,7 @@ namespace DeepReader
     {
         public DeepMindProcess(MindReaderOptions mindReaderOptions, string? mindReaderDir = null, string? dataDir = null)
         {
-            this.StartInfo = new ProcessStartInfo()
+            StartInfo = new ProcessStartInfo()
             {
                 FileName = "nodeos",
                 Arguments = BuildArgumentList(mindReaderOptions, mindReaderDir, dataDir),
@@ -18,7 +18,7 @@ namespace DeepReader
                 RedirectStandardOutput = mindReaderOptions.RedirectStandardOutput,
                 RedirectStandardInput = false,
                 CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,                
+                WindowStyle = ProcessWindowStyle.Hidden,
                 //            UseShellExecute = false,
                 //            RedirectStandardError = true,
                 //            RedirectStandardInput = false,
@@ -30,10 +30,10 @@ namespace DeepReader
 
         public async Task<int> RunAsync(CancellationToken cancellationToken)
         {
-            if (!this.Start())
+            if (!Start())
             {
                 Log.Error("Unable to start DeepMindProcess");//TODO (Corvin) better log
-                return this.ExitCode;
+                return ExitCode;
             }
 
             if (StartInfo.RedirectStandardOutput)
@@ -45,16 +45,16 @@ namespace DeepReader
             await Task.Delay(5000, cancellationToken);
 
             //this.PriorityClass = ProcessPriorityClass.RealTime;
-            this.PriorityBoostEnabled = true;
+            PriorityBoostEnabled = true;
 
-            await this.WaitForExitAsync(cancellationToken);
+            await WaitForExitAsync(cancellationToken);
             return ExitCode;
         }
 
         public async Task<int> KillAsync(CancellationToken cancellationToken)
         {
-            this.Kill(true);
-            await this.WaitForExitAsync(cancellationToken);
+            Kill(true);
+            await WaitForExitAsync(cancellationToken);
             return ExitCode;
         }
 
@@ -89,7 +89,7 @@ namespace DeepReader
                     sb.Append(""); //TODO mandatory empty if not replay and no blocks and no snapshot?
             }
             else if (mindReaderOptions.HardReplayBlockchain)
-                sb.Append(" --hard-replay-blockchain"); 
+                sb.Append(" --hard-replay-blockchain");
             else if (mindReaderOptions.ReplayBlockchain)
                 sb.Append(" --replay-blockchain");
 
@@ -105,7 +105,7 @@ namespace DeepReader
                 sb.Append($" --protocol-features-dir {dataDir}");
 
             var argList = sb.ToString();
-            
+
             Log.Information(argList);
 
             return argList;

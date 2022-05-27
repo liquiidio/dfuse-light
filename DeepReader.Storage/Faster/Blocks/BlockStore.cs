@@ -17,7 +17,9 @@ namespace DeepReader.Storage.Faster.Blocks
 
         private readonly FasterStorageOptions _options;
 
-        private readonly ITopicEventSender _eventSender;
+
+        private ITopicEventSender _eventSender;
+        private MetricsCollector _metricsCollector;
 
         private static readonly Histogram WritingBlockDuration =
             Metrics.CreateHistogram("deepreader_storage_faster_write_block_duration", "Histogram of time to store blocks to Faster");
@@ -34,11 +36,13 @@ namespace DeepReader.Storage.Faster.Blocks
         private static readonly Histogram BlockReaderSessionReadDurationHistogram =
           Metrics.CreateHistogram("deepreader_storage_faster_block_get_by_id_duration", "Histogram of time to try get block by id");
 
-        public BlockStore(FasterStorageOptions options, ITopicEventSender eventSender)
+        public BlockStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
         {
             _options = options;
             _eventSender = eventSender;
-
+            _metricsCollector = metricsCollector;
+            _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
+            
             if (!_options.BlockStoreDir.EndsWith("/"))
                 _options.BlockStoreDir += "/";
 
@@ -122,6 +126,13 @@ namespace DeepReader.Storage.Faster.Blocks
             SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
 
             new Thread(CommitThread).Start();
+        }
+
+        private void CollectObservableMetrics(object? sender, EventArgs e)
+        {
+            StoreLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
+            StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
+            StoreEntryCountHistogram.Observe(_store.EntryCount);
         }
 
         public async Task<Status> WriteBlock(Block block)

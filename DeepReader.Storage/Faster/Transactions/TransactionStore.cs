@@ -17,7 +17,9 @@ namespace DeepReader.Storage.Faster.Transactions
 
         private readonly FasterStorageOptions _options;
 
-        private readonly ITopicEventSender _eventSender;
+
+        private ITopicEventSender _eventSender;
+        private MetricsCollector _metricsCollector;
 
         private static readonly Histogram WritingTransactionDurationHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_write_transaction_duration", "Histogram of time to store transactions to Faster");
@@ -34,10 +36,12 @@ namespace DeepReader.Storage.Faster.Transactions
         private static readonly Histogram TransactionReaderSessionReadDurationHistogram =
           Metrics.CreateHistogram("deepreader_storage_faster_transaction_get_by_id_duration", "Histogram of time to try get transaction trace by id");
 
-        public TransactionStore(FasterStorageOptions options, ITopicEventSender eventSender)
+        public TransactionStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
         {
             _options = options;
             _eventSender = eventSender;
+            _metricsCollector = metricsCollector;
+            _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
 
             if (!_options.TransactionStoreDir.EndsWith("/"))
                 options.TransactionStoreDir += "/";
@@ -118,6 +122,13 @@ namespace DeepReader.Storage.Faster.Transactions
             SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
 
             new Thread(CommitThread).Start();
+        }
+
+        private void CollectObservableMetrics(object? sender, EventArgs e)
+        {
+            StoreLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
+            StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
+            StoreEntryCountHistogram.Observe(_store.EntryCount);
         }
 
         public async Task<Status> WriteTransaction(TransactionTrace transaction)

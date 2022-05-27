@@ -22,20 +22,23 @@ namespace DeepReader.Storage.Faster
 
         private readonly ParallelOptions _parallelOptions;
 
-        public FasterStorage(IOptionsMonitor<FasterStorageOptions> storageOptionsMonitor, ITopicEventSender eventSender)
+        public FasterStorage(
+            IOptionsMonitor<FasterStorageOptions> storageOptionsMonitor,
+            ITopicEventSender eventSender,
+            MetricsCollector metricsCollector)
         {
             _fasterStorageOptions = storageOptionsMonitor.CurrentValue;
             storageOptionsMonitor.OnChange(OnFasterStorageOptionsChanged);
 
-            _blockStore = new BlockStore(_fasterStorageOptions, eventSender);
-            _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender);
+            _blockStore = new BlockStore(_fasterStorageOptions, eventSender, metricsCollector);
+            _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender, metricsCollector);
             _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender);
+            _abiStore = new AbiStore(_fasterStorageOptions, eventSender);
 
             _parallelOptions = new ParallelOptions
             {
                 MaxDegreeOfParallelism = 6 // TODO, put in config with reasonable name
             };
-            _abiStore = new AbiStore(_fasterStorageOptions, eventSender);
         }
 
         private void OnFasterStorageOptionsChanged(FasterStorageOptions newOptions)

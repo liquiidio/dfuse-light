@@ -44,12 +44,16 @@ public class BlockWorker : BackgroundService
     private readonly Name _setabi = NameCache.GetOrCreate("setabi");
     private readonly AbiDecoder _abiDecoder;
 
-    public BlockWorker(ChannelReader<Block> blocksChannel,
-        ChannelReader<List<IList<StringSegment>>> blockSegmentsListChannel, 
+    private MetricsCollector _metricsCollector;
+
+    public BlockWorker(
+        ChannelReader<Block> blocksChannel,
+        ChannelReader<List<IList<StringSegment>>> blockSegmentsListChannel,
         IStorageAdapter storageAdapter,
         IOptionsMonitor<MindReaderOptions> mindReaderOptionsMonitor,
         IOptionsMonitor<DeepReaderOptions> deepReaderOptionsMonitor,
-        ObjectPool<Block> blockPool)
+        ObjectPool<Block> blockPool,
+        MetricsCollector metricsCollector)
     {
         _mindReaderOptions = mindReaderOptionsMonitor.CurrentValue;
         mindReaderOptionsMonitor.OnChange(OnMindReaderOptionsChanged);
@@ -74,8 +78,18 @@ public class BlockWorker : BackgroundService
         _deltaFilter = _deepReaderOptions.Filter.BuildDeltaFilter();
 
         _blockPool = blockPool;
+        _metricsCollector = metricsCollector;
+        _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
 
         _abiDecoder = new AbiDecoder(_storageAdapter);
+    }
+
+    private void CollectObservableMetrics(object? sender, EventArgs e)
+    {
+        if (_blocksChannel.CanCount)
+            BlocksChannelSize.Set(_blocksChannel.Count);
+        if (_blockSegmentsListChannel.CanCount)
+            BlockSegmentListChannelSize.Set(_blockSegmentsListChannel.Count);
     }
 
     private void OnMindReaderOptionsChanged(MindReaderOptions newOptions)
@@ -114,11 +128,11 @@ public class BlockWorker : BackgroundService
                     if (_blocksChannel.CanCount)
                         Log.Information($"blocks-channel-size: {_blocksChannel.Count}");
 
-                    if (_blocksChannel.CanCount)
-                        BlocksChannelSize.Set(_blocksChannel.Count);
+                    //if (_blocksChannel.CanCount)
+                    //    BlocksChannelSize.Set(_blocksChannel.Count);
 
-                    if(_blockSegmentsListChannel.CanCount)
-                        BlockSegmentListChannelSize.Set(_blockSegmentsListChannel.Count);
+                    //if(_blockSegmentsListChannel.CanCount)
+                    //    BlockSegmentListChannelSize.Set(_blockSegmentsListChannel.Count);
 
                     if (_blockSegmentsListChannel.CanCount)
                         Log.Information($"segment-channel-size: {_blockSegmentsListChannel.Count}");

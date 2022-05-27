@@ -2,6 +2,7 @@
 using DeepReader.Apis.GraphQl.SubscriptionTypes;
 using DeepReader.Apis.JsonSourceGenerators;
 using DeepReader.Apis.Options;
+using DeepReader.Storage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -35,7 +36,6 @@ namespace DeepReader.Apis
                     });
                     services.AddEndpointsApiExplorer();
                     services.AddSwaggerGen();
-
                     services
                         .AddGraphQLServer()
                         .AddInMemorySubscriptions()
@@ -46,6 +46,10 @@ namespace DeepReader.Apis
                             .AddType<BlockSubscriptionType>()
                             .AddType<TransactionSubscriptionType>();
                     services.AddSentry();
+                    services
+                        .AddHealthChecks();
+                        //.AddCheck<ReadCacheEnabledHealthCheck>("ReadCacheEnabled");
+                    services.AddSingleton<MetricsCollector>();
 
                 });
                 webBuilder.Configure((context, app) =>
@@ -79,6 +83,7 @@ namespace DeepReader.Apis
                         endpoints.MapGraphQL();
                         endpoints.MapControllers();
                         endpoints.MapMetrics();
+                        endpoints.MapHealthChecks("/health");
                     });
 
                     app.UseSentryTracing();
