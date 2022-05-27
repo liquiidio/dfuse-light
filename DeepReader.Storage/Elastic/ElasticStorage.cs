@@ -28,6 +28,11 @@ namespace DeepReader.Storage.Elastic
             _elasticStorageOptions = newOptions;
         }
 
+
+        public long BlocksIndexed => throw new NotImplementedException();
+
+        public long TransactionsIndexed => throw new NotImplementedException();
+
         public Task StoreBlockAsync(Block block) // compress, store, index
         {
             throw new NotImplementedException();

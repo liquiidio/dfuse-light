@@ -5,6 +5,8 @@ using DeepReader.Apis.GraphQl.SubscriptionTypes;
 using DeepReader.Apis.JsonSourceGenerators;
 using DeepReader.Apis.Options;
 using DeepReader.Storage;
+using DeepReader.Storage.HealthChecks.Faster;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -56,8 +58,16 @@ namespace DeepReader.Apis
                         .AddDataLoader<TransactionByIdDataLoader>();
                     services.AddSentry();
                     services
-                        .AddHealthChecks();
-                        //.AddCheck<ReadCacheEnabledHealthCheck>("ReadCacheEnabled");
+                        .AddHealthChecks()
+                        .AddCheck<ReadCacheEnabledHealthCheck>("ReadCacheEnabled")
+                        .AddCheck<MaxBlocksCacheEntriesHealthCheck>("MaxBlocksCacheEntries")
+                        .AddCheck<MaxTransactionsCacheEntriesHealthCheck>("MaxTransactionsCacheEntries")
+                        .AddCheck<CheckpointIntervalHealthCheck>("CheckpointInterval")
+                        .AddCheck<BlocksIndexedHealthCheck>("BlocksIndexed")
+                        .AddCheck<TransactionsIndexedHealthCheck>("TransactionsIndexed");
+                    services
+                        .AddHealthChecksUI()
+                        .AddInMemoryStorage();
                     services.AddSingleton<MetricsCollector>();
 
                 });
@@ -92,7 +102,11 @@ namespace DeepReader.Apis
                         endpoints.MapGraphQL();
                         endpoints.MapControllers();
                         endpoints.MapMetrics();
-                        endpoints.MapHealthChecks("/health");
+                        endpoints.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+                        {
+                            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                        });
+                        endpoints.MapHealthChecksUI();
                     });
 
                     app.UseSentryTracing();

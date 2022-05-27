@@ -45,6 +45,9 @@ namespace DeepReader.Storage.Faster
         {
             _fasterStorageOptions = newOptions;
         }
+        public long BlocksIndexed => _blockStore.BlocksIndexed;
+
+        public long TransactionsIndexed => _transactionStore.TransactionsIndexed;
 
         public async Task StoreBlockAsync(Block block)
         {

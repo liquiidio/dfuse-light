@@ -52,7 +52,7 @@ namespace DeepReader.Storage.Faster.Blocks
 
             // Log for storing serialized objects; needed only for class keys/values
             var objlog = Devices.CreateLogDevice(_options.BlockStoreDir + "hlog.obj.log");
-
+            
             // Define settings for log
             var logSettings = new LogSettings
             {
@@ -65,7 +65,7 @@ namespace DeepReader.Storage.Faster.Blocks
                 PageSizeBits = 12, // (4K pages)
                 MemorySizeBits = 32 // (4G memory for main log)
             };
-
+            
             // Define serializers; otherwise FASTER will use the slower DataContract
             // Needed only for class keys/values
             var serializerSettings = new SerializerSettings<long, Block>
@@ -126,6 +126,8 @@ namespace DeepReader.Storage.Faster.Blocks
 
 //            new Thread(CommitThread).Start();
         }
+
+        public long BlocksIndexed => _store.EntryCount;
 
         private void CollectObservableMetrics(object? sender, EventArgs e)
         {
