@@ -4,9 +4,9 @@ using System.Reflection;
 
 namespace DeepReader.Storage.Faster.Abis;
 
-public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, AbiOutput, AbiContext>
+public sealed class AbiFunctions : FunctionsBase<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext>
 {
-    public override bool ConcurrentReader(ref AbiId id, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput dst, ref ReadInfo readInfo)
+    public override bool ConcurrentReader(ref ulong id, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput dst, ref ReadInfo readInfo)
     {
         dst.Value = value;
         return true;
@@ -17,7 +17,7 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
         Log.Information("Session {0} reports persistence until {1}", sessionName, commitPoint.UntilSerialNo);
     }
 
-    public override void ReadCompletionCallback(ref AbiId id, ref AbiInput input, ref AbiOutput output, AbiContext ctx, Status status, RecordMetadata recordMetadata)
+    public override void ReadCompletionCallback(ref ulong id, ref AbiInput input, ref AbiOutput output, AbiContext ctx, Status status, RecordMetadata recordMetadata)
     {
         if (ctx.Type == 0)
         {
@@ -32,7 +32,7 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
             if (status.Found)
                 Log.Information("Async: Value not found, latency = {0}ms", new TimeSpan(ticks).TotalMilliseconds);
 
-            if (output.Value.Id != id.Id)
+            if (output.Value.Id != id)
                 Log.Information("Async: Incorrect value {0} found, latency = {1}ms", output.Value.Id,
                     new TimeSpan(ticks).TotalMilliseconds);
             else
@@ -41,13 +41,13 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
         }
     }
 
-    public override bool SingleReader(ref AbiId id, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput dst, ref ReadInfo readInfo)
+    public override bool SingleReader(ref ulong id, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput dst, ref ReadInfo readInfo)
     {
         dst.Value = value;
         return true;
     }
 
-    public override bool InitialUpdater(ref AbiId key, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput output, ref RMWInfo rmwInfo)
+    public override bool InitialUpdater(ref ulong key, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput output, ref RMWInfo rmwInfo)
     {
         value = new AbiCacheItem(input.Id);
         value.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
@@ -57,7 +57,7 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
         return true;
     }
 
-    public override bool InPlaceUpdater(ref AbiId key, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput output, ref RMWInfo rmwInfo)
+    public override bool InPlaceUpdater(ref ulong key, ref AbiInput input, ref AbiCacheItem value, ref AbiOutput output, ref RMWInfo rmwInfo)
     {
         value.AbiVersions[input.GlobalSequence] = new AssemblyWrapper(input.Assembly);
 
@@ -66,7 +66,7 @@ public sealed class AbiFunctions : FunctionsBase<AbiId, AbiCacheItem, AbiInput, 
         return true;
     }
 
-    public override bool CopyUpdater(ref AbiId key, ref AbiInput input, ref AbiCacheItem oldValue, ref AbiCacheItem newValue, ref AbiOutput output, ref RMWInfo rmwInfo)
+    public override bool CopyUpdater(ref ulong key, ref AbiInput input, ref AbiCacheItem oldValue, ref AbiCacheItem newValue, ref AbiOutput output, ref RMWInfo rmwInfo)
     {
         if (oldValue != null)
             newValue = oldValue;

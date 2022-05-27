@@ -118,12 +118,13 @@ namespace DeepReader.Storage.Faster.Blocks
                 StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);// must be optional
             StoreEntryCountHistogram.Observe(_store.EntryCount);
 
-            //            _store.Log.SubscribeEvictions(new BlockEvictionObserver());
+            //_store.ReadCache.SubscribeEvictions(new BlockEvictionObserver());
+            //_store.Log.SubscribeEvictions(new BlockEvictionObserver());
 
             // TODO, for some reason I need to manually call the Init
             SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
 
-            new Thread(CommitThread).Start();
+//            new Thread(CommitThread).Start();
         }
 
         private void CollectObservableMetrics(object? sender, EventArgs e)

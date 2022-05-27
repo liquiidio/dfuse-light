@@ -11,10 +11,10 @@ namespace DeepReader.Storage.Faster.Abis
 {
     public sealed class AbiStore
     {
-        private readonly FasterKV<AbiId, AbiCacheItem> _store;
+        private readonly FasterKV<ulong, AbiCacheItem> _store;
 
-        private readonly ClientSession<AbiId, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiFunctions> _abiReaderSession;
-        private readonly ClientSession<AbiId, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiFunctions> _abiWriterSession;
+        private readonly ClientSession<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiFunctions> _abiReaderSession;
+        private readonly ClientSession<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiFunctions> _abiWriterSession;
 
         private readonly FasterStorageOptions _options;
 
@@ -64,9 +64,8 @@ namespace DeepReader.Storage.Faster.Abis
 
             // Define serializers; otherwise FASTER will use the slower DataContract
             // Needed only for class keys/values
-            var serializerSettings = new SerializerSettings<AbiId, AbiCacheItem>
+            var serializerSettings = new SerializerSettings<ulong, AbiCacheItem>
             {
-                keySerializer = () => new AbiIdSerializer(),
                 valueSerializer = () => new AbiValueSerializer()
             };
 
@@ -76,12 +75,11 @@ namespace DeepReader.Storage.Faster.Abis
                 new LocalStorageNamedDeviceFactory(),
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
-            _store = new FasterKV<AbiId, AbiCacheItem>(
+            _store = new FasterKV<ulong, AbiCacheItem>(
                 size: _options.MaxAbiCacheEntries, // Cache Lines for Abis
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
-                serializerSettings: serializerSettings,
-                comparer: new AbiId(0)
+                serializerSettings: serializerSettings
             );
 
             if (Directory.Exists(checkPointsDir))
@@ -123,7 +121,7 @@ namespace DeepReader.Storage.Faster.Abis
 
         public async Task<Status> WriteAbi(AbiCacheItem abi)
         {
-            var abiId = new AbiId(abi.Id);
+            var abiId = abi.Id;
 
             await _eventSender.SendAsync("AbiAdded", abi);
 
@@ -138,14 +136,14 @@ namespace DeepReader.Storage.Faster.Abis
 
         public async Task UpsertAbi(Name account, ulong globalSequence, Assembly assembly)
         {
-            (await _abiWriterSession.RMWAsync(new AbiId(account.IntVal), new AbiInput(account.IntVal, globalSequence, assembly), new AbiContext())).Complete();
+            (await _abiWriterSession.RMWAsync(account.IntVal, new AbiInput(account.IntVal, globalSequence, assembly))).Complete();
         }
 
         public async Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Name account)
         {
             using (AbiReaderSessionReadDurationHistogram.NewTimer())
             {
-                var (status, output) = (await _abiReaderSession.ReadAsync(new AbiId(account.IntVal))).Complete();
+                var (status, output) = (await _abiReaderSession.ReadAsync(account.IntVal)).Complete();
                 return (status.Found, output.Value);
             }
         }
@@ -154,7 +152,7 @@ namespace DeepReader.Storage.Faster.Abis
         {
             using (AbiReaderSessionReadDurationHistogram.NewTimer())
             {
-                var (status, output) = (await _abiReaderSession.ReadAsync(new AbiId(account.IntVal))).Complete();
+                var (status, output) = (await _abiReaderSession.ReadAsync(account.IntVal)).Complete();
 
                 if(status.Found && output.Value.AbiVersions.Any(av => av.Key <= globalSequence))
                 {
@@ -180,7 +178,7 @@ namespace DeepReader.Storage.Faster.Abis
         {
             using (AbiReaderSessionReadDurationHistogram.NewTimer())
             {
-                var (status, output) = (await _abiReaderSession.ReadAsync(new AbiId(account.IntVal))).Complete();
+                var (status, output) = (await _abiReaderSession.ReadAsync(account.IntVal)).Complete();
 
                 if (status.Found && output.Value.AbiVersions.Count > 0)
                 {

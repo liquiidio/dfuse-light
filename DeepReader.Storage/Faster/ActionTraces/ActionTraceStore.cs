@@ -10,10 +10,10 @@ namespace DeepReader.Storage.Faster.ActionTraces
 {
     public sealed class ActionTraceStore
     {
-        private readonly FasterKV<ActionTraceId, ActionTrace> _store;
+        private readonly FasterKV<ulong, ActionTrace> _store;
 
-        private readonly ClientSession<ActionTraceId, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions> _actionTraceReaderSession;
-        private readonly ClientSession<ActionTraceId, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions> _actionTraceWriterSession;
+        private readonly ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions> _actionTraceReaderSession;
+        private readonly ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions> _actionTraceWriterSession;
 
         private readonly FasterStorageOptions _options;
 
@@ -63,9 +63,8 @@ namespace DeepReader.Storage.Faster.ActionTraces
 
             // Define serializers; otherwise FASTER will use the slower DataContract
             // Needed only for class keys/values
-            var serializerSettings = new SerializerSettings<ActionTraceId, ActionTrace>
+            var serializerSettings = new SerializerSettings<ulong, ActionTrace>
             {
-                keySerializer = () => new ActionTraceIdSerializer(),
                 valueSerializer = () => new ActionTraceValueSerializer()
             };
 
@@ -75,12 +74,11 @@ namespace DeepReader.Storage.Faster.ActionTraces
                 new LocalStorageNamedDeviceFactory(),
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
-            _store = new FasterKV<ActionTraceId, ActionTrace>(
+            _store = new FasterKV<ulong, ActionTrace>(
                 size: _options.MaxActionTracesCacheEntries, // Cache Lines for ActionTraces
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
-                serializerSettings: serializerSettings,
-                comparer: new ActionTraceId(0)
+                serializerSettings: serializerSettings
             );
 
             if (Directory.Exists(checkPointsDir))
@@ -122,7 +120,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
 
         public async Task<Status> WriteActionTrace(ActionTrace actionTrace)
         {
-            var actionTraceId = new ActionTraceId(actionTrace.GlobalSequence);
+            var actionTraceId = actionTrace.GlobalSequence;
 
             await _eventSender.SendAsync("ActionTraceAdded", actionTrace);
 
@@ -139,7 +137,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
         {
             using (ActionTraceReaderSessionReadDurationHistogram.NewTimer())
             {
-                var (status, output) = (await _actionTraceReaderSession.ReadAsync(new ActionTraceId(globalSequence))).Complete();
+                var (status, output) = (await _actionTraceReaderSession.ReadAsync(globalSequence)).Complete();
                 return (status.Found, output.Value);
             }
         }
