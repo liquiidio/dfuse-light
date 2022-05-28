@@ -15,7 +15,7 @@ namespace DeepReader.Storage.HealthChecks.Faster
 
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(HealthCheckResult.Healthy("CheckpointInterval: " + StorageOptionsMonitor.CurrentValue.CheckpointInterval));
+            return Task.FromResult(HealthCheckResult.Healthy("CheckpointInterval: " + StorageOptionsMonitor.CurrentValue.LogCheckpointInterval));
         }
     }
 }

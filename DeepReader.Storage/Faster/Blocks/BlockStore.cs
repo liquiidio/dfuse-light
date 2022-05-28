@@ -29,8 +29,10 @@ namespace DeepReader.Storage.Faster.Blocks
             Metrics.CreateHistogram("deepreader_storage_faster_block_store_read_cache_memory_size_bytes", "Histogram of the faster block store read cache memory size in bytes");
         private static readonly Histogram StoreEntryCountHistogram =
            Metrics.CreateHistogram("deepreader_storage_faster_block_store_read_cache_memory_size_bytes", "Histogram of the faster block store entry count");
-        private static readonly Histogram StoreTakeFullCheckpointDurationHistogram =
-           Metrics.CreateHistogram("deepreader_storage_faster_block_store_take_full_checkpoint_duration", "Histogram of time to take a full checkpoint of faster block store");
+        private static readonly Histogram StoreTakeLogCheckpointDurationHistogram =
+            Metrics.CreateHistogram("deepreader_storage_faster_block_store_take_log_checkpoint_duration", "Histogram of time to take a log checkpoint of faster block store");
+        private static readonly Histogram StoreTakeIndexCheckpointDurationHistogram =
+            Metrics.CreateHistogram("deepreader_storage_faster_block_store_take_index_checkpoint_duration", "Histogram of time to take a index checkpoint of faster block store");
         private static readonly Histogram StoreFlushAndEvictLogDurationHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_block_store_log_flush_and_evict_duration", "Histogram of time to flush and evict faster block store");
         private static readonly Histogram BlockReaderSessionReadDurationHistogram =
@@ -118,11 +120,11 @@ namespace DeepReader.Storage.Faster.Blocks
                 StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);// must be optional
             StoreEntryCountHistogram.Observe(_store.EntryCount);
 
-            //_store.ReadCache.SubscribeEvictions(new BlockEvictionObserver());
-            //_store.Log.SubscribeEvictions(new BlockEvictionObserver());
+            var blockEvictionObserver = new BlockEvictionObserver();
+            _store.Log.SubscribeEvictions(blockEvictionObserver);
 
-            // TODO, for some reason I need to manually call the Init
-            SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
+            if(options.UseReadCache)
+                _store.ReadCache.SubscribeEvictions(blockEvictionObserver);
 
             new Thread(CommitThread).Start();
         }
@@ -162,23 +164,37 @@ namespace DeepReader.Storage.Faster.Blocks
 
         private void CommitThread()
         {
-            if (_options.CheckpointInterval is null or 0)
+            if (_options.LogCheckpointInterval is null or 0)
                 return;
+
+            int logCheckpointsTaken = 0;
 
             while (true)
             {
                 try
                 {
-                    Thread.Sleep(_options.CheckpointInterval.Value);
+                    Thread.Sleep(_options.LogCheckpointInterval.Value);
 
                     // Take log-only checkpoint (quick - no index save)
                     //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                     // Take index + log checkpoint (longer time)
-                    using (StoreTakeFullCheckpointDurationHistogram.NewTimer())
-                        _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                    using (StoreFlushAndEvictLogDurationHistogram.NewTimer())
-                        _store.Log.FlushAndEvict(true);
+                    using (StoreTakeLogCheckpointDurationHistogram.NewTimer())
+                        _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
+
+                    if (_options.FlushAfterCheckpoint)
+                    {
+                        using (StoreFlushAndEvictLogDurationHistogram.NewTimer())
+                            _store.Log.FlushAndEvict(true);
+                    }
+
+                    if (logCheckpointsTaken % _options.IndexCheckpointMultiplier == 0)
+                    {
+                        using (StoreTakeIndexCheckpointDurationHistogram.NewTimer())
+                            _store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
+                    }
+
+                    logCheckpointsTaken++;
                 }
                 catch (Exception ex)
                 {

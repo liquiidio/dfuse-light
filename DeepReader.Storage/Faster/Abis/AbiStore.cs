@@ -21,19 +21,21 @@ namespace DeepReader.Storage.Faster.Abis
         private readonly ITopicEventSender _eventSender;
 
         private static readonly Histogram WritingAbiDurationHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_write_abi_duration", "Histogram of time to store Abis to Faster");
+            Metrics.CreateHistogram("deepreader_storage_faster_write_abi_duration", "Histogram of time to store abis to Faster");
         private static readonly Histogram StoreLogMemorySizeBytesHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_log_memory_size_bytes", "Histogram of the faster Abi store log memory size in bytes");
+            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_log_memory_size_bytes", "Histogram of the faster abi store log memory size in bytes");
         private static readonly Histogram StoreReadCacheMemorySizeBytesHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_read_cache_memory_size_bytes", "Histogram of the faster Abi store read cache memory size in bytes");
+            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_read_cache_memory_size_bytes", "Histogram of the faster abi store read cache memory size in bytes");
         private static readonly Histogram StoreEntryCountHistogram =
-           Metrics.CreateHistogram("deepreader_storage_faster_abi_store_read_cache_memory_size_bytes", "Histogram of the faster Abi store entry count");
-        private static readonly Histogram StoreTakeFullCheckpointDurationHistogram =
-          Metrics.CreateHistogram("deepreader_storage_faster_abi_store_take_full_checkpoint_duration", "Histogram of time to take a full checkpoint of faster Abi store");
+           Metrics.CreateHistogram("deepreader_storage_faster_abi_store_read_cache_memory_size_bytes", "Histogram of the faster abi store entry count");
+        private static readonly Histogram StoreTakeLogCheckpointDurationHistogram =
+            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_take_log_checkpoint_duration", "Histogram of time to take a log checkpoint of faster abi store");
+        private static readonly Histogram StoreTakeIndexCheckpointDurationHistogram =
+            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_take_index_checkpoint_duration", "Histogram of time to take a index checkpoint of faster abi store");
         private static readonly Histogram StoreFlushAndEvictLogDurationHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_log_flush_and_evict_duration", "Histogram of time to flush and evict faster Abi store");
+            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_log_flush_and_evict_duration", "Histogram of time to flush and evict faster abi store");
         private static readonly Histogram AbiReaderSessionReadDurationHistogram =
-          Metrics.CreateHistogram("deepreader_storage_faster_abi_get_by_id_duration", "Histogram of time to try get Abi trace by id");
+          Metrics.CreateHistogram("deepreader_storage_faster_abi_get_by_id_duration", "Histogram of time to try get abi trace by id");
 
         public AbiStore(FasterStorageOptions options, ITopicEventSender eventSender)
         {
@@ -190,23 +192,37 @@ namespace DeepReader.Storage.Faster.Abis
 
         private void CommitThread()
         {
-            if (_options.CheckpointInterval is null or 0)
+            if (_options.LogCheckpointInterval is null or 0)
                 return;
+
+            int logCheckpointsTaken = 0;
 
             while (true)
             {
                 try
                 {
-                    Thread.Sleep(_options.CheckpointInterval.Value);
+                    Thread.Sleep(_options.LogCheckpointInterval.Value);
 
                     // Take log-only checkpoint (quick - no index save)
                     //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
 
                     // Take index + log checkpoint (longer time)
-                    using (StoreTakeFullCheckpointDurationHistogram.NewTimer())
-                        _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                    using (StoreFlushAndEvictLogDurationHistogram.NewTimer())
-                        _store.Log.FlushAndEvict(true);
+                    using (StoreTakeLogCheckpointDurationHistogram.NewTimer())
+                        _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
+
+                    if (_options.FlushAfterCheckpoint)
+                    {
+                        using (StoreFlushAndEvictLogDurationHistogram.NewTimer())
+                            _store.Log.FlushAndEvict(true);
+                    }
+
+                    if (logCheckpointsTaken % _options.IndexCheckpointMultiplier == 0)
+                    {
+                        using (StoreTakeIndexCheckpointDurationHistogram.NewTimer())
+                            _store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
+                    }
+
+                    logCheckpointsTaken++;
                 }
                 catch (Exception ex)
                 {

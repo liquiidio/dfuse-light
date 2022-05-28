@@ -38,7 +38,12 @@ public sealed class ProducerKey : PooledObject<ProducerKey>, IEosioSerializable<
     {
         AccountName.WriteToBinaryWriter(writer);
         BlockSigningKey.WriteToBinaryWriter(writer);
+    }
 
-        TypeObjectPool.Return(this);
+    public new static void ReturnToPool(ProducerKey obj)
+    {
+        PublicKey.ReturnToPool(obj.BlockSigningKey);
+
+        TypeObjectPool.Return(obj);
     }
 }

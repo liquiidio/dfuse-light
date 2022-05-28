@@ -46,7 +46,7 @@ public sealed class PublicKey : PooledObject<PublicKey>, IEosioSerializable<Publ
 
     public static implicit operator string(PublicKey value)
     {
-        return value._stringVal;
+        return value.StringVal;
     }
 
     public static implicit operator PublicKey(byte[] value)
@@ -79,7 +79,5 @@ public sealed class PublicKey : PooledObject<PublicKey>, IEosioSerializable<Publ
     {
         writer.Write(Type);
         writer.Write(Binary);
-
-        TypeObjectPool.Return(this);
     }
 }

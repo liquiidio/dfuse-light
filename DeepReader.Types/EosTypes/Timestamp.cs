@@ -33,10 +33,6 @@ public sealed class Timestamp : PooledObject<Timestamp>, IEosioSerializable<Time
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
         writer.Write(_ticks);
-
-        // when Faster wants to deserialize and Object, we take an Object from the Pool
-        // when Faster evicts the Object we return it to the Pool
-        TypeObjectPool.Return(this);
     }
 
     public DateTime ToDateTime()

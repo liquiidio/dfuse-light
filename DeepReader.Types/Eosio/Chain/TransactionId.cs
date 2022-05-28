@@ -52,19 +52,9 @@ public sealed class TransactionId : TransactionVariant
 
     public new static TransactionId ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
-        var obj = TypeObjectPool.Get();
+        var obj = fromPool ? TypeObjectPool.Get() : new TransactionId();
 
         obj.Binary = reader.ReadBytes(Checksum256ByteLength);
-
-        return obj;
-    }
-
-    public new static TransactionId ReadFromBinaryReaderWithoutPooling(BinaryReader reader)
-    {
-        var obj = new TransactionId
-        {
-            Binary = reader.ReadBytes(Checksum256ByteLength)
-        };
 
         return obj;
     }
@@ -73,8 +63,6 @@ public sealed class TransactionId : TransactionVariant
     {
         writer.Write(Binary);
         _stringVal = null;
-
-        ReturnToPool(this);
     }
 
     public static implicit operator TransactionId(string value)

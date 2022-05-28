@@ -42,9 +42,16 @@ public sealed class ProducerSchedule : PooledObject<ProducerSchedule>, IEosioSer
         {
             producer.WriteToBinaryWriter(writer);
         }
+    }
 
-        // when Faster wants to deserialize and Object, we take an Object from the Pool
-        // when Faster evicts the Object we return it to the Pool
-        TypeObjectPool.Return(this);
+    public new static void ReturnToPool(ProducerSchedule obj)
+    {
+        foreach (var producerKey in obj.Producers)
+        {
+            ProducerKey.ReturnToPool(producerKey);
+        }
+        obj.Producers = Array.Empty<ProducerKey>();
+
+        TypeObjectPool.Return(obj);
     }
 }

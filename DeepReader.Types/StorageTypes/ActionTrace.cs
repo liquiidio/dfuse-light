@@ -5,7 +5,7 @@ using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.Types.StorageTypes
 {
-    public sealed class ActionTrace : PooledObject<ActionTrace>
+    public sealed class ActionTrace : PooledObject<ActionTrace>, IParentPooledObject<TransactionTrace>
     {
         public ulong GlobalSequence => Receipt.GlobalSequence;
 
@@ -166,9 +166,22 @@ namespace DeepReader.Types.StorageTypes
             // as we return this Object to the pool we need to reset Lists and nullables;
             CreatorActionId = null;
             CreatorAction = null;
+        }
 
-            // when Faster wants to deserialize and Object, we take an Object from the Pool
-            // when Faster evicts the Object we return it to the Pool
+        public void ReturnToPoolRecursive()
+        {
+            ActionReceipt.ReturnToPool(Receipt);
+//            Action Act
+            RamOps = Array.Empty<RamOp>();
+            TableOps = Array.Empty<TableOp>();
+            DbOps = Array.Empty<DbOp>();
+            CreatedActions = Array.Empty<ActionTrace>();
+            if (CreatorAction != null)
+            {
+                ActionTrace.ReturnToPool(CreatorAction);
+                CreatorAction = null;
+            }
+
             TypeObjectPool.Return(this);
         }
     }

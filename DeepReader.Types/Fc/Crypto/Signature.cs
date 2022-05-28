@@ -45,10 +45,6 @@ public sealed class Signature : PooledObject<Signature>, IEosioSerializable<Sign
         writer.Write(Type);
         writer.Write(SignBytes);
         writer.Write(SomeByte);
-
-        // when Faster wants to deserialize and Object, we take an Object from the Pool
-        // when Faster evicts the Object we return it to the Pool
-        TypeObjectPool.Return(this);
     }
 
     public static implicit operator Signature(string value)

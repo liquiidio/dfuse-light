@@ -3,7 +3,7 @@ using DeepReader.Types.Other;
 
 namespace DeepReader.Types.StorageTypes;
 
-public sealed class TransactionTrace : PooledObject<TransactionTrace>
+public sealed class TransactionTrace : PooledObject<TransactionTrace>, IParentPooledObject<TransactionTrace>
 {
     // SHA-256 (FIPS 180-4) of the FCBUFFER-encoded packed transaction
     public TransactionId Id { get; set; } = Array.Empty<byte>();
@@ -77,12 +77,15 @@ public sealed class TransactionTrace : PooledObject<TransactionTrace>
         {
             writer.Write(actionTraceId);
         }
+    }
 
-        // as we return this Object to the pool we need to reset Lists and nullables;
-        //nothing to see here
+    public void ReturnToPoolRecursive()
+    {
+        TransactionId.ReturnToPool(Id);
+        //        TransactionReceiptHeader Receipt
 
-        // when Faster wants to deserialize and Object, we take an Object from the Pool
-        // when Faster evicts the Object we return it to the Pool
+        ActionTraces = Array.Empty<ActionTrace>();
+
         TypeObjectPool.Return(this);
     }
 }

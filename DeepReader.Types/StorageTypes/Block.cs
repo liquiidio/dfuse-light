@@ -33,32 +33,6 @@ public sealed class Block : PooledObject<Block>, IParentPooledObject<Block>
 
     public List<TransactionTrace> Transactions { get; set; } = new();
 
-    /// <summary>
-    /// Called in cases of a failure while postprocessing blocks. Ensures the block and all other Pooled objects will be returned to the pool
-    /// </summary>
-    public void ReturnToPoolRecursive()
-    {
-        Checksum256.ReturnToPool(Id);
-        Checksum256.ReturnToPool(Previous);
-        Checksum256.ReturnToPool(TransactionMroot);
-        Checksum256.ReturnToPool(ActionMroot);
-        Timestamp.ReturnToPool(Timestamp);
-        if(NewProducers != null)
-            ProducerSchedule.ReturnToPool(NewProducers);
-        Signature.ReturnToPool(ProducerSignature);
-        foreach (var transactionId in TransactionIds)
-        {
-            TransactionId.ReturnToPool(transactionId);
-        }
-
-        foreach (var transactionTrace in Transactions)
-        {
-            TransactionTrace.ReturnToPool(transactionTrace);
-        }
-
-        TypeObjectPool.Return(this);
-    }
-
     public void CopyFrom(Types.Block deepMindBlock)
     {
         Id = deepMindBlock.Id;
@@ -134,9 +108,29 @@ public sealed class Block : PooledObject<Block>, IParentPooledObject<Block>
         NewProducers = null;
         TransactionIds.Clear();
         Transactions.Clear();
+    }
 
-        // when Faster wants to deserialize and Object, we take an Object from the Pool
-        // when Faster evicts the Object we return it to the Pool
+    public void ReturnToPoolRecursive()
+    {
+        Checksum256.ReturnToPool(Id);
+        Checksum256.ReturnToPool(Previous);
+        Checksum256.ReturnToPool(TransactionMroot);
+        Checksum256.ReturnToPool(ActionMroot);
+        Timestamp.ReturnToPool(Timestamp);
+        if (NewProducers != null)
+        {
+            ProducerSchedule.ReturnToPool(NewProducers);
+            NewProducers = null;
+        }
+        Signature.ReturnToPool(ProducerSignature);
+        foreach (var transactionId in TransactionIds)
+        {
+            TransactionId.ReturnToPool(transactionId);
+        }
+        TransactionIds.Clear();
+
+        Transactions.Clear();
+
         TypeObjectPool.Return(this);
     }
 }

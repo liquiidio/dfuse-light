@@ -34,8 +34,6 @@ public sealed class Checksum160 : PooledObject<Checksum160>, IEosioSerializable<
     {
         writer.Write(Binary);
         _stringVal = null;
-
-        ReturnToPool(this);
     }
 
     public static implicit operator string(Checksum160 value)

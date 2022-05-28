@@ -59,7 +59,17 @@ public sealed class ActionReceipt : PooledObject<ActionReceipt>, IEosioSerializa
 
         writer.Write7BitEncodedInt((int)CodeSequence);
         writer.Write7BitEncodedInt((int)AbiSequence);
+    }
 
-        TypeObjectPool.Return(this);
+    public new static void ReturnToPool(ActionReceipt obj)
+    {
+        Checksum256.ReturnToPool(obj.ActionDigest);
+        foreach (var transactionTraceAuthSequence in obj.AuthSequence)
+        {
+            TransactionTraceAuthSequence.ReturnToPool(transactionTraceAuthSequence);
+        }
+        obj.AuthSequence = Array.Empty<TransactionTraceAuthSequence>();
+
+        TypeObjectPool.Return(obj);
     }
 }

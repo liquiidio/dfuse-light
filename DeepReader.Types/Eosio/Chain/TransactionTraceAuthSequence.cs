@@ -31,7 +31,5 @@ public sealed class TransactionTraceAuthSequence : PooledObject<TransactionTrace
     {
         Account.WriteToBinaryWriter(writer);
         writer.Write(Sequence);
-
-        TypeObjectPool.Return(this);
     }
 }

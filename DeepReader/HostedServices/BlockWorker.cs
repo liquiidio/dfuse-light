@@ -28,8 +28,8 @@ public class BlockWorker : BackgroundService
 
     private readonly ParallelOptions _postProcessingParallelOptions;
 
-    private static readonly Gauge BlocksChannelSize = Metrics.CreateGauge("deepreader_blockworker_block_channel_size", "The current size of the channel size in block worker");
-    private static readonly Gauge BlockSegmentListChannelSize = Metrics.CreateGauge("deepreader_blockworker_segment_list_channel_size", "The current size of the channel size in block worker");
+    private static readonly Histogram BlocksChannelSize = Metrics.CreateHistogram("deepreader_blockworker_block_channel_size", "The current size of the channel size in block worker");
+    private static readonly Histogram BlockSegmentListChannelSize = Metrics.CreateHistogram("deepreader_blockworker_segment_list_channel_size", "The current size of the channel size in block worker");
 
     private readonly Func<Types.StorageTypes.TransactionTrace, bool> _filterEmptyTransactionsFilter;
 
@@ -87,9 +87,9 @@ public class BlockWorker : BackgroundService
     private void CollectObservableMetrics(object? sender, EventArgs e)
     {
         if (_blocksChannel.CanCount)
-            BlocksChannelSize.Set(_blocksChannel.Count);
+            BlocksChannelSize.Observe(_blocksChannel.Count);
         if (_blockSegmentsListChannel.CanCount)
-            BlockSegmentListChannelSize.Set(_blockSegmentsListChannel.Count);
+            BlockSegmentListChannelSize.Observe(_blockSegmentsListChannel.Count);
     }
 
     private void OnMindReaderOptionsChanged(MindReaderOptions newOptions)
@@ -115,7 +115,7 @@ public class BlockWorker : BackgroundService
 
     private async Task ProcessBlocks(CancellationToken cancellationToken)
     {
-        Types.StorageTypes.Block block = null;
+        Types.StorageTypes.Block block = new Types.StorageTypes.Block();
         List<Types.StorageTypes.TransactionTrace> transactionTraces = new List<Types.StorageTypes.TransactionTrace>();
         List<Types.StorageTypes.ActionTrace> actionTraces = new List<Types.StorageTypes.ActionTrace>();
 
@@ -127,12 +127,6 @@ public class BlockWorker : BackgroundService
                 {
                     if (_blocksChannel.CanCount)
                         Log.Information($"blocks-channel-size: {_blocksChannel.Count}");
-
-                    //if (_blocksChannel.CanCount)
-                    //    BlocksChannelSize.Set(_blocksChannel.Count);
-
-                    //if(_blockSegmentsListChannel.CanCount)
-                    //    BlockSegmentListChannelSize.Set(_blockSegmentsListChannel.Count);
 
                     if (_blockSegmentsListChannel.CanCount)
                         Log.Information($"segment-channel-size: {_blockSegmentsListChannel.Count}");
@@ -149,9 +143,12 @@ public class BlockWorker : BackgroundService
                 PostProcessAsync(deepMindBlock, block, actionTraces);
 
                 // need to copy the transactionsList here as when a block gets evicted, the list gets cleared
+                // (theoretically possible before call finishes - but very unlikely)
                 transactionTraces.AddRange(block.Transactions);
 
-                // this (currently) needs to be done before storage as eviction will put actionTraces and childs back into pools
+                // this (currently) needs to be done before storage as eviction
+                // will put actionTraces and childs back into pools
+                // (theoretically possible before call finishes - but very unlikely)
                 await CheckForAbiUpdates(actionTraces);
 
                 await Task.WhenAll(
@@ -164,8 +161,15 @@ public class BlockWorker : BackgroundService
             }
             catch (Exception e)
             {
-                if (block != null) 
-                    block.ReturnToPoolRecursive();
+                // in case of failure, return all objects recursively to their pools
+                block.ReturnToPoolRecursive();
+
+                foreach (var transactionTrace in transactionTraces)
+                    transactionTrace.ReturnToPoolRecursive();
+                
+                foreach (var actionTrace in actionTraces)
+                    actionTrace.ReturnToPoolRecursive();
+
                 Log.Error(e, "");
             }
             finally
@@ -208,7 +212,6 @@ public class BlockWorker : BackgroundService
             if (creationTreeNode.Kind == CreationOpKind.NOTIFY)
                 childActionTrace.IsNotify = true;
             
-//            childActionTrace.CreatorAction = creatorAction;
             childActionTrace.CreatorActionId = creatorAction.Receipt.GlobalSequence;
 
             childActionTrace.CreatedActions = childCreatedActionTraces.ToArray();

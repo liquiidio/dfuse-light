@@ -2,9 +2,9 @@
 using FASTER.core;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.Blocks
+namespace DeepReader.Storage.Faster.Transactions
 {
-    internal class BlockEvictionObserver : IObserver<IFasterScanIterator<long, Block>>
+    internal class TransactionEvictionObserver : IObserver<IFasterScanIterator<TransactionId, TransactionTrace>>
     {
         public void OnCompleted()
         {
@@ -16,9 +16,9 @@ namespace DeepReader.Storage.Faster.Blocks
             Log.Error(error,"");
         }
 
-        public void OnNext(IFasterScanIterator<long, Block> iter)
+        public void OnNext(IFasterScanIterator<TransactionId, TransactionTrace> iter)
         {
-            while (iter.GetNext(out RecordInfo info, out long key, out Block value))
+            while (iter.GetNext(out RecordInfo info, out TransactionId key, out TransactionTrace value))
             {
                 if (info.IsLocked)
                     continue;
