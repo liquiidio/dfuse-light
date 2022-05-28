@@ -134,7 +134,8 @@ namespace DeepReader.Storage.Faster.Transactions
         private void CollectObservableMetrics(object? sender, EventArgs e)
         {
             StoreLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
-            StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
+            if(_options.UseReadCache)
+                StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
             StoreEntryCountHistogram.Observe(_store.EntryCount);
         }
 

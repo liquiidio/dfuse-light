@@ -18,6 +18,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
         private readonly FasterStorageOptions _options;
 
         private readonly ITopicEventSender _eventSender;
+        private MetricsCollector _metricsCollector;
 
         private static readonly Histogram WritingActionTraceDurationHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_write_action_trace_duration", "Histogram of time to store actionTraces to Faster");
@@ -36,10 +37,12 @@ namespace DeepReader.Storage.Faster.ActionTraces
         private static readonly Histogram ActionTraceReaderSessionReadDurationHistogram =
           Metrics.CreateHistogram("deepreader_storage_faster_action_trace_get_by_id_duration", "Histogram of time to try get actionTrace trace by id");
 
-        public ActionTraceStore(FasterStorageOptions options, ITopicEventSender eventSender)
+        public ActionTraceStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
         {
             _options = options;
             _eventSender = eventSender;
+            _metricsCollector = metricsCollector;
+            _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
 
             if (!_options.ActionTraceStoreDir.EndsWith("/"))
                 options.ActionTraceStoreDir += "/";
@@ -109,11 +112,6 @@ namespace DeepReader.Storage.Faster.ActionTraces
             _actionTraceReaderSession ??=
                 _store.For(new ActionTraceFunctions()).NewSession<ActionTraceFunctions>("ActionTraceReaderSession");
 
-            StoreLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
-            if (options.UseReadCache)
-                StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
-            StoreEntryCountHistogram.Observe(_store.EntryCount);
-
             var actionTraceEvictionObserver = new ActionTraceEvictionObserver();
             _store.Log.SubscribeEvictions(actionTraceEvictionObserver);
 
@@ -121,6 +119,14 @@ namespace DeepReader.Storage.Faster.ActionTraces
                 _store.ReadCache.SubscribeEvictions(actionTraceEvictionObserver);
 
             new Thread(CommitThread).Start();
+        }
+
+        private void CollectObservableMetrics(object? sender, EventArgs e)
+        {
+            StoreLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
+            if (_options.UseReadCache)
+                StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
+            StoreEntryCountHistogram.Observe(_store.EntryCount);
         }
 
         public async Task<Status> WriteActionTrace(ActionTrace actionTrace)

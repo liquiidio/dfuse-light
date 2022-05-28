@@ -32,8 +32,8 @@ namespace DeepReader.Storage.Faster
 
             _blockStore = new BlockStore(_fasterStorageOptions, eventSender, metricsCollector);
             _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender, metricsCollector);
-            _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender);
-            _abiStore = new AbiStore(_fasterStorageOptions, eventSender);
+            _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender, metricsCollector);
+            _abiStore = new AbiStore(_fasterStorageOptions, eventSender, metricsCollector);
 
             _parallelOptions = new ParallelOptions
             {

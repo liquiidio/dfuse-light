@@ -19,6 +19,7 @@ namespace DeepReader.Storage.Faster.Abis
         private readonly FasterStorageOptions _options;
 
         private readonly ITopicEventSender _eventSender;
+        private MetricsCollector _metricsCollector;
 
         private static readonly Histogram WritingAbiDurationHistogram =
             Metrics.CreateHistogram("deepreader_storage_faster_write_abi_duration", "Histogram of time to store abis to Faster");
@@ -37,10 +38,12 @@ namespace DeepReader.Storage.Faster.Abis
         private static readonly Histogram AbiReaderSessionReadDurationHistogram =
           Metrics.CreateHistogram("deepreader_storage_faster_abi_get_by_id_duration", "Histogram of time to try get abi trace by id");
 
-        public AbiStore(FasterStorageOptions options, ITopicEventSender eventSender)
+        public AbiStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
         {
             _options = options;
             _eventSender = eventSender;
+            _metricsCollector = metricsCollector;
+            _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
 
             if (!_options.AbiStoreDir.EndsWith("/"))
                 options.AbiStoreDir += "/";
@@ -110,15 +113,15 @@ namespace DeepReader.Storage.Faster.Abis
             _abiReaderSession ??=
                 _store.For(new AbiFunctions()).NewSession<AbiFunctions>("AbiReaderSession");
 
+            new Thread(CommitThread).Start();
+        }
+
+        private void CollectObservableMetrics(object? sender, EventArgs e)
+        {
             StoreLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
-            if (options.UseReadCache)
+            if (_options.UseReadCache)
                 StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
             StoreEntryCountHistogram.Observe(_store.EntryCount);
-
-            // TODO, for some reason I need to manually call the Init
-            SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
-
-            new Thread(CommitThread).Start();
         }
 
         public async Task<Status> WriteAbi(AbiCacheItem abi)
