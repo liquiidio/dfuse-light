@@ -12,7 +12,7 @@ public class DbOp
     public Name Code { get; set; } = string.Empty;//string
     public Name TableName { get; set; } = string.Empty;//string
     public Name Scope { get; set; } = string.Empty;//string
-    public string PrimaryKey { get; set; } = string.Empty;//string
+    public ReadOnlyMemory<char> PrimaryKey { get; set; } = Array.Empty<char>();//string
     public Name OldPayer { get; set; } = string.Empty;//string
     public Name NewPayer { get; set; } = string.Empty;//string
 
@@ -33,7 +33,8 @@ public class DbOp
         Code = Name.ReadFromBinaryReader(reader);
         Scope = Name.ReadFromBinaryReader(reader);
         TableName = Name.ReadFromBinaryReader(reader);
-        PrimaryKey = reader.ReadString();
+        var length = reader.Read7BitEncodedInt();
+        PrimaryKey = reader.ReadChars(length);
         switch (Operation)
         {
             case DbOpOperation.UNKNOWN:
@@ -68,7 +69,8 @@ public class DbOp
         Code.WriteToBinaryWriter(writer);
         Scope.WriteToBinaryWriter(writer);
         TableName.WriteToBinaryWriter(writer);
-        writer.Write(PrimaryKey);
+        writer.Write7BitEncodedInt(PrimaryKey.Span.Length);
+        writer.Write(PrimaryKey.Span);
         switch (Operation)
         {
             case DbOpOperation.UNKNOWN:

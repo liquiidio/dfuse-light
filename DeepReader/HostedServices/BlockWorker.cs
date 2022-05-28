@@ -116,8 +116,8 @@ public class BlockWorker : BackgroundService
     private async Task ProcessBlocks(CancellationToken cancellationToken)
     {
         Types.StorageTypes.Block block = null;
-        Types.StorageTypes.TransactionTrace[] transactionTraces;
-        List<Types.StorageTypes.ActionTrace> actionTraces;
+        List<Types.StorageTypes.TransactionTrace> transactionTraces = new List<Types.StorageTypes.TransactionTrace>();
+        List<Types.StorageTypes.ActionTrace> actionTraces = new List<Types.StorageTypes.ActionTrace>();
 
         await foreach (var deepMindBlock in _blocksChannel.ReadAllAsync(cancellationToken))
         {
@@ -142,21 +142,24 @@ public class BlockWorker : BackgroundService
                 }
 
                 block = Types.StorageTypes.Block.FromPool();
-                block.Transactions.EnsureCapacity(deepMindBlock.UnfilteredTransactionTraces.Count);
-                block.TransactionIds.EnsureCapacity(deepMindBlock.UnfilteredTransactionTraces.Count);
 
-                actionTraces = new List<Types.StorageTypes.ActionTrace>();
+                actionTraces.Clear();
+                transactionTraces.Clear();
 
                 PostProcessAsync(deepMindBlock, block, actionTraces);
+
+                // need to copy the transactionsList here as when a block gets evicted, the list gets cleared
+                transactionTraces.AddRange(block.Transactions);
+
+                // this (currently) needs to be done before storage as eviction will put actionTraces and childs back into pools
+                await CheckForAbiUpdates(actionTraces);
 
                 await Task.WhenAll(
                     _storageAdapter.StoreBlockAsync(block),
 
-                    StoreTransactionTraces(block.Transactions),
+                    StoreTransactionTraces(transactionTraces),
 
-                    StoreActionTraces(actionTraces),
-
-                    CheckForAbiUpdates(actionTraces)
+                    StoreActionTraces(actionTraces)
                 );
             }
             catch (Exception e)

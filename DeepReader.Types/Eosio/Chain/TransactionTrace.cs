@@ -59,7 +59,7 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
                                                                        // Tree of creation, rather than execution
     public IList<CreationTreeNode> CreationTreeRoots { get; set; } = new List<CreationTreeNode>();//[]*CreationFlatNode
 
-    public IList<CreationFlatNode> FlatCreationTree { get; set; } = new List<CreationFlatNode>();//[]*CreationFlatNode
+    //public IList<CreationFlatNode> FlatCreationTree { get; set; } = new List<CreationFlatNode>();//[]*CreationFlatNode
 
     // Index within block's unfiltered execution traces
     public ulong Index { get; set; } = 0;

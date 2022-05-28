@@ -8,11 +8,11 @@ namespace DeepReader.Types.Other
 {
     public static class NameCache
     {
-        private static ObjectPool<Name> _namePool = new DefaultObjectPool<Name>(new NamePooledObjectPolicy());
+        private static readonly ObjectPool<Name> NamePool = new DefaultObjectPool<Name>(new NamePooledObjectPolicy());
 
         private static readonly MemoryCache Cache = new(new MemoryCacheOptions()
         {
-            ExpirationScanFrequency = TimeSpan.FromMinutes(5),
+            ExpirationScanFrequency = TimeSpan.FromMinutes(2),
         });
 
         private static readonly MemoryCacheEntryOptions ExpiringCacheEntryOptions = new MemoryCacheEntryOptions()
@@ -20,7 +20,7 @@ namespace DeepReader.Types.Other
 
         private static void EntryEvictionCallback(object key, object value, EvictionReason reason, object state)
         {
-            _namePool.Return((Name)value);
+            NamePool.Return((Name)value);
         }
 
         private static readonly MemoryCacheEntryOptions AlwaysKeepExpirationOptions = new MemoryCacheEntryOptions()
@@ -33,7 +33,7 @@ namespace DeepReader.Types.Other
             {
                 // Key not in cache, so get data.
                 var bytes = BitConverter.GetBytes(key);
-                cacheEntry = _namePool.Get();
+                cacheEntry = NamePool.Get();
                 cacheEntry.Set(key, bytes.ToArray());
                 // Save data in cache.
                 Cache.Set(key, cacheEntry, expire ? ExpiringCacheEntryOptions : AlwaysKeepExpirationOptions);
@@ -47,7 +47,7 @@ namespace DeepReader.Types.Other
             if (!Cache.TryGetValue(key, out Name cacheEntry))// Look for cache key.
             {
                 // Key not in cache, so get data.
-                cacheEntry = _namePool.Get();
+                cacheEntry = NamePool.Get();
                 cacheEntry.Set(key, bytes);
 
                 // Save data in cache.
@@ -62,7 +62,7 @@ namespace DeepReader.Types.Other
             {
                 // Key not in cache, so get data.
                 var bytes = BitConverter.GetBytes(key);
-                cacheEntry = _namePool.Get();
+                cacheEntry = NamePool.Get();
                 cacheEntry.Set(key, bytes);
 
                 // Save data in cache.

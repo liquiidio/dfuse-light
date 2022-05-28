@@ -17,10 +17,9 @@ public sealed class DbOpJsonConverter : JsonConverter<DbOp>
         writer.WriteString("operation", value.Operation.ToString());
         writer.WriteString("code", value.Code);
         writer.WriteString("scope", value.Scope);
-        writer.WriteString("primaryKey", value.PrimaryKey);
+        writer.WriteString("primaryKey", value.PrimaryKey.Span);
         writer.WriteString("oldPayer", value.OldPayer);
         writer.WriteString("newPayer", value.NewPayer);
         writer.WriteEndObject();
     }
-
 }

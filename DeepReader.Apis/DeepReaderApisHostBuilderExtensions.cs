@@ -34,7 +34,7 @@ namespace DeepReader.Apis
                     services.Configure<ApiOptions>(config => hostContext.Configuration.GetSection("ApiOptions").Bind(config));
                     services.AddControllers().AddJsonOptions(options =>
                     {
-                        options.JsonSerializerOptions.MaxDepth = Int32.MaxValue;
+                        options.JsonSerializerOptions.MaxDepth = 10;
                         options.JsonSerializerOptions.IncludeFields = true;
                         options.JsonSerializerOptions.AddContext<BlockJsonContext>();
                     });

@@ -172,7 +172,7 @@ public class ParseCtx
         var creationTreeRoots = CreationTree.ComputeCreationTree((IReadOnlyList<CreationOp>)_creationOps);
 
         trace.CreationTreeRoots = creationTreeRoots;
-        trace.FlatCreationTree = CreationTree.ToFlatTree(creationTreeRoots);
+        //trace.FlatCreationTree = CreationTree.ToFlatTree(creationTreeRoots);
         trace.DtrxOps = _trx.DtrxOps;
         trace.DbOps = _trx.DbOps;
         trace.FeatureOps = _trx.FeatureOps;
@@ -627,7 +627,7 @@ public class ParseCtx
             Code = SerializationHelper.CharSpanToName(chunks[5].AsSpan),
             Scope = SerializationHelper.CharSpanToName(chunks[6].AsSpan),
             TableName = SerializationHelper.CharSpanToName(chunks[7].AsSpan),
-            PrimaryKey = (string)chunks[8]!,
+            PrimaryKey = chunks[8].AsMemory,
             OldData = oldData,
             NewData = newData,
         });

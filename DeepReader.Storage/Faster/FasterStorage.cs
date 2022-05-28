@@ -67,7 +67,7 @@ namespace DeepReader.Storage.Faster
         public async Task<(bool, Block)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false, bool includeActionTraces = false)
         {
             var (found, block) = await _blockStore.TryGetBlockById(blockNum);
-            if (found && includeTransactionTraces && block.Transactions.Count == 0) // if length != 0 values are already loaded and referenced
+            if (found && includeTransactionTraces && block.Transactions?.Count == 0) // if length != 0 values are already loaded and referenced
             {
                 var transactionTraceArray = new TransactionTrace[block.TransactionIds.Count];
                 // not sure if this is clever or over-parallelized
