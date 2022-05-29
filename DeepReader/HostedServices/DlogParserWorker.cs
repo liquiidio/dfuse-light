@@ -67,6 +67,7 @@ public class DlogParserWorker : BackgroundService
 
     private async Task ConsumeQueue(CancellationToken cancellationToken, int i)
     {
+        uint blockNum = 0;
         var block = _blockPool.Get();
         Thread.CurrentThread.Name = $"ConsumeQueue {i}";
         ParseCtx ctx = new(_abiDecoder);
@@ -148,10 +149,12 @@ public class DlogParserWorker : BackgroundService
                             {
                                 blockWritten = _blocksChannel.TryWrite(block);
                             }
+                            blockNum = block.Number;
                             break;
                         case "START_BLOCK":
                             block = _blockPool.Get();
                             ctx.ReadStartBlock(data, block);
+                            blockNum = block.Number;
                             break;
                         case "FEATURE_OP":
                             switch ((string) data[2]!)
@@ -200,7 +203,7 @@ public class DlogParserWorker : BackgroundService
             }
             catch (Exception e)
             {
-                Log.Error(e, "");
+                Log.Error(e, " at block {@blockNum} | {ctx.activeBlockNum}", blockNum, ctx.ActiveBlockNum);
                 _blockPool.Return(block);
             }
             finally

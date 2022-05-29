@@ -3,7 +3,6 @@ using DeepReader.Types.EosTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
-using Sentry;
 using Serilog;
 using System.Reflection;
 
@@ -63,8 +62,8 @@ namespace DeepReader.Storage.Faster.Abis
                 // to calculate below:
                 // 12 = 00001111 11111111 = 4095 = 4K
                 // 34 = 00000011 11111111 11111111 11111111 11111111 = 17179869183 = 16G
-                PageSizeBits = 12, // (4K pages)
-                MemorySizeBits = 34 // (16G memory for main log)
+                PageSizeBits = 14, // (4K pages)
+                MemorySizeBits = 28 // (250M memory for main log)
             };
 
             // Define serializers; otherwise FASTER will use the slower DataContract
@@ -206,10 +205,6 @@ namespace DeepReader.Storage.Faster.Abis
                 {
                     Thread.Sleep(_options.LogCheckpointInterval.Value);
 
-                    // Take log-only checkpoint (quick - no index save)
-                    //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-
-                    // Take index + log checkpoint (longer time)
                     using (StoreTakeLogCheckpointDurationHistogram.NewTimer())
                         _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
 

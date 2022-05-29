@@ -332,5 +332,32 @@ namespace DeepReader.Types.Extensions
         //{
         //    return reader.ReadUInt32();
         //}
+
+
+        // from mandel-fc/include/fc/io/raw.hpp void unpack( Stream& s, unsigned_int& vi )
+        //public static uint UnpackUint32(this BinaryReader reader){
+        //    ulong v = 0; byte b = 0; byte by = 0;
+        //    do
+        //    {
+        //        b = reader.ReadByte();
+        //        v |= (uint)(b & 0x7f) << by;
+        //        by += 7;
+        //    } while ((b & 0x80) == 0 && by < 32);
+        //    return (uint)v;
+        //}
+
+        //{
+        //    int v = 0;
+        //    var bit = 0;
+        //    while (true)
+        //    {
+        //        var b = reader.ReadByte();
+        //        v |= (int)((b & 0x7f) << bit);
+        //        bit += 7;
+        //        if ((b & 0x80) == 0)
+        //            break;
+        //    }
+        //    return v >> 0;
+        //}
     }
 }

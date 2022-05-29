@@ -14,7 +14,7 @@ public sealed class FeatureOpJsonConverter : JsonConverter<FeatureOp>
     {
         // TODO, just a temporary workaround
         writer.WriteStartObject();
-        writer.WriteString("kind", value.Kind);
+        writer.WriteString("kind", value.Kind.ToString());
         writer.WriteNumber("actionIndex", value.ActionIndex);
         writer.WriteString("feature", value.Feature.FeatureDigest);// TODO
         writer.WriteEndObject();

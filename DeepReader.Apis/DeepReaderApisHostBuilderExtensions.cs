@@ -56,7 +56,6 @@ namespace DeepReader.Apis
                         .AddDataLoader<BlockByIdDataLoader>()
                         .AddDataLoader<BlocksWithTracesByIdDataLoader>()
                         .AddDataLoader<TransactionByIdDataLoader>();
-                    services.AddSentry();
                     services
                         .AddHealthChecks()
                         .AddCheck<ReadCacheEnabledHealthCheck>("ReadCacheEnabled")
@@ -108,8 +107,6 @@ namespace DeepReader.Apis
                         });
                         endpoints.MapHealthChecksUI();
                     });
-
-                    app.UseSentryTracing();
                 });
             });
             return builder;

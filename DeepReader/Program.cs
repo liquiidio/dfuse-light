@@ -7,7 +7,9 @@ using DeepReader.Storage.Faster;
 using DeepReader.Types;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
+using Sentry.Extensions.Logging.Extensions.DependencyInjection;
 using Serilog;
+using Serilog.Events;
 
 
 var host = Host.CreateDefaultBuilder(args)
@@ -41,8 +43,6 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton(svc => svc.GetRequiredService<Channel<List<IList<StringSegment>>>>().Reader);
         services.AddSingleton(svc => svc.GetRequiredService<Channel<List<IList<StringSegment>>>>().Writer);
 
-        services.AddSentry();
-
         // Inject Block-Channel
         services.AddSingleton(
             Channel.CreateUnbounded<Block>(
@@ -57,8 +57,14 @@ var host = Host.CreateDefaultBuilder(args)
 
 
     }).UseSerilog((hostingContext, loggerConfiguration) =>
-        loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration)
-    )
+    {
+        loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration).WriteTo.Sentry(o =>
+        {
+            o.Dsn = "https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2";
+            o.AttachStacktrace = true;
+            o.MinimumEventLevel = LogEventLevel.Warning;
+        });
+    })
     .UseDeepReaderApis()
     .UseFasterStorage()
 #if !DEBUG

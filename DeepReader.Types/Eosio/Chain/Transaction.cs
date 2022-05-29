@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
-
-namespace DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.Eosio.Chain;
+using Action = DeepReader.Types.Eosio.Chain.Action;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/transaction.hpp

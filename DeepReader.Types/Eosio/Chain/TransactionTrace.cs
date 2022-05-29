@@ -78,12 +78,10 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
         BlockTime = Timestamp.ReadFromBinaryReader(reader);
 
         var readProducerBlockId = reader.ReadBoolean();
-
         if (readProducerBlockId)
             ProducerBlockId = Checksum256.ReadFromBinaryReader(reader);
 
         var readReceipt = reader.ReadBoolean();
-
         if (readReceipt)
             Receipt = TransactionReceiptHeader.ReadFromBinaryReader(reader);
 
@@ -98,15 +96,13 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
         }
 
         var readAccountRamDelta = reader.ReadBoolean();
-
         if (readAccountRamDelta)
             AccountRamDelta = AccountRamDelta.ReadFromBinaryReader(reader);
 
         var readFailedDtrxTrace = reader.ReadBoolean();
-        // Todo @corvin from haron
-        // Haron: "This is a weird field. It is of the same type as this, how does it work?
-        //if (readFailedDtrxTrace)
-        //	FailedDtrxTrace = transactionTrace
+        if (readFailedDtrxTrace) // TODO
+            return;
+//            FailedDtrxTrace = ReadFromBinaryReader(reader);
 
         var readException = reader.ReadBoolean();
         if (readException)

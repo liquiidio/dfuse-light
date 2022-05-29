@@ -3,7 +3,6 @@ using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
-using Sentry;
 using Serilog;
 
 namespace DeepReader.Storage.Faster.Blocks
@@ -64,7 +63,7 @@ namespace DeepReader.Storage.Faster.Blocks
                 // to calculate below:
                 // 12 = 00001111 11111111 = 4095 = 4K
                 // 34 = 11111111 11111111 11111111 11111111 = 17179869183 = 16G
-                PageSizeBits = 12, // (4K pages)
+                PageSizeBits = 14, // (16K pages)
                 MemorySizeBits = 32 // (4G memory for main log)
             };
             
@@ -176,10 +175,6 @@ namespace DeepReader.Storage.Faster.Blocks
                 {
                     Thread.Sleep(_options.LogCheckpointInterval.Value);
 
-                    // Take log-only checkpoint (quick - no index save)
-                    //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-
-                    // Take index + log checkpoint (longer time)
                     using (StoreTakeLogCheckpointDurationHistogram.NewTimer())
                         _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
 

@@ -170,7 +170,8 @@ namespace DeepReader.Types.StorageTypes
 
         public void ReturnToPoolRecursive()
         {
-            ActionReceipt.ReturnToPool(Receipt);
+            if(Receipt != null)
+                ActionReceipt.ReturnToPool(Receipt);
 //            Action Act
             RamOps = Array.Empty<RamOp>();
             TableOps = Array.Empty<TableOp>();

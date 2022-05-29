@@ -51,7 +51,6 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>
         ClosestUnnotifiedAncestorActionOrdinal = (uint)reader.Read7BitEncodedInt();
 
         var readActionReceipt = reader.ReadBoolean();
-
         if (readActionReceipt)
             Receipt = ActionReceipt.ReadFromBinaryReader(reader);
 
@@ -76,12 +75,10 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>
         }
 
         var readExcept = reader.ReadBoolean();
-
         if (readExcept)
             Except = Except.ReadFromBinaryReader(reader);
 
         var readErrorCode = reader.ReadBoolean();
-
         if (readErrorCode)
             ErrorCode = reader.ReadUInt64();
 

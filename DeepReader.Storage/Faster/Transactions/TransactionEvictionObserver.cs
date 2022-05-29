@@ -24,8 +24,6 @@ namespace DeepReader.Storage.Faster.Transactions
                     continue;
 
                 value.ReturnToPoolRecursive();
-                
-                Console.WriteLine($"Block {key} evicted ");
             }
         }
     }

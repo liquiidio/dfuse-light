@@ -14,7 +14,7 @@ public class ParseCtx
 {
     private Block _block;
 
-    private long _activeBlockNum;
+    public long ActiveBlockNum;
 
     private TransactionTrace _trx;
 
@@ -35,7 +35,7 @@ public class ParseCtx
     public ParseCtx(AbiDecoder abiDecoder)
     {
         _block = new Block();
-        _activeBlockNum = 0;
+        ActiveBlockNum = 0;
         _trx = new TransactionTrace();
         _creationOps = new List<CreationOp>();
         _traceEnabled = true;
@@ -45,7 +45,7 @@ public class ParseCtx
     public ParseCtx(Block block, long activeBlockNum, TransactionTrace trx, List<CreationOp> creationOps, bool traceEnabled, string[] supportedVersions, AbiDecoder abiDecoder)
     {
         _block = block;
-        _activeBlockNum = activeBlockNum;
+        ActiveBlockNum = activeBlockNum;
         _trx = trx;
         _creationOps = creationOps;
         _traceEnabled = traceEnabled;
@@ -260,7 +260,7 @@ public class ParseCtx
         var blockNum = Int64.Parse(chunks[2].AsSpan);
 
         ResetBlock(block); // empty block from blockpool set to _block
-        _activeBlockNum = blockNum;
+        ActiveBlockNum = blockNum;
 
         AbiDecoder.StartBlock(blockNum);
     }
@@ -280,14 +280,14 @@ public class ParseCtx
         }
 
         var blockNum = Int64.Parse(chunks[2].AsSpan);
-        if(blockNum == _activeBlockNum + 1)
+        if(blockNum == ActiveBlockNum + 1)
         {
-            _activeBlockNum++;
+            ActiveBlockNum++;
         }
 
-        if (_activeBlockNum != blockNum)
+        if (ActiveBlockNum != blockNum)
         {
-            Log.Information($"block_num {blockNum} doesn't match the active block num {_activeBlockNum}");
+            Log.Information($"block_num {blockNum} doesn't match the active block num {ActiveBlockNum}");
         }
 
         var blockState = DeepMindDeserializer.DeepMindDeserializer.Deserialize<BlockState>(chunks[3]);
@@ -520,10 +520,10 @@ public class ParseCtx
 
         var blockNum = Int32.Parse(chunks[2].AsSpan);
 
-        if (_activeBlockNum != blockNum)
+        if (ActiveBlockNum != blockNum)
         {
 //            throw new Exception($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
-            Log.Information($"saw transactions from block {blockNum} while active block is {_activeBlockNum}");
+            Log.Information($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
         }
 
         var trxTrace = DeepMindDeserializer.DeepMindDeserializer.Deserialize<TransactionTrace>(chunks[3]);
@@ -705,22 +705,17 @@ public class ParseCtx
     //   FEATURE_OP ACTIVATE ${feature_digest} ${feature}
     public void ReadFeatureOpActivate(in IList<StringSegment> chunks)
     {
-        if (chunks.Count != 6)
+        if (chunks.Count != 5)
         {
-            throw new Exception($"expected 6 fields, got {chunks.Count}");
+            throw new Exception($"expected 5 fields, got {chunks.Count}");
         }
 
-        var feature = JsonSerializer.Deserialize<Feature>(chunks[5], _jsonSerializerOptions)!;
-        // TODO does this work?
-        //err:= json.Unmarshal(json.RawMessage(chunks[3]), &feature)
-        /*if err != nil {
-	        return fmt.Errorf("unmashall new feature data: %s", err)
-        }*/
+        var feature = JsonSerializer.Deserialize<Feature>(chunks[4], _jsonSerializerOptions)!;
 
         RecordFeatureOp(new FeatureOp()
         {
-            Kind = (string)chunks[3]!,
-            FeatureDigest = chunks[4].AsMemory,
+            Kind = Enum.Parse<FeatureOpKind>(chunks[2]), // TODO, this doesn't really make sense as it's always ACTIVATE
+            FeatureDigest = chunks[3].AsMemory,
             Feature = feature,
         });
 
@@ -731,28 +726,20 @@ public class ParseCtx
     //   FEATURE_OP PRE_ACTIVATE ${action_id} ${feature_digest} ${feature}
     public void ReadFeatureOpPreActivate(in IList<StringSegment> chunks)
     {
-        if (chunks.Count != 7)
+        if (chunks.Count != 6)
         {
-            throw new Exception($"expected 7 fields, got {chunks.Count}");
+            throw new Exception($"expected 6 fields, got {chunks.Count}");
         }
 
-        var actionIndex = Int32.Parse(chunks[4].AsSpan);
-        /*if err != nil {
-	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
-        }*/
+        var actionIndex = Int32.Parse(chunks[3].AsSpan);
 
-        var feature = JsonSerializer.Deserialize<Feature>(chunks[4], _jsonSerializerOptions)!;
-        // TODO does this work?
-        /*err = json.Unmarshal(json.RawMessage(chunks[4]), &feature)
-        if err != nil {
-	        return fmt.Errorf("unmashall new feature data: %s", err)
-        }*/
+        var feature = JsonSerializer.Deserialize<Feature>(chunks[5], _jsonSerializerOptions)!;
 
         RecordFeatureOp(new FeatureOp()
         {
-            Kind = (string)chunks[3]!,
-            ActionIndex = (uint) actionIndex,
-            FeatureDigest = chunks[5].AsMemory,
+            Kind = Enum.Parse<FeatureOpKind>(chunks[2]), // TODO, this doesn't really make sense as it's always PRE_ACTIVATE
+            ActionIndex = (uint)actionIndex,
+            FeatureDigest = chunks[4].AsMemory,
             Feature = feature,
         });
     }

@@ -13,6 +13,7 @@ using Prometheus;
 using Serilog;
 using System.Diagnostics;
 using System.Threading.Channels;
+using DeepReader.Types.Enums;
 
 namespace DeepReader.HostedServices;
 
@@ -115,6 +116,7 @@ public class BlockWorker : BackgroundService
 
     private async Task ProcessBlocks(CancellationToken cancellationToken)
     {
+        uint blockNum = 0;
         Types.StorageTypes.Block block = new Types.StorageTypes.Block();
         List<Types.StorageTypes.TransactionTrace> transactionTraces = new List<Types.StorageTypes.TransactionTrace>();
         List<Types.StorageTypes.ActionTrace> actionTraces = new List<Types.StorageTypes.ActionTrace>();
@@ -140,11 +142,12 @@ public class BlockWorker : BackgroundService
                 actionTraces.Clear();
                 transactionTraces.Clear();
 
-                PostProcessAsync(deepMindBlock, block, actionTraces);
+                PostProcess(deepMindBlock, block, actionTraces);
 
                 // need to copy the transactionsList here as when a block gets evicted, the list gets cleared
                 // (theoretically possible before call finishes - but very unlikely)
                 transactionTraces.AddRange(block.Transactions);
+                actionTraces = actionTraces.Where(a => a.Receipt != null).ToList();
 
                 // this (currently) needs to be done before storage as eviction
                 // will put actionTraces and childs back into pools
@@ -161,6 +164,8 @@ public class BlockWorker : BackgroundService
             }
             catch (Exception e)
             {
+                Log.Error(e, " at block {@blockNum}", block.Number);
+
                 // in case of failure, return all objects recursively to their pools
                 block.ReturnToPoolRecursive();
 
@@ -169,8 +174,6 @@ public class BlockWorker : BackgroundService
                 
                 foreach (var actionTrace in actionTraces)
                     actionTrace.ReturnToPoolRecursive();
-
-                Log.Error(e, "");
             }
             finally
             {
@@ -228,26 +231,40 @@ public class BlockWorker : BackgroundService
 
     }
 
-    private void PostProcessAsync(Block deepMindBlock, Types.StorageTypes.Block block, List<Types.StorageTypes.ActionTrace> actionTraces)
+    private void PostProcess(Block deepMindBlock, Types.StorageTypes.Block block, List<Types.StorageTypes.ActionTrace> actionTraces)
     {
         for (var transactionTraceIndex = 0; transactionTraceIndex < deepMindBlock.UnfilteredTransactionTraces.Count; transactionTraceIndex++)
         {
             var trx = deepMindBlock.UnfilteredTransactionTraces[transactionTraceIndex];
-            var rootActionTraces = new Types.StorageTypes.ActionTrace[trx.CreationTreeRoots.Count];
-
-            for (var creationTreeRootIndex = 0; creationTreeRootIndex < trx.CreationTreeRoots.Count; creationTreeRootIndex++)
-            {
-                var creationTreeRoot = trx.CreationTreeRoots[creationTreeRootIndex];
-                ProcessCreationTreeRoot(creationTreeRoot, creationTreeRootIndex, trx, rootActionTraces, actionTraces);
-            }
 
             var transactionTrace = Types.StorageTypes.TransactionTrace.FromPool(); // returned to the Pool when Faster evicts it
             transactionTrace.CopyFrom(trx);
-            transactionTrace.ActionTraces = rootActionTraces.ToArray();
-            transactionTrace.ActionTraceIds = rootActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
+
+            if (!trx.DtrxOps.Any(dtrxOp => dtrxOp.Operation == DTrxOpOperation.FAILED))
+            {
+                var rootActionTraces = new Types.StorageTypes.ActionTrace[trx.CreationTreeRoots.Count];
+
+                for (var creationTreeRootIndex = 0;
+                     creationTreeRootIndex < trx.CreationTreeRoots.Count;
+                     creationTreeRootIndex++)
+                {
+                    var creationTreeRoot = trx.CreationTreeRoots[creationTreeRootIndex];
+                    ProcessCreationTreeRoot(creationTreeRoot, creationTreeRootIndex, trx, rootActionTraces,
+                        actionTraces);
+                }
+
+                rootActionTraces = rootActionTraces.Where(a => a.Receipt != null).ToArray();
+                transactionTrace.ActionTraces = rootActionTraces;
+                transactionTrace.ActionTraceIds = rootActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
+            }
+            else
+            {
+                Log.Information("Found failed Deferred Transaction");
+            }
 
             block.Transactions.Add(transactionTrace);
             block.TransactionIds.Add(transactionTrace.Id);
+
         }
 
 
