@@ -29,8 +29,12 @@ public class BlockWorker : BackgroundService
 
     private readonly ParallelOptions _postProcessingParallelOptions;
 
-    private static readonly Histogram BlocksChannelSize = Metrics.CreateHistogram("deepreader_blockworker_block_channel_size", "The current size of the channel size in block worker");
-    private static readonly Histogram BlockSegmentListChannelSize = Metrics.CreateHistogram("deepreader_blockworker_segment_list_channel_size", "The current size of the channel size in block worker");
+
+    private static readonly SummaryConfiguration SummaryConfiguration = new SummaryConfiguration()
+        { MaxAge = TimeSpan.FromSeconds(30) };
+
+    private static readonly Summary BlocksChannelSize = Metrics.CreateSummary("deepreader_blockworker_block_channel_size", "The current size of the channel size in block worker", SummaryConfiguration);
+    private static readonly Summary BlockSegmentListChannelSize = Metrics.CreateSummary("deepreader_blockworker_segment_list_channel_size", "The current size of the channel size in block worker", SummaryConfiguration);
 
     private readonly Func<Types.StorageTypes.TransactionTrace, bool> _filterEmptyTransactionsFilter;
 

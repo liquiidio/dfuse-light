@@ -12,30 +12,37 @@ namespace DeepReader.Storage.Faster.Abis
     {
         private readonly FasterKV<ulong, AbiCacheItem> _store;
 
-        private readonly ClientSession<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiFunctions> _abiReaderSession;
-        private readonly ClientSession<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiFunctions> _abiWriterSession;
+        //private readonly ClientSession<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiFunctions> _abiReaderSession;
+        //private readonly ClientSession<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiFunctions> _abiWriterSession;
+
+        private readonly AsyncPool<ClientSession<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiFunctions>> _sessionPool;
+
+        private int _sessionCount;
 
         private readonly FasterStorageOptions _options;
 
         private readonly ITopicEventSender _eventSender;
         private MetricsCollector _metricsCollector;
 
-        private static readonly Histogram WritingAbiDurationHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_write_abi_duration", "Histogram of time to store abis to Faster");
-        private static readonly Histogram StoreLogMemorySizeBytesHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_log_memory_size_bytes", "Histogram of the faster abi store log memory size in bytes");
-        private static readonly Histogram StoreReadCacheMemorySizeBytesHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_read_cache_memory_size_bytes", "Histogram of the faster abi store read cache memory size in bytes");
-        private static readonly Histogram StoreEntryCountHistogram =
-           Metrics.CreateHistogram("deepreader_storage_faster_abi_store_read_cache_memory_size_bytes", "Histogram of the faster abi store entry count");
-        private static readonly Histogram StoreTakeLogCheckpointDurationHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_take_log_checkpoint_duration", "Histogram of time to take a log checkpoint of faster abi store");
-        private static readonly Histogram StoreTakeIndexCheckpointDurationHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_take_index_checkpoint_duration", "Histogram of time to take a index checkpoint of faster abi store");
-        private static readonly Histogram StoreFlushAndEvictLogDurationHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_abi_store_log_flush_and_evict_duration", "Histogram of time to flush and evict faster abi store");
-        private static readonly Histogram AbiReaderSessionReadDurationHistogram =
-          Metrics.CreateHistogram("deepreader_storage_faster_abi_get_by_id_duration", "Histogram of time to try get abi trace by id");
+        private static readonly SummaryConfiguration SummaryConfiguration = new SummaryConfiguration()
+            { MaxAge = TimeSpan.FromSeconds(30) };
+
+        private static readonly Summary WritingAbiDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_write_abi_duration", "Summary of time to store abis to Faster", SummaryConfiguration);
+        private static readonly Summary StoreLogMemorySizeBytesSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_abi_store_log_memory_size_bytes", "Summary of the faster abi store log memory size in bytes", SummaryConfiguration);
+        private static readonly Summary StoreReadCacheMemorySizeBytesSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_abi_store_read_cache_memory_size_bytes", "Summary of the faster abi store read cache memory size in bytes", SummaryConfiguration);
+        private static readonly Summary StoreEntryCountSummary =
+           Metrics.CreateSummary("deepreader_storage_faster_abi_store_read_cache_memory_size_bytes", "Summary of the faster abi store entry count", SummaryConfiguration);
+        private static readonly Summary StoreTakeLogCheckpointDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_abi_store_take_log_checkpoint_duration", "Summary of time to take a log checkpoint of faster abi store", SummaryConfiguration);
+        private static readonly Summary StoreTakeIndexCheckpointDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_abi_store_take_index_checkpoint_duration", "Summary of time to take a index checkpoint of faster abi store", SummaryConfiguration);
+        private static readonly Summary StoreFlushAndEvictLogDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_abi_store_log_flush_and_evict_duration", "Summary of time to flush and evict faster abi store", SummaryConfiguration);
+        private static readonly Summary AbiReaderSessionReadDurationSummary =
+          Metrics.CreateSummary("deepreader_storage_faster_abi_get_by_id_duration", "Summary of time to try get abi trace by id", SummaryConfiguration);
 
         public AbiStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
         {
@@ -93,34 +100,31 @@ namespace DeepReader.Storage.Faster.Abis
                 Log.Information("AbiStore recovered");
             }
 
+            //_abiWriterSession ??=
+            //    _store.For(new AbiFunctions()).NewSession<AbiFunctions>("AbiWriterSession");
+            //_abiReaderSession ??=
+            //    _store.For(new AbiFunctions()).NewSession<AbiFunctions>("AbiReaderSession");
+
+            _sessionPool = new AsyncPool<ClientSession<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiFunctions>>(
+                logSettings.LogDevice.ThrottleLimit,
+                () => _store.For(new AbiFunctions()).NewSession<AbiFunctions>("AbiSession" + Interlocked.Increment(ref _sessionCount)));
+
             foreach (var recoverableSession in _store.RecoverableSessions)
             {
-                if (recoverableSession.Item2 == "AbiWriterSession")
-                {
-                    _abiWriterSession = _store.For(new AbiFunctions())
-                        .ResumeSession<AbiFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
-                }
-                else if (recoverableSession.Item2 == "AbiReaderSession")
-                {
-                    _abiReaderSession = _store.For(new AbiFunctions())
-                        .ResumeSession<AbiFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
-                }
+                _sessionPool.Return(_store.For(new AbiFunctions())
+                    .ResumeSession<AbiFunctions>(recoverableSession.Item2, out CommitPoint commitPoint));
+                _sessionCount++;
             }
-
-            _abiWriterSession ??=
-                _store.For(new AbiFunctions()).NewSession<AbiFunctions>("AbiWriterSession");
-            _abiReaderSession ??=
-                _store.For(new AbiFunctions()).NewSession<AbiFunctions>("AbiReaderSession");
 
             new Thread(CommitThread).Start();
         }
 
         private void CollectObservableMetrics(object? sender, EventArgs e)
         {
-            StoreLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
+            StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
             if (_options.UseReadCache)
-                StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
-            StoreEntryCountHistogram.Observe(_store.EntryCount);
+                StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);
+            StoreEntryCountSummary.Observe(_store.EntryCount);
         }
 
         public async Task<Status> WriteAbi(AbiCacheItem abi)
@@ -129,34 +133,46 @@ namespace DeepReader.Storage.Faster.Abis
 
             await _eventSender.SendAsync("AbiAdded", abi);
 
-            using (WritingAbiDurationHistogram.NewTimer())
+            using (WritingAbiDurationSummary.NewTimer())
             {
-                var result = await _abiWriterSession.UpsertAsync(ref abiId, ref abi);
+                if (!_sessionPool.TryGet(out var session))
+                    session = await _sessionPool.GetAsync().ConfigureAwait(false);
+                var result = await session.UpsertAsync(ref abiId, ref abi);
                 while (result.Status.IsPending)
                     result = await result.CompleteAsync();
+                _sessionPool.Return(session);
                 return result.Status;
             }
         }
 
         public async Task UpsertAbi(Name account, ulong globalSequence, Assembly assembly)
         {
-            (await _abiWriterSession.RMWAsync(account.IntVal, new AbiInput(account.IntVal, globalSequence, assembly))).Complete();
+            if (!_sessionPool.TryGet(out var session))
+                session = await _sessionPool.GetAsync().ConfigureAwait(false);
+            (await session.RMWAsync(account.IntVal, new AbiInput(account.IntVal, globalSequence, assembly))).Complete();
+            _sessionPool.Return(session);
         }
 
         public async Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Name account)
         {
-            using (AbiReaderSessionReadDurationHistogram.NewTimer())
+            using (AbiReaderSessionReadDurationSummary.NewTimer())
             {
-                var (status, output) = (await _abiReaderSession.ReadAsync(account.IntVal)).Complete();
+                if (!_sessionPool.TryGet(out var session))
+                    session = await _sessionPool.GetAsync().ConfigureAwait(false);
+                var (status, output) = (await session.ReadAsync(account.IntVal)).Complete();
+                _sessionPool.Return(session);
                 return (status.Found, output.Value);
             }
         }
 
         public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence)
         {
-            using (AbiReaderSessionReadDurationHistogram.NewTimer())
+            using (AbiReaderSessionReadDurationSummary.NewTimer())
             {
-                var (status, output) = (await _abiReaderSession.ReadAsync(account.IntVal)).Complete();
+                if (!_sessionPool.TryGet(out var session))
+                    session = await _sessionPool.GetAsync().ConfigureAwait(false);
+                var (status, output) = (await session.ReadAsync(account.IntVal)).Complete();
+                _sessionPool.Return(session);
 
                 if(status.Found && output.Value.AbiVersions.Any(av => av.Key <= globalSequence))
                 {
@@ -180,9 +196,12 @@ namespace DeepReader.Storage.Faster.Abis
 
         public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Name account)
         {
-            using (AbiReaderSessionReadDurationHistogram.NewTimer())
+            using (AbiReaderSessionReadDurationSummary.NewTimer())
             {
-                var (status, output) = (await _abiReaderSession.ReadAsync(account.IntVal)).Complete();
+                if (!_sessionPool.TryGet(out var session))
+                    session = await _sessionPool.GetAsync().ConfigureAwait(false);
+                var (status, output) = (await session.ReadAsync(account.IntVal)).Complete();
+                _sessionPool.Return(session);
 
                 if (status.Found && output.Value.AbiVersions.Count > 0)
                 {
@@ -205,18 +224,18 @@ namespace DeepReader.Storage.Faster.Abis
                 {
                     Thread.Sleep(_options.LogCheckpointInterval.Value);
 
-                    using (StoreTakeLogCheckpointDurationHistogram.NewTimer())
+                    using (StoreTakeLogCheckpointDurationSummary.NewTimer())
                         _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
 
                     if (_options.FlushAfterCheckpoint)
                     {
-                        using (StoreFlushAndEvictLogDurationHistogram.NewTimer())
+                        using (StoreFlushAndEvictLogDurationSummary.NewTimer())
                             _store.Log.FlushAndEvict(true);
                     }
 
                     if (logCheckpointsTaken % _options.IndexCheckpointMultiplier == 0)
                     {
-                        using (StoreTakeIndexCheckpointDurationHistogram.NewTimer())
+                        using (StoreTakeIndexCheckpointDurationSummary.NewTimer())
                             _store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
                     }
 

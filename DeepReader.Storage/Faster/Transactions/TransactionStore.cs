@@ -11,8 +11,10 @@ namespace DeepReader.Storage.Faster.Transactions
     {
         private readonly FasterKV<TransactionId, TransactionTrace> _store;
 
-        private readonly ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionReaderSession;
-        private readonly ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions> _transactionWriterSession;
+        private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput,
+            TransactionContext, TransactionFunctions>> _sessionPool;
+
+        private int _sessionCount;
 
         private readonly FasterStorageOptions _options;
 
@@ -20,22 +22,25 @@ namespace DeepReader.Storage.Faster.Transactions
         private ITopicEventSender _eventSender;
         private MetricsCollector _metricsCollector;
 
-        private static readonly Histogram WritingTransactionDurationHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_write_transaction_duration", "Histogram of time to store transactions to Faster");
-        private static readonly Histogram StoreLogMemorySizeBytesHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_log_memory_size_bytes", "Histogram of the faster transaction store log memory size in bytes");
-        private static readonly Histogram StoreReadCacheMemorySizeBytesHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Histogram of the faster transaction store read cache memory size in bytes");
-        private static readonly Histogram StoreEntryCountHistogram =
-           Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Histogram of the faster transaction store entry count");
-        private static readonly Histogram StoreTakeLogCheckpointDurationHistogram =
-          Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_take_log_checkpoint_duration", "Histogram of time to take a log checkpoint of faster transaction store");
-        private static readonly Histogram StoreTakeIndexCheckpointDurationHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_take_index_checkpoint_duration", "Histogram of time to take a index checkpoint of faster transaction store");
-        private static readonly Histogram StoreFlushAndEvictLogDurationHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_transaction_store_log_flush_and_evict_duration", "Histogram of time to flush and evict faster transaction store");
-        private static readonly Histogram TransactionReaderSessionReadDurationHistogram =
-          Metrics.CreateHistogram("deepreader_storage_faster_transaction_get_by_id_duration", "Histogram of time to try get transaction trace by id");
+        private static readonly SummaryConfiguration SummaryConfiguration = new SummaryConfiguration()
+            { MaxAge = TimeSpan.FromSeconds(30) };
+
+        private static readonly Summary WritingTransactionDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_write_transaction_duration", "Summary of time to store transactions to Faster", SummaryConfiguration);
+        private static readonly Summary StoreLogMemorySizeBytesSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_log_memory_size_bytes", "Summary of the faster transaction store log memory size in bytes", SummaryConfiguration);
+        private static readonly Summary StoreReadCacheMemorySizeBytesSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Summary of the faster transaction store read cache memory size in bytes", SummaryConfiguration);
+        private static readonly Summary StoreEntryCountSummary =
+           Metrics.CreateSummary("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Summary of the faster transaction store entry count", SummaryConfiguration);
+        private static readonly Summary StoreTakeLogCheckpointDurationSummary =
+          Metrics.CreateSummary("deepreader_storage_faster_transaction_store_take_log_checkpoint_duration", "Summary of time to take a log checkpoint of faster transaction store", SummaryConfiguration);
+        private static readonly Summary StoreTakeIndexCheckpointDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_take_index_checkpoint_duration", "Summary of time to take a index checkpoint of faster transaction store", SummaryConfiguration);
+        private static readonly Summary StoreFlushAndEvictLogDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_log_flush_and_evict_duration", "Summary of time to flush and evict faster transaction store", SummaryConfiguration);
+        private static readonly Summary TransactionReaderSessionReadDurationSummary =
+          Metrics.CreateSummary("deepreader_storage_faster_transaction_get_by_id_duration", "Summary of time to try get transaction trace by id", SummaryConfiguration);
 
         public TransactionStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
         {
@@ -95,35 +100,46 @@ namespace DeepReader.Storage.Faster.Transactions
                 Log.Information("TransactionStore recovered");
             }
 
-            foreach (var recoverableSession in _store.RecoverableSessions)
-            {
-                if (recoverableSession.Item2 == "TransactionWriterSession")
-                {
-                    _transactionWriterSession = _store.For(new TransactionFunctions())
-                        .ResumeSession<TransactionFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
-                }
-                else if (recoverableSession.Item2 == "TransactionReaderSession")
-                {
-                    _transactionReaderSession = _store.For(new TransactionFunctions())
-                        .ResumeSession<TransactionFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
-                }
-            }
+            //foreach (var recoverableSession in _store.RecoverableSessions)
+            //{
+            //    if (recoverableSession.Item2 == "TransactionWriterSession")
+            //    {
+            //        _transactionWriterSession = _store.For(new TransactionFunctions())
+            //            .ResumeSession<TransactionFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
+            //    }
+            //    else if (recoverableSession.Item2 == "TransactionReaderSession")
+            //    {
+            //        _transactionReaderSession = _store.For(new TransactionFunctions())
+            //            .ResumeSession<TransactionFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
+            //    }
+            //}
 
-            _transactionWriterSession ??=
-                _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionWriterSession");
-            _transactionReaderSession ??=
-                _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionReaderSession");
+            //_transactionWriterSession ??=
+            //    _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionSession");
+            //_transactionReaderSession ??=
+            //    _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionReaderSession");
 
-            StoreLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
+            StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
             if (options.UseReadCache)
-                StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
-            StoreEntryCountHistogram.Observe(_store.EntryCount);
+                StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);
+            StoreEntryCountSummary.Observe(_store.EntryCount);
 
             var transactionEvictionObserver = new TransactionEvictionObserver();
             _store.Log.SubscribeEvictions(transactionEvictionObserver);
 
             if (options.UseReadCache)
                 _store.ReadCache.SubscribeEvictions(transactionEvictionObserver);
+
+            _sessionPool = new AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions>>(
+                logSettings.LogDevice.ThrottleLimit,
+                () => _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionSession" + Interlocked.Increment(ref _sessionCount)));
+
+            foreach (var recoverableSession in _store.RecoverableSessions)
+            {
+                _sessionPool.Return(_store.For(new TransactionFunctions())
+                    .ResumeSession<TransactionFunctions>(recoverableSession.Item2, out CommitPoint commitPoint));
+                _sessionCount++;
+            }
 
             new Thread(CommitThread).Start();
         }
@@ -132,10 +148,10 @@ namespace DeepReader.Storage.Faster.Transactions
 
         private void CollectObservableMetrics(object? sender, EventArgs e)
         {
-            StoreLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
+            StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
             if(_options.UseReadCache)
-                StoreReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
-            StoreEntryCountHistogram.Observe(_store.EntryCount);
+                StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);
+            StoreEntryCountSummary.Observe(_store.EntryCount);
         }
 
         public async Task<Status> WriteTransaction(TransactionTrace transaction)
@@ -144,20 +160,26 @@ namespace DeepReader.Storage.Faster.Transactions
 
             await _eventSender.SendAsync("TransactionAdded", transaction);
 
-            using (WritingTransactionDurationHistogram.NewTimer())
+            using (WritingTransactionDurationSummary.NewTimer())
             {
-                var result = await _transactionWriterSession.UpsertAsync(ref transactionId, ref transaction);
+                if (!_sessionPool.TryGet(out var session))
+                    session = await _sessionPool.GetAsync().ConfigureAwait(false);
+                var result = await session.UpsertAsync(ref transactionId, ref transaction);
                 while (result.Status.IsPending)
                     result = await result.CompleteAsync();
+                _sessionPool.Return(session);
                 return result.Status;
             }
         }
 
         public async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
         {
-            using (TransactionReaderSessionReadDurationHistogram.NewTimer())
+            using (TransactionReaderSessionReadDurationSummary.NewTimer())
             {
-                var (status, output) = (await _transactionReaderSession.ReadAsync(new TransactionId(transactionId))).Complete();
+                if (!_sessionPool.TryGet(out var session))
+                    session = await _sessionPool.GetAsync().ConfigureAwait(false);
+                var (status, output) = (await session.ReadAsync(new TransactionId(transactionId))).Complete();
+                _sessionPool.Return(session);
                 return (status.Found, output.Value);
             }
         }
@@ -175,18 +197,18 @@ namespace DeepReader.Storage.Faster.Transactions
                 {
                     Thread.Sleep(_options.LogCheckpointInterval.Value);
 
-                    using (StoreTakeLogCheckpointDurationHistogram.NewTimer())
+                    using (StoreTakeLogCheckpointDurationSummary.NewTimer())
                         _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
 
                     if (_options.FlushAfterCheckpoint)
                     {
-                        using (StoreFlushAndEvictLogDurationHistogram.NewTimer())
+                        using (StoreFlushAndEvictLogDurationSummary.NewTimer())
                             _store.Log.FlushAndEvict(true);
                     }
 
                     if (logCheckpointsTaken % _options.IndexCheckpointMultiplier == 0)
                     {
-                        using (StoreTakeIndexCheckpointDurationHistogram.NewTimer())
+                        using (StoreTakeIndexCheckpointDurationSummary.NewTimer())
                             _store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
                     }
 
