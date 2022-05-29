@@ -38,15 +38,15 @@ var host = Host.CreateDefaultBuilder(args)
 
         // Inject BlockSegment-Channel
         services.AddSingleton(
-            Channel.CreateUnbounded<List<IList<StringSegment>>>(
-                new UnboundedChannelOptions() {SingleReader = false, SingleWriter = true}));
+            Channel.CreateBounded<List<IList<StringSegment>>>(
+                new BoundedChannelOptions(Convert.ToInt32(hostContext.Configuration.GetSection("DeepReaderOptions")["DlogReaderBlockQueueSize"])) {SingleReader = false, SingleWriter = true}));
         services.AddSingleton(svc => svc.GetRequiredService<Channel<List<IList<StringSegment>>>>().Reader);
         services.AddSingleton(svc => svc.GetRequiredService<Channel<List<IList<StringSegment>>>>().Writer);
 
         // Inject Block-Channel
         services.AddSingleton(
-            Channel.CreateUnbounded<Block>(
-                new UnboundedChannelOptions() {SingleReader = false, SingleWriter = false}));
+            Channel.CreateBounded<Block>(
+                new BoundedChannelOptions(Convert.ToInt32(hostContext.Configuration.GetSection("DeepReaderOptions")["BlockQueueSize"])) {SingleReader = false, SingleWriter = false}));
         services.AddSingleton(svc => svc.GetRequiredService<Channel<Block>>().Reader);
         services.AddSingleton(svc => svc.GetRequiredService<Channel<Block>>().Writer);
 
