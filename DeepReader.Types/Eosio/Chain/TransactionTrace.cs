@@ -100,8 +100,8 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
             AccountRamDelta = AccountRamDelta.ReadFromBinaryReader(reader);
 
         var readFailedDtrxTrace = reader.ReadBoolean();
-        if (readFailedDtrxTrace) // TODO
-            return;
+//        if (readFailedDtrxTrace) // TODO
+//            return;
 //            FailedDtrxTrace = ReadFromBinaryReader(reader);
 
         var readException = reader.ReadBoolean();
