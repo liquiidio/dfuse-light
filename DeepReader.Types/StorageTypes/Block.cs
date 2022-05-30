@@ -65,13 +65,14 @@ public sealed class Block : PooledObject<Block>, IParentPooledObject<Block>
         obj.ScheduleVersion = reader.ReadUInt32();
         obj.ProducerSignature = Signature.ReadFromBinaryReader(reader);
 
-        var hasNewProducers = reader.ReadBoolean();
-        if (hasNewProducers)
+        var hasNewProducers = reader.ReadByte();
+        if (hasNewProducers != 0)
             obj.NewProducers = ProducerSchedule.ReadFromBinaryReader(reader);
         else
             obj.NewProducers = null;
 
-        for (int i = 0; i < reader.ReadInt32(); i++)
+        var count = reader.Read7BitEncodedInt();
+        for (int i = 0; i < count; i++)
         {
             obj.TransactionIds.Add(TransactionId.ReadFromBinaryReader(reader));
         }
@@ -98,7 +99,7 @@ public sealed class Block : PooledObject<Block>, IParentPooledObject<Block>
             NewProducers.WriteToBinaryWriter(writer);
         }
 
-        writer.Write(TransactionIds.Count);
+        writer.Write7BitEncodedInt(TransactionIds.Count);
         foreach (var transactionId in TransactionIds)
         {
             writer.Write(transactionId.Binary);

@@ -29,12 +29,26 @@ public class BlockWorker : BackgroundService
 
     private readonly ParallelOptions _postProcessingParallelOptions;
 
+    private static readonly Summary BlocksChannelSize = Metrics.CreateSummary("deepreader_blockworker_block_channel_size", "The current size of the channel size in block worker", SummaryConfiguration);
+    private static readonly Summary BlockSegmentListChannelSize = Metrics.CreateSummary("deepreader_blockworker_segment_list_channel_size", "The current size of the channel size in block worker", SummaryConfiguration);
 
     private static readonly SummaryConfiguration SummaryConfiguration = new SummaryConfiguration()
         { MaxAge = TimeSpan.FromSeconds(30) };
 
-    private static readonly Summary BlocksChannelSize = Metrics.CreateSummary("deepreader_blockworker_block_channel_size", "The current size of the channel size in block worker", SummaryConfiguration);
-    private static readonly Summary BlockSegmentListChannelSize = Metrics.CreateSummary("deepreader_blockworker_segment_list_channel_size", "The current size of the channel size in block worker", SummaryConfiguration);
+    private static readonly Summary PostProcessingTime =
+        Metrics.CreateSummary("deepreader_blockworker_block_postprocessing_duration", "Summary of time to post-process blocks, transactions and actions", SummaryConfiguration);
+
+    private static readonly Summary StoreWritingTime =
+        Metrics.CreateSummary("deepreader_blockworker_store_writing_duration", "Summary of time to store all data (blocks, transactions and actions)", SummaryConfiguration);
+
+    private static readonly Summary TransactionsPerBlock =
+        Metrics.CreateSummary("deepreader_transactions_per_block", "Summary of Transactions per Block", SummaryConfiguration);
+
+    private static readonly Summary ActionTracesPerBlock =
+        Metrics.CreateSummary("deepreader_action_traces_per_block", "Summary of ActionTraces per Block", SummaryConfiguration);
+
+    private static readonly Summary AbiUpdatesPerBlock =
+        Metrics.CreateSummary("deepreader_abi_updates_per_block", "Summary of Abi-Updates per Block", SummaryConfiguration);
 
     private readonly Func<Types.StorageTypes.TransactionTrace, bool> _filterEmptyTransactionsFilter;
 
@@ -146,7 +160,14 @@ public class BlockWorker : BackgroundService
                 actionTraces.Clear();
                 transactionTraces.Clear();
 
-                PostProcess(deepMindBlock, block, actionTraces);
+                using (PostProcessingTime.NewTimer())
+                {
+                    PostProcess(deepMindBlock, block, actionTraces);
+                }
+
+                TransactionsPerBlock.Observe(block.TransactionIds.Count);
+                ActionTracesPerBlock.Observe(actionTraces.Count);
+
 
                 // need to copy the transactionsList here as when a block gets evicted, the list gets cleared
                 // (theoretically possible before call finishes - but very unlikely)
@@ -158,13 +179,16 @@ public class BlockWorker : BackgroundService
                 // (theoretically possible before call finishes - but very unlikely)
                 await CheckForAbiUpdates(actionTraces);
 
-                await Task.WhenAll(
-                    _storageAdapter.StoreBlockAsync(block),
+                using (StoreWritingTime.NewTimer())
+                {
+                    await Task.WhenAll(
+                        _storageAdapter.StoreBlockAsync(block),
 
-                    StoreTransactionTraces(transactionTraces),
+                        StoreTransactionTraces(transactionTraces),
 
-                    StoreActionTraces(actionTraces)
-                );
+                        StoreActionTraces(actionTraces)
+                    );
+                }
             }
             catch (Exception e)
             {
@@ -390,6 +414,7 @@ public class BlockWorker : BackgroundService
     {
         await Parallel.ForEachAsync(actionTraces.Where(at => at.Act.Account == _eosio && at.Act.Name == _setabi), _postProcessingParallelOptions, async (setAbiTrace, _) =>
         {
+            AbiUpdatesPerBlock.Observe(1);
             try
             {
                 var (found, assemblyPair) = await _storageAdapter.TryGetActiveAbiAssembly(_eosio); // account is always eosio here

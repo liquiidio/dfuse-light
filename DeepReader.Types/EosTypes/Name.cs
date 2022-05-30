@@ -34,7 +34,7 @@ public sealed class Name : BinaryType, IEosioSerializable<Name>
     //}
     public static Name ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
-        return NameCache.GetOrCreate(reader.ReadBytes(NameByteLength));
+        return NameCache.GetOrCreate(reader.ReadUInt64());
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)
