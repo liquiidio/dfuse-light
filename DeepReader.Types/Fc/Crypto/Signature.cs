@@ -1,14 +1,16 @@
 ﻿using System.Text.Json.Serialization;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
+using Serilog;
 
 namespace DeepReader.Types.Fc.Crypto;
 
 [JsonConverter(typeof(SignatureJsonConverter))]
 public sealed class Signature : PooledObject<Signature>, IEosioSerializable<Signature>
 {
-    const int SignKeyDataSize = 64;
+    const int SignKeyDataSize = 65;
 
     [JsonIgnore]
     private byte Type;
@@ -19,8 +21,23 @@ public sealed class Signature : PooledObject<Signature>, IEosioSerializable<Sign
 
     public string StringVal
     {
-        get => _stringVal ??= SerializationHelper.ByteArrayToHexString(SignBytes);
+        get => _stringVal ??= CryptoHelper.SignBytesToString(SignBytes);
         set => _stringVal = value;
+    }
+
+    public override string ToString()
+    {
+        switch (Type)
+        {
+            case (int)BinaryReaderExtensions.KeyType.R1:
+                return CryptoHelper.SignBytesToString(SignBytes, "R1", "SIG_R1_");
+            case (int)BinaryReaderExtensions.KeyType.K1:
+                return CryptoHelper.SignBytesToString(SignBytes, "K1", "SIG_K1_");
+            default:
+                Log.Error(new Exception($"Signature type {Type} not supported"), "");
+                Log.Error(new Exception(CryptoHelper.SignBytesToString(SignBytes, "K1", "SIG_K1_")), "");
+                return CryptoHelper.SignBytesToString(SignBytes, "K1", "SIG_K1_");  // TODO ??
+        }
     }
 
     public Signature()
@@ -35,8 +52,7 @@ public sealed class Signature : PooledObject<Signature>, IEosioSerializable<Sign
         var obj = fromPool ? TypeObjectPool.Get() : new Signature();
 
         obj.Type = reader.ReadByte();
-        obj.SignBytes = reader.ReadBytes(Constants.SignKeyDataSize);
-        obj.SomeByte = reader.ReadByte();
+        obj.SignBytes = reader.ReadBytes(SignKeyDataSize);
         return obj;
     }
 
@@ -44,7 +60,6 @@ public sealed class Signature : PooledObject<Signature>, IEosioSerializable<Sign
     {
         writer.Write(Type);
         writer.Write(SignBytes);
-        writer.Write(SomeByte);
     }
 
     public static implicit operator Signature(string value)
