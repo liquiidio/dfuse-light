@@ -95,9 +95,17 @@ namespace DeepReader.Storage.Faster.Transactions
 
             if (Directory.Exists(checkPointsDir))
             {
-                Log.Information("Recovering TransactionStore");
-                _store.Recover(1);
-                Log.Information("TransactionStore recovered");
+                try
+                {
+                    Log.Information("Recovering TransactionStore");
+                    _store.Recover(1);
+                    Log.Information("TransactionStore recovered");
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "");
+                    throw;
+                }
             }
 
             //foreach (var recoverableSession in _store.RecoverableSessions)

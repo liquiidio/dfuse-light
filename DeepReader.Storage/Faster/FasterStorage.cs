@@ -73,11 +73,14 @@ namespace DeepReader.Storage.Faster
                 // not sure if this is clever or over-parallelized
                 await Parallel.ForEachAsync(block.TransactionIds, _parallelOptions, async (transactionId, _) =>
                 {
-                    var (foundTrx, transaction) =
-                        await _transactionStore.TryGetTransactionTraceById(transactionId);
-                    int index;
-                    if (foundTrx && (index = block.TransactionIds.IndexOf(transactionId)) >= 0)
-                        transactionTraceArray[index] = transaction;
+                    if (transactionId != null)
+                    {
+                        var (foundTrx, transaction) =
+                            await _transactionStore.TryGetTransactionTraceById(transactionId);
+                        int index;
+                        if (foundTrx && (index = block.TransactionIds.IndexOf(transactionId)) >= 0)
+                            transactionTraceArray[index] = transaction;
+                    }
                 });
                 block.Transactions = transactionTraceArray.ToList();
             }
@@ -85,16 +88,20 @@ namespace DeepReader.Storage.Faster
             {
                 await Parallel.ForEachAsync(block.Transactions, _parallelOptions, async (transaction, _) =>
                 {
-                    transaction.ActionTraces = new ActionTrace[transaction.ActionTraceIds.Length];
-                    // not sure if this is clever or over-parallelized
-                    await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
+                    if (transaction != null)
                     {
-                        var (foundAct, action) =
-                            await _actionTraceStore.TryGetActionTraceById(actionTraceId);
-                        int index;
-                        if (foundAct && (index = Array.IndexOf(transaction.ActionTraceIds, actionTraceId)) >= 0)
-                            transaction.ActionTraces[index] = action;
-                    });
+                        transaction.ActionTraces = new ActionTrace[transaction.ActionTraceIds.Length];
+                        // not sure if this is clever or over-parallelized
+                        await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
+                        {
+                            var (foundAct, action) =
+                                await _actionTraceStore.TryGetActionTraceById(actionTraceId);
+                            int index;
+                            if (foundAct && (index = Array.IndexOf(transaction.ActionTraceIds, actionTraceId)) >= 0)
+                                transaction.ActionTraces[index] = action;
+                        });
+
+                    }
                 });
             }
             return (found, block);

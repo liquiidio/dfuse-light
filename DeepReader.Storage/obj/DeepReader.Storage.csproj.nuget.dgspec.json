@@ -1,0 +1,192 @@
+{
+  "format": 1,
+  "restore": {
+    "E:\\source\\repos\\DeepReader\\DeepReader.Storage\\DeepReader.Storage.csproj": {}
+  },
+  "projects": {
+    "E:\\source\\repos\\DeepReader\\DeepReader.Storage\\DeepReader.Storage.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "E:\\source\\repos\\DeepReader\\DeepReader.Storage\\DeepReader.Storage.csproj",
+        "projectName": "DeepReader.Storage",
+        "projectPath": "E:\\source\\repos\\DeepReader\\DeepReader.Storage\\DeepReader.Storage.csproj",
+        "packagesPath": "C:\\Users\\madh-\\.nuget\\packages\\",
+        "outputPath": "E:\\source\\repos\\DeepReader\\DeepReader.Storage\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "E:\\source\\repos\\DeepReader\\NuGet.Config",
+          "C:\\Users\\madh-\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://ci.appveyor.com/nuget/benchmarkdotnet": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {
+              "E:\\source\\repos\\DeepReader\\DeepReader.Types\\DeepReader.Types.csproj": {
+                "projectPath": "E:\\source\\repos\\DeepReader\\DeepReader.Types\\DeepReader.Types.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "dependencies": {
+            "HotChocolate.AspNetCore": {
+              "target": "Package",
+              "version": "[12.8.1, )"
+            },
+            "Lokad.ILPack": {
+              "target": "Package",
+              "version": "[0.1.7, )"
+            },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "Microsoft.Extensions.Hosting.Abstractions": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "Microsoft.Extensions.Options": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "Microsoft.FASTER.Core": {
+              "target": "Package",
+              "version": "[2.0.6, )"
+            },
+            "Microsoft.IO.RecyclableMemoryStream": {
+              "target": "Package",
+              "version": "[2.2.0, )"
+            },
+            "NEST": {
+              "target": "Package",
+              "version": "[7.17.0, )"
+            },
+            "Sentry.Serilog": {
+              "target": "Package",
+              "version": "[3.17.0, )"
+            },
+            "prometheus-net": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.300\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "E:\\source\\repos\\DeepReader\\DeepReader.Types\\DeepReader.Types.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "E:\\source\\repos\\DeepReader\\DeepReader.Types\\DeepReader.Types.csproj",
+        "projectName": "DeepReader.Types",
+        "projectPath": "E:\\source\\repos\\DeepReader\\DeepReader.Types\\DeepReader.Types.csproj",
+        "packagesPath": "C:\\Users\\madh-\\.nuget\\packages\\",
+        "outputPath": "E:\\source\\repos\\DeepReader\\DeepReader.Types\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "E:\\source\\repos\\DeepReader\\NuGet.Config",
+          "C:\\Users\\madh-\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://ci.appveyor.com/nuget/benchmarkdotnet": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "dependencies": {
+            "Cryptography.ECDSA.Secp256K1": {
+              "target": "Package",
+              "version": "[1.1.3, )"
+            },
+            "KGySoft.CoreLibraries": {
+              "target": "Package",
+              "version": "[6.0.2, )"
+            },
+            "Microsoft.Extensions.Caching.Memory": {
+              "target": "Package",
+              "version": "[6.0.1, )"
+            },
+            "Microsoft.Extensions.ObjectPool": {
+              "target": "Package",
+              "version": "[3.1.4, )"
+            },
+            "Serilog": {
+              "target": "Package",
+              "version": "[2.10.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.300\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

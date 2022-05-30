@@ -5,6 +5,7 @@ using HotChocolate.Subscriptions;
 using Prometheus;
 using Serilog;
 using System.Reflection;
+using Elasticsearch.Net;
 
 namespace DeepReader.Storage.Faster.Abis
 {
@@ -95,9 +96,17 @@ namespace DeepReader.Storage.Faster.Abis
 
             if (Directory.Exists(checkPointsDir))
             {
-                Log.Information("Recovering AbiStore");
-                _store.Recover(1);
-                Log.Information("AbiStore recovered");
+                try
+                {
+                    Log.Information("Recovering AbiStore");
+                    _store.Recover(1);
+                    Log.Information("AbiStore recovered");
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e,"");
+                    throw;
+                }
             }
 
             //_abiWriterSession ??=

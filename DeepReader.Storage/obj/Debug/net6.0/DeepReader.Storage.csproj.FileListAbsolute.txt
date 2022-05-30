@@ -1,0 +1,15 @@
+E:\source\repos\DeepReader\DeepReader.Storage\bin\Debug\net6.0\DeepReader.Storage.deps.json
+E:\source\repos\DeepReader\DeepReader.Storage\bin\Debug\net6.0\DeepReader.Storage.dll
+E:\source\repos\DeepReader\DeepReader.Storage\bin\Debug\net6.0\DeepReader.Storage.pdb
+E:\source\repos\DeepReader\DeepReader.Storage\bin\Debug\net6.0\DeepReader.Types.dll
+E:\source\repos\DeepReader\DeepReader.Storage\bin\Debug\net6.0\DeepReader.Types.pdb
+E:\source\repos\DeepReader\DeepReader.Storage\obj\Debug\net6.0\DeepReader.Storage.csproj.AssemblyReference.cache
+E:\source\repos\DeepReader\DeepReader.Storage\obj\Debug\net6.0\DeepReader.Storage.GeneratedMSBuildEditorConfig.editorconfig
+E:\source\repos\DeepReader\DeepReader.Storage\obj\Debug\net6.0\DeepReader.Storage.AssemblyInfoInputs.cache
+E:\source\repos\DeepReader\DeepReader.Storage\obj\Debug\net6.0\DeepReader.Storage.AssemblyInfo.cs
+E:\source\repos\DeepReader\DeepReader.Storage\obj\Debug\net6.0\DeepReader.Storage.csproj.CoreCompileInputs.cache
+E:\source\repos\DeepReader\DeepReader.Storage\obj\Debug\net6.0\DeepReader.Storage.csproj.CopyComplete
+E:\source\repos\DeepReader\DeepReader.Storage\obj\Debug\net6.0\DeepReader.Storage.dll
+E:\source\repos\DeepReader\DeepReader.Storage\obj\Debug\net6.0\refint\DeepReader.Storage.dll
+E:\source\repos\DeepReader\DeepReader.Storage\obj\Debug\net6.0\DeepReader.Storage.pdb
+E:\source\repos\DeepReader\DeepReader.Storage\obj\Debug\net6.0\ref\DeepReader.Storage.dll

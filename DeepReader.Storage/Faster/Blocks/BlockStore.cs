@@ -97,9 +97,17 @@ namespace DeepReader.Storage.Faster.Blocks
 
             if (Directory.Exists(checkPointsDir))
             {
-                Log.Information("Recovering BlockStore");
-                _store.Recover(1);
-                Log.Information("BlockStore recovered");
+                try
+                {
+                    Log.Information("Recovering BlockStore");
+                    _store.Recover(1);
+                    Log.Information("BlockStore recovered");
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "");
+                    throw;
+                }
             }
 
             //foreach (var recoverableSession in _store.RecoverableSessions)

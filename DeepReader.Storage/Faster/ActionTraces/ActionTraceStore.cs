@@ -94,9 +94,17 @@ namespace DeepReader.Storage.Faster.ActionTraces
 
             if (Directory.Exists(checkPointsDir))
             {
-                Log.Information("Recovering ActionTraceStore");
-                _store.Recover(1);
-                Log.Information("ActionTraceStore recovered");
+                try
+                {
+                    Log.Information("Recovering ActionTraceStore");
+                    _store.Recover(1);
+                    Log.Information("ActionTraceStore recovered");
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "");
+                    throw;
+                }
             }
 
             //foreach (var recoverableSession in _store.RecoverableSessions)
