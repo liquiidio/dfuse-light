@@ -23,7 +23,8 @@ namespace DeepReader.Apis.GraphQl.CustomScalarTypes
         {
             if (valueSyntax is StringValueNode stringValueNode)
             {
-                Timestamp t = Convert.ToUInt32(DateTime.Parse(stringValueNode.Value).Ticks);
+                // TODO @Haron pls verify if this works
+                Timestamp t = new Timestamp(Convert.ToUInt32(DateTime.Parse(stringValueNode.Value).Ticks));
                 return t;
             }
             throw new SerializationException("The specified value has to be of type string", this);
@@ -52,7 +53,8 @@ namespace DeepReader.Apis.GraphQl.CustomScalarTypes
 
             if (resultValue is string s)
             {
-                Timestamp t = Convert.ToUInt32(DateTime.Parse(s).Ticks);
+                // TODO @Haron pls verify if this works
+                Timestamp t = new Timestamp(Convert.ToUInt32(DateTime.Parse(s).Ticks));
                 return true;
             }
 

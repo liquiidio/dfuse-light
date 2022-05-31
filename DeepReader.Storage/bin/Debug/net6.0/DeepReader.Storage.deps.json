@@ -15,7 +15,7 @@
           "Microsoft.Extensions.Hosting.Abstractions": "6.0.0",
           "Microsoft.Extensions.Logging.Abstractions": "6.0.0",
           "Microsoft.Extensions.Options": "6.0.0",
-          "Microsoft.FASTER.Core": "2.0.6",
+          "Microsoft.FASTER.Core": "2.0.7",
           "Microsoft.IO.RecyclableMemoryStream": "2.2.0",
           "NEST": "7.17.0",
           "Sentry.Serilog": "3.17.0",
@@ -413,7 +413,7 @@
           "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         }
       },
-      "Microsoft.FASTER.Core/2.0.6": {
+      "Microsoft.FASTER.Core/2.0.7": {
         "dependencies": {
           "System.Interactive.Async": "6.0.1",
           "System.Runtime.CompilerServices.Unsafe": "6.0.0"
@@ -532,6 +532,7 @@
           "KGySoft.CoreLibraries": "6.0.2",
           "Microsoft.Extensions.Caching.Memory": "6.0.1",
           "Microsoft.Extensions.ObjectPool": "3.1.4",
+          "Microsoft.FASTER.Core": "2.0.7",
           "Serilog": "2.10.0"
         },
         "runtime": {
@@ -833,12 +834,12 @@
       "path": "microsoft.extensions.primitives/6.0.0",
       "hashPath": "microsoft.extensions.primitives.6.0.0.nupkg.sha512"
     },
-    "Microsoft.FASTER.Core/2.0.6": {
+    "Microsoft.FASTER.Core/2.0.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-/lHUYsyKd9PxGjUIuSSpk8I9wcecczLG4O0HwOZ/Gd5edNE3U3b3GAm/c/FeSBB5tHOLAW9xforOCM/62k/D+w==",
-      "path": "microsoft.faster.core/2.0.6",
-      "hashPath": "microsoft.faster.core.2.0.6.nupkg.sha512"
+      "sha512": "sha512-mHlf7QX4jpmdgqWQfJ5hP1zCwXs2eG7Iv0D+dlCvR6XzZ6z9duXgsxhH3A/sVTx6zgXsvvtVWDJ4Tgl9s+Hj+Q==",
+      "path": "microsoft.faster.core/2.0.7",
+      "hashPath": "microsoft.faster.core.2.0.7.nupkg.sha512"
     },
     "Microsoft.IO.RecyclableMemoryStream/2.2.0": {
       "type": "package",
