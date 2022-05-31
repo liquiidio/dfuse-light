@@ -8,8 +8,8 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class TransactionTraceAuthSequence : IEosioSerializable<TransactionTraceAuthSequence>
 {
-    public Name Account;
-    public ulong Sequence;
+    public Name Account { get; set; }
+    public ulong Sequence { get; set; }
 
     public TransactionTraceAuthSequence(BinaryReader reader)
     {

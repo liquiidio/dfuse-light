@@ -9,9 +9,9 @@ namespace DeepReader.Apis.GraphQl.ObjectTypes
         protected override void Configure(IObjectTypeDescriptor<TransactionReceiptHeader> descriptor)
         {
             descriptor.Name("TransactionReceiptHeader");
-            descriptor.Field(f => f.Status).Type<TransactionIdType>().Name("status");
-            descriptor.Field(f => f.CpuUsageUs).Type<BlockType>().Name("cpuUsageMicroSeconds"); // TODO, this is always null atm
-            descriptor.Field(f => f.NetUsageWords).Type<UnsignedIntType>().Name("netUsageWords");
+            descriptor.Field(f => f.Status).Type<StringType>().Name("status");
+            descriptor.Field(f => f.CpuUsageUs).Type<UnsignedIntType>().Name("cpuUsageMicroSeconds"); // TODO, this is always null atm
+            descriptor.Field(f => f.NetUsageWords).Type<VarInt32Type>().Name("netUsageWords");
         }
     }
 }
