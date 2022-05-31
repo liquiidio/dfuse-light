@@ -192,7 +192,8 @@ public class BlockWorker : BackgroundService
             }
             catch (Exception e)
             {
-                Log.Error(e, " at block {@blockNum}", block.Number);
+                var bNum = block.Number;
+                Log.Error(e, " at block {bNum}", bNum);
 
                 // in case of failure, return all objects recursively to their pools
                 block.ReturnToPoolRecursive();

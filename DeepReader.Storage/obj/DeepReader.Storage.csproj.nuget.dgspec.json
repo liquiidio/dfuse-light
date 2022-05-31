@@ -72,7 +72,7 @@
             },
             "Microsoft.FASTER.Core": {
               "target": "Package",
-              "version": "[2.0.6, )"
+              "version": "[2.0.7, )"
             },
             "Microsoft.IO.RecyclableMemoryStream": {
               "target": "Package",
@@ -163,6 +163,10 @@
             "Microsoft.Extensions.ObjectPool": {
               "target": "Package",
               "version": "[3.1.4, )"
+            },
+            "Microsoft.FASTER.Core": {
+              "target": "Package",
+              "version": "[2.0.7, )"
             },
             "Serilog": {
               "target": "Package",

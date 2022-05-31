@@ -92,7 +92,8 @@ namespace DeepReader.Storage.Faster.Blocks
                 size: _options.MaxBlocksCacheEntries, // Cache Lines for Blocks
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
-                serializerSettings: serializerSettings
+                serializerSettings: serializerSettings,
+                new FasterSequentialLongKeyComparer()
             );
 
             if (Directory.Exists(checkPointsDir))

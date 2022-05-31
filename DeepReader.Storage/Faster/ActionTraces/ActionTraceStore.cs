@@ -89,7 +89,8 @@ namespace DeepReader.Storage.Faster.ActionTraces
                 size: _options.MaxActionTracesCacheEntries, // Cache Lines for ActionTraces
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
-                serializerSettings: serializerSettings
+                serializerSettings: serializerSettings,
+                new FasterSequentialULongKeyComparer()
             );
 
             if (Directory.Exists(checkPointsDir))

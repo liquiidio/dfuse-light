@@ -13,7 +13,7 @@ public abstract class BlockSigningAuthorityVariant : IEosioSerializable<BlockSig
             case 0:
                 return BlockSigningAuthorityV0.ReadFromBinaryReader(reader);
             default:
-                throw new Exception("BlockSigningAuthorityVariant {type} unknown");
+                throw new Exception($"BlockSigningAuthorityVariant {type} unknown");
         }
     }
 }

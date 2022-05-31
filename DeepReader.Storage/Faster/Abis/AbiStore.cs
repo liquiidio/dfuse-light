@@ -91,7 +91,8 @@ namespace DeepReader.Storage.Faster.Abis
                 size: _options.MaxAbiCacheEntries, // Cache Lines for Abis
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
-                serializerSettings: serializerSettings
+                serializerSettings: serializerSettings,
+                new FasterSequentialULongKeyComparer()
             );
 
             if (Directory.Exists(checkPointsDir))

@@ -203,7 +203,8 @@ public class DlogParserWorker : BackgroundService
             }
             catch (Exception e)
             {
-                Log.Error(e, " at block {@blockNum} | {ctx.activeBlockNum}", blockNum, ctx.ActiveBlockNum);
+                var bNum = ctx.ActiveBlockNum;
+                Log.Error(e, " at block {bNum}", bNum);
                 _blockPool.Return(block);
             }
             finally

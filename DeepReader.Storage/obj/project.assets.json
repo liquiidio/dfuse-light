@@ -539,7 +539,7 @@
           "buildTransitive/netcoreapp3.1/_._": {}
         }
       },
-      "Microsoft.FASTER.Core/2.0.6": {
+      "Microsoft.FASTER.Core/2.0.7": {
         "type": "package",
         "dependencies": {
           "System.Interactive.Async": "6.0.1",
@@ -743,6 +743,7 @@
           "KGySoft.CoreLibraries": "6.0.2",
           "Microsoft.Extensions.Caching.Memory": "6.0.1",
           "Microsoft.Extensions.ObjectPool": "3.1.4",
+          "Microsoft.FASTER.Core": "2.0.7",
           "Serilog": "2.10.0"
         },
         "compile": {
@@ -1710,10 +1711,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.FASTER.Core/2.0.6": {
-      "sha512": "/lHUYsyKd9PxGjUIuSSpk8I9wcecczLG4O0HwOZ/Gd5edNE3U3b3GAm/c/FeSBB5tHOLAW9xforOCM/62k/D+w==",
+    "Microsoft.FASTER.Core/2.0.7": {
+      "sha512": "mHlf7QX4jpmdgqWQfJ5hP1zCwXs2eG7Iv0D+dlCvR6XzZ6z9duXgsxhH3A/sVTx6zgXsvvtVWDJ4Tgl9s+Hj+Q==",
       "type": "package",
-      "path": "microsoft.faster.core/2.0.6",
+      "path": "microsoft.faster.core/2.0.7",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1725,7 +1726,7 @@
         "lib/netstandard2.0/FASTER.core.xml",
         "lib/netstandard2.1/FASTER.core.dll",
         "lib/netstandard2.1/FASTER.core.xml",
-        "microsoft.faster.core.2.0.6.nupkg.sha512",
+        "microsoft.faster.core.2.0.7.nupkg.sha512",
         "microsoft.faster.core.nuspec"
       ]
     },
@@ -2268,7 +2269,7 @@
       "Microsoft.Extensions.Hosting.Abstractions >= 6.0.0",
       "Microsoft.Extensions.Logging.Abstractions >= 6.0.0",
       "Microsoft.Extensions.Options >= 6.0.0",
-      "Microsoft.FASTER.Core >= 2.0.6",
+      "Microsoft.FASTER.Core >= 2.0.7",
       "Microsoft.IO.RecyclableMemoryStream >= 2.2.0",
       "NEST >= 7.17.0",
       "Sentry.Serilog >= 3.17.0",
@@ -2346,7 +2347,7 @@
           },
           "Microsoft.FASTER.Core": {
             "target": "Package",
-            "version": "[2.0.6, )"
+            "version": "[2.0.7, )"
           },
           "Microsoft.IO.RecyclableMemoryStream": {
             "target": "Package",
