@@ -7,8 +7,8 @@ namespace DeepReader.Apis.GraphQl.ObjectTypes
         protected override void Configure(IObjectTypeDescriptor<ProducerKey> descriptor)
         {
             descriptor.Name("ProducerKey");
-            descriptor.Field(f => f.AccountName).Type<CustomScalarTypes.NameType>().Name("name");
-            descriptor.Field(f => f.BlockSigningKey).Type<CustomScalarTypes.NameType>().Name("key");
+            descriptor.Field(f => f.AccountName).Type<CustomScalarTypes.NameType>().Name("accountName");
+            descriptor.Field(f => f.BlockSigningKey).Type<CustomScalarTypes.PublicKeyType>().Name("blockSigningKey");
         }
     }
 }
