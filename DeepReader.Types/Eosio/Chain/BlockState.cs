@@ -1,15 +1,12 @@
-using DeepReader.Types.Helpers;
-
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/block_state.hpp
 /// </summary>
-public class BlockState : BlockHeaderState, IEosioSerializable<BlockState>
+public sealed class BlockState : BlockHeaderState, IEosioSerializable<BlockState>
 {
-    [SortOrder(15)]
     public SignedBlock? Block;
-    [SortOrder(16)]
+
     public bool Validated;
 
     public BlockState(BinaryReader reader) : base(reader)
@@ -22,7 +19,7 @@ public class BlockState : BlockHeaderState, IEosioSerializable<BlockState>
         Validated = reader.ReadBoolean();
     }
 
-    public new static BlockState ReadFromBinaryReader(BinaryReader reader)
+    public new static BlockState ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new BlockState(reader);
     }

@@ -12,6 +12,9 @@
   <ItemGroup>
 	<!-- Exclude the output of source generators from the compilation -->
 	<!--<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />-->
+	<PackageReference Include="AspNetCore.HealthChecks.UI" Version="6.0.4" />
+	<PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.4" />
+	<PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="6.0.4" />
 	<PackageReference Include="HotChocolate.AspNetCore" Version="12.8.1" />
     <PackageReference Include="HotChocolate.Types.Scalars" Version="12.8.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />

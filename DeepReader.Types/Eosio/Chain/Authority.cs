@@ -3,7 +3,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/authority.hpp
 /// </summary>
-public class Authority : IEosioSerializable<Authority>
+public sealed class Authority : IEosioSerializable<Authority>
 {
     public uint Threshold = 0;//uint32
     public KeyWeight[] Keys = Array.Empty<KeyWeight>();//[]*KeyWeight
@@ -35,7 +35,7 @@ public class Authority : IEosioSerializable<Authority>
         }
     }
 
-    public static Authority ReadFromBinaryReader(BinaryReader reader)
+    public static Authority ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new Authority(reader);
     }

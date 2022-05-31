@@ -1,12 +1,11 @@
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/protocol_feature_activation.hpp
 /// </summary>
-public class ProtocolFeatureActivationSet : IEosioSerializable<ProtocolFeatureActivationSet>
+public sealed class ProtocolFeatureActivationSet : IEosioSerializable<ProtocolFeatureActivationSet>
 {
     public Checksum256[] ProtocolFeatures;
 
@@ -16,10 +15,10 @@ public class ProtocolFeatureActivationSet : IEosioSerializable<ProtocolFeatureAc
 
         for (int i = 0; i < ProtocolFeatures.Length; i++)
         {
-            ProtocolFeatures[i] = reader.ReadChecksum256();
+            ProtocolFeatures[i] = Checksum256.ReadFromBinaryReader(reader);
         }
     }
-    public static ProtocolFeatureActivationSet ReadFromBinaryReader(BinaryReader reader)
+    public static ProtocolFeatureActivationSet ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new ProtocolFeatureActivationSet(reader);
     }

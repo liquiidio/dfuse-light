@@ -1,12 +1,10 @@
 ﻿using DeepReader.Types;
-using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.Eosio.Chain.Detail;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
-using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
 
-namespace DeepReader.Classes
+namespace DeepReader.Pools
 {
     internal class BlockPooledObjectPolicy : IPooledObjectPolicy<Block>
     {

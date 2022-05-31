@@ -3,7 +3,6 @@ using DeepReader.Apis.Other;
 using DeepReader.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace DeepReader.Apis.REST.Controllers
 {

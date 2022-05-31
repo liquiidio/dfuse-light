@@ -9,10 +9,12 @@ namespace DeepReader.Apis.GraphQl.ObjectTypes
         {
             descriptor.Name("ActionReceipt");
             descriptor.Field(f => f.Receiver).Type<CustomScalarTypes.NameType>().Name("receiver");
-            descriptor.Field(f => f.ActionDigest).Type<CustomScalarTypes.NameType>().Name("digest");
-            descriptor.Field(f => f.GlobalSequence).Type<ListType<PermissionLevelType>>().Name("globalSequence");
-            descriptor.Field(f => f.CodeSequence).Type<ActionDataBytesType>().Name("codeSequence");
-            descriptor.Field(f => f.AbiSequence).Type<ActionDataBytesType>().Name("abiSequence");
+            descriptor.Field(f => f.ActionDigest).Type<CustomScalarTypes.Checksum256Type>().Name("actionDigest");
+            descriptor.Field(f => f.GlobalSequence).Type<UnsignedLongType>().Name("globalSequence");
+            descriptor.Field(f => f.ReceiveSequence).Type<UnsignedLongType>().Name("receiveSequence");
+            descriptor.Field(f => f.AuthSequence).Type<ListType<TransactionTraceAuthSequenceType>>().Name("authSequence");
+            descriptor.Field(f => f.CodeSequence).Type<UnsignedIntType>().Name("codeSequence");
+            descriptor.Field(f => f.AbiSequence).Type<UnsignedIntType>().Name("abiSequence");
         }
     }
 }

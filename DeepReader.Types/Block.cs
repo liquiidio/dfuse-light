@@ -7,7 +7,7 @@ using DeepReader.Types.Fc.Crypto;
 
 namespace DeepReader.Types;
 
-public class Block
+public sealed class Block
 {
 	public Checksum256 Id = Checksum256.TypeEmpty;
 	public uint Number = 0;
@@ -78,7 +78,7 @@ public class Block
 	// Use the helper getter method `TransactionTraces()` to automatically pick the correct
 	// field to use (`unfiltered_transaction_traces` when `filtering_applied == false` and
 	// `filtered_transaction_traces` when `filtering_applied == true`).
-	public IList<TransactionTrace> UnfilteredTransactionTraces = new List<TransactionTrace>();//[]*TransactionTrace // THIS
+	public List<TransactionTrace> UnfilteredTransactionTraces = new List<TransactionTrace>();//[]*TransactionTrace // THIS
 	// The filtered transaction traces in this block when filtering has been applied,
 	// (i.e. `filtering_applied = true`). This will be only the transaction trace
 	// that matched the include filter CEL expression and did NOT match the exclude

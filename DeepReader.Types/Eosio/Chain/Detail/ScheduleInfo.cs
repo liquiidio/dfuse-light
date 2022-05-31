@@ -1,6 +1,5 @@
 using DeepReader.Types.Eosio.Chain.Legacy;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain.Detail;
 
@@ -16,11 +15,11 @@ public struct ScheduleInfo : IEosioSerializable<ScheduleInfo>
     public ScheduleInfo(BinaryReader reader)
     {
         ScheduleLibNum = reader.ReadUInt32();
-        ScheduleHash = reader.ReadChecksum256();
+        ScheduleHash = Checksum256.ReadFromBinaryReader(reader);
         Schedule = ProducerAuthoritySchedule.ReadFromBinaryReader(reader);
     }
 
-    public static ScheduleInfo ReadFromBinaryReader(BinaryReader reader)
+    public static ScheduleInfo ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new ScheduleInfo(reader);
     }

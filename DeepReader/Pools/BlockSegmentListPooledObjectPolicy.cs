@@ -1,7 +1,7 @@
 ﻿using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
 
-namespace DeepReader.Classes
+namespace DeepReader.Pools
 {
     internal class BlockSegmentListPooledObjectPolicy : IPooledObjectPolicy<List<IList<StringSegment>>>
     {

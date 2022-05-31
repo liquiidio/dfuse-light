@@ -1,15 +1,12 @@
-using DeepReader.Types.Helpers;
-
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/block.hpp
 /// </summary>
-public class SignedBlock : SignedBlockHeader, IEosioSerializable<SignedBlock>
+public sealed class SignedBlock : SignedBlockHeader, IEosioSerializable<SignedBlock>
 {
-    [SortOrder(11)]
     public TransactionReceipt[] Transactions;
-    [SortOrder(12)]
+
     public Extension[] BlockExtensions;
 
     public SignedBlock(BinaryReader reader) : base(reader)
@@ -27,7 +24,7 @@ public class SignedBlock : SignedBlockHeader, IEosioSerializable<SignedBlock>
         }
     }
 
-    public new static SignedBlock ReadFromBinaryReader(BinaryReader reader)
+    public new static SignedBlock ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new SignedBlock(reader);
     }

@@ -1,19 +1,19 @@
-﻿using System.Text.Json.Serialization;
-using DeepReader.Types.Eosio.Chain;
+﻿using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
+using DeepReader.Types.Other;
 
 namespace DeepReader.Types.StorageTypes;
 
-public class Block
+public sealed class Block : PooledObject<Block>, IParentPooledObject<Block>
 {
-    public Checksum256 Id { get; set; } = Checksum256.TypeEmpty;
-    public uint Number { get; set; } = 0;
+    public Checksum256 Id { get; set; }
+
+    public uint Number { get; set; }
 
     public Timestamp Timestamp { get; set; }
 
-    public Name Producer { get; set; } = Name.TypeEmpty;
+    public Name Producer { get; set; }
 
     public ushort Confirmed { get; set; }
 
@@ -27,41 +27,54 @@ public class Block
 
     public ProducerSchedule? NewProducers { get; set; }
 
-    public Signature ProducerSignature { get; set; } = Signature.TypeEmpty;
+    public Signature ProducerSignature { get; set; }
 
-    public TransactionId[] TransactionIds { get; set; } = Array.Empty<TransactionId>();
+    public List<TransactionId> TransactionIds { get; set; } = new();
 
-    public TransactionTrace[] Transactions { get; set; } = Array.Empty<TransactionTrace>();
+    public List<TransactionTrace> Transactions { get; set; } = new();
 
-    public Block()
+    public void CopyFrom(Types.Block deepMindBlock)
     {
-
+        Id = deepMindBlock.Id;
+        Number = deepMindBlock.Number;
+        Timestamp = deepMindBlock.Header.Timestamp;
+        ActionMroot = deepMindBlock.Header.ActionMroot;
+        Confirmed = deepMindBlock.Header.Confirmed;
+        Previous = deepMindBlock.Header.Previous;
+        NewProducers = deepMindBlock.Header.NewProducers;
+        ScheduleVersion = deepMindBlock.Header.ScheduleVersion;
+        TransactionMroot = deepMindBlock.Header.TransactionMroot;
+        Producer = deepMindBlock.Header.Producer;
+        ProducerSignature = deepMindBlock.ProducerSignature;
     }
 
-    public static Block ReadFromBinaryReader(BinaryReader reader)
+    public static Block ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
-        var obj = new Block
-        {
-            Id = reader.ReadChecksum256(),
-            Number = reader.ReadUInt32(),
-            Timestamp = reader.ReadUInt32(),
-            Producer = reader.ReadName(),
-            Confirmed = reader.ReadUInt16(),
-            Previous = reader.ReadChecksum256(),
-            TransactionMroot = reader.ReadChecksum256(),
-            ActionMroot = reader.ReadChecksum256(),
-            ScheduleVersion = reader.ReadUInt32(),
-            ProducerSignature = reader.ReadBytes(64),
-        };
+        // when Faster wants to deserialize and Object, we take an Object from the Pool
+        // when Faster evicts the Object we return it to the Pool
+        var obj = TypeObjectPool.Get();
 
-        var hasNewProducers = reader.ReadBoolean();
-        if (hasNewProducers)
+        obj.Id = Checksum256.ReadFromBinaryReader(reader);
+        obj.Number = reader.ReadUInt32();
+        obj.Timestamp = Timestamp.ReadFromBinaryReader(reader);
+        obj.Producer = Name.ReadFromBinaryReader(reader);
+        obj.Confirmed = reader.ReadUInt16();
+        obj.Previous = Checksum256.ReadFromBinaryReader(reader);
+        obj.TransactionMroot = Checksum256.ReadFromBinaryReader(reader);
+        obj.ActionMroot = Checksum256.ReadFromBinaryReader(reader);
+        obj.ScheduleVersion = reader.ReadUInt32();
+        obj.ProducerSignature = Signature.ReadFromBinaryReader(reader);
+
+        var hasNewProducers = reader.ReadByte();
+        if (hasNewProducers != 0)
             obj.NewProducers = ProducerSchedule.ReadFromBinaryReader(reader);
+        else
+            obj.NewProducers = null;
 
-        obj.TransactionIds = new TransactionId[reader.ReadInt32()];
-        for (int i = 0; i < obj.TransactionIds.Length; i++)
+        var count = reader.Read7BitEncodedInt();
+        for (int i = 0; i < count; i++)
         {
-            obj.TransactionIds[i] = reader.ReadTransactionId();
+            obj.TransactionIds.Add(TransactionId.ReadFromBinaryReader(reader));
         }
 
         return obj;
@@ -69,16 +82,16 @@ public class Block
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        writer.WriteChecksum256(Id);
+        Id.WriteToBinaryWriter(writer);
         writer.Write(Number);
-        writer.Write(Timestamp.Ticks);
-        writer.WriteName(Producer);
+        Timestamp.WriteToBinaryWriter(writer);
+        Producer.WriteToBinaryWriter(writer);
         writer.Write(Confirmed);
-        writer.WriteChecksum256(Previous);
-        writer.WriteChecksum256(TransactionMroot);
-        writer.WriteChecksum256(ActionMroot);
+        Previous.WriteToBinaryWriter(writer);
+        TransactionMroot.WriteToBinaryWriter(writer);
+        ActionMroot.WriteToBinaryWriter(writer);
         writer.Write(ScheduleVersion);
-        writer.Write(ProducerSignature.Binary);
+        ProducerSignature.WriteToBinaryWriter(writer);
         
         writer.Write(NewProducers != null);
         if (NewProducers != null)
@@ -86,10 +99,39 @@ public class Block
             NewProducers.WriteToBinaryWriter(writer);
         }
 
-        writer.Write(TransactionIds.Length);
+        writer.Write7BitEncodedInt(TransactionIds.Count);
         foreach (var transactionId in TransactionIds)
         {
             writer.Write(transactionId.Binary);
         }
+
+        // as we return this Object to the pool we need to reset Lists and nullables;
+        NewProducers = null;
+        TransactionIds.Clear();
+        Transactions.Clear();
+    }
+
+    public void ReturnToPoolRecursive()
+    {
+        Checksum256.ReturnToPool(Id);
+        Checksum256.ReturnToPool(Previous);
+        Checksum256.ReturnToPool(TransactionMroot);
+        Checksum256.ReturnToPool(ActionMroot);
+        Timestamp.ReturnToPool(Timestamp);
+        if (NewProducers != null)
+        {
+            ProducerSchedule.ReturnToPool(NewProducers);
+            NewProducers = null;
+        }
+        Signature.ReturnToPool(ProducerSignature);
+        foreach (var transactionId in TransactionIds)
+        {
+            TransactionId.ReturnToPool(transactionId);
+        }
+        TransactionIds.Clear();
+
+        Transactions.Clear();
+
+        TypeObjectPool.Return(this);
     }
 }

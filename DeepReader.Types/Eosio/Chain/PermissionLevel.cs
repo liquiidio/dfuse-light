@@ -1,12 +1,12 @@
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
+using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/action.hpp
 /// </summary>
-public class PermissionLevel : IEosioSerializable<PermissionLevel>
+public sealed class PermissionLevel : PooledObject<PermissionLevel>, IEosioSerializable<PermissionLevel>
 {
     public Name Actor { get; set; }
     public Name Permission { get; set; }
@@ -17,21 +17,22 @@ public class PermissionLevel : IEosioSerializable<PermissionLevel>
         Permission = Name.TypeEmpty;
     }
 
-    public PermissionLevel(BinaryReader reader)
+    public static PermissionLevel ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
-        Actor = reader.ReadName();
-        Permission = reader.ReadName();
-    }
+        var obj = fromPool ? TypeObjectPool.Get() : new PermissionLevel();
 
-    public static PermissionLevel ReadFromBinaryReader(BinaryReader reader)
-    {
-        return new PermissionLevel(reader);
+        obj.Actor = Name.ReadFromBinaryReader(reader);
+        obj.Permission = Name.ReadFromBinaryReader(reader);
+        
+        return obj;
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        writer.WriteName(Actor);
-        writer.WriteName(Permission);
+        Actor.WriteToBinaryWriter(writer);
+        Permission.WriteToBinaryWriter(writer);
+
+        TypeObjectPool.Return(this);
     }
 
     public static PermissionLevel TypeEmpty = new();

@@ -1,48 +1,53 @@
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
-using DeepReader.Types.Fc;
+using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/action_receipt.hpp
 /// </summary>
-public class ActionReceipt : IEosioSerializable<ActionReceipt>
+public sealed class ActionReceipt : PooledObject<ActionReceipt>, IEosioSerializable<ActionReceipt>
 {
-    public Name Receiver;
-    public Checksum256 ActionDigest;
-    public ulong GlobalSequence;
-    public ulong ReceiveSequence;
-    public TransactionTraceAuthSequence[] AuthSequence;
-    public uint CodeSequence;
-    public uint AbiSequence;
+    public Name Receiver { get; set; }
+    public Checksum256 ActionDigest { get; set; }
+    public ulong GlobalSequence { get; set; }
+    public ulong ReceiveSequence { get; set; }
+    public TransactionTraceAuthSequence[] AuthSequence { get; set; }
+    public uint CodeSequence { get; set; }
+    public uint AbiSequence { get; set; }
 
-    public ActionReceipt(BinaryReader reader)
+    public ActionReceipt()
     {
-        Receiver = reader.ReadName();
-        ActionDigest = reader.ReadChecksum256();
-        GlobalSequence = reader.ReadUInt64();
-        ReceiveSequence = reader.ReadUInt64();
-
-        AuthSequence = new TransactionTraceAuthSequence[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < AuthSequence.Length; i++)
-        {
-            AuthSequence[i] = TransactionTraceAuthSequence.ReadFromBinaryReader(reader);
-        }
-
-        CodeSequence = (uint)reader.Read7BitEncodedInt();
-        AbiSequence = (uint)reader.Read7BitEncodedInt();
+        Receiver = Name.TypeEmpty;
+        ActionDigest = Checksum256.TypeEmpty;
+        AuthSequence = Array.Empty<TransactionTraceAuthSequence>();
     }
 
-    public static ActionReceipt ReadFromBinaryReader(BinaryReader reader)
+    public static ActionReceipt ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
-        return new ActionReceipt(reader);
+        var obj = fromPool ? TypeObjectPool.Get() : new ActionReceipt();
+
+        obj.Receiver = Name.ReadFromBinaryReader(reader);
+        obj.ActionDigest = Checksum256.ReadFromBinaryReader(reader);
+        obj.GlobalSequence = reader.ReadUInt64();
+        obj.ReceiveSequence = reader.ReadUInt64();
+
+        obj.AuthSequence = new TransactionTraceAuthSequence[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < obj.AuthSequence.Length; i++)
+        {
+            obj.AuthSequence[i] = TransactionTraceAuthSequence.ReadFromBinaryReader(reader);
+        }
+
+        obj.CodeSequence = (uint)reader.Read7BitEncodedInt();
+        obj.AbiSequence = (uint)reader.Read7BitEncodedInt();
+
+        return obj;
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        writer.WriteName(Receiver);
-        writer.WriteChecksum256(ActionDigest);
+        Receiver.WriteToBinaryWriter(writer);
+        ActionDigest.WriteToBinaryWriter(writer);
         writer.Write(GlobalSequence);
         writer.Write(ReceiveSequence);
 
@@ -54,5 +59,17 @@ public class ActionReceipt : IEosioSerializable<ActionReceipt>
 
         writer.Write7BitEncodedInt((int)CodeSequence);
         writer.Write7BitEncodedInt((int)AbiSequence);
+    }
+
+    public new static void ReturnToPool(ActionReceipt obj)
+    {
+        Checksum256.ReturnToPool(obj.ActionDigest);
+        foreach (var transactionTraceAuthSequence in obj.AuthSequence)
+        {
+            TransactionTraceAuthSequence.ReturnToPool(transactionTraceAuthSequence);
+        }
+        obj.AuthSequence = Array.Empty<TransactionTraceAuthSequence>();
+
+        TypeObjectPool.Return(obj);
     }
 }

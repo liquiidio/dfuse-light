@@ -1,11 +1,10 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types;
 
 [Serializable]
-public class Abi : IEosioSerializable<Abi>
+public sealed class Abi : IEosioSerializable<Abi>
 {
     public string Version;
     public AbiType[] AbiTypes;
@@ -42,14 +41,14 @@ public class Abi : IEosioSerializable<Abi>
         }
     }
 
-    public static Abi ReadFromBinaryReader(BinaryReader reader)
+    public static Abi ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new Abi(reader);
     }
 }
 
 [Serializable]
-public class AbiType : IEosioSerializable<AbiType>
+public sealed class AbiType : IEosioSerializable<AbiType>
 {
     [JsonPropertyName("new_type_name")]
     public string NewTypeName;
@@ -63,14 +62,14 @@ public class AbiType : IEosioSerializable<AbiType>
         Type = reader.ReadString();
     }
 
-    public static AbiType ReadFromBinaryReader(BinaryReader reader)
+    public static AbiType ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new AbiType(reader);
     }
 }
 
 [Serializable]
-public class AbiStruct : IEosioSerializable<AbiStruct>
+public sealed class AbiStruct : IEosioSerializable<AbiStruct>
 {
     [JsonPropertyName("name")]
     public string Name;
@@ -100,14 +99,14 @@ public class AbiStruct : IEosioSerializable<AbiStruct>
         }
     }
 
-    public static AbiStruct ReadFromBinaryReader(BinaryReader reader)
+    public static AbiStruct ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new AbiStruct(reader);
     }
 }
 
 [Serializable]
-public class AbiField : IEosioSerializable<AbiField>
+public sealed class AbiField : IEosioSerializable<AbiField>
 {
     [JsonPropertyName("name")]
     public string Name;
@@ -121,14 +120,14 @@ public class AbiField : IEosioSerializable<AbiField>
         Type = reader.ReadString();
     }
 
-    public static AbiField ReadFromBinaryReader(BinaryReader reader)
+    public static AbiField ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new AbiField(reader);
     }
 }
 
 [Serializable]
-public class AbiAction : IEosioSerializable<AbiAction>
+public sealed class AbiAction : IEosioSerializable<AbiAction>
 {
     [JsonPropertyName("name")]
     public Name Name;
@@ -141,19 +140,19 @@ public class AbiAction : IEosioSerializable<AbiAction>
 
     public AbiAction(BinaryReader reader)
     {
-        Name = reader.ReadName();
+        Name = Name.ReadFromBinaryReader(reader);
         Type = reader.ReadString();
         RicardianContract = reader.ReadString();
     }
 
-    public static AbiAction ReadFromBinaryReader(BinaryReader reader)
+    public static AbiAction ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new AbiAction(reader);
     }
 }
 
 [Serializable]
-public class AbiTable : IEosioSerializable<AbiTable>
+public sealed class AbiTable : IEosioSerializable<AbiTable>
 {
     [JsonPropertyName("name")]
     public Name Name;
@@ -173,7 +172,7 @@ public class AbiTable : IEosioSerializable<AbiTable>
     public AbiTable(BinaryReader reader)
     {
 
-        Name = reader.ReadName();
+        Name = Name.ReadFromBinaryReader(reader);
         IndexType = reader.ReadString();
 
         KeyNames = new string[reader.Read7BitEncodedInt()];
@@ -191,7 +190,7 @@ public class AbiTable : IEosioSerializable<AbiTable>
         Type = reader.ReadString();
     }
 
-    public static AbiTable ReadFromBinaryReader(BinaryReader reader)
+    public static AbiTable ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new AbiTable(reader);
     }

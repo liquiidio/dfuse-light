@@ -3,41 +3,52 @@ using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
-using Sentry;
 using Serilog;
 
 namespace DeepReader.Storage.Faster.ActionTraces
 {
-    public class ActionTraceStore
+    public sealed class ActionTraceStore
     {
-        private readonly FasterKV<ActionTraceId, ActionTrace> _store;
+        private readonly FasterKV<ulong, ActionTrace> _store;
 
-        private readonly ClientSession<ActionTraceId, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions> _actionTraceReaderSession;
-        private readonly ClientSession<ActionTraceId, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions> _actionTraceWriterSession;
+        //private readonly ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions> _actionTraceReaderSession;
+        //private readonly ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions> _actionTraceWriterSession;
 
-        private FasterStorageOptions _options;
+        private readonly AsyncPool<ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions>> _sessionPool;
 
-        private ITopicEventSender _eventSender;
+        private int _sessionCount;
 
-        private static readonly Histogram _writingActionTraceDurationHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_write_action_trace_duration", "Histogram of time to store actionTraces to Faster");
-        private static readonly Histogram _storeLogMemorySizeBytesHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_action_trace_store_log_memory_size_bytes", "Histogram of the faster actionTrace store log memory size in bytes");
-        private static readonly Histogram _storeReadCacheMemorySizeBytesHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_action_trace_store_read_cache_memory_size_bytes", "Histogram of the faster actionTrace store read cache memory size in bytes");
-        private static readonly Histogram _storeEntryCountHistogram =
-           Metrics.CreateHistogram("deepreader_storage_faster_action_trace_store_read_cache_memory_size_bytes", "Histogram of the faster actionTrace store entry count");
-        private static readonly Histogram _storeTakeFullCheckpointDurationHistogram =
-          Metrics.CreateHistogram("deepreader_storage_faster_action_trace_store_take_full_checkpoint_duration", "Histogram of time to take a full checkpoint of faster actionTrace store");
-        private static readonly Histogram _storeFlushAndEvictLogDurationHistogram =
-            Metrics.CreateHistogram("deepreader_storage_faster_action_trace_store_log_flush_and_evict_duration", "Histogram of time to flush and evict faster actionTrace store");
-        private static readonly Histogram _actionTraceReaderSessionReadDurationHistogram =
-          Metrics.CreateHistogram("deepreader_storage_faster_action_trace_get_by_id_duration", "Histogram of time to try get actionTrace trace by id");
+        private readonly FasterStorageOptions _options;
 
-        public ActionTraceStore(FasterStorageOptions options, ITopicEventSender eventSender)
+        private readonly ITopicEventSender _eventSender;
+        private MetricsCollector _metricsCollector;
+
+        private static readonly SummaryConfiguration SummaryConfiguration = new SummaryConfiguration()
+            { MaxAge = TimeSpan.FromSeconds(30) };
+
+        private static readonly Summary WritingActionTraceDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_write_action_trace_duration", "Summary of time to store actionTraces to Faster", SummaryConfiguration);
+        private static readonly Summary StoreLogMemorySizeBytesSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_action_trace_store_log_memory_size_bytes", "Summary of the faster actionTrace store log memory size in bytes", SummaryConfiguration);
+        private static readonly Summary StoreReadCacheMemorySizeBytesSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_action_trace_store_read_cache_memory_size_bytes", "Summary of the faster actionTrace store read cache memory size in bytes", SummaryConfiguration);
+        private static readonly Summary StoreEntryCountSummary =
+           Metrics.CreateSummary("deepreader_storage_faster_action_trace_store_read_cache_memory_size_bytes", "Summary of the faster actionTrace store entry count", SummaryConfiguration);
+        private static readonly Summary StoreTakeLogCheckpointDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_action_trace_store_take_log_checkpoint_duration", "Summary of time to take a log checkpoint of faster actionTrace store", SummaryConfiguration);
+        private static readonly Summary StoreTakeIndexCheckpointDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_action_trace_store_take_index_checkpoint_duration", "Summary of time to take a index checkpoint of faster actionTrace store", SummaryConfiguration);
+        private static readonly Summary StoreFlushAndEvictLogDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_action_trace_store_log_flush_and_evict_duration", "Summary of time to flush and evict faster actionTrace store", SummaryConfiguration);
+        private static readonly Summary ActionTraceReaderSessionReadDurationSummary =
+          Metrics.CreateSummary("deepreader_storage_faster_action_trace_get_by_id_duration", "Summary of time to try get actionTrace trace by id", SummaryConfiguration);
+
+        public ActionTraceStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
         {
             _options = options;
             _eventSender = eventSender;
+            _metricsCollector = metricsCollector;
+            _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
 
             if (!_options.ActionTraceStoreDir.EndsWith("/"))
                 options.ActionTraceStoreDir += "/";
@@ -57,15 +68,14 @@ namespace DeepReader.Storage.Faster.ActionTraces
                 // to calculate below:
                 // 12 = 00001111 11111111 = 4095 = 4K
                 // 34 = 00000011 11111111 11111111 11111111 11111111 = 17179869183 = 16G
-                PageSizeBits = 12, // (4K pages)
-                MemorySizeBits = 34 // (16G memory for main log)
+                PageSizeBits = 14, // (16K pages)
+                MemorySizeBits = 33 // (8G memory for main log)
             };
 
             // Define serializers; otherwise FASTER will use the slower DataContract
             // Needed only for class keys/values
-            var serializerSettings = new SerializerSettings<ActionTraceId, ActionTrace>
+            var serializerSettings = new SerializerSettings<ulong, ActionTrace>
             {
-                keySerializer = () => new ActionTraceIdSerializer(),
                 valueSerializer = () => new ActionTraceValueSerializer()
             };
 
@@ -75,94 +85,135 @@ namespace DeepReader.Storage.Faster.ActionTraces
                 new LocalStorageNamedDeviceFactory(),
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
-            _store = new FasterKV<ActionTraceId, ActionTrace>(
+            _store = new FasterKV<ulong, ActionTrace>(
                 size: _options.MaxActionTracesCacheEntries, // Cache Lines for ActionTraces
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
-                comparer: new ActionTraceId(0)
+                new FasterSequentialULongKeyComparer()
             );
 
             if (Directory.Exists(checkPointsDir))
             {
-                Log.Information("Recovering ActionTraceStore");
-                _store.Recover(1);
-                Log.Information("ActionTraceStore recovered");
+                try
+                {
+                    Log.Information("Recovering ActionTraceStore");
+                    _store.Recover(1);
+                    Log.Information("ActionTraceStore recovered");
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "");
+                    throw;
+                }
             }
+
+            //foreach (var recoverableSession in _store.RecoverableSessions)
+            //{
+            //    if (recoverableSession.Item2 == "ActionTraceWriterSession")
+            //    {
+            //        _actionTraceWriterSession = _store.For(new ActionTraceFunctions())
+            //            .ResumeSession<ActionTraceFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
+            //    }
+            //    else if (recoverableSession.Item2 == "ActionTraceReaderSession")
+            //    {
+            //        _actionTraceReaderSession = _store.For(new ActionTraceFunctions())
+            //            .ResumeSession<ActionTraceFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
+            //    }
+            //}
+
+            //_actionTraceWriterSession ??=
+            //    _store.For(new ActionTraceFunctions()).NewSession<ActionTraceFunctions>("ActionTraceWriterSession");
+            //_actionTraceReaderSession ??=
+            //    _store.For(new ActionTraceFunctions()).NewSession<ActionTraceFunctions>("ActionTraceReaderSession");
+
+            var actionTraceEvictionObserver = new ActionTraceEvictionObserver();
+            _store.Log.SubscribeEvictions(actionTraceEvictionObserver);
+
+            if (options.UseReadCache)
+                _store.ReadCache.SubscribeEvictions(actionTraceEvictionObserver);
+
+            _sessionPool = new AsyncPool<ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions>>(
+                logSettings.LogDevice.ThrottleLimit,
+                () => _store.For(new ActionTraceFunctions()).NewSession<ActionTraceFunctions>("ActionTraceSession" + Interlocked.Increment(ref _sessionCount)));
 
             foreach (var recoverableSession in _store.RecoverableSessions)
             {
-                if (recoverableSession.Item2 == "ActionTraceWriterSession")
-                {
-                    _actionTraceWriterSession = _store.For(new ActionTraceFunctions())
-                        .ResumeSession<ActionTraceFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
-                }
-                else if (recoverableSession.Item2 == "ActionTraceReaderSession")
-                {
-                    _actionTraceReaderSession = _store.For(new ActionTraceFunctions())
-                        .ResumeSession<ActionTraceFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
-                }
+                _sessionPool.Return(_store.For(new ActionTraceFunctions())
+                    .ResumeSession<ActionTraceFunctions>(recoverableSession.Item2, out CommitPoint commitPoint));
+                _sessionCount++;
             }
-
-            _actionTraceWriterSession ??=
-                _store.For(new ActionTraceFunctions()).NewSession<ActionTraceFunctions>("ActionTraceWriterSession");
-            _actionTraceReaderSession ??=
-                _store.For(new ActionTraceFunctions()).NewSession<ActionTraceFunctions>("ActionTraceReaderSession");
-
-            _storeLogMemorySizeBytesHistogram.Observe(_store.Log.MemorySizeBytes);
-            if (options.UseReadCache)
-                _storeReadCacheMemorySizeBytesHistogram.Observe(_store.ReadCache.MemorySizeBytes);
-            _storeEntryCountHistogram.Observe(_store.EntryCount);
-
-            // TODO, for some reason I need to manually call the Init
-            SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
 
             new Thread(CommitThread).Start();
         }
 
+        private void CollectObservableMetrics(object? sender, EventArgs e)
+        {
+            StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
+            if (_options.UseReadCache)
+                StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);
+            StoreEntryCountSummary.Observe(_store.EntryCount);
+        }
+
         public async Task<Status> WriteActionTrace(ActionTrace actionTrace)
         {
-            var actionTraceId = new ActionTraceId(actionTrace.GlobalSequence);
+            var actionTraceId = actionTrace.GlobalSequence;
 
             await _eventSender.SendAsync("ActionTraceAdded", actionTrace);
 
-            using (_writingActionTraceDurationHistogram.NewTimer())
+            using (WritingActionTraceDurationSummary.NewTimer())
             {
-                var result = await _actionTraceWriterSession.UpsertAsync(ref actionTraceId, ref actionTrace);
+                if (!_sessionPool.TryGet(out var session))
+                    session = await _sessionPool.GetAsync().ConfigureAwait(false);
+                var result = await session.UpsertAsync(ref actionTraceId, ref actionTrace);
                 while (result.Status.IsPending)
                     result = await result.CompleteAsync();
+                _sessionPool.Return(session);
                 return result.Status;
             }
         }
 
         public async Task<(bool, ActionTrace)> TryGetActionTraceById(ulong globalSequence)
         {
-            using (_actionTraceReaderSessionReadDurationHistogram.NewTimer())
+            using (ActionTraceReaderSessionReadDurationSummary.NewTimer())
             {
-                var (status, output) = (await _actionTraceReaderSession.ReadAsync(new ActionTraceId(globalSequence))).Complete();
+                if (!_sessionPool.TryGet(out var session))
+                    session = await _sessionPool.GetAsync().ConfigureAwait(false);
+                var (status, output) = (await session.ReadAsync(globalSequence)).Complete();
+                _sessionPool.Return(session);
                 return (status.Found, output.Value);
             }
         }
 
         private void CommitThread()
         {
-            if (_options.CheckpointInterval is null or 0)
+            if (_options.LogCheckpointInterval is null or 0)
                 return;
+
+            int logCheckpointsTaken = 0;
 
             while (true)
             {
                 try
                 {
-                    Thread.Sleep(_options.CheckpointInterval.Value);
+                    Thread.Sleep(_options.LogCheckpointInterval.Value);
 
-                    // Take log-only checkpoint (quick - no index save)
-                    //store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+                    using (StoreTakeLogCheckpointDurationSummary.NewTimer())
+                        _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
 
-                    // Take index + log checkpoint (longer time)
-                    using (_storeTakeFullCheckpointDurationHistogram.NewTimer())
-                        _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
-                    using (_storeFlushAndEvictLogDurationHistogram.NewTimer())
-                        _store.Log.FlushAndEvict(true);
+                    if (_options.FlushAfterCheckpoint)
+                    {
+                        using (StoreFlushAndEvictLogDurationSummary.NewTimer())
+                            _store.Log.FlushAndEvict(true);
+                    }
+
+                    if (logCheckpointsTaken % _options.IndexCheckpointMultiplier == 0)
+                    {
+                        using (StoreTakeIndexCheckpointDurationSummary.NewTimer())
+                            _store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
+                    }
+
+                    logCheckpointsTaken++;
                 }
                 catch (Exception ex)
                 {

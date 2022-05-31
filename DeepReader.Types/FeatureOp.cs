@@ -4,9 +4,9 @@ using DeepReader.Types.JsonConverters;
 namespace DeepReader.Types;
 
 [JsonConverter(typeof(FeatureOpJsonConverter))]
-public class FeatureOp
+public sealed class FeatureOp
 {
-    public string Kind = string.Empty;//string
+    public FeatureOpKind Kind = FeatureOpKind.UNKNOWN;//string
     public uint ActionIndex = 0;//uint32
     [JsonIgnore]
     public ReadOnlyMemory<char> FeatureDigest = default;//string
@@ -14,7 +14,9 @@ public class FeatureOp
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
-public enum FeatureOpKind
+public enum FeatureOpKind : byte
 {
-
+    UNKNOWN,
+    ACTIVATE,
+    PRE_ACTIVATE,
 }

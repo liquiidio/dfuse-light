@@ -3,7 +3,7 @@ using DeepReader.Types.Fc;
 
 namespace DeepReader.Types.EosTypes;
 
-public class Bytes : BinaryType
+public class Bytes : BinaryType, IEosioSerializable<byte[]>
 {
     public Bytes()
     {
@@ -18,6 +18,12 @@ public class Bytes : BinaryType
     public static implicit operator byte[](Bytes value)
     {
         return value.Binary;
+    }
+
+    public static byte[] ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    {
+        var length = reader.Read7BitEncodedInt();
+        return reader.ReadBytes(length);
     }
 }
 

@@ -1,10 +1,9 @@
 using DeepReader.Types.Enums;
-using DeepReader.Types.EosTypes;
 using KGySoft.CoreLibraries;
 
 namespace DeepReader.Types;
 
-public class ExtendedRamOp : RamOp
+public sealed class ExtendedRamOp : RamOp
 {
     public uint ActionIndex = 0;// uint32
 

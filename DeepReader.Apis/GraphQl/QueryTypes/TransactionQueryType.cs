@@ -9,10 +9,10 @@ namespace DeepReader.Apis.GraphQl.QueryTypes
         {
             descriptor.Name("Query");
             descriptor
-                .Field(f => f.GetTransaction(default!, default!)!)
+                .Field(f => f.GetTransaction(default!, default!, default)!)
                 .Argument("transaction_id", a => a.Type<StringType>())
                 .Type<TransactionTraceType>()
-                .Name("getTransaction");
+                .Name("transaction");
         }
     }
 }

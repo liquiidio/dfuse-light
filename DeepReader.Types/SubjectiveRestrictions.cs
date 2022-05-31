@@ -1,6 +1,6 @@
 namespace DeepReader.Types;
 
-public class SubjectiveRestrictions
+public sealed class SubjectiveRestrictions
 {
     public bool Enabled = false;//bool
     public bool PreactivationRequired = false;//bool

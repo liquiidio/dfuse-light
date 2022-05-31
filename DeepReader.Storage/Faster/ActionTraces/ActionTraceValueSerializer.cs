@@ -3,7 +3,7 @@ using FASTER.core;
 
 namespace DeepReader.Storage.Faster.ActionTraces;
 
-public class ActionTraceValueSerializer : BinaryObjectSerializer<ActionTrace>
+public sealed class ActionTraceValueSerializer : BinaryObjectSerializer<ActionTrace>
 {
     public override void Deserialize(out ActionTrace obj)
     {

@@ -1,5 +1,4 @@
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -7,7 +6,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// <summary>
 /// libraries/chain/include/eosio/chain/trace.hpp
 /// </summary>
-public class TransactionTrace : IEosioSerializable<TransactionTrace>
+public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
 {
     // SHA-256 (FIPS 180-4) of the FCBUFFER-encoded packed transaction
     public TransactionId Id;
@@ -60,7 +59,7 @@ public class TransactionTrace : IEosioSerializable<TransactionTrace>
                                                                        // Tree of creation, rather than execution
     public IList<CreationTreeNode> CreationTreeRoots { get; set; } = new List<CreationTreeNode>();//[]*CreationFlatNode
 
-    public IList<CreationFlatNode> FlatCreationTree { get; set; } = new List<CreationFlatNode>();//[]*CreationFlatNode
+    //public IList<CreationFlatNode> FlatCreationTree { get; set; } = new List<CreationFlatNode>();//[]*CreationFlatNode
 
     // Index within block's unfiltered execution traces
     public ulong Index { get; set; } = 0;
@@ -74,17 +73,15 @@ public class TransactionTrace : IEosioSerializable<TransactionTrace>
 
     public TransactionTrace(BinaryReader reader)
     {
-        Id = reader.ReadTransactionId();
+        Id = TransactionId.ReadFromBinaryReader(reader);
         BlockNum = reader.ReadUInt32();
-        BlockTime = reader.ReadTimestamp();
+        BlockTime = Timestamp.ReadFromBinaryReader(reader);
 
         var readProducerBlockId = reader.ReadBoolean();
-
         if (readProducerBlockId)
-            ProducerBlockId = reader.ReadChecksum256();
+            ProducerBlockId = Checksum256.ReadFromBinaryReader(reader);
 
         var readReceipt = reader.ReadBoolean();
-
         if (readReceipt)
             Receipt = TransactionReceiptHeader.ReadFromBinaryReader(reader);
 
@@ -99,15 +96,13 @@ public class TransactionTrace : IEosioSerializable<TransactionTrace>
         }
 
         var readAccountRamDelta = reader.ReadBoolean();
-
         if (readAccountRamDelta)
             AccountRamDelta = AccountRamDelta.ReadFromBinaryReader(reader);
 
         var readFailedDtrxTrace = reader.ReadBoolean();
-        // Todo @corvin from haron
-        // Haron: "This is a weird field. It is of the same type as this, how does it work?
-        //if (readFailedDtrxTrace)
-        //	FailedDtrxTrace = transactionTrace
+//        if (readFailedDtrxTrace) // TODO
+//            return;
+//            FailedDtrxTrace = ReadFromBinaryReader(reader);
 
         var readException = reader.ReadBoolean();
         if (readException)
@@ -119,20 +114,20 @@ public class TransactionTrace : IEosioSerializable<TransactionTrace>
 
     }
 
-    public static TransactionTrace ReadFromBinaryReader(BinaryReader reader)
+    public static TransactionTrace ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new TransactionTrace(reader);
     }
 }
 
-public class Except : IEosioSerializable<Except>
+public sealed class Except : IEosioSerializable<Except>
 {
     public long Code;
     public string Name = string.Empty;
     public string Message = string.Empty;
     public ExceptLogMessage[] Stack = Array.Empty<ExceptLogMessage>();
 
-    public static Except? ReadFromBinaryReader(BinaryReader reader)
+    public static Except? ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         // TODO: (Corvin) 
         // Corvin: "This is something that was missing my version as well, need to do some research to understand how it's serialized"
@@ -147,14 +142,14 @@ public class Except : IEosioSerializable<Except>
     }
 }
 
-public class ExceptLogMessage
+public sealed class ExceptLogMessage
 {
     public ExceptLogContext Context = new();
     public string Format = string.Empty;
     public string Data = string.Empty;// json.RawMessage
 }
 
-public class ExceptLogContext
+public sealed class ExceptLogContext
 {
     public byte Level;//ExceptLogLevel
     public string File = string.Empty;
@@ -166,7 +161,7 @@ public class ExceptLogContext
     public ExceptLogContext? Context;
 }
 
-public class CreationFlatNode
+public sealed class CreationFlatNode
 {
     public int WalkIndex = 0;
     public int CreatorActionIndex = 0;//int32

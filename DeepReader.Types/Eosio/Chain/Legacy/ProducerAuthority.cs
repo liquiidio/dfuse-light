@@ -1,22 +1,21 @@
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain.Legacy;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public class ProducerAuthority : IEosioSerializable<ProducerAuthority>
+public sealed class ProducerAuthority : IEosioSerializable<ProducerAuthority>
 {
     public Name AccountName;
     public BlockSigningAuthorityVariant BlockSigningAuthority;
 
     public ProducerAuthority(BinaryReader reader)
     {
-        AccountName = reader.ReadName();
+        AccountName = Name.ReadFromBinaryReader(reader);
         BlockSigningAuthority = BlockSigningAuthorityVariant.ReadFromBinaryReader(reader);
     }
-    public static ProducerAuthority ReadFromBinaryReader(BinaryReader reader)
+    public static ProducerAuthority ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new ProducerAuthority(reader);
     }

@@ -7,7 +7,7 @@ using DeepReader.Types.JsonConverters;
 namespace DeepReader.Types;
 
 [JsonConverter(typeof(DTrxOpJsonConverter))]
-public class DTrxOp
+public sealed class DTrxOp
 {
     public DTrxOpOperation Operation = DTrxOpOperation.UNKNOWN;//DTrxOp_Operation
     public uint ActionIndex = 0;//uint32

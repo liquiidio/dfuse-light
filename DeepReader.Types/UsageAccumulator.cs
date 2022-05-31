@@ -1,6 +1,6 @@
 namespace DeepReader.Types;
 
-public class UsageAccumulator
+public sealed class UsageAccumulator
 {
     public uint LastOrdinal = 0;//uint32
     public ulong ValueEx = 0;//uint64

@@ -1,20 +1,27 @@
-﻿using System.Text;
-using DeepReader.Types.EosTypes;
+﻿using DeepReader.Types.EosTypes;
 using DeepReader.Types.Helpers;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.ObjectPool;
 
 // TODO, circular dependencies made me put this here (into DeepReader.Types) which feels like the wrong place
 namespace DeepReader.Types.Other
 {
     public static class NameCache
     {
+        private static readonly ObjectPool<Name> NamePool = new DefaultObjectPool<Name>(new NamePooledObjectPolicy());
+
         private static readonly MemoryCache Cache = new(new MemoryCacheOptions()
         {
-            ExpirationScanFrequency = TimeSpan.FromMinutes(5)
+            ExpirationScanFrequency = TimeSpan.FromMinutes(2),
         });
 
         private static readonly MemoryCacheEntryOptions ExpiringCacheEntryOptions = new MemoryCacheEntryOptions()
-            .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+            .SetSlidingExpiration(TimeSpan.FromMinutes(1)).RegisterPostEvictionCallback(EntryEvictionCallback);
+
+        private static void EntryEvictionCallback(object key, object value, EvictionReason reason, object state)
+        {
+            NamePool.Return((Name)value);
+        }
 
         private static readonly MemoryCacheEntryOptions AlwaysKeepExpirationOptions = new MemoryCacheEntryOptions()
             .SetPriority(CacheItemPriority.NeverRemove);
@@ -24,9 +31,10 @@ namespace DeepReader.Types.Other
             var key = SerializationHelper.ConvertNameToLong(name);
             if (!Cache.TryGetValue(key, out Name cacheEntry))// Look for cache key.
             {
-                var bytes = BitConverter.GetBytes(key);
                 // Key not in cache, so get data.
-                cacheEntry = new Name(key, bytes.ToArray());
+                var bytes = BitConverter.GetBytes(key);
+                cacheEntry = NamePool.Get();
+                cacheEntry.Set(key, bytes.ToArray());
                 // Save data in cache.
                 Cache.Set(key, cacheEntry, expire ? ExpiringCacheEntryOptions : AlwaysKeepExpirationOptions);
             }
@@ -39,7 +47,8 @@ namespace DeepReader.Types.Other
             if (!Cache.TryGetValue(key, out Name cacheEntry))// Look for cache key.
             {
                 // Key not in cache, so get data.
-                cacheEntry = new Name(key, bytes);
+                cacheEntry = NamePool.Get();
+                cacheEntry.Set(key, bytes);
 
                 // Save data in cache.
                 Cache.Set(key, cacheEntry, ExpiringCacheEntryOptions);
@@ -51,9 +60,10 @@ namespace DeepReader.Types.Other
         {
             if (!Cache.TryGetValue(key, out Name cacheEntry))// Look for cache key.
             {
-                var bytes = BitConverter.GetBytes(key);
                 // Key not in cache, so get data.
-                cacheEntry = new Name(key, bytes);
+                var bytes = BitConverter.GetBytes(key);
+                cacheEntry = NamePool.Get();
+                cacheEntry.Set(key, bytes);
 
                 // Save data in cache.
                 Cache.Set(key, cacheEntry, ExpiringCacheEntryOptions);

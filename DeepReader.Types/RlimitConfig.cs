@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace DeepReader.Types;
 
-public class RlimitConfig : RlimitOp
+public sealed class RlimitConfig : RlimitOp
 {
     public ElasticLimitParameters CpuLimitParameters = new();//*ElasticLimitParameters
     public ElasticLimitParameters NetLimitParameters = new();//*ElasticLimitParameters

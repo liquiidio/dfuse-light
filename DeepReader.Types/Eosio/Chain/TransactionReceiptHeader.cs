@@ -1,7 +1,5 @@
 using DeepReader.Types.Enums;
 using DeepReader.Types.Extensions;
-using DeepReader.Types.Helpers;
-using DeepReader.Types.Fc;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -10,12 +8,10 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class TransactionReceiptHeader : IEosioSerializable<TransactionReceiptHeader>
 {
-    [SortOrder(1)]
-    public TransactionStatus Status;    // fc::enum_type<uint8_t,status_enum> v
-    [SortOrder(2)]
-    public uint CpuUsageUs;
-    [SortOrder(3)]
-    public VarUint32 NetUsageWords;
+
+    public TransactionStatus Status { get; set; }    // fc::enum_type<uint8_t,status_enum> v
+    public uint CpuUsageUs { get; set; }
+    public uint NetUsageWords { get; set; }
 
     public TransactionReceiptHeader()
     {
@@ -28,10 +24,10 @@ public class TransactionReceiptHeader : IEosioSerializable<TransactionReceiptHea
     {
         Status = (TransactionStatus)reader.ReadByte();
         CpuUsageUs = reader.ReadUInt32();
-        NetUsageWords = reader.ReadVarUint32Obj();
+        NetUsageWords = (uint)reader.Read7BitEncodedInt();
     }
 
-    public static TransactionReceiptHeader ReadFromBinaryReader(BinaryReader reader)
+    public static TransactionReceiptHeader ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new TransactionReceiptHeader(reader);
     }
@@ -40,6 +36,6 @@ public class TransactionReceiptHeader : IEosioSerializable<TransactionReceiptHea
     {
         writer.Write((byte)Status);
         writer.Write(CpuUsageUs);
-        writer.Write7BitEncodedInt((int)NetUsageWords.Value);
+        writer.Write7BitEncodedInt((int)NetUsageWords);
     }
 }

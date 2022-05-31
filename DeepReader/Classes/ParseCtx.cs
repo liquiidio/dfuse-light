@@ -6,7 +6,6 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Helpers;
 using KGySoft.CoreLibraries;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Toolkit.HighPerformance;
 using Serilog;
 namespace DeepReader.Classes;
@@ -15,7 +14,7 @@ public class ParseCtx
 {
     private Block _block;
 
-    private long _activeBlockNum;
+    public long ActiveBlockNum;
 
     private TransactionTrace _trx;
 
@@ -36,7 +35,7 @@ public class ParseCtx
     public ParseCtx(AbiDecoder abiDecoder)
     {
         _block = new Block();
-        _activeBlockNum = 0;
+        ActiveBlockNum = 0;
         _trx = new TransactionTrace();
         _creationOps = new List<CreationOp>();
         _traceEnabled = true;
@@ -46,7 +45,7 @@ public class ParseCtx
     public ParseCtx(Block block, long activeBlockNum, TransactionTrace trx, List<CreationOp> creationOps, bool traceEnabled, string[] supportedVersions, AbiDecoder abiDecoder)
     {
         _block = block;
-        _activeBlockNum = activeBlockNum;
+        ActiveBlockNum = activeBlockNum;
         _trx = trx;
         _creationOps = creationOps;
         _traceEnabled = traceEnabled;
@@ -54,20 +53,10 @@ public class ParseCtx
         _abiDecoder = abiDecoder;
     }
 
-    public void ResetBlock(ObjectPool<Block> blockPool, bool returnBlock)
+    public void ResetBlock(Block? block)
 	{
-		// The nodeos bootstrap phase at chain initialization happens before the first block is ever
-		// produced. As such, those operations needs to be attached to initial block. Hence, let's
-		// reset recorded ops only if a block existed previously.
-		if (_activeBlockNum != 0)
-        {
-            ResetTrx();
-        }
-
-        if(returnBlock)
-            blockPool.Return(_block);
-
-        _block = blockPool.Get();
+        ResetTrx();
+        _block = block;
     }
 
 	public void ResetTrx()
@@ -183,7 +172,7 @@ public class ParseCtx
         var creationTreeRoots = CreationTree.ComputeCreationTree((IReadOnlyList<CreationOp>)_creationOps);
 
         trace.CreationTreeRoots = creationTreeRoots;
-        trace.FlatCreationTree = CreationTree.ToFlatTree(creationTreeRoots);
+        //trace.FlatCreationTree = CreationTree.ToFlatTree(creationTreeRoots);
         trace.DtrxOps = _trx.DtrxOps;
         trace.DbOps = _trx.DbOps;
         trace.FeatureOps = _trx.FeatureOps;
@@ -261,7 +250,7 @@ public class ParseCtx
 
 	// Line format:
 	//   START_BLOCK ${block_num}
-    public void ReadStartBlock(in IList<StringSegment> chunks, ObjectPool<Block> blockPool)
+    public void ReadStartBlock(in IList<StringSegment> chunks, Block block)
     {
         if (chunks.Count != 3)
         {
@@ -270,8 +259,8 @@ public class ParseCtx
 
         var blockNum = Int64.Parse(chunks[2].AsSpan);
 
-        ResetBlock(blockPool, false);// TODO either ResetBlock in ReadAcceptedBlock or in ReadStartBlock is unnecessary
-        _activeBlockNum = blockNum;
+        ResetBlock(block); // empty block from blockpool set to _block
+        ActiveBlockNum = blockNum;
 
         AbiDecoder.StartBlock(blockNum);
     }
@@ -284,21 +273,21 @@ public class ParseCtx
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
 
-    public Block ReadAcceptedBlock(in IList<StringSegment> chunks, ObjectPool<Block> blockPool) {
+    public Block ReadAcceptedBlock(in IList<StringSegment> chunks) {
         if (chunks.Count != 4)
         {
             throw new Exception($"expected 4 fields, got {chunks.Count}");
         }
 
         var blockNum = Int64.Parse(chunks[2].AsSpan);
-        if(blockNum == _activeBlockNum + 1)
+        if(blockNum == ActiveBlockNum + 1)
         {
-            _activeBlockNum++;
+            ActiveBlockNum++;
         }
 
-        if (_activeBlockNum != blockNum)
+        if (ActiveBlockNum != blockNum)
         {
-            Log.Information($"block_num {blockNum} doesn't match the active block num {_activeBlockNum}");
+            Log.Information($"block_num {blockNum} doesn't match the active block num {ActiveBlockNum}");
         }
 
         var blockState = DeepMindDeserializer.DeepMindDeserializer.Deserialize<BlockState>(chunks[3]);
@@ -390,7 +379,7 @@ public class ParseCtx
         {
             var el = _block.UnfilteredTransactionTraces[idx];
             el.Index = (ulong)idx;
-            el.BlockTime = 0;// TODO block.Header.Timestamp;
+            el.BlockTime = _block.Header.Timestamp;// TODO block.Header.Timestamp;
             el.ProducerBlockId = _block.Id;
             el.BlockNum = _block.Number;
 
@@ -406,9 +395,10 @@ public class ParseCtx
 //	        zlog.Debug("blocking until abi decoder has decoded every transaction pushed to it")
 
         AbiDecoder.EndBlock(_block);
-        var block = _block;
-        ResetBlock(blockPool, false);// TODO either ResetBlock in ReadAcceptedBlock or in ReadStartBlock is unnecessary
-        return block;
+        // _block becomes block, acceptedBlock is returned and added to the queue and after PostProcessing returned to the BlockPool
+        var acceptedBlock = _block;
+        ResetBlock(null);
+        return acceptedBlock;
     }
 
     //private PendingProducerSchedule PendingScheduleToDEOS(PendingSchedule blockStatePendingSchedule)
@@ -530,10 +520,10 @@ public class ParseCtx
 
         var blockNum = Int32.Parse(chunks[2].AsSpan);
 
-        if (_activeBlockNum != blockNum)
+        if (ActiveBlockNum != blockNum)
         {
 //            throw new Exception($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
-            Log.Information($"saw transactions from block {blockNum} while active block is {_activeBlockNum}");
+            Log.Information($"saw transactions from block {blockNum} while active block is {ActiveBlockNum}");
         }
 
         var trxTrace = DeepMindDeserializer.DeepMindDeserializer.Deserialize<TransactionTrace>(chunks[3]);
@@ -637,7 +627,7 @@ public class ParseCtx
             Code = SerializationHelper.CharSpanToName(chunks[5].AsSpan),
             Scope = SerializationHelper.CharSpanToName(chunks[6].AsSpan),
             TableName = SerializationHelper.CharSpanToName(chunks[7].AsSpan),
-            PrimaryKey = (string)chunks[8]!,
+            PrimaryKey = chunks[8].AsMemory,
             OldData = oldData,
             NewData = newData,
         });
@@ -715,22 +705,17 @@ public class ParseCtx
     //   FEATURE_OP ACTIVATE ${feature_digest} ${feature}
     public void ReadFeatureOpActivate(in IList<StringSegment> chunks)
     {
-        if (chunks.Count != 6)
+        if (chunks.Count != 5)
         {
-            throw new Exception($"expected 6 fields, got {chunks.Count}");
+            throw new Exception($"expected 5 fields, got {chunks.Count}");
         }
 
-        var feature = JsonSerializer.Deserialize<Feature>(chunks[5], _jsonSerializerOptions)!;
-        // TODO does this work?
-        //err:= json.Unmarshal(json.RawMessage(chunks[3]), &feature)
-        /*if err != nil {
-	        return fmt.Errorf("unmashall new feature data: %s", err)
-        }*/
+        var feature = JsonSerializer.Deserialize<Feature>(chunks[4], _jsonSerializerOptions)!;
 
         RecordFeatureOp(new FeatureOp()
         {
-            Kind = (string)chunks[3]!,
-            FeatureDigest = chunks[4].AsMemory,
+            Kind = Enum.Parse<FeatureOpKind>(chunks[2]), // TODO, this doesn't really make sense as it's always ACTIVATE
+            FeatureDigest = chunks[3].AsMemory,
             Feature = feature,
         });
 
@@ -741,28 +726,20 @@ public class ParseCtx
     //   FEATURE_OP PRE_ACTIVATE ${action_id} ${feature_digest} ${feature}
     public void ReadFeatureOpPreActivate(in IList<StringSegment> chunks)
     {
-        if (chunks.Count != 7)
+        if (chunks.Count != 6)
         {
-            throw new Exception($"expected 7 fields, got {chunks.Count}");
+            throw new Exception($"expected 6 fields, got {chunks.Count}");
         }
 
-        var actionIndex = Int32.Parse(chunks[4].AsSpan);
-        /*if err != nil {
-	        return fmt.Errorf("action_index is not a valid number, got: %q", chunks[2])
-        }*/
+        var actionIndex = Int32.Parse(chunks[3].AsSpan);
 
-        var feature = JsonSerializer.Deserialize<Feature>(chunks[4], _jsonSerializerOptions)!;
-        // TODO does this work?
-        /*err = json.Unmarshal(json.RawMessage(chunks[4]), &feature)
-        if err != nil {
-	        return fmt.Errorf("unmashall new feature data: %s", err)
-        }*/
+        var feature = JsonSerializer.Deserialize<Feature>(chunks[5], _jsonSerializerOptions)!;
 
         RecordFeatureOp(new FeatureOp()
         {
-            Kind = (string)chunks[3]!,
-            ActionIndex = (uint) actionIndex,
-            FeatureDigest = chunks[5].AsMemory,
+            Kind = Enum.Parse<FeatureOpKind>(chunks[2]), // TODO, this doesn't really make sense as it's always PRE_ACTIVATE
+            ActionIndex = (uint)actionIndex,
+            FeatureDigest = chunks[4].AsMemory,
             Feature = feature,
         });
     }
@@ -925,6 +902,7 @@ public class ParseCtx
     //
     //  Version 13
     //    ABIDUMP START ${block_num} ${global_sequence_num}
+    private ulong _tempGlobalSequence = 0;
     public void ReadAbiStart(in IList<StringSegment> chunks)
     {
         // RANGE 3!
@@ -935,12 +913,12 @@ public class ParseCtx
                 var blockNum = Int32.Parse(chunks[3].AsSpan);
                 var globalSequence = UInt64.Parse(chunks[4].AsSpan);
                 _abiDecoder.AbiDumpStart(blockNum, globalSequence);
+                _tempGlobalSequence = globalSequence;
                 Log.Information($"read ABI start marker: block_num {blockNum} global_sequence {globalSequence}");
                 break;
             default:
                 throw new Exception($"expected to have either {{3}} or {{5}} fields, got {chunks.Count}");
             }
-        //AbiDecoder.ResetCache();
     }
 
     // Line format:
@@ -970,7 +948,7 @@ public class ParseCtx
             Log.Information($"read initial ABI for contract {contract}");
         }
 
-        _abiDecoder.AddInitialAbi(contract, rawAbi);
+        _abiDecoder.AddInitialAbi(contract, rawAbi, _tempGlobalSequence);
     }
 
     // Line format:

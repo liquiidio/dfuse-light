@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DeepReader.Storage.Options
+﻿namespace DeepReader.Storage.Options
 {
     public class FasterStorageOptions
     {
@@ -19,7 +13,9 @@ namespace DeepReader.Storage.Options
         public long MaxAbiCacheEntries { get; set; }
         public long MaxActionTracesCacheEntries { get; set; }
         public bool UseReadCache { get; set; }
-        public int? CheckpointInterval { get; set; }
+        public int? LogCheckpointInterval { get; set; }
+        public bool FlushAfterCheckpoint { get; set; }
+        public int IndexCheckpointMultiplier { get; set; }
     }
 
     public enum FasterMode

@@ -1,17 +1,14 @@
 ﻿using DeepReader.Types.Eosio.Chain;
-using DeepReader.Types.Extensions;
+using DeepReader.Types.Other;
 
 namespace DeepReader.Types.StorageTypes;
 
-public class TransactionTrace
+public sealed class TransactionTrace : PooledObject<TransactionTrace>, IParentPooledObject<TransactionTrace>
 {
     // SHA-256 (FIPS 180-4) of the FCBUFFER-encoded packed transaction
     public TransactionId Id { get; set; } = Array.Empty<byte>();
 
     public uint BlockNum { get; set; } = 0;
-
-    public Block Block { get; set; }
-
     // Status
 
     public TransactionReceiptHeader Receipt { get; set; }
@@ -31,7 +28,7 @@ public class TransactionTrace
 
     }
 
-    public TransactionTrace(DeepReader.Types.Eosio.Chain.TransactionTrace transactionTrace)
+    public void CopyFrom(Eosio.Chain.TransactionTrace transactionTrace)
     {
         Id = transactionTrace.Id;
         BlockNum = transactionTrace.BlockNum;
@@ -41,16 +38,17 @@ public class TransactionTrace
         Scheduled = transactionTrace.Scheduled;
     }
 
-    public static TransactionTrace ReadFromBinaryReader(BinaryReader reader)
+    public static TransactionTrace ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
-        var obj = new TransactionTrace()
-        {
-            Id = reader.ReadBytes(32),
-            BlockNum = reader.ReadUInt32(),
-            Elapsed = reader.ReadInt64(),
-            NetUsage = reader.ReadUInt64(),
-            Scheduled = reader.ReadBoolean(),
-        };
+        // when Faster wants to deserialize and Object, we take an Object from the Pool
+        // when Faster evicts the Object we return it to the Pool
+        var obj = TypeObjectPool.Get();
+
+        obj.Id = reader.ReadBytes(32);
+        obj.BlockNum = reader.ReadUInt32();
+        obj.Elapsed = reader.ReadInt64();
+        obj.NetUsage = reader.ReadUInt64();
+        obj.Scheduled = reader.ReadBoolean();
 
         obj.Receipt = TransactionReceiptHeader.ReadFromBinaryReader(reader);
 
@@ -65,7 +63,7 @@ public class TransactionTrace
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        writer.WriteTransactionId(Id);
+        Id.WriteToBinaryWriter(writer);
 
         writer.Write(BlockNum); // TODO VARINT
         writer.Write(Elapsed); // TODO VARINT
@@ -79,5 +77,15 @@ public class TransactionTrace
         {
             writer.Write(actionTraceId);
         }
+    }
+
+    public void ReturnToPoolRecursive()
+    {
+        TransactionId.ReturnToPool(Id);
+        //        TransactionReceiptHeader Receipt
+
+        ActionTraces = Array.Empty<ActionTrace>();
+
+        TypeObjectPool.Return(this);
     }
 }

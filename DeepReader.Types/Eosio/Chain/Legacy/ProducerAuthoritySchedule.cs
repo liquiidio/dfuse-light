@@ -3,7 +3,7 @@ namespace DeepReader.Types.Eosio.Chain.Legacy;
 /// <summary>
 /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public class ProducerAuthoritySchedule : IEosioSerializable<ProducerAuthoritySchedule>
+public sealed class ProducerAuthoritySchedule : IEosioSerializable<ProducerAuthoritySchedule>
 {
     public uint Version;
     public ProducerAuthority[] Producers;
@@ -19,7 +19,7 @@ public class ProducerAuthoritySchedule : IEosioSerializable<ProducerAuthoritySch
         }
     }
 
-    public static ProducerAuthoritySchedule ReadFromBinaryReader(BinaryReader reader)
+    public static ProducerAuthoritySchedule ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new ProducerAuthoritySchedule(reader);
     }

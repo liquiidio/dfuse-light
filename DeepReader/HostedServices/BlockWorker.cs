@@ -11,10 +11,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.IO;
 using Prometheus;
 using Serilog;
-using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Text.Json;
 using System.Threading.Channels;
+using DeepReader.Types.Enums;
 
 namespace DeepReader.HostedServices;
 
@@ -30,7 +29,26 @@ public class BlockWorker : BackgroundService
 
     private readonly ParallelOptions _postProcessingParallelOptions;
 
-    private static readonly Histogram BlocksChannelSize = Metrics.CreateHistogram("deepreader_blockworker_block_channel_size", "The current size of the channel size in block worker");
+    private static readonly Summary BlocksChannelSize = Metrics.CreateSummary("deepreader_blockworker_block_channel_size", "The current size of the channel size in block worker", SummaryConfiguration);
+    private static readonly Summary BlockSegmentListChannelSize = Metrics.CreateSummary("deepreader_blockworker_segment_list_channel_size", "The current size of the channel size in block worker", SummaryConfiguration);
+
+    private static readonly SummaryConfiguration SummaryConfiguration = new SummaryConfiguration()
+        { MaxAge = TimeSpan.FromSeconds(30) };
+
+    private static readonly Summary PostProcessingTime =
+        Metrics.CreateSummary("deepreader_blockworker_block_postprocessing_duration", "Summary of time to post-process blocks, transactions and actions", SummaryConfiguration);
+
+    private static readonly Summary StoreWritingTime =
+        Metrics.CreateSummary("deepreader_blockworker_store_writing_duration", "Summary of time to store all data (blocks, transactions and actions)", SummaryConfiguration);
+
+    private static readonly Summary TransactionsPerBlock =
+        Metrics.CreateSummary("deepreader_transactions_per_block", "Summary of Transactions per Block", SummaryConfiguration);
+
+    private static readonly Summary ActionTracesPerBlock =
+        Metrics.CreateSummary("deepreader_action_traces_per_block", "Summary of ActionTraces per Block", SummaryConfiguration);
+
+    private static readonly Summary AbiUpdatesPerBlock =
+        Metrics.CreateSummary("deepreader_abi_updates_per_block", "Summary of Abi-Updates per Block", SummaryConfiguration);
 
     private readonly Func<Types.StorageTypes.TransactionTrace, bool> _filterEmptyTransactionsFilter;
 
@@ -89,6 +107,8 @@ public class BlockWorker : BackgroundService
     {
         if (_blocksChannel.CanCount)
             BlocksChannelSize.Observe(_blocksChannel.Count);
+        if (_blockSegmentsListChannel.CanCount)
+            BlockSegmentListChannelSize.Observe(_blockSegmentsListChannel.Count);
     }
 
     private void OnMindReaderOptionsChanged(MindReaderOptions newOptions)
@@ -104,22 +124,20 @@ public class BlockWorker : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         Thread.CurrentThread.Name = $"BlockWorker";
-
-        await ProcessBlocks(stoppingToken);
+        var blockProcessingTasks = new List<Task>();
+        for (var i = 0; i < _deepReaderOptions.BlockProcessingTasks; i++)
+        {
+            blockProcessingTasks.Add(ProcessBlocks(stoppingToken));
+        }
+        await Task.WhenAll(blockProcessingTasks);
     }
 
     private async Task ProcessBlocks(CancellationToken cancellationToken)
     {
-        //var jsonSerializerOptions = new JsonSerializerOptions()
-        //{
-        //    IncludeFields = true,
-        //    IgnoreReadOnlyFields = false,
-        //    IgnoreReadOnlyProperties = false,
-        //    MaxDepth = Int32.MaxValue
-        //};
-
-        if (_blocksChannel.CanCount)
-            BlocksChannelSize.Observe(_blocksChannel.Count);
+        uint blockNum = 0;
+        Types.StorageTypes.Block block = new Types.StorageTypes.Block();
+        List<Types.StorageTypes.TransactionTrace> transactionTraces = new List<Types.StorageTypes.TransactionTrace>();
+        List<Types.StorageTypes.ActionTrace> actionTraces = new List<Types.StorageTypes.ActionTrace>();
 
         await foreach (var deepMindBlock in _blocksChannel.ReadAllAsync(cancellationToken))
         {
@@ -137,30 +155,54 @@ public class BlockWorker : BackgroundService
                     Log.Information($"Current Threads: {Process.GetCurrentProcess().Threads.Count}");
                 }
 
-                var (block, transactionTraces, actionTraces) = await PostProcessAsync(deepMindBlock);
+                block = Types.StorageTypes.Block.FromPool();
 
-                await Task.WhenAll(
-                    _storageAdapter.StoreBlockAsync(block),
+                actionTraces.Clear();
+                transactionTraces.Clear();
 
-                    Parallel.ForEachAsync(transactionTraces, _postProcessingParallelOptions,
-                        async (transactionTrace, _) =>
-                        {
-                            await _storageAdapter.StoreTransactionAsync(
-                                transactionTrace);
-                        }),
+                using (PostProcessingTime.NewTimer())
+                {
+                    PostProcess(deepMindBlock, block, actionTraces);
+                }
 
-                    Parallel.ForEachAsync(actionTraces, _postProcessingParallelOptions,
-                        async (actionTrace, _) =>
-                        {
-                            await _storageAdapter.StoreActionTraceAsync(actionTrace); // TODO cancellationToken
-                        }),
+                TransactionsPerBlock.Observe(block.TransactionIds.Count);
+                ActionTracesPerBlock.Observe(actionTraces.Count);
 
-                    CheckForAbiUpdates(actionTraces)
-                );
+
+                // need to copy the transactionsList here as when a block gets evicted, the list gets cleared
+                // (theoretically possible before call finishes - but very unlikely)
+                transactionTraces.AddRange(block.Transactions);
+                actionTraces = actionTraces.Where(a => a.Receipt != null).ToList();
+
+                // this (currently) needs to be done before storage as eviction
+                // will put actionTraces and childs back into pools
+                // (theoretically possible before call finishes - but very unlikely)
+                await CheckForAbiUpdates(actionTraces);
+
+                using (StoreWritingTime.NewTimer())
+                {
+                    await Task.WhenAll(
+                        _storageAdapter.StoreBlockAsync(block),
+
+                        StoreTransactionTraces(transactionTraces),
+
+                        StoreActionTraces(actionTraces)
+                    );
+                }
             }
             catch (Exception e)
             {
-                Log.Error(e, "");
+                var bNum = block.Number;
+                Log.Error(e, " at block {bNum}", bNum);
+
+                // in case of failure, return all objects recursively to their pools
+                block.ReturnToPoolRecursive();
+
+                foreach (var transactionTrace in transactionTraces)
+                    transactionTrace.ReturnToPoolRecursive();
+                
+                foreach (var actionTrace in actionTraces)
+                    actionTrace.ReturnToPoolRecursive();
             }
             finally
             {
@@ -169,13 +211,30 @@ public class BlockWorker : BackgroundService
         }
     }
 
-    Types.StorageTypes.ActionTrace ProcessChildActions(CreationTreeNode creationTreeNode, TransactionTrace trx, Types.StorageTypes.ActionTrace creatorAction, ConcurrentBag<Types.StorageTypes.ActionTrace> allActions)
+    private async Task StoreTransactionTraces(IEnumerable<Types.StorageTypes.TransactionTrace> transactionTraces)
     {
-        var createdActionTraces = new List<Types.StorageTypes.ActionTrace>();
-        var childActionTrace = new Types.StorageTypes.ActionTrace(trx.ActionTraces[creationTreeNode.ActionIndex]);
-        if (creationTreeNode.Kind == CreationOpKind.INLINE || creationTreeNode.Kind == CreationOpKind.NOTIFY || creationTreeNode.Kind == CreationOpKind.CFA_INLINE)
+        foreach (var transactionTrace in transactionTraces)
         {
-            createdActionTraces.Add(childActionTrace);
+            await _storageAdapter.StoreTransactionAsync(transactionTrace);
+        }
+    }
+
+    private async Task StoreActionTraces(List<Types.StorageTypes.ActionTrace> actionTraces)
+    {
+        foreach (var actionTrace in actionTraces)
+        {
+            await _storageAdapter.StoreActionTraceAsync(actionTrace);
+        }
+    }
+
+    private Types.StorageTypes.ActionTrace ProcessChildActions(CreationTreeNode creationTreeNode, TransactionTrace trx, Types.StorageTypes.ActionTrace creatorAction, List<Types.StorageTypes.ActionTrace> allActions)
+    {
+        var childActionTrace = Types.StorageTypes.ActionTrace.FromPool(); // returned to the Pool when Faster evicts it
+        childActionTrace.CopyFrom(trx.ActionTraces[creationTreeNode.ActionIndex]);
+
+        if (creationTreeNode.Kind is CreationOpKind.INLINE or CreationOpKind.NOTIFY or CreationOpKind.CFA_INLINE)
+        {
+            allActions.Add(childActionTrace);
             var childCreatedActionTraces = new List<Types.StorageTypes.ActionTrace>();
             foreach (var creationTreeChildChild in creationTreeNode.Children)
             {
@@ -185,102 +244,115 @@ public class BlockWorker : BackgroundService
             if (creationTreeNode.Kind == CreationOpKind.NOTIFY)
                 childActionTrace.IsNotify = true;
             
-            childActionTrace.CreatorAction = creatorAction;
             childActionTrace.CreatorActionId = creatorAction.Receipt.GlobalSequence;
 
             childActionTrace.CreatedActions = childCreatedActionTraces.ToArray();
             childActionTrace.CreatedActionIds = childCreatedActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
             
-            childActionTrace.DbOps = trx.DbOps.Where(dbop => dbop.ActionIndex == creationTreeNode.ActionIndex).ToArray();
-            childActionTrace.RamOps = trx.RamOps.Where(ramop => ramop.ActionIndex == creationTreeNode.ActionIndex).ToArray();
-            childActionTrace.TableOps = trx.TableOps.Where(tableop => tableop.ActionIndex == creationTreeNode.ActionIndex).ToArray();
+            childActionTrace.DbOps = trx.DbOps.Where(dbop => dbop.ActionIndex == creationTreeNode.ActionIndex).Cast<DbOp>().ToArray();
+            childActionTrace.RamOps = trx.RamOps.Where(ramop => ramop.ActionIndex == creationTreeNode.ActionIndex).Cast<RamOp>().ToArray();
+            childActionTrace.TableOps = trx.TableOps.Where(tableop => tableop.ActionIndex == creationTreeNode.ActionIndex).Cast<TableOp>().ToArray();
         }
         else
             Log.Error($"CreationTreeChild-Issues in trx {trx.Id.StringVal}");
 
-        while (!allActions.TryAddRange(createdActionTraces))
-        {
-            if (allActions.TryAddRange(createdActionTraces))
-                break;
-        }
         return childActionTrace;
 
     }
 
-    private Task<(Types.StorageTypes.Block, Types.StorageTypes.TransactionTrace[], List<Types.StorageTypes.ActionTrace>)> PostProcessAsync(Block block)
+    private void PostProcess(Block deepMindBlock, Types.StorageTypes.Block block, List<Types.StorageTypes.ActionTrace> actionTraces)
     {
-        return Task.Run(() =>
+        for (var transactionTraceIndex = 0; transactionTraceIndex < deepMindBlock.UnfilteredTransactionTraces.Count; transactionTraceIndex++)
         {
-            var transactionTraces = new Types.StorageTypes.TransactionTrace[block.UnfilteredTransactionTraces.Count];
-            var actionTraces = new ConcurrentBag<Types.StorageTypes.ActionTrace>();
-            
-            Parallel.ForEach(block.UnfilteredTransactionTraces, _postProcessingParallelOptions,
-                (trx, _, index) =>
-                {
-                    //trx.ActionTraces = trx.ActionTraces.Where(_actionFilter).ToArray();// Filter AcionTraces
+            var trx = deepMindBlock.UnfilteredTransactionTraces[transactionTraceIndex];
 
-                    var rootActionTraces = new Types.StorageTypes.ActionTrace[trx.CreationTreeRoots.Count];
-                    Parallel.ForEach(trx.CreationTreeRoots, _postProcessingParallelOptions, (creationTreeRoot, _, actIndex) =>
-                    {
-                        if (creationTreeRoot.Kind == CreationOpKind.ROOT)
-                        {
-                            var rootAction = new Types.StorageTypes.ActionTrace(trx.ActionTraces[creationTreeRoot.ActionIndex]);
-                            var createdActionTraces = new List<Types.StorageTypes.ActionTrace>();
-                            rootActionTraces[actIndex] = rootAction;
-                            foreach (var creationTreeChild in creationTreeRoot.Children)
-                            {
-                                if (creationTreeChild.Kind is CreationOpKind.INLINE or CreationOpKind.NOTIFY or CreationOpKind.CFA_INLINE)
-                                {
-                                    createdActionTraces.Add(ProcessChildActions(creationTreeChild, trx, rootAction, actionTraces));
-                                }
-                                else
-                                    Log.Error($"CreationTreeChild-Issues in trx {trx.Id.StringVal}");
-                            }
+            var transactionTrace = Types.StorageTypes.TransactionTrace.FromPool(); // returned to the Pool when Faster evicts it
+            transactionTrace.CopyFrom(trx);
 
-                            rootAction.CreatedActions = createdActionTraces.ToArray();
-                            rootAction.CreatedActionIds = createdActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
-
-                            rootAction.DbOps = trx.DbOps.Where(dbop => dbop.ActionIndex == creationTreeRoot.ActionIndex).Cast<DbOp>().ToArray();
-                            rootAction.RamOps = trx.RamOps.Where(ramop => ramop.ActionIndex == creationTreeRoot.ActionIndex).Cast<RamOp>().ToArray();
-                            rootAction.TableOps = trx.TableOps.Where(tableop => tableop.ActionIndex == creationTreeRoot.ActionIndex).Cast<TableOp>().ToArray();
-                        }
-                        else
-                            Log.Error($"CreationTreeRoot-Issues in trx {trx.Id.StringVal}");
-                    });
-                    var transactionTrace = new Types.StorageTypes.TransactionTrace(trx)
-                    {
-                        ActionTraces = rootActionTraces.ToArray(),
-                        ActionTraceIds = rootActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray()
-                    };
-
-                    while (!actionTraces.TryAddRange(rootActionTraces))
-                    {
-                        if (actionTraces.TryAddRange(rootActionTraces))
-                            break;
-                    }
-
-                    transactionTraces[index] = transactionTrace;
-                });
-
-            transactionTraces = transactionTraces.Where(_filterEmptyTransactionsFilter).ToArray();
-
-            return (new Types.StorageTypes.Block()
+            if (!trx.DtrxOps.Any(dtrxOp => dtrxOp.Operation == DTrxOpOperation.FAILED))
             {
-                Id = block.Id,
-                Number = block.Number,
-                Timestamp = block.Header.Timestamp,
-                ActionMroot = block.Header.ActionMroot,
-                Confirmed = block.Header.Confirmed,
-                Previous = block.Header.Previous,
-                NewProducers = block.Header.NewProducers,
-                ScheduleVersion = block.Header.ScheduleVersion,
-                TransactionMroot = block.Header.TransactionMroot,
-                Transactions = transactionTraces,
-                TransactionIds = transactionTraces.Select(ut => ut.Id).ToArray(),
-                Producer = block.Header.Producer,
-                ProducerSignature = block.ProducerSignature
-            }, transactionTraces, actionTraces.ToList());
-        });
+                var rootActionTraces = new Types.StorageTypes.ActionTrace[trx.CreationTreeRoots.Count];
+
+                for (var creationTreeRootIndex = 0;
+                     creationTreeRootIndex < trx.CreationTreeRoots.Count;
+                     creationTreeRootIndex++)
+                {
+                    var creationTreeRoot = trx.CreationTreeRoots[creationTreeRootIndex];
+                    ProcessCreationTreeRoot(creationTreeRoot, creationTreeRootIndex, trx, rootActionTraces,
+                        actionTraces);
+                }
+
+                rootActionTraces = rootActionTraces.Where(a => a.Receipt != null).ToArray();
+                transactionTrace.ActionTraces = rootActionTraces;
+                transactionTrace.ActionTraceIds = rootActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
+            }
+            else
+            {
+                Log.Information("Found failed Deferred Transaction");
+            }
+
+            block.Transactions.Add(transactionTrace);
+            block.TransactionIds.Add(transactionTrace.Id);
+
+        }
+
+
+        //Parallel.ForEach(block.UnfilteredTransactionTraces, _postProcessingParallelOptions,
+        //    (trx, _, index) =>
+        //    {
+        //        //trx.ActionTraces = trx.ActionTraces.Where(_actionFilter).ToArray();// Filter AcionTraces
+
+        //        var rootActionTraces = new Types.StorageTypes.ActionTrace[trx.CreationTreeRoots.Count];
+        //        Parallel.ForEach(trx.CreationTreeRoots, _postProcessingParallelOptions, (creationTreeRoot, _, creationTreeRootIndex) => ProcessCreationTreeRoot(creationTreeRoot, _, creationTreeRootIndex, trx, rootActionTraces, actionTraces));
+        //        var transactionTrace = new Types.StorageTypes.TransactionTrace(trx)
+        //        {
+        //            ActionTraces = rootActionTraces.ToArray(),
+        //            ActionTraceIds = rootActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray()
+        //        };
+
+        //        while (!actionTraces.TryAddRange(rootActionTraces))
+        //        {
+        //            if (actionTraces.TryAddRange(rootActionTraces))
+        //                break;
+        //        }
+
+        //        transactionTraces[index] = transactionTrace;
+        //    });
+
+        block.Transactions = block.Transactions.Where(_filterEmptyTransactionsFilter).ToList();
+
+        block.CopyFrom(deepMindBlock);
+    }
+
+    private void ProcessCreationTreeRoot(CreationTreeNode creationTreeRoot, int creationTreeRootIndex, TransactionTrace trx, Types.StorageTypes.ActionTrace[] rootActionTraces, List<Types.StorageTypes.ActionTrace> actionTraces)
+    {
+        if (creationTreeRoot.Kind == CreationOpKind.ROOT)
+        {
+            var rootAction = Types.StorageTypes.ActionTrace.FromPool(); // returned to the Pool when Faster evicts it
+            rootAction.CopyFrom(trx.ActionTraces[creationTreeRoot.ActionIndex]);
+
+            var createdActionTraces = new List<Types.StorageTypes.ActionTrace>();
+            rootActionTraces[creationTreeRootIndex] = rootAction;
+            actionTraces.Add(rootAction);
+            foreach (var creationTreeChild in creationTreeRoot.Children)
+            {
+                if (creationTreeChild.Kind is CreationOpKind.INLINE or CreationOpKind.NOTIFY or CreationOpKind.CFA_INLINE)
+                {
+                    createdActionTraces.Add(ProcessChildActions(creationTreeChild, trx, rootAction, actionTraces));
+                }
+                else
+                    Log.Error($"CreationTreeChild-Issues in trx {trx.Id.StringVal}");
+            }
+
+            rootAction.CreatedActions = createdActionTraces.ToArray();
+            rootAction.CreatedActionIds = createdActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
+
+            rootAction.DbOps = trx.DbOps.Where(dbop => dbop.ActionIndex == creationTreeRoot.ActionIndex).Cast<DbOp>().ToArray();
+            rootAction.RamOps = trx.RamOps.Where(ramop => ramop.ActionIndex == creationTreeRoot.ActionIndex).Cast<RamOp>().ToArray();
+            rootAction.TableOps = trx.TableOps.Where(tableop => tableop.ActionIndex == creationTreeRoot.ActionIndex).Cast<TableOp>().ToArray();
+        }
+        else
+            Log.Error($"CreationTreeRoot-Issues in trx {trx.Id.StringVal}");
     }
 
     //private async Task TestAbiDeserializer(List<Types.StorageTypes.TransactionTrace> flattenedTransactionTraces)
@@ -343,6 +415,7 @@ public class BlockWorker : BackgroundService
     {
         await Parallel.ForEachAsync(actionTraces.Where(at => at.Act.Account == _eosio && at.Act.Name == _setabi), _postProcessingParallelOptions, async (setAbiTrace, _) =>
         {
+            AbiUpdatesPerBlock.Observe(1);
             try
             {
                 var (found, assemblyPair) = await _storageAdapter.TryGetActiveAbiAssembly(_eosio); // account is always eosio here

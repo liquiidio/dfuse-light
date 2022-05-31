@@ -1,10 +1,9 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.JsonConverters;
 
-public class FeatureOpJsonConverter : JsonConverter<FeatureOp>
+public sealed class FeatureOpJsonConverter : JsonConverter<FeatureOp>
 {
     public override FeatureOp Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -15,7 +14,7 @@ public class FeatureOpJsonConverter : JsonConverter<FeatureOp>
     {
         // TODO, just a temporary workaround
         writer.WriteStartObject();
-        writer.WriteString("kind", value.Kind);
+        writer.WriteString("kind", value.Kind.ToString());
         writer.WriteNumber("actionIndex", value.ActionIndex);
         writer.WriteString("feature", value.Feature.FeatureDigest);// TODO
         writer.WriteEndObject();

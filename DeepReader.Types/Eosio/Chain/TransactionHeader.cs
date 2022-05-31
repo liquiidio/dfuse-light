@@ -1,8 +1,5 @@
 using System.Text.Json.Serialization;
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
-using DeepReader.Types.Helpers;
-using DeepReader.Types.Fc;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -12,46 +9,40 @@ namespace DeepReader.Types.Eosio.Chain;
 public class TransactionHeader : IEosioSerializable<TransactionHeader>
 {
     // abi-field-name: expiration ,abi-field-type: time_point_sec
-    [SortOrder(1)]
     [JsonPropertyName("expiration")]
     public Timestamp Expiration;
 
     // abi-field-name: ref_block_num ,abi-field-type: uint16
-    [SortOrder(2)]
     [JsonPropertyName("ref_block_num")]
     public ushort RefBlockNum;
 
     // abi-field-name: ref_block_prefix ,abi-field-type: uint32
-    [SortOrder(3)]
     [JsonPropertyName("ref_block_prefix")]
     public uint RefBlockPrefix;
 
     // abi-field-name: max_net_usage_words ,abi-field-type: varuint32
-    [SortOrder(4)]
     [JsonPropertyName("max_net_usage_words")]
-    public VarUint32 MaxNetUsageWords;
+    public uint MaxNetUsageWords;
 
     // abi-field-name: max_cpu_usage_ms ,abi-field-type: uint8
-    [SortOrder(5)]
     [JsonPropertyName("max_cpu_usage_ms")]
     public byte MaxCpuUsageMs;
 
     // abi-field-name: delay_sec ,abi-field-type: varuint32
-    [SortOrder(6)]
     [JsonPropertyName("delay_sec")]
-    public VarUint32 DelaySec;
+    public uint DelaySec;
 
     public TransactionHeader(BinaryReader reader)
     {
-        Expiration = reader.ReadTimestamp();
+        Expiration = Timestamp.ReadFromBinaryReader(reader);
         RefBlockNum = reader.ReadUInt16();
         RefBlockPrefix = reader.ReadUInt32();
-        MaxNetUsageWords = reader.ReadVarUint32Obj();
+        MaxNetUsageWords = (uint)reader.Read7BitEncodedInt();
         MaxCpuUsageMs = reader.ReadByte();
-        DelaySec = reader.ReadVarUint32Obj();
+        DelaySec = (uint)reader.Read7BitEncodedInt();
     }
 
-    public static TransactionHeader ReadFromBinaryReader(BinaryReader reader)
+    public static TransactionHeader ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new TransactionHeader(reader);
     }

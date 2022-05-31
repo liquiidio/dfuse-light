@@ -1,16 +1,15 @@
 using System.Threading.Channels;
 using DeepReader.Apis;
-using DeepReader.Apis.GraphQl;
-using DeepReader.Apis.REST;
-using DeepReader.Classes;
 using DeepReader.HostedServices;
 using DeepReader.Options;
+using DeepReader.Pools;
 using DeepReader.Storage.Faster;
 using DeepReader.Types;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
-using Sentry;
+using Sentry.Extensions.Logging.Extensions.DependencyInjection;
 using Serilog;
+using Serilog.Events;
 
 
 var host = Host.CreateDefaultBuilder(args)
@@ -22,11 +21,13 @@ var host = Host.CreateDefaultBuilder(args)
         services.Configure<MindReaderOptions>(config =>
             hostContext.Configuration.GetSection("MindReaderOptions").Bind(config));
 
-        services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();// TODO inject max objects ?
+        services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
         services.AddSingleton(serviceProvider => serviceProvider.GetRequiredService<ObjectPoolProvider>()
             .Create(new BlockSegmentListPooledObjectPolicy(Convert.ToInt32(hostContext.Configuration.GetSection("DeepReaderOptions")["DlogBlockSegmentListSize"]))));
         services.AddSingleton(serviceProvider => serviceProvider.GetRequiredService<ObjectPoolProvider>()
             .Create(new BlockPooledObjectPolicy()));
+        services.AddSingleton(serviceProvider => serviceProvider.GetRequiredService<ObjectPoolProvider>()
+            .Create(new ActionTraceListPooledObjectPolicy()));
 
         //services.AddSingleton(Channel.CreateBounded<List<IList<StringSegment>>>(
         //    new BoundedChannelOptions(
@@ -37,17 +38,15 @@ var host = Host.CreateDefaultBuilder(args)
 
         // Inject BlockSegment-Channel
         services.AddSingleton(
-            Channel.CreateUnbounded<List<IList<StringSegment>>>(
-                new UnboundedChannelOptions() {SingleReader = false, SingleWriter = true,}));
+            Channel.CreateBounded<List<IList<StringSegment>>>(
+                new BoundedChannelOptions(Convert.ToInt32(hostContext.Configuration.GetSection("DeepReaderOptions")["DlogReaderBlockQueueSize"])) {SingleReader = false, SingleWriter = true}));
         services.AddSingleton(svc => svc.GetRequiredService<Channel<List<IList<StringSegment>>>>().Reader);
         services.AddSingleton(svc => svc.GetRequiredService<Channel<List<IList<StringSegment>>>>().Writer);
 
-        services.AddSentry();
-
         // Inject Block-Channel
         services.AddSingleton(
-            Channel.CreateUnbounded<Block>(
-                new UnboundedChannelOptions() {SingleReader = false, SingleWriter = false}));
+            Channel.CreateBounded<Block>(
+                new BoundedChannelOptions(Convert.ToInt32(hostContext.Configuration.GetSection("DeepReaderOptions")["BlockQueueSize"])) {SingleReader = false, SingleWriter = false}));
         services.AddSingleton(svc => svc.GetRequiredService<Channel<Block>>().Reader);
         services.AddSingleton(svc => svc.GetRequiredService<Channel<Block>>().Writer);
 
@@ -58,8 +57,14 @@ var host = Host.CreateDefaultBuilder(args)
 
 
     }).UseSerilog((hostingContext, loggerConfiguration) =>
-        loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration)
-    )
+    {
+        loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration).WriteTo.Sentry(o =>
+        {
+            o.Dsn = "https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2";
+            o.AttachStacktrace = true;
+            o.MinimumEventLevel = LogEventLevel.Warning;
+        });
+    })
     .UseDeepReaderApis()
     .UseFasterStorage()
 #if !DEBUG

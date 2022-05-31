@@ -5,14 +5,13 @@ using DeepReader.Storage.Faster.Transactions;
 using DeepReader.Storage.Options;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.StorageTypes;
-using FASTER.core;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Options;
 using System.Reflection;
 
 namespace DeepReader.Storage.Faster
 {
-    internal class FasterStorage : IStorageAdapter
+    internal sealed class FasterStorage : IStorageAdapter
     {
         private readonly BlockStore _blockStore;
         private readonly TransactionStore _transactionStore;
@@ -21,7 +20,7 @@ namespace DeepReader.Storage.Faster
 
         private FasterStorageOptions _fasterStorageOptions;
 
-        private ParallelOptions _parallelOptions;
+        private readonly ParallelOptions _parallelOptions;
 
         public FasterStorage(
             IOptionsMonitor<FasterStorageOptions> storageOptionsMonitor,
@@ -33,10 +32,10 @@ namespace DeepReader.Storage.Faster
 
             _blockStore = new BlockStore(_fasterStorageOptions, eventSender, metricsCollector);
             _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender, metricsCollector);
-            _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender);
-            _abiStore = new AbiStore(_fasterStorageOptions, eventSender);
+            _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender, metricsCollector);
+            _abiStore = new AbiStore(_fasterStorageOptions, eventSender, metricsCollector);
 
-            _parallelOptions = new()
+            _parallelOptions = new ParallelOptions
             {
                 MaxDegreeOfParallelism = 6 // TODO, put in config with reasonable name
             };
@@ -46,6 +45,9 @@ namespace DeepReader.Storage.Faster
         {
             _fasterStorageOptions = newOptions;
         }
+        public long BlocksIndexed => _blockStore.BlocksIndexed;
+
+        public long TransactionsIndexed => _transactionStore.TransactionsIndexed;
 
         public async Task StoreBlockAsync(Block block)
         {
@@ -65,43 +67,40 @@ namespace DeepReader.Storage.Faster
         public async Task<(bool, Block)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false, bool includeActionTraces = false)
         {
             var (found, block) = await _blockStore.TryGetBlockById(blockNum);
-            if (found && includeTransactionTraces && block.Transactions.Length == 0) // if length != 0 values are already loaded and referenced
+            if (found && includeTransactionTraces && block.Transactions?.Count == 0) // if length != 0 values are already loaded and referenced
             {
-                block.Transactions = new TransactionTrace[block.TransactionIds.Length];
+                var transactionTraceArray = new TransactionTrace[block.TransactionIds.Count];
                 // not sure if this is clever or over-parallelized
                 await Parallel.ForEachAsync(block.TransactionIds, _parallelOptions, async (transactionId, _) =>
                 {
-                    var (foundTrx, transaction) =
-                        await _transactionStore.TryGetTransactionTraceById(transactionId);
-                    var index = 0;
-                    if (foundTrx && (index = Array.IndexOf(block.TransactionIds, transactionId)) >= 0)
-                        block.Transactions[index] = transaction;
+                    if (transactionId != null)
+                    {
+                        var (foundTrx, transaction) =
+                            await _transactionStore.TryGetTransactionTraceById(transactionId);
+                        int index;
+                        if (foundTrx && (index = block.TransactionIds.IndexOf(transactionId)) >= 0)
+                            transactionTraceArray[index] = transaction;
+                    }
                 });
+                block.Transactions = transactionTraceArray.ToList();
             }
             if (found && includeActionTraces && block.Transactions?.FirstOrDefault()?.ActionTraces.Length == 0) // if length != 0 values are already loaded and referenced
             {
                 await Parallel.ForEachAsync(block.Transactions, _parallelOptions, async (transaction, _) =>
                 {
-                    if(transaction != null)
+                    if (transaction != null)
                     {
                         transaction.ActionTraces = new ActionTrace[transaction.ActionTraceIds.Length];
                         // not sure if this is clever or over-parallelized
                         await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
                         {
-                            var (found, action) =
+                            var (foundAct, action) =
                                 await _actionTraceStore.TryGetActionTraceById(actionTraceId);
-                            var index = 0;
-                            try
-                            {
-                                if (found && (index = Array.IndexOf(transaction.ActionTraceIds, actionTraceId)) >= 0)
-                                    transaction.ActionTraces[index] = action;
-                            }
-                            catch (Exception ex)
-                            {
-                                string test = index.ToString();
-                                string a = transaction.ActionTraces.Length.ToString();
-                            }
+                            int index;
+                            if (foundAct && (index = Array.IndexOf(transaction.ActionTraceIds, actionTraceId)) >= 0)
+                                transaction.ActionTraces[index] = action;
                         });
+
                     }
                 });
             }

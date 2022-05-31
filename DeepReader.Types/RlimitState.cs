@@ -1,6 +1,6 @@
 namespace DeepReader.Types;
 
-public class RlimitState : RlimitOp
+public sealed class RlimitState : RlimitOp
 {
     public UsageAccumulator AverageBlockNetUsage = new();//*UsageAccumulator
     public UsageAccumulator AverageBlockCpuUsage = new();//*UsageAccumulator

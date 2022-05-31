@@ -1,39 +1,49 @@
 using DeepReader.Types.EosTypes;
-using DeepReader.Types.Extensions;
+using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain.Legacy;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public class ProducerKey : IEosioSerializable<ProducerKey>
+public sealed class ProducerKey : PooledObject<ProducerKey>, IEosioSerializable<ProducerKey>
 {
-    public Name AccountName;
-    public PublicKey BlockSigningKey;//ecc.PublicKey
+    public Name AccountName { get; set; }
+    public PublicKey BlockSigningKey { get; set; }//ecc.PublicKey
 
     // TODO mandel 3.0 release will allow multiple keys and therefore will be an array,
     // current EOS and mandel have a single key instead. Probably a case for build-variable dependant builds (DEFINES injected at build time etc.?!)
     // public PublicKey[] BlockSigningKey;//ecc.PublicKey
 
-    public ProducerKey(BinaryReader reader)
+    public ProducerKey()
     {
-        AccountName = reader.ReadName();
 
-        BlockSigningKey = reader.ReadPublicKey();
+    }
+    public static ProducerKey ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    {
+        var obj = fromPool ? TypeObjectPool.Get() : new ProducerKey();
+
+        obj.AccountName = Name.ReadFromBinaryReader(reader);
+
+        obj.BlockSigningKey = PublicKey.ReadFromBinaryReader(reader);
         /*BlockSigningKey = new PublicKey[reader.Read7BitEncodedInt()];
         for (var i = 0; i < BlockSigningKey.Length; i++)
         {
             BlockSigningKey[i] = reader.ReadPublicKey(); //PubKeyDataSize + 1 byte for type
         }*/
-    }
-    public static ProducerKey ReadFromBinaryReader(BinaryReader reader)
-    {
-        return new ProducerKey(reader);
+        return obj;
     }
 
     public void WriteToBinaryWriter(BinaryWriter writer)
     {
-        writer.WriteName(AccountName);
-        writer.Write(BlockSigningKey.Binary);
+        AccountName.WriteToBinaryWriter(writer);
+        BlockSigningKey.WriteToBinaryWriter(writer);
+    }
+
+    public new static void ReturnToPool(ProducerKey obj)
+    {
+        PublicKey.ReturnToPool(obj.BlockSigningKey);
+
+        TypeObjectPool.Return(obj);
     }
 }

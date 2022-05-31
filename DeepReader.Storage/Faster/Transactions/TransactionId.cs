@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FASTER.core;
-using Microsoft.VisualBasic.CompilerServices;
+﻿using FASTER.core;
 
 namespace DeepReader.Storage.Faster.Transactions
 {
-    public class TransactionId : IFasterEqualityComparer<TransactionId>
+    public sealed class TransactionId : IFasterEqualityComparer<TransactionId>
     {
         public Types.Eosio.Chain.TransactionId Id = Types.Eosio.Chain.TransactionId.TypeEmpty;
 

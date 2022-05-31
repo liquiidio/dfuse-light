@@ -77,9 +77,6 @@ public class DlogReaderWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // TODO, for some reason I need to manually call the Init
-        SentrySdk.Init("https://b4874920c4484212bcc323e9deead2e9@sentry.noodles.lol/2");
-
         Thread.CurrentThread.Name = $"DlogReaderWorker";
 
         await StartNodeos(stoppingToken);

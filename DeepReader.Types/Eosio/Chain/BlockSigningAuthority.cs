@@ -5,7 +5,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public abstract class BlockSigningAuthorityVariant : IEosioSerializable<BlockSigningAuthorityVariant>
 {
-    public static BlockSigningAuthorityVariant ReadFromBinaryReader(BinaryReader reader)
+    public static BlockSigningAuthorityVariant ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         var type = reader.ReadByte();
         switch (type)
@@ -13,7 +13,7 @@ public abstract class BlockSigningAuthorityVariant : IEosioSerializable<BlockSig
             case 0:
                 return BlockSigningAuthorityV0.ReadFromBinaryReader(reader);
             default:
-                throw new Exception("BlockSigningAuthorityVariant {type} unknown");
+                throw new Exception($"BlockSigningAuthorityVariant {type} unknown");
         }
     }
 }
@@ -21,7 +21,7 @@ public abstract class BlockSigningAuthorityVariant : IEosioSerializable<BlockSig
 /// <summary>
 /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant, IEosioSerializable<BlockSigningAuthorityV0>
+public sealed class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant, IEosioSerializable<BlockSigningAuthorityV0>
 {
     public uint Threshold;
     public SharedKeyWeight[] Keys;
@@ -37,7 +37,7 @@ public class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant, IEosioSeria
         }
     }
 
-    public new static BlockSigningAuthorityV0 ReadFromBinaryReader(BinaryReader reader)
+    public new static BlockSigningAuthorityV0 ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         return new BlockSigningAuthorityV0(reader);
     }

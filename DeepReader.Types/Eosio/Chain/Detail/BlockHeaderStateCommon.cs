@@ -1,4 +1,3 @@
-using DeepReader.Types.Helpers;
 using DeepReader.Types.Eosio.Chain.Legacy;
 
 namespace DeepReader.Types.Eosio.Chain.Detail;
@@ -8,26 +7,25 @@ namespace DeepReader.Types.Eosio.Chain.Detail;
 /// </summary>
 public class BlockHeaderStateCommon
 {
-    [SortOrder(1)]
     public uint BlockNum;
-    [SortOrder(2)]
+
     public uint DPoSProposedIrreversibleBlockNum;
-    [SortOrder(3)]
+
     public uint DPoSIrreversibleBlockNum;
-    [SortOrder(4)]
+
     public ProducerAuthoritySchedule ActiveSchedule;
-    [SortOrder(5)]
+
     public IncrementalMerkle BlockrootMerkle;
-    [SortOrder(6)]
+
     public PairAccountNameBlockNum[] ProducerToLastProduced = Array.Empty<PairAccountNameBlockNum>();   //flat_map<account_name,uint32_t>
-    [SortOrder(7)]
+
     public PairAccountNameBlockNum[] ProducerToLastImpliedIrb = Array.Empty<PairAccountNameBlockNum>(); // flat_map<account_name,uint32_t>
-    [SortOrder(8)]
+
     public BlockSigningAuthorityVariant ValidBlockSigningAuthority;
-    [SortOrder(9)]
+
     public byte[] ConfirmCount = Array.Empty<byte>();
 
-    public static BlockHeaderStateCommon ReadFromBinaryReader(BinaryReader reader)
+    public static BlockHeaderStateCommon ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
     {
         var blockStateHeaderCommon = new BlockHeaderStateCommon()
         {

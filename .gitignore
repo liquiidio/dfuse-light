@@ -1,5 +1,5 @@
-bin/
-obj/
+*/bin/
+*/obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
@@ -7,6 +7,7 @@ riderModule.iml
 profiling/
 
 DeepReader/config/mindreader/data
+DeepReader/config/mindreader/abis
 DeepReader/config/mindreader/protocol_features
 DeepReader/config/mindreader/snapshots
 DeepReader/config/producer/data

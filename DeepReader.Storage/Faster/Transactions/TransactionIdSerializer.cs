@@ -2,7 +2,7 @@
 
 namespace DeepReader.Storage.Faster.Transactions;
 
-public class TransactionIdSerializer : BinaryObjectSerializer<TransactionId>
+public sealed class TransactionIdSerializer : BinaryObjectSerializer<TransactionId>
 {
     public override void Deserialize(out TransactionId obj)
     {

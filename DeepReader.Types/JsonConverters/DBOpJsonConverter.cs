@@ -1,10 +1,9 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using DeepReader.Types.EosTypes;
 
 namespace DeepReader.Types.JsonConverters;
 
-public class DbOpJsonConverter : JsonConverter<DbOp>
+public sealed class DbOpJsonConverter : JsonConverter<DbOp>
 {
     public override DbOp Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -18,10 +17,9 @@ public class DbOpJsonConverter : JsonConverter<DbOp>
         writer.WriteString("operation", value.Operation.ToString());
         writer.WriteString("code", value.Code);
         writer.WriteString("scope", value.Scope);
-        writer.WriteString("primaryKey", value.PrimaryKey);
+        writer.WriteString("primaryKey", value.PrimaryKey.Span);
         writer.WriteString("oldPayer", value.OldPayer);
         writer.WriteString("newPayer", value.NewPayer);
         writer.WriteEndObject();
     }
-
 }

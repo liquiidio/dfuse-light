@@ -3,10 +3,14 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.StorageTypes;
 using System.Reflection;
 
-namespace DeepReader.Storage
+ namespace DeepReader.Storage
 {
     public interface IStorageAdapter
     {
+        long BlocksIndexed { get; }
+
+        long TransactionsIndexed { get; }
+
         Task StoreBlockAsync(Block block);
 
         Task StoreTransactionAsync(TransactionTrace transactionTrace);

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
+using Microsoft.Extensions.ObjectPool;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -8,8 +9,27 @@ namespace DeepReader.Types.Eosio.Chain;
 /// Custom type due to Variant-Handling
 /// </summary>
 [JsonConverter(typeof(TransactionIdJsonConverter))]
-public class TransactionId : TransactionVariant
+public sealed class TransactionId : TransactionVariant
 {
+    // can't inherit directly from PooledObject here
+    // ReSharper disable once InconsistentNaming
+    private static readonly ObjectPool<TransactionId> TypeObjectPool = new DefaultObjectPool<TransactionId>(new DefaultPooledObjectPolicy<TransactionId>());
+
+    public static TransactionId FromPool()
+    {
+        return TypeObjectPool.Get();
+    }
+
+    public static void ReturnToPool(TransactionId obj)
+    {
+        TypeObjectPool.Return(obj);
+    }
+
+    // end can't inherit directly from PooledObject here
+
+    private const int Checksum256ByteLength = 32;
+    
+    [JsonIgnore]
     public byte[] Binary = Array.Empty<byte>();
 
     private string? _stringVal;
@@ -28,6 +48,21 @@ public class TransactionId : TransactionVariant
     {
         Binary = SerializationHelper.StringToByteArray(transactionId);
         _stringVal = transactionId;
+    }
+
+    public new static TransactionId ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    {
+        var obj = fromPool ? TypeObjectPool.Get() : new TransactionId();
+
+        obj.Binary = reader.ReadBytes(Checksum256ByteLength);
+
+        return obj;
+    }
+
+    public new void WriteToBinaryWriter(BinaryWriter writer)
+    {
+        writer.Write(Binary);
+        _stringVal = null;
     }
 
     public static implicit operator TransactionId(string value)

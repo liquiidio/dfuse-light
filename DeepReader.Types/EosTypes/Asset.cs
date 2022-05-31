@@ -2,7 +2,7 @@
 
 namespace DeepReader.Types.EosTypes;
 
-public struct Asset
+public struct Asset : IEosioSerializable<Asset>
 {
     public long Amount;
 
@@ -19,5 +19,20 @@ public struct Asset
             amount = $"{amount[..^Symbol.Precision]}.{amount[^Symbol.Precision..]}"; // split the string at "precision", add "." between
 
         return amount;
+    }
+
+    public static Asset ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    {
+        var asset = new Asset();
+
+        asset.Amount = reader.ReadInt64();
+
+        asset.Symbol = Symbol.ReadFromBinaryReader(reader);
+        //var amount = SerializationHelper.SignedBinaryToDecimal(binaryAmount, symbol.Precision + 1);
+
+        //if (symbol.Precision > 0)
+        //    amount = amount.Substring(0, amount.Length - symbol.Precision) + '.' + amount.Substring(amount.Length - symbol.Precision);
+
+        return asset;
     }
 }
