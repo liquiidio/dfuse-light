@@ -1,4 +1,8 @@
-﻿using DeepReader.Storage.Options;
+﻿using DeepReader.Storage.Faster.Abis;
+using DeepReader.Storage.Faster.ActionTraces;
+using DeepReader.Storage.Faster.Blocks;
+using DeepReader.Storage.Faster.Transactions;
+using DeepReader.Storage.Options;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +34,7 @@ namespace DeepReader.Storage.Faster
             builder.ConfigureServices((hostContext, services) =>
             {
                 services.Configure<FasterStorageOptions>(config => hostContext.Configuration.GetSection("FasterStorageOptions").Bind(config));
+                
                 services.AddSingleton(provider =>
                 {
                     IStorageAdapter storageAdapter = new FasterStorage(
@@ -40,6 +45,15 @@ namespace DeepReader.Storage.Faster
                 });
             });
             return builder;
+        }
+
+        public static IServiceCollection AddFasterServer(this IServiceCollection services)
+        {
+            services.AddHostedService<AbiStoreServer>();
+            services.AddHostedService<TransactionStoreServer>();
+            services.AddHostedService<BlockStoreServer>();
+            services.AddHostedService<ActionTraceStoreServer>();
+            return services;
         }
     }
 }

@@ -4,6 +4,7 @@ using DeepReader.HostedServices;
 using DeepReader.Options;
 using DeepReader.Pools;
 using DeepReader.Storage.Faster;
+using DeepReader.Storage.Faster.Blocks;
 using DeepReader.Types;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
@@ -50,6 +51,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton(svc => svc.GetRequiredService<Channel<Block>>().Reader);
         services.AddSingleton(svc => svc.GetRequiredService<Channel<Block>>().Writer);
 
+        services.AddFasterServer();
         // Inject Workers
         services.AddHostedService<DlogReaderWorker>();
         services.AddHostedService<DlogParserWorker>();
