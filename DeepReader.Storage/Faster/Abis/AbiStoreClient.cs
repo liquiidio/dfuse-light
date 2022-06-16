@@ -38,6 +38,9 @@ namespace DeepReader.Storage.Faster.Abis
             var value = abiBytes.AsMemory(0, bytesWritten);
 
             await _session.UpsertAsync(key, value);
+
+            // Flushes partially filled batches, does not wait for response
+            _session.Flush();
         }
 
         public async Task UpsertAbi(Name account, ulong globalSequence, Assembly assembly)

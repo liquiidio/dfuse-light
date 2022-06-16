@@ -20,7 +20,7 @@ namespace DeepReader.Storage.Faster
 
         private readonly BlockStoreClient _blockStoreClient;
         private readonly TransactionStoreClient _transactionStoreClient;
-        private readonly ActionTraceClient _actionTraceClient;
+        private readonly ActionTraceStoreClient _actionTraceClient;
         private readonly AbiStoreClient _abiStoreClient;
 
         private FasterStorageOptions _fasterStorageOptions;
@@ -42,7 +42,7 @@ namespace DeepReader.Storage.Faster
 
             _blockStoreClient = new BlockStoreClient();
             _transactionStoreClient = new TransactionStoreClient();
-            _actionTraceClient = new ActionTraceClient();
+            _actionTraceClient = new ActionTraceStoreClient();
             _abiStoreClient = new AbiStoreClient();
 
             _parallelOptions = new ParallelOptions

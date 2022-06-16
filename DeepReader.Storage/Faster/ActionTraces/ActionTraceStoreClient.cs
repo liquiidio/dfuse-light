@@ -1,12 +1,13 @@
 ﻿using DeepReader.Types.StorageTypes;
 using FASTER.client;
 using System.Buffers;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
 namespace DeepReader.Storage.Faster.ActionTraces
 {
-    internal class ActionTraceClient
+    internal class ActionTraceStoreClient
     {
         private const string ip = "127.0.0.1";
         private const int port = 5005;
@@ -17,7 +18,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
 
         private ClientSession<ReadOnlyMemory<byte>, ReadOnlyMemory<byte>, ReadOnlyMemory<byte>, (IMemoryOwner<byte>, int), byte, ActionTraceMemoryFunctions, MemoryParameterSerializer<byte>> _session;
 
-        public ActionTraceClient()
+        public ActionTraceStoreClient()
         {
             _client = new FasterKVClient<ReadOnlyMemory<byte>, ReadOnlyMemory<byte>>(ip, port);
             _session = _client.NewSession(new ActionTraceMemoryFunctions());
@@ -25,6 +26,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
 
         public async Task WriteActionTrace(ActionTrace actionTrace)
         {
+            Debug.WriteLine("Writing Action Trace");
             int actionTraceIdLength = _encode.GetByteCount(actionTrace.GlobalSequence.ToString());
             int actionTraceLength = _encode.GetByteCount(JsonSerializer.Serialize(actionTrace));
 
@@ -37,6 +39,9 @@ namespace DeepReader.Storage.Faster.ActionTraces
             var value = actionTraceBytes.AsMemory(0, bytesWritten);
 
             await _session.UpsertAsync(key, value);
+
+            // Flushes partially filled batches, does not wait for response
+            _session.Flush();
         }
 
         public async Task<(bool, ActionTrace)> TryGetActionTraceById(ulong globalSequence)

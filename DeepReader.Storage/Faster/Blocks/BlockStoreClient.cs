@@ -1,7 +1,7 @@
 ﻿using DeepReader.Types.StorageTypes;
 using FASTER.client;
-using FASTER.core;
 using System.Buffers;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
@@ -30,6 +30,7 @@ namespace DeepReader.Storage.Faster.Blocks
 
         public async Task WriteBlock(Block block)
         {
+            Debug.WriteLine($"{block.Number} has been writtten");
             int blockIdLength = _encode.GetByteCount(block.Number.ToString());
             int blockLength = _encode.GetByteCount(JsonSerializer.Serialize(block));
 
@@ -55,6 +56,9 @@ namespace DeepReader.Storage.Faster.Blocks
             //_sessionPool.Return(session);
             //return result.Status;
             //}
+
+            // Flushes partially filled batches, does not wait for response
+            _session.Flush();
         }
 
         public async Task<(bool, Block)> TryGetBlockById(uint blockNum)

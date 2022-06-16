@@ -2,7 +2,7 @@
 
 namespace DeepReader.Storage.Faster.Transactions
 {
-    internal class TransactionStoreMemoryFunctions : MemoryFunctionsBase<byte>
+    internal class TransactionMemoryFunctions : MemoryFunctionsBase<byte>
     {
     }
 }

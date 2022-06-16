@@ -1,6 +1,7 @@
 ﻿using DeepReader.Types.StorageTypes;
 using FASTER.client;
 using System.Buffers;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
@@ -15,16 +16,17 @@ namespace DeepReader.Storage.Faster.Transactions
 
         private readonly FasterKVClient<ReadOnlyMemory<byte>, ReadOnlyMemory<byte>> _client;
 
-        private ClientSession<ReadOnlyMemory<byte>, ReadOnlyMemory<byte>, ReadOnlyMemory<byte>, (IMemoryOwner<byte>, int), byte, TransactionStoreMemoryFunctions, MemoryParameterSerializer<byte>> _session;
+        private ClientSession<ReadOnlyMemory<byte>, ReadOnlyMemory<byte>, ReadOnlyMemory<byte>, (IMemoryOwner<byte>, int), byte, TransactionMemoryFunctions, MemoryParameterSerializer<byte>> _session;
 
         public TransactionStoreClient()
         {
             _client = new FasterKVClient<ReadOnlyMemory<byte>, ReadOnlyMemory<byte>>(ip, port);
-            _session = _client.NewSession(new TransactionStoreMemoryFunctions());
+            _session = _client.NewSession(new TransactionMemoryFunctions());
         }
 
         public async Task WriteTransaction(TransactionTrace transaction)
         {
+            Debug.WriteLine("Write Transaction");
             int transactionIdLength = _encode.GetByteCount(transaction.Id.ToString());
             int blockLength = _encode.GetByteCount(JsonSerializer.Serialize(transaction));
 
@@ -37,6 +39,8 @@ namespace DeepReader.Storage.Faster.Transactions
             var value = transactionBytes.AsMemory(0, bytesWritten);
 
             await _session.UpsertAsync(key, value);
+
+            _session.CompletePending();
         }
 
         public async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)

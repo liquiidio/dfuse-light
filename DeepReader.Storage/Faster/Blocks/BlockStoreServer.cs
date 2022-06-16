@@ -38,5 +38,11 @@ namespace DeepReader.Storage.Faster.Blocks
                 await Task.Delay(1000);
             }
         }
+
+        public override void Dispose()
+        {
+            _server.Dispose();
+            base.Dispose();
+        }
     }
 }
