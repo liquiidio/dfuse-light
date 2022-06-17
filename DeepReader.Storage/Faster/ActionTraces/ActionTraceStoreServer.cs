@@ -34,7 +34,6 @@ namespace DeepReader.Storage.Faster.ActionTraces
             _server.Start();
             while (!stoppingToken.IsCancellationRequested)
             {
-                Debug.WriteLine("ActionTraceStoreServer running");
                 await Task.Delay(1000);
             }
         }

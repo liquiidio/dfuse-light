@@ -34,7 +34,6 @@ namespace DeepReader.Storage.Faster.Abis
             _server.Start();
             while (!stoppingToken.IsCancellationRequested)
             {
-                Debug.WriteLine("AbiStoreServer running");
                 await Task.Delay(1000);
             }
         }

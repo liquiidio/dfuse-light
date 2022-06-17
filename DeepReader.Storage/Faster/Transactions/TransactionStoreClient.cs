@@ -37,8 +37,19 @@ namespace DeepReader.Storage.Faster.Transactions
             byte[] transactionBytes = _pool.Rent(blockLength);
             bytesWritten = _encode.GetBytes(JsonSerializer.Serialize(transaction), transactionBytes);
             var value = transactionBytes.AsMemory(0, bytesWritten);
-
-            await _session.UpsertAsync(key, value);
+            
+            try
+            {
+                await _session.UpsertAsync(key, value);
+            }
+            catch (NullReferenceException ex)
+            {
+                Debug.WriteLine($"WriteTransaction Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"WriteTransaction Error: {ex.Message}");
+            }
 
             _session.CompletePending();
         }

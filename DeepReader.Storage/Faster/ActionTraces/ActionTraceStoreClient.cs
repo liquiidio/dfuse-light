@@ -38,7 +38,18 @@ namespace DeepReader.Storage.Faster.ActionTraces
             bytesWritten = _encode.GetBytes(JsonSerializer.Serialize(actionTrace), actionTraceBytes);
             var value = actionTraceBytes.AsMemory(0, bytesWritten);
 
-            await _session.UpsertAsync(key, value);
+            try
+            {
+                await _session.UpsertAsync(key, value);
+            }
+            catch (NullReferenceException ex)
+            {
+                Debug.WriteLine($"WriteActionTrace Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"WriteActionTrace Error: {ex.Message}");
+            }
 
             // Flushes partially filled batches, does not wait for response
             _session.Flush();
@@ -51,7 +62,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
             byte[] blockNumBytes = _pool.Rent(globalSequenceLength);
             int bytesWritten = _encode.GetBytes(globalSequence.ToString(), blockNumBytes);
             var key = blockNumBytes.AsMemory(0, bytesWritten);
-            
+
             var (status, output) = await _session.ReadAsync(key);
 
             var actionTrace = JsonSerializer.Deserialize<ActionTrace>(output.Item1.Memory.Span.Slice(0, output.Item2));

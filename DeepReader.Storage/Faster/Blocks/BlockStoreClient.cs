@@ -56,7 +56,7 @@ namespace DeepReader.Storage.Faster.Blocks
             //_sessionPool.Return(session);
             //return result.Status;
             //}
-
+            
             // Flushes partially filled batches, does not wait for response
             _session.Flush();
         }
