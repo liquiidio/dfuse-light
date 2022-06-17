@@ -1,5 +1,5 @@
 ﻿using DeepReader.Storage.Faster.Abis;
-using DeepReader.Storage.Faster.ActionTraces;
+using DeepReader.Storage.Faster.ActionTraces.Server;
 using DeepReader.Storage.Faster.Blocks;
 using DeepReader.Storage.Faster.Transactions;
 using DeepReader.Storage.Options;

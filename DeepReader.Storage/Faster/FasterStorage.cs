@@ -1,5 +1,6 @@
 ﻿using DeepReader.Storage.Faster.Abis;
-using DeepReader.Storage.Faster.ActionTraces;
+using DeepReader.Storage.Faster.ActionTraces.Base;
+using DeepReader.Storage.Faster.ActionTraces.Client;
 using DeepReader.Storage.Faster.Blocks;
 using DeepReader.Storage.Faster.Transactions;
 using DeepReader.Storage.Options;
@@ -8,6 +9,7 @@ using DeepReader.Types.StorageTypes;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Options;
 using System.Reflection;
+using DeepReader.Storage.Faster.ActionTraces.Standalone;
 
 namespace DeepReader.Storage.Faster
 {
@@ -20,7 +22,7 @@ namespace DeepReader.Storage.Faster
 
         private readonly BlockStoreClient _blockStoreClient;
         private readonly TransactionStoreClient _transactionStoreClient;
-        private readonly ActionTraceStoreClient _actionTraceClient;
+        private readonly ActionTraceStoreBase _actionTraceClient;
         private readonly AbiStoreClient _abiStoreClient;
 
         private FasterStorageOptions _fasterStorageOptions;
@@ -35,6 +37,9 @@ namespace DeepReader.Storage.Faster
             _fasterStorageOptions = storageOptionsMonitor.CurrentValue;
             storageOptionsMonitor.OnChange(OnFasterStorageOptionsChanged);
 
+            // @Haron, your Code is probably just for testing but
+            // depending on if this is a Server, Client or Standalone we instantiate either Standalone,Server or Client
+
             _blockStore = new BlockStore(_fasterStorageOptions, eventSender, metricsCollector);
             _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender, metricsCollector);
             _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender, metricsCollector);
@@ -42,7 +47,7 @@ namespace DeepReader.Storage.Faster
 
             _blockStoreClient = new BlockStoreClient();
             _transactionStoreClient = new TransactionStoreClient();
-            _actionTraceClient = new ActionTraceStoreClient();
+            _actionTraceClient = new ActionTraceStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
             _abiStoreClient = new AbiStoreClient();
 
             _parallelOptions = new ParallelOptions

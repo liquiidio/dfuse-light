@@ -2,7 +2,7 @@
 using FASTER.core;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.ActionTraces
+namespace DeepReader.Storage.Faster.ActionTraces.Standalone
 {
     internal class ActionTraceEvictionObserver : IObserver<IFasterScanIterator<ulong, ActionTrace>>
     {
@@ -13,7 +13,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
 
         public void OnError(Exception error)
         {
-            Log.Error(error,"");
+            Log.Error(error, "");
         }
 
         public void OnNext(IFasterScanIterator<ulong, ActionTrace> iter)

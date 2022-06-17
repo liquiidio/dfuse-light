@@ -1,3 +1,4 @@
+using DeepReader.Storage.Faster.ActionTraces.Base;
 using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using FASTER.core;
@@ -5,51 +6,16 @@ using HotChocolate.Subscriptions;
 using Prometheus;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.ActionTraces
+namespace DeepReader.Storage.Faster.ActionTraces.Standalone
 {
-    public sealed class ActionTraceStore
+    public class ActionTraceStore : ActionTraceStoreBase
     {
-        private readonly FasterKV<ulong, ActionTrace> _store;
-
-        //private readonly ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions> _actionTraceReaderSession;
-        //private readonly ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions> _actionTraceWriterSession;
+        protected readonly FasterKV<ulong, ActionTrace> _store;
 
         private readonly AsyncPool<ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions>> _sessionPool;
 
-        private int _sessionCount;
-
-        private readonly FasterStorageOptions _options;
-
-        private readonly ITopicEventSender _eventSender;
-        private MetricsCollector _metricsCollector;
-
-        private static readonly SummaryConfiguration SummaryConfiguration = new SummaryConfiguration()
-            { MaxAge = TimeSpan.FromSeconds(30) };
-
-        private static readonly Summary WritingActionTraceDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_write_action_trace_duration", "Summary of time to store actionTraces to Faster", SummaryConfiguration);
-        private static readonly Summary StoreLogMemorySizeBytesSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_action_trace_store_log_memory_size_bytes", "Summary of the faster actionTrace store log memory size in bytes", SummaryConfiguration);
-        private static readonly Summary StoreReadCacheMemorySizeBytesSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_action_trace_store_read_cache_memory_size_bytes", "Summary of the faster actionTrace store read cache memory size in bytes", SummaryConfiguration);
-        private static readonly Summary StoreEntryCountSummary =
-           Metrics.CreateSummary("deepreader_storage_faster_action_trace_store_read_cache_memory_size_bytes", "Summary of the faster actionTrace store entry count", SummaryConfiguration);
-        private static readonly Summary StoreTakeLogCheckpointDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_action_trace_store_take_log_checkpoint_duration", "Summary of time to take a log checkpoint of faster actionTrace store", SummaryConfiguration);
-        private static readonly Summary StoreTakeIndexCheckpointDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_action_trace_store_take_index_checkpoint_duration", "Summary of time to take a index checkpoint of faster actionTrace store", SummaryConfiguration);
-        private static readonly Summary StoreFlushAndEvictLogDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_action_trace_store_log_flush_and_evict_duration", "Summary of time to flush and evict faster actionTrace store", SummaryConfiguration);
-        private static readonly Summary ActionTraceReaderSessionReadDurationSummary =
-          Metrics.CreateSummary("deepreader_storage_faster_action_trace_get_by_id_duration", "Summary of time to try get actionTrace trace by id", SummaryConfiguration);
-
-        public ActionTraceStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
+        public ActionTraceStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            _options = options;
-            _eventSender = eventSender;
-            _metricsCollector = metricsCollector;
-            _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
-
             if (!_options.ActionTraceStoreDir.EndsWith("/"))
                 options.ActionTraceStoreDir += "/";
 
@@ -108,25 +74,6 @@ namespace DeepReader.Storage.Faster.ActionTraces
                 }
             }
 
-            //foreach (var recoverableSession in _store.RecoverableSessions)
-            //{
-            //    if (recoverableSession.Item2 == "ActionTraceWriterSession")
-            //    {
-            //        _actionTraceWriterSession = _store.For(new ActionTraceFunctions())
-            //            .ResumeSession<ActionTraceFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
-            //    }
-            //    else if (recoverableSession.Item2 == "ActionTraceReaderSession")
-            //    {
-            //        _actionTraceReaderSession = _store.For(new ActionTraceFunctions())
-            //            .ResumeSession<ActionTraceFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
-            //    }
-            //}
-
-            //_actionTraceWriterSession ??=
-            //    _store.For(new ActionTraceFunctions()).NewSession<ActionTraceFunctions>("ActionTraceWriterSession");
-            //_actionTraceReaderSession ??=
-            //    _store.For(new ActionTraceFunctions()).NewSession<ActionTraceFunctions>("ActionTraceReaderSession");
-
             var actionTraceEvictionObserver = new ActionTraceEvictionObserver();
             _store.Log.SubscribeEvictions(actionTraceEvictionObserver);
 
@@ -147,7 +94,8 @@ namespace DeepReader.Storage.Faster.ActionTraces
             new Thread(CommitThread).Start();
         }
 
-        private void CollectObservableMetrics(object? sender, EventArgs e)
+
+        protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
             StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
             if (_options.UseReadCache)
@@ -155,7 +103,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
             StoreEntryCountSummary.Observe(_store.EntryCount);
         }
 
-        public async Task<Status> WriteActionTrace(ActionTrace actionTrace)
+        public override async Task<Status> WriteActionTrace(ActionTrace actionTrace)
         {
             var actionTraceId = actionTrace.GlobalSequence;
 
@@ -173,7 +121,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
             }
         }
 
-        public async Task<(bool, ActionTrace)> TryGetActionTraceById(ulong globalSequence)
+        public override async Task<(bool, ActionTrace)> TryGetActionTraceById(ulong globalSequence)
         {
             using (ActionTraceReaderSessionReadDurationSummary.NewTimer())
             {
@@ -185,7 +133,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
             }
         }
 
-        private void CommitThread()
+        internal void CommitThread()
         {
             if (_options.LogCheckpointInterval is null or 0)
                 return;
@@ -221,5 +169,6 @@ namespace DeepReader.Storage.Faster.ActionTraces
                 }
             }
         }
+
     }
 }

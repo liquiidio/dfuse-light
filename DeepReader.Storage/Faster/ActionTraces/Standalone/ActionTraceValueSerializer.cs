@@ -1,7 +1,7 @@
 ﻿using DeepReader.Types.StorageTypes;
 using FASTER.core;
 
-namespace DeepReader.Storage.Faster.ActionTraces;
+namespace DeepReader.Storage.Faster.ActionTraces.Standalone;
 
 public sealed class ActionTraceValueSerializer : BinaryObjectSerializer<ActionTrace>
 {
