@@ -34,7 +34,6 @@ namespace DeepReader.Storage.Faster.Blocks
             _server.Start();
             while (!stoppingToken.IsCancellationRequested)
             {
-                Debug.WriteLine("BlockStoreServer running");
                 await Task.Delay(1000);
             }
         }

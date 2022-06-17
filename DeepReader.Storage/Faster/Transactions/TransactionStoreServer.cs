@@ -35,7 +35,6 @@ namespace DeepReader.Storage.Faster.Transactions
             _server.Start();
             while (!stoppingToken.IsCancellationRequested)
             {
-                Debug.WriteLine("TransactionStoreServer running");
                 await Task.Delay(1000);
             }
         }
