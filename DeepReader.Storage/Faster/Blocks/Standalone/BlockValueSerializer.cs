@@ -1,7 +1,7 @@
 ﻿using DeepReader.Types.StorageTypes;
 using FASTER.core;
 
-namespace DeepReader.Storage.Faster.Blocks;
+namespace DeepReader.Storage.Faster.Blocks.Standalone;
 
 public sealed class BlockValueSerializer : BinaryObjectSerializer<Block>
 {

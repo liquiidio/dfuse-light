@@ -2,7 +2,7 @@
 using FASTER.core;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.Blocks;
+namespace DeepReader.Storage.Faster.Blocks.Standalone;
 
 public sealed class BlockFunctions : FunctionsBase<long, Block, BlockInput, BlockOutput, BlockContext>
 {

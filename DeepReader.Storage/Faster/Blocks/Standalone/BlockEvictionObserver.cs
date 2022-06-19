@@ -2,7 +2,7 @@
 using FASTER.core;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.Blocks
+namespace DeepReader.Storage.Faster.Blocks.Standalone
 {
     internal class BlockEvictionObserver : IObserver<IFasterScanIterator<long, Block>>
     {
@@ -13,7 +13,7 @@ namespace DeepReader.Storage.Faster.Blocks
 
         public void OnError(Exception error)
         {
-            Log.Error(error,"");
+            Log.Error(error, "");
         }
 
         public void OnNext(IFasterScanIterator<long, Block> iter)

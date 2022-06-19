@@ -1,12 +1,9 @@
 ﻿using FASTER.server;
-using Microsoft.Extensions.Hosting;
-using System.Diagnostics;
 using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using FASTER.common;
 using FASTER.core;
 using HotChocolate.Subscriptions;
-using DeepReader.Storage.Faster.ActionTraces.Base;
 using DeepReader.Storage.Faster.ActionTraces.Standalone;
 
 namespace DeepReader.Storage.Faster.ActionTraces.Server
@@ -19,9 +16,6 @@ namespace DeepReader.Storage.Faster.ActionTraces.Server
         readonly SubscribeKVBroker<ulong, ActionTrace, ActionTraceInput, IKeyInputSerializer<ulong, ActionTraceInput>> kvBroker;
         readonly SubscribeBroker<ulong, ActionTrace, IKeySerializer<ulong>> broker;
         readonly LogSettings logSettings;
-
-
-        private readonly VarLenServer _server;
 
         public ActionTraceStoreServer(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
@@ -43,8 +37,6 @@ namespace DeepReader.Storage.Faster.ActionTraces.Server
                 DisablePubSub = false,
                 PubSubPageSize = "4k"
             };
-
-            _server = new VarLenServer(_serverOptions);
 
             if (!_serverOptions.DisablePubSub)
             {

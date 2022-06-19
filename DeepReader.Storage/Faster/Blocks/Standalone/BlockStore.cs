@@ -1,56 +1,24 @@
-﻿using DeepReader.Storage.Options;
+﻿using DeepReader.Storage.Faster.Blocks.Base;
+using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.Blocks
+namespace DeepReader.Storage.Faster.Blocks.Standalone
 {
-    public sealed class BlockStore
+    public class BlockStore : BlockStoreBase
     {
-        private readonly FasterKV<long, Block> _store;
+        protected readonly FasterKV<long, Block> _store;
 
         //private readonly ClientSession<long, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockWriterSession;
         //private readonly ClientSession<long, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockReaderSession;
 
         private readonly AsyncPool<ClientSession<long, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions>> _sessionPool;
 
-        private int _sessionCount;
-
-        private readonly FasterStorageOptions _options;
-
-
-        private ITopicEventSender _eventSender;
-        private MetricsCollector _metricsCollector;
-
-        private static readonly SummaryConfiguration SummaryConfiguration = new SummaryConfiguration()
-            {MaxAge = TimeSpan.FromSeconds(30)};
-
-        private static readonly Summary WritingBlockDuration =
-            Metrics.CreateSummary("deepreader_storage_faster_write_block_duration", "Summary of time to store blocks to Faster", SummaryConfiguration);
-        private static readonly Summary StoreLogMemorySizeBytesSummary =
-           Metrics.CreateSummary("deepreader_storage_faster_block_store_log_memory_size_bytes", "Summary of the faster block store log memory size in bytes", SummaryConfiguration);
-        private static readonly Summary StoreReadCacheMemorySizeBytesSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_block_store_read_cache_memory_size_bytes", "Summary of the faster block store read cache memory size in bytes", SummaryConfiguration);
-        private static readonly Summary StoreEntryCountSummary =
-           Metrics.CreateSummary("deepreader_storage_faster_block_store_read_cache_memory_size_bytes", "Summary of the faster block store entry count", SummaryConfiguration);
-        private static readonly Summary StoreTakeLogCheckpointDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_block_store_take_log_checkpoint_duration", "Summary of time to take a log checkpoint of faster block store", SummaryConfiguration);
-        private static readonly Summary StoreTakeIndexCheckpointDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_block_store_take_index_checkpoint_duration", "Summary of time to take a index checkpoint of faster block store", SummaryConfiguration);
-        private static readonly Summary StoreFlushAndEvictLogDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_block_store_log_flush_and_evict_duration", "Summary of time to flush and evict faster block store", SummaryConfiguration);
-        private static readonly Summary BlockReaderSessionReadDurationSummary =
-          Metrics.CreateSummary("deepreader_storage_faster_block_get_by_id_duration", "Summary of time to try get block by id", SummaryConfiguration);
-
-        public BlockStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
+        public BlockStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            _options = options;
-            _eventSender = eventSender;
-            _metricsCollector = metricsCollector;
-            _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
-            
             if (!_options.BlockStoreDir.EndsWith("/"))
                 _options.BlockStoreDir += "/";
 
@@ -60,7 +28,7 @@ namespace DeepReader.Storage.Faster.Blocks
 
             // Log for storing serialized objects; needed only for class keys/values
             var objlog = Devices.CreateLogDevice(_options.BlockStoreDir + "hlog.obj.log");
-            
+
             // Define settings for log
             var logSettings = new LogSettings
             {
@@ -73,7 +41,7 @@ namespace DeepReader.Storage.Faster.Blocks
                 PageSizeBits = 14, // (16K pages)
                 MemorySizeBits = 32 // (4G memory for main log)
             };
-            
+
             // Define serializers; otherwise FASTER will use the slower DataContract
             // Needed only for class keys/values
             var serializerSettings = new SerializerSettings<long, Block>
@@ -131,14 +99,14 @@ namespace DeepReader.Storage.Faster.Blocks
             //    _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockReaderSession");
 
             StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
-            if(options.UseReadCache)
+            if (options.UseReadCache)
                 StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);// must be optional
             StoreEntryCountSummary.Observe(_store.EntryCount);
 
             var blockEvictionObserver = new BlockEvictionObserver();
             _store.Log.SubscribeEvictions(blockEvictionObserver);
 
-            if(options.UseReadCache)
+            if (options.UseReadCache)
                 _store.ReadCache.SubscribeEvictions(blockEvictionObserver);
 
             _sessionPool = new AsyncPool<ClientSession<long, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions>>(
@@ -157,15 +125,15 @@ namespace DeepReader.Storage.Faster.Blocks
 
         public long BlocksIndexed => _store.EntryCount;
 
-        private void CollectObservableMetrics(object? sender, EventArgs e)
+        protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
             StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
-            if(_options.UseReadCache)
+            if (_options.UseReadCache)
                 StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);
             StoreEntryCountSummary.Observe(_store.EntryCount);
         }
 
-        public async Task<Status> WriteBlock(Block block)
+        public override async Task<Status> WriteBlock(Block block)
         {
             long blockId = block.Number;
 
@@ -183,7 +151,7 @@ namespace DeepReader.Storage.Faster.Blocks
             }
         }
 
-        public async Task<(bool, Block)> TryGetBlockById(uint blockNum)
+        public override async Task<(bool, Block)> TryGetBlockById(uint blockNum)
         {
             using (BlockReaderSessionReadDurationSummary.NewTimer())
             {

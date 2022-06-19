@@ -1,7 +1,6 @@
 ﻿using DeepReader.Storage.Faster.Abis;
 using DeepReader.Storage.Faster.ActionTraces.Base;
 using DeepReader.Storage.Faster.ActionTraces.Client;
-using DeepReader.Storage.Faster.Blocks;
 using DeepReader.Storage.Faster.Transactions;
 using DeepReader.Storage.Options;
 using DeepReader.Types.EosTypes;
@@ -10,6 +9,8 @@ using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Options;
 using System.Reflection;
 using DeepReader.Storage.Faster.ActionTraces.Standalone;
+using DeepReader.Storage.Faster.Blocks.Standalone;
+using DeepReader.Storage.Faster.Blocks.Client;
 
 namespace DeepReader.Storage.Faster
 {
@@ -45,7 +46,7 @@ namespace DeepReader.Storage.Faster
             _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender, metricsCollector);
             _abiStore = new AbiStore(_fasterStorageOptions, eventSender, metricsCollector);
 
-            _blockStoreClient = new BlockStoreClient();
+            _blockStoreClient = new BlockStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
             _transactionStoreClient = new TransactionStoreClient();
             _actionTraceClient = new ActionTraceStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
             _abiStoreClient = new AbiStoreClient();

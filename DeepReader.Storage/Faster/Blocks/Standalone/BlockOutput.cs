@@ -1,6 +1,6 @@
 ﻿using DeepReader.Types.StorageTypes;
 
-namespace DeepReader.Storage.Faster.Blocks;
+namespace DeepReader.Storage.Faster.Blocks.Standalone;
 
 public struct BlockOutput
 {

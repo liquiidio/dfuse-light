@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DeepReader.Storage.Faster.ActionTraces.Standalone;
+﻿using DeepReader.Storage.Faster.ActionTraces.Standalone;
 using FASTER.common;
 
 namespace DeepReader.Storage.Faster.ActionTraces.Server
