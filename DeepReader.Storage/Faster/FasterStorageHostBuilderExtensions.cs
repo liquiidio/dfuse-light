@@ -1,4 +1,4 @@
-﻿using DeepReader.Storage.Faster.Abis;
+﻿using DeepReader.Storage.Faster.Abis.Server;
 using DeepReader.Storage.Faster.ActionTraces.Server;
 using DeepReader.Storage.Faster.Blocks.Server;
 using DeepReader.Storage.Faster.Transactions.Server;
@@ -50,7 +50,7 @@ namespace DeepReader.Storage.Faster
         public static IServiceCollection AddFasterServer(this IServiceCollection services)
         {
             // Todo: Look into how we can configure the distributed replays
-            services.AddHostedService<AbiStoreServer>();
+            //services.AddHostedService<AbiStoreServer>();
             //services.AddHostedService<TransactionStoreServer>();
             //services.AddHostedService<BlockStoreServer>();
             //services.AddHostedService<ActionTraceStoreServer>();

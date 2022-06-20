@@ -2,7 +2,7 @@
 using Serilog;
 using System.Reflection;
 
-namespace DeepReader.Storage.Faster.Abis;
+namespace DeepReader.Storage.Faster.Abis.Standalone;
 
 public sealed class AbiFunctions : FunctionsBase<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext>
 {
@@ -58,7 +58,7 @@ public sealed class AbiFunctions : FunctionsBase<ulong, AbiCacheItem, AbiInput, 
         };
 
         output.Value = value;
-        
+
         return true;
     }
 

@@ -1,9 +1,9 @@
-﻿using DeepReader.Storage.Faster.Abis;
+﻿using DeepReader.Storage.Faster.Abis.Standalone;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.StorageTypes;
 using System.Reflection;
 
- namespace DeepReader.Storage
+namespace DeepReader.Storage
 {
     public interface IStorageAdapter
     {

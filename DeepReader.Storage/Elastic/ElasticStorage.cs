@@ -1,4 +1,4 @@
-﻿using DeepReader.Storage.Faster.Abis;
+﻿using DeepReader.Storage.Faster.Abis.Standalone;
 using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using Microsoft.Extensions.Options;

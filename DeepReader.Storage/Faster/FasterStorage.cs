@@ -1,5 +1,4 @@
-﻿using DeepReader.Storage.Faster.Abis;
-using DeepReader.Storage.Faster.ActionTraces.Base;
+﻿using DeepReader.Storage.Faster.ActionTraces.Base;
 using DeepReader.Storage.Faster.ActionTraces.Client;
 using DeepReader.Storage.Options;
 using DeepReader.Types.EosTypes;
@@ -12,6 +11,8 @@ using DeepReader.Storage.Faster.Blocks.Standalone;
 using DeepReader.Storage.Faster.Blocks.Client;
 using DeepReader.Storage.Faster.Transactions.Standalone;
 using DeepReader.Storage.Faster.Transactions.Client;
+using DeepReader.Storage.Faster.Abis.Standalone;
+using DeepReader.Storage.Faster.Abis.Client;
 
 namespace DeepReader.Storage.Faster
 {
@@ -50,7 +51,7 @@ namespace DeepReader.Storage.Faster
             _blockStoreClient = new BlockStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
             _transactionStoreClient = new TransactionStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
             _actionTraceClient = new ActionTraceStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
-            _abiStoreClient = new AbiStoreClient();
+            _abiStoreClient = new AbiStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
 
             _parallelOptions = new ParallelOptions
             {

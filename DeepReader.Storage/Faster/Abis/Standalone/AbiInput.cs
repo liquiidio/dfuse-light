@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace DeepReader.Storage.Faster.Abis;
+namespace DeepReader.Storage.Faster.Abis.Standalone;
 
 public struct AbiInput
 {

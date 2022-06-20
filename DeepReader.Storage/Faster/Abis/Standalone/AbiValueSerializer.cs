@@ -1,6 +1,6 @@
 ﻿using FASTER.core;
 
-namespace DeepReader.Storage.Faster.Abis;
+namespace DeepReader.Storage.Faster.Abis.Standalone;
 
 public sealed class AbiValueSerializer : BinaryObjectSerializer<AbiCacheItem>
 {
@@ -8,7 +8,7 @@ public sealed class AbiValueSerializer : BinaryObjectSerializer<AbiCacheItem>
     {
         obj = new AbiCacheItem(reader.ReadUInt64());
         var abiCount = reader.Read7BitEncodedInt();
-        for(int i = 0; i < abiCount; i++)
+        for (int i = 0; i < abiCount; i++)
         {
             var key = reader.ReadUInt64();
             var length = reader.Read7BitEncodedInt();
@@ -21,7 +21,7 @@ public sealed class AbiValueSerializer : BinaryObjectSerializer<AbiCacheItem>
         writer.Write(obj.Id);
         var abiVerions = obj.AbiVersions.ToArray();
         writer.Write7BitEncodedInt(abiVerions.Length);
-        foreach(var item in abiVerions)
+        foreach (var item in abiVerions)
         {
             writer.Write(item.Key);
             writer.Write7BitEncodedInt(item.Value.Binary.Length);

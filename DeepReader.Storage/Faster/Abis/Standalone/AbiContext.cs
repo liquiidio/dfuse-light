@@ -1,4 +1,4 @@
-﻿namespace DeepReader.Storage.Faster.Abis;
+﻿namespace DeepReader.Storage.Faster.Abis.Standalone;
 
 public struct AbiContext
 {

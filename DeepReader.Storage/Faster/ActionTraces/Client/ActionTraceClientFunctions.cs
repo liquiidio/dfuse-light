@@ -1,5 +1,4 @@
-﻿using DeepReader.Storage.Faster.ActionTraces.Base;
-using DeepReader.Storage.Faster.ActionTraces.Standalone;
+﻿using DeepReader.Storage.Faster.ActionTraces.Standalone;
 using DeepReader.Types.StorageTypes;
 using FASTER.client;
 
