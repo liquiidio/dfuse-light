@@ -1,7 +1,7 @@
 ﻿using DeepReader.Types.StorageTypes;
 using FASTER.core;
 
-namespace DeepReader.Storage.Faster.Transactions;
+namespace DeepReader.Storage.Faster.Transactions.Standalone;
 
 public sealed class TransactionValueSerializer : BinaryObjectSerializer<TransactionTrace>
 {

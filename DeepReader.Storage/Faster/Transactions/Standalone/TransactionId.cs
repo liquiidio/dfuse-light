@@ -1,6 +1,6 @@
 ﻿using FASTER.core;
 
-namespace DeepReader.Storage.Faster.Transactions
+namespace DeepReader.Storage.Faster.Transactions.Standalone
 {
     public sealed class TransactionId : IFasterEqualityComparer<TransactionId>
     {
@@ -19,12 +19,12 @@ namespace DeepReader.Storage.Faster.Transactions
         public long GetHashCode64(ref TransactionId id)
         {
 
-            return id.Id.Binary.Length >= 8 ? BitConverter.ToInt64(id.Id.Binary.Take(8).ToArray()) : 0 ;
+            return id.Id.Binary.Length >= 8 ? BitConverter.ToInt64(id.Id.Binary.Take(8).ToArray()) : 0;
         }
 
         public bool Equals(ref TransactionId k1, ref TransactionId k2)
         {
-            return  k1.Id.Binary.SequenceEqual(k2.Id.Binary);
+            return k1.Id.Binary.SequenceEqual(k2.Id.Binary);
         }
     }
 }

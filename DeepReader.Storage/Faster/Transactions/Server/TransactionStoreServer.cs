@@ -1,0 +1,53 @@
+﻿using DeepReader.Storage.Faster.Transactions.Standalone;
+using DeepReader.Storage.Options;
+using DeepReader.Types.StorageTypes;
+using FASTER.common;
+using FASTER.core;
+using FASTER.server;
+using HotChocolate.Subscriptions;
+
+namespace DeepReader.Storage.Faster.Transactions.Server
+{
+    public class TransactionStoreServer : TransactionStore
+    {
+        readonly ServerOptions _serverOptions;
+        readonly IFasterServer server;
+        readonly TransactionFasterKVProvider provider;
+        readonly SubscribeKVBroker<TransactionId, TransactionTrace, TransactionInput, IKeyInputSerializer<TransactionId, TransactionInput>> kvBroker;
+        readonly SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>> broker;
+        readonly LogSettings logSettings;
+
+
+        public TransactionStoreServer(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
+        {
+            _serverOptions = new ServerOptions()
+            {
+                Port = 5003,
+                Address = "127.0.0.1",
+                MemorySize = "16g",
+                PageSize = "32m",
+                SegmentSize = "1g",
+                IndexSize = "8g",
+                EnableStorageTier = false,
+                LogDir = null,
+                CheckpointDir = null,
+                Recover = false,
+                DisablePubSub = false,
+                PubSubPageSize = "4k"
+            };
+
+            if (!_serverOptions.DisablePubSub)
+            {
+                kvBroker = new SubscribeKVBroker<TransactionId, TransactionTrace, TransactionInput, IKeyInputSerializer<TransactionId, TransactionInput>>(new TransactionKeyInputSerializer(), null, _serverOptions.PubSubPageSizeBytes(), true);
+                broker = new SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>>(new TransactionKeyInputSerializer(), null, _serverOptions.PubSubPageSizeBytes(), true);
+            }
+
+            // Create session provider for VarLen
+            provider = new TransactionFasterKVProvider(_store, new TransactionServerSerializer(), kvBroker, broker, _serverOptions.Recover);
+
+            server = new FasterServerTcp(_serverOptions.Address, _serverOptions.Port);
+            server.Register(WireFormat.DefaultVarLenKV, provider);
+            server.Register(WireFormat.WebSocket, provider);
+        }
+    }
+}

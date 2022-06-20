@@ -1,6 +1,6 @@
 ﻿using DeepReader.Types.StorageTypes;
 
-namespace DeepReader.Storage.Faster.Transactions;
+namespace DeepReader.Storage.Faster.Transactions.Standalone;
 
 public struct TransactionOutput
 {

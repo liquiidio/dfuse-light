@@ -2,9 +2,9 @@
 using FASTER.core;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.Transactions;
+namespace DeepReader.Storage.Faster.Transactions.Standalone;
 
-public sealed class TransactionFunctions : FunctionsBase<TransactionId, TransactionTrace, TransactionInput,TransactionOutput, TransactionContext>
+public sealed class TransactionFunctions : FunctionsBase<TransactionId, TransactionTrace, TransactionInput, TransactionOutput, TransactionContext>
 {
     public override bool ConcurrentReader(ref TransactionId id, ref TransactionInput input, ref TransactionTrace value, ref TransactionOutput dst, ref ReadInfo readInfo)
     {

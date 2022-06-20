@@ -1,3 +1,4 @@
+using DeepReader.Storage.Faster.Transactions.Base;
 using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using FASTER.core;
@@ -5,50 +6,19 @@ using HotChocolate.Subscriptions;
 using Prometheus;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.Transactions
+namespace DeepReader.Storage.Faster.Transactions.Standalone
 {
-    public sealed class TransactionStore
+    public class TransactionStore : TransactionStoreBase
     {
-        private readonly FasterKV<TransactionId, TransactionTrace> _store;
+        protected readonly FasterKV<TransactionId, TransactionTrace> _store;
 
         private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput,
             TransactionContext, TransactionFunctions>> _sessionPool;
 
         private int _sessionCount;
 
-        private readonly FasterStorageOptions _options;
-
-
-        private ITopicEventSender _eventSender;
-        private MetricsCollector _metricsCollector;
-
-        private static readonly SummaryConfiguration SummaryConfiguration = new SummaryConfiguration()
-            { MaxAge = TimeSpan.FromSeconds(30) };
-
-        private static readonly Summary WritingTransactionDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_write_transaction_duration", "Summary of time to store transactions to Faster", SummaryConfiguration);
-        private static readonly Summary StoreLogMemorySizeBytesSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_log_memory_size_bytes", "Summary of the faster transaction store log memory size in bytes", SummaryConfiguration);
-        private static readonly Summary StoreReadCacheMemorySizeBytesSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Summary of the faster transaction store read cache memory size in bytes", SummaryConfiguration);
-        private static readonly Summary StoreEntryCountSummary =
-           Metrics.CreateSummary("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Summary of the faster transaction store entry count", SummaryConfiguration);
-        private static readonly Summary StoreTakeLogCheckpointDurationSummary =
-          Metrics.CreateSummary("deepreader_storage_faster_transaction_store_take_log_checkpoint_duration", "Summary of time to take a log checkpoint of faster transaction store", SummaryConfiguration);
-        private static readonly Summary StoreTakeIndexCheckpointDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_take_index_checkpoint_duration", "Summary of time to take a index checkpoint of faster transaction store", SummaryConfiguration);
-        private static readonly Summary StoreFlushAndEvictLogDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_log_flush_and_evict_duration", "Summary of time to flush and evict faster transaction store", SummaryConfiguration);
-        private static readonly Summary TransactionReaderSessionReadDurationSummary =
-          Metrics.CreateSummary("deepreader_storage_faster_transaction_get_by_id_duration", "Summary of time to try get transaction trace by id", SummaryConfiguration);
-
-        public TransactionStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
+        public TransactionStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            _options = options;
-            _eventSender = eventSender;
-            _metricsCollector = metricsCollector;
-            _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
-
             if (!_options.TransactionStoreDir.EndsWith("/"))
                 options.TransactionStoreDir += "/";
 
@@ -154,15 +124,15 @@ namespace DeepReader.Storage.Faster.Transactions
 
         public long TransactionsIndexed => _store.EntryCount;
 
-        private void CollectObservableMetrics(object? sender, EventArgs e)
+        protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
             StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
-            if(_options.UseReadCache)
+            if (_options.UseReadCache)
                 StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);
             StoreEntryCountSummary.Observe(_store.EntryCount);
         }
 
-        public async Task<Status> WriteTransaction(TransactionTrace transaction)
+        public override async Task<Status> WriteTransaction(TransactionTrace transaction)
         {
             var transactionId = new TransactionId(transaction.Id);
 
@@ -180,7 +150,7 @@ namespace DeepReader.Storage.Faster.Transactions
             }
         }
 
-        public async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
+        public override async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
         {
             using (TransactionReaderSessionReadDurationSummary.NewTimer())
             {

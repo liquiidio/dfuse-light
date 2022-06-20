@@ -1,7 +1,7 @@
 ﻿using DeepReader.Storage.Faster.Abis;
 using DeepReader.Storage.Faster.ActionTraces.Server;
 using DeepReader.Storage.Faster.Blocks.Server;
-using DeepReader.Storage.Faster.Transactions;
+using DeepReader.Storage.Faster.Transactions.Server;
 using DeepReader.Storage.Options;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Configuration;
@@ -51,7 +51,7 @@ namespace DeepReader.Storage.Faster
         {
             // Todo: Look into how we can configure the distributed replays
             services.AddHostedService<AbiStoreServer>();
-            services.AddHostedService<TransactionStoreServer>();
+            //services.AddHostedService<TransactionStoreServer>();
             //services.AddHostedService<BlockStoreServer>();
             //services.AddHostedService<ActionTraceStoreServer>();
             return services;
