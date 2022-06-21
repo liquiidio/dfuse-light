@@ -46,15 +46,5 @@ namespace DeepReader.Storage.Faster
             });
             return builder;
         }
-
-        public static IServiceCollection AddFasterServer(this IServiceCollection services)
-        {
-            // Todo: Look into how we can configure the distributed replays
-            //services.AddHostedService<AbiStoreServer>();
-            //services.AddHostedService<TransactionStoreServer>();
-            //services.AddHostedService<BlockStoreServer>();
-            //services.AddHostedService<ActionTraceStoreServer>();
-            return services;
-        }
     }
 }

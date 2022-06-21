@@ -51,7 +51,6 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton(svc => svc.GetRequiredService<Channel<Block>>().Reader);
         services.AddSingleton(svc => svc.GetRequiredService<Channel<Block>>().Writer);
 
-        services.AddFasterServer();
         // Inject Workers
         services.AddHostedService<DlogReaderWorker>();
         services.AddHostedService<DlogParserWorker>();

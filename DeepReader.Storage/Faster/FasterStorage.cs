@@ -1,6 +1,4 @@
-﻿using DeepReader.Storage.Faster.ActionTraces.Base;
-using DeepReader.Storage.Faster.ActionTraces.Client;
-using DeepReader.Storage.Options;
+﻿using DeepReader.Storage.Options;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.StorageTypes;
 using HotChocolate.Subscriptions;
@@ -8,11 +6,8 @@ using Microsoft.Extensions.Options;
 using System.Reflection;
 using DeepReader.Storage.Faster.ActionTraces.Standalone;
 using DeepReader.Storage.Faster.Blocks.Standalone;
-using DeepReader.Storage.Faster.Blocks.Client;
 using DeepReader.Storage.Faster.Transactions.Standalone;
-using DeepReader.Storage.Faster.Transactions.Client;
 using DeepReader.Storage.Faster.Abis.Standalone;
-using DeepReader.Storage.Faster.Abis.Client;
 
 namespace DeepReader.Storage.Faster
 {
@@ -22,11 +17,6 @@ namespace DeepReader.Storage.Faster
         private readonly TransactionStore _transactionStore;
         private readonly ActionTraceStore _actionTraceStore;
         private readonly AbiStore _abiStore;
-
-        private readonly BlockStoreClient _blockStoreClient;
-        private readonly TransactionStoreClient _transactionStoreClient;
-        private readonly ActionTraceStoreBase _actionTraceClient;
-        private readonly AbiStoreClient _abiStoreClient;
 
         private FasterStorageOptions _fasterStorageOptions;
 
@@ -47,11 +37,6 @@ namespace DeepReader.Storage.Faster
             _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender, metricsCollector);
             _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender, metricsCollector);
             _abiStore = new AbiStore(_fasterStorageOptions, eventSender, metricsCollector);
-
-            _blockStoreClient = new BlockStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
-            _transactionStoreClient = new TransactionStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
-            _actionTraceClient = new ActionTraceStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
-            _abiStoreClient = new AbiStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
 
             _parallelOptions = new ParallelOptions
             {
@@ -76,12 +61,12 @@ namespace DeepReader.Storage.Faster
 
         public async Task StoreTransactionAsync(TransactionTrace transactionTrace)
         {
-            await _transactionStoreClient.WriteTransaction(transactionTrace);
+            await _transactionStore.WriteTransaction(transactionTrace);
         }
 
         public async Task StoreActionTraceAsync(ActionTrace actionTrace)
         {
-            await _actionTraceClient.WriteActionTrace(actionTrace);
+            await _actionTraceStore.WriteActionTrace(actionTrace);
         }
 
         public async Task<(bool, Block)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false, bool includeActionTraces = false)
@@ -96,7 +81,7 @@ namespace DeepReader.Storage.Faster
                     if (transactionId != null)
                     {
                         var (foundTrx, transaction) =
-                            await _transactionStoreClient.TryGetTransactionTraceById(transactionId);
+                            await _transactionStore.TryGetTransactionTraceById(transactionId);
                         int index;
                         if (foundTrx && (index = block.TransactionIds.IndexOf(transactionId)) >= 0)
                             transactionTraceArray[index] = transaction;
@@ -115,7 +100,7 @@ namespace DeepReader.Storage.Faster
                         await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
                         {
                             var (foundAct, action) =
-                                await _actionTraceClient.TryGetActionTraceById(actionTraceId);
+                                await _actionTraceStore.TryGetActionTraceById(actionTraceId);
                             int index;
                             if (foundAct && (index = Array.IndexOf(transaction.ActionTraceIds, actionTraceId)) >= 0)
                                 transaction.ActionTraces[index] = action;
@@ -129,7 +114,7 @@ namespace DeepReader.Storage.Faster
 
         public async Task<(bool, TransactionTrace)> GetTransactionAsync(string transactionId, bool includeActionTraces = false)
         {
-            var (found, transaction) = await _transactionStoreClient.TryGetTransactionTraceById(new Types.Eosio.Chain.TransactionId(transactionId));
+            var (found, transaction) = await _transactionStore.TryGetTransactionTraceById(new Types.Eosio.Chain.TransactionId(transactionId));
             if (found && includeActionTraces && transaction.ActionTraces.Length == 0)  // if length != 0 values are already loaded and referenced
             {
                 transaction.ActionTraces = new ActionTrace[transaction.ActionTraceIds.Length];
@@ -137,7 +122,7 @@ namespace DeepReader.Storage.Faster
                 await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
                 {
                     var (foundTrx, action) =
-                        await _actionTraceClient.TryGetActionTraceById(actionTraceId);
+                        await _actionTraceStore.TryGetActionTraceById(actionTraceId);
                     if (foundTrx)
                         transaction.ActionTraces[Array.IndexOf(transaction.ActionTraceIds, actionTraceId)] = action;
                 });
@@ -152,22 +137,22 @@ namespace DeepReader.Storage.Faster
 
         public async Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Name account)
         {
-            return await _abiStoreClient.TryGetAbiAssembliesById(account);
+            return await _abiStore.TryGetAbiAssembliesById(account);
         }
 
         public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence)
         {
-            return await _abiStoreClient.TryGetAbiAssemblyByIdAndGlobalSequence(account, globalSequence);
+            return await _abiStore.TryGetAbiAssemblyByIdAndGlobalSequence(account, globalSequence);
         }
 
         public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Name account)
         {
-            return await _abiStoreClient.TryGetActiveAbiAssembly(account);
+            return await _abiStore.TryGetActiveAbiAssembly(account);
         }
 
         public async Task<(bool, ActionTrace)> GetActionTraceAsync(ulong globalSequence)
         {
-            return await _actionTraceClient.TryGetActionTraceById(globalSequence);
+            return await _actionTraceStore.TryGetActionTraceById(globalSequence);
         }
     }
 }
