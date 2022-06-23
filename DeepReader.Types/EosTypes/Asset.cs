@@ -1,4 +1,5 @@
 ﻿using DeepReader.Types.Helpers;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.EosTypes;
 
@@ -21,7 +22,7 @@ public struct Asset : IEosioSerializable<Asset>
         return amount;
     }
 
-    public static Asset ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static Asset ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         var asset = new Asset();
 

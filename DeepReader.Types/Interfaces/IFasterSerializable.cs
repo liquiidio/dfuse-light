@@ -2,7 +2,7 @@
 {
     public interface IFasterSerializable<T>
     {
-        public T Deserialize(BinaryReader reader);
-        public void Serialize(BinaryWriter writer);
+        static abstract T ReadFromFaster(BinaryReader reader, bool fromPool = true);
+        void WriteToFaster(BinaryWriter writer);
     }
 }

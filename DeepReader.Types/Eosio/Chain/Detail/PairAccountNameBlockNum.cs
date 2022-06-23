@@ -1,4 +1,5 @@
 using DeepReader.Types.EosTypes;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain.Detail;
 
@@ -11,12 +12,12 @@ public sealed class PairAccountNameBlockNum : IEosioSerializable<PairAccountName
     public Name AccountName;
     public uint BlockNum;
 
-    public PairAccountNameBlockNum(BinaryReader reader)
+    public PairAccountNameBlockNum(BinaryBufferReader reader)
     {
         AccountName = Name.ReadFromBinaryReader(reader);
         BlockNum = reader.ReadUInt32();
     }
-    public static PairAccountNameBlockNum ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static PairAccountNameBlockNum ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new PairAccountNameBlockNum(reader);
     }

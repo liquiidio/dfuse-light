@@ -1,11 +1,13 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/trace.hpp
 /// </summary>
-public sealed class ActionTrace : IEosioSerializable<ActionTrace>
+public sealed class ActionTrace : IEosioSerializable<ActionTrace>, IFasterSerializable<ActionTrace>
 {
     public uint ActionOrdinal;
 
@@ -44,7 +46,9 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>
 
     public char[] ReturnValue;	// TODO, string?
 
-    public ActionTrace(BinaryReader reader)
+    public ActionTrace() { }
+
+    public ActionTrace(BinaryBufferReader reader)
     {
         ActionOrdinal = (uint)reader.Read7BitEncodedInt();
         CreatorActionOrdinal = (uint)reader.Read7BitEncodedInt();
@@ -85,12 +89,58 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>
         ReturnValue = reader.ReadChars(reader.Read7BitEncodedInt());
     }
 
-    public static ActionTrace ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static ActionTrace ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new ActionTrace(reader);
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static ActionTrace ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        var obj = new ActionTrace()
+        {
+            ActionOrdinal = (uint)reader.Read7BitEncodedInt(),
+            CreatorActionOrdinal = (uint)reader.Read7BitEncodedInt(),
+            ClosestUnnotifiedAncestorActionOrdinal = (uint)reader.Read7BitEncodedInt()
+        };
+
+        var readActionReceipt = reader.ReadBoolean();
+        if (readActionReceipt)
+            obj.Receipt = ActionReceipt.ReadFromFaster(reader);
+
+        obj.Receiver = Name.ReadFromFaster(reader);
+        obj.Act = Action.ReadFromFaster(reader);
+        obj.ContextFree = reader.ReadBoolean();
+        obj.ElapsedUs = reader.ReadInt64();
+        obj.Console = reader.ReadString();
+        obj.TransactionId = TransactionId.ReadFromFaster(reader);
+        obj.BlockNum = reader.ReadUInt32();
+        obj.BlockTime = Timestamp.ReadFromFaster(reader);
+
+        var readProducerBlockId = reader.ReadBoolean();
+
+        if (readProducerBlockId)
+            obj.ProducerBlockId = Checksum256.ReadFromFaster(reader);
+
+        obj.AccountRamDeltas = new AccountDelta[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < obj.AccountRamDeltas.Length; i++)
+        {
+            obj.AccountRamDeltas[i] = AccountDelta.ReadFromFaster(reader);
+        }
+
+        var readExcept = reader.ReadBoolean();
+        if (readExcept)
+            obj.Except = Except.ReadFromFaster(reader);
+
+        var readErrorCode = reader.ReadBoolean();
+        if (readErrorCode)
+            obj.ErrorCode = reader.ReadUInt64();
+
+        obj.ReturnValue = reader.ReadChars(reader.Read7BitEncodedInt());
+
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
     {
         writer.Write(ActionOrdinal);
         writer.Write(CreatorActionOrdinal);
@@ -99,28 +149,28 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>
         if (Receipt != null)
         {
             writer.Write(true);
-            Receipt.WriteToBinaryWriter(writer);
+            Receipt.WriteToFaster(writer);
         }
         else
             writer.Write(false);
 
-        Receiver.WriteToBinaryWriter(writer);
+        Receiver.WriteToFaster(writer);
 
-        Act.WriteToBinaryWriter(writer);
+        Act.WriteToFaster(writer);
 
         writer.Write(ContextFree);
         writer.Write(ElapsedUs);
         writer.Write(Console);
 
-        TransactionId.WriteToBinaryWriter(writer);
+        TransactionId.WriteToFaster(writer);
 
         writer.Write(BlockNum);
-        BlockTime.WriteToBinaryWriter(writer);
+        BlockTime.WriteToFaster(writer);
 
         if (ProducerBlockId != null)
         {
             writer.Write(true);
-            ProducerBlockId.WriteToBinaryWriter(writer);
+            ProducerBlockId.WriteToFaster(writer);
         }
         else
             writer.Write(false);
@@ -128,13 +178,13 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>
         writer.Write(AccountRamDeltas.Length);
         foreach (var accountRamDelta in AccountRamDeltas)
         {
-            accountRamDelta.WriteToBinaryWriter(writer);
+            accountRamDelta.WriteToFaster(writer);
         }
 
         if (Except != null)
         {
             writer.Write(true);
-            Except.WriteToBinaryWriter(writer);
+            Except.WriteToFaster(writer);
         }
         else
             writer.Write(false);

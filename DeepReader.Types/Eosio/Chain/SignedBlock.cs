@@ -1,3 +1,6 @@
+using DeepReader.Types.Extensions;
+using Salar.BinaryBuffers;
+
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
@@ -9,7 +12,7 @@ public sealed class SignedBlock : SignedBlockHeader, IEosioSerializable<SignedBl
 
     public Extension[] BlockExtensions;
 
-    public SignedBlock(BinaryReader reader) : base(reader)
+    public SignedBlock(BinaryBufferReader reader) : base(reader)
     {
         Transactions = new TransactionReceipt[reader.Read7BitEncodedInt()];
         for (int i = 0; i < Transactions.Length; i++)
@@ -24,7 +27,7 @@ public sealed class SignedBlock : SignedBlockHeader, IEosioSerializable<SignedBl
         }
     }
 
-    public new static SignedBlock ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public new static SignedBlock ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new SignedBlock(reader);
     }

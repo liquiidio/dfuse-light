@@ -3,12 +3,13 @@ using DeepReader.Types.Extensions;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
+using Salar.BinaryBuffers;
 using Serilog;
 
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(PublicKeyJsonConverter))]
-public sealed class PublicKey : PooledObject<PublicKey>, IEosioSerializable<PublicKey>
+public sealed class PublicKey : PooledObject<PublicKey>, IEosioSerializable<PublicKey>, IFasterSerializable<PublicKey>
 {
     [JsonIgnore]
     public byte[] Binary { get; set; } = Array.Empty<byte>();
@@ -65,7 +66,7 @@ public sealed class PublicKey : PooledObject<PublicKey>, IEosioSerializable<Publ
     {
     }
 
-    public static PublicKey ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static PublicKey ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new PublicKey();
 
@@ -75,7 +76,17 @@ public sealed class PublicKey : PooledObject<PublicKey>, IEosioSerializable<Publ
         return obj;
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static PublicKey ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        var obj = fromPool ? TypeObjectPool.Get() : new PublicKey();
+
+        obj.Type = reader.ReadByte();
+        obj.Binary = reader.ReadBytes(Constants.PubKeyDataSize);
+
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
     {
         writer.Write(Type);
         writer.Write(Binary);

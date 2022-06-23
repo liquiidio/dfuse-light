@@ -1,3 +1,6 @@
+using DeepReader.Types.Extensions;
+using Salar.BinaryBuffers;
+
 namespace DeepReader.Types.Eosio.Chain.Legacy;
 
 /// <summary>
@@ -8,7 +11,7 @@ public sealed class ProducerAuthoritySchedule : IEosioSerializable<ProducerAutho
     public uint Version;
     public ProducerAuthority[] Producers;
 
-    public ProducerAuthoritySchedule(BinaryReader reader)
+    public ProducerAuthoritySchedule(BinaryBufferReader reader)
     {
         Version = reader.ReadUInt32();
 
@@ -19,7 +22,7 @@ public sealed class ProducerAuthoritySchedule : IEosioSerializable<ProducerAutho
         }
     }
 
-    public static ProducerAuthoritySchedule ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static ProducerAuthoritySchedule ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new ProducerAuthoritySchedule(reader);
     }

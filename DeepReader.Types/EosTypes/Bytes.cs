@@ -1,5 +1,7 @@
 ﻿using System.Text.Json.Serialization;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.EosTypes;
 
@@ -20,7 +22,7 @@ public class Bytes : BinaryType, IEosioSerializable<byte[]>
         return value.Binary;
     }
 
-    public static byte[] ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static byte[] ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         var length = reader.Read7BitEncodedInt();
         return reader.ReadBytes(length);

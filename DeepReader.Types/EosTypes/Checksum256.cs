@@ -2,11 +2,12 @@
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(Checksum256JsonConverter))]
-public sealed class Checksum256 : PooledObject<Checksum256>, IEosioSerializable<Checksum256>
+public sealed class Checksum256 : PooledObject<Checksum256>, IEosioSerializable<Checksum256>, IFasterSerializable<Checksum256>
 {
     private const int Checksum256ByteLength = 32;
 
@@ -21,7 +22,7 @@ public sealed class Checksum256 : PooledObject<Checksum256>, IEosioSerializable<
         set => _stringVal = value;
     }
 
-    public static Checksum256 ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static Checksum256 ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new Checksum256();
 
@@ -30,7 +31,16 @@ public sealed class Checksum256 : PooledObject<Checksum256>, IEosioSerializable<
         return obj;
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static Checksum256 ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        var obj = fromPool ? TypeObjectPool.Get() : new Checksum256();
+
+        obj.Binary = reader.ReadBytes(Checksum256ByteLength);
+
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
     {
         writer.Write(Binary);
         _stringVal = null;

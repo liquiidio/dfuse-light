@@ -1,11 +1,12 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(TimestampJsonConverter))]
-public sealed class Timestamp : PooledObject<Timestamp>, IEosioSerializable<Timestamp>
+public sealed class Timestamp : PooledObject<Timestamp>, IEosioSerializable<Timestamp>, IFasterSerializable<Timestamp>
 {
     private uint _ticks;
 
@@ -19,7 +20,7 @@ public sealed class Timestamp : PooledObject<Timestamp>, IEosioSerializable<Time
         _ticks = ticks;
     }
 
-    public static Timestamp ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static Timestamp ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         // when Faster wants to deserialize and Object, we take an Object from the Pool
         // when Faster evicts the Object we return it to the Pool
@@ -30,7 +31,18 @@ public sealed class Timestamp : PooledObject<Timestamp>, IEosioSerializable<Time
         return obj;
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static Timestamp ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        // when Faster wants to deserialize and Object, we take an Object from the Pool
+        // when Faster evicts the Object we return it to the Pool
+        var obj = fromPool ? TypeObjectPool.Get() : new Timestamp();
+
+        obj._ticks = reader.ReadUInt32();
+
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
     {
         writer.Write(_ticks);
     }

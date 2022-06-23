@@ -1,9 +1,10 @@
 ﻿using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types;
 
-public class TableOp
+public class TableOp : IEosioSerializable<TableOp>, IFasterSerializable<TableOp>
 {
     public TableOpOperation Operation { get; set; } = TableOpOperation.UNKNOWN;//TableOp_Operation
                                                                                //    public Name Payer { get; set; } = string.Empty;//string
@@ -16,7 +17,7 @@ public class TableOp
 
     }
 
-    public static TableOp ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static TableOp ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         var obj = new TableOp()
         {
@@ -30,12 +31,26 @@ public class TableOp
         return obj;
     }
 
-    internal void WriteToBinaryWriter(BinaryWriter writer)
+    public static TableOp ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        var obj = new TableOp()
+        {
+            Operation = (TableOpOperation)reader.ReadByte(),
+            //            Payer = Name.ReadFromBinaryReader(reader),
+            Code = Name.ReadFromFaster(reader),
+            Scope = Name.ReadFromFaster(reader),
+            TableName = Name.ReadFromFaster(reader)
+        };
+
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
     {
         writer.Write((byte)Operation);
         //        writer.Write(Payer.Binary);
-        Code.WriteToBinaryWriter(writer);
-        Scope.WriteToBinaryWriter(writer);
-        TableName.WriteToBinaryWriter(writer);
+        Code.WriteToFaster(writer);
+        Scope.WriteToFaster(writer);
+        TableName.WriteToFaster(writer);
     }
 }

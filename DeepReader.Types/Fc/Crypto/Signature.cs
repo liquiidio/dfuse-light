@@ -3,12 +3,13 @@ using DeepReader.Types.Extensions;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
+using Salar.BinaryBuffers;
 using Serilog;
 
 namespace DeepReader.Types.Fc.Crypto;
 
 [JsonConverter(typeof(SignatureJsonConverter))]
-public sealed class Signature : PooledObject<Signature>, IEosioSerializable<Signature>
+public sealed class Signature : PooledObject<Signature>, IEosioSerializable<Signature>, IFasterSerializable<Signature>
 {
     const int SignKeyDataSize = 65;
 
@@ -45,7 +46,7 @@ public sealed class Signature : PooledObject<Signature>, IEosioSerializable<Sign
 
     }
 
-    public static Signature ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static Signature ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         // when Faster wants to deserialize and Object, we take an Object from the Pool
         // when Faster evicts the Object we return it to the Pool
@@ -56,7 +57,18 @@ public sealed class Signature : PooledObject<Signature>, IEosioSerializable<Sign
         return obj;
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static Signature ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        // when Faster wants to deserialize and Object, we take an Object from the Pool
+        // when Faster evicts the Object we return it to the Pool
+        var obj = fromPool ? TypeObjectPool.Get() : new Signature();
+
+        obj.Type = reader.ReadByte();
+        obj.SignBytes = reader.ReadBytes(SignKeyDataSize);
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
     {
         writer.Write(Type);
         writer.Write(SignBytes);

@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.Extensions;
+using Salar.BinaryBuffers;
 using Action = DeepReader.Types.Eosio.Chain.Action;
 
 /// <summary>
@@ -19,7 +21,7 @@ public class Transaction : TransactionHeader, IEosioSerializable<Transaction>
     [JsonPropertyName("transaction_extensions")]
     public Extension[] TransactionExtensions;
 
-    public Transaction(BinaryReader reader) : base(reader)
+    public Transaction(BinaryBufferReader reader) : base(reader)
     {
         ContextFreeActions = new Action[reader.Read7BitEncodedInt()];
         for (int i = 0; i < ContextFreeActions.Length; i++)
@@ -40,7 +42,7 @@ public class Transaction : TransactionHeader, IEosioSerializable<Transaction>
         }
     }
 
-    public new static Transaction ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public new static Transaction ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new Transaction(reader);
     }
