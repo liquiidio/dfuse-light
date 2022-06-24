@@ -3,7 +3,6 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc;
 using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Helpers;
-using Salar.BinaryBuffers;
 using Serilog;
 using System.Text;
 

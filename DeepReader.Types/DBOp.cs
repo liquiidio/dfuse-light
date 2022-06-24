@@ -3,7 +3,6 @@ using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.JsonConverters;
-using Salar.BinaryBuffers;
 
 namespace DeepReader.Types;
 

@@ -1,7 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
-using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.EosTypes;
 

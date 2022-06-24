@@ -1,6 +1,4 @@
-﻿using Salar.BinaryBuffers;
-
-namespace DeepReader.Types.Interfaces
+﻿namespace DeepReader.Types.Interfaces
 {
     public interface IEosioSerializable
     {

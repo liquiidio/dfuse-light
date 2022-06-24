@@ -1,5 +1,4 @@
 using DeepReader.Types.Fc.Crypto;
-using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 

@@ -1,6 +1,4 @@
-﻿using Salar.BinaryBuffers;
-
-namespace DeepReader.Types.EosTypes;
+﻿namespace DeepReader.Types.EosTypes;
 
 public sealed class Float128 : IEosioSerializable<Float128>
 {

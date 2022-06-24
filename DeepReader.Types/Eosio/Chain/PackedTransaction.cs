@@ -2,7 +2,6 @@
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
 using Microsoft.Extensions.ObjectPool;
-using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 

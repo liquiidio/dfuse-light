@@ -2,7 +2,6 @@
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Other;
-using Salar.BinaryBuffers;
 using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.Types.StorageTypes

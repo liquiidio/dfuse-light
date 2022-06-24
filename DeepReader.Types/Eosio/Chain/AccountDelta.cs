@@ -1,6 +1,5 @@
 using DeepReader.Types.EosTypes;
-using Salar.BinaryBuffers;
-
+ 
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>

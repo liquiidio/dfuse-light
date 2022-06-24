@@ -1,5 +1,4 @@
 ﻿using DeepReader.Types.Fc;
-using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.EosTypes;
 

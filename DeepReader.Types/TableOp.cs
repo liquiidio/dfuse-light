@@ -1,6 +1,5 @@
 ﻿using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
-using Salar.BinaryBuffers;
 
 namespace DeepReader.Types;
 

@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.Extensions;
-using Salar.BinaryBuffers;
 using Action = DeepReader.Types.Eosio.Chain.Action;
 
 /// <summary>
