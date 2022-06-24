@@ -1,3 +1,6 @@
 [submodule "FASTER"]
 	path = FASTER
 	url = https://github.com/microsoft/FASTER
+[submodule "BinaryBuffers"]
+	path = BinaryBuffers
+	url = https://github.com/silkfire/BinaryBuffers
