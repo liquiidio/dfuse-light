@@ -1,16 +1,19 @@
 using DeepReader.Types.EosTypes;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/trace.hpp
 /// </summary>
-public sealed class AccountDelta : IEosioSerializable<AccountDelta>
+public sealed class AccountDelta : IEosioSerializable<AccountDelta>, IFasterSerializable<AccountDelta>
 {
     public Name Account { get; set; }
     public long Delta { get; set; }
 
-    public AccountDelta(BinaryReader reader)
+    public AccountDelta() { }
+
+    public AccountDelta(BinaryBufferReader reader)
     {
         try
         {
@@ -24,12 +27,22 @@ public sealed class AccountDelta : IEosioSerializable<AccountDelta>
         }
     }
 
-    public static AccountDelta ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static AccountDelta ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new AccountDelta(reader);
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static AccountDelta ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        var obj = new AccountDelta();
+
+        obj.Account = Name.ReadFromFaster(reader); // TODO
+        obj.Delta = reader.ReadInt64();
+
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
     {
         writer.Write(Account.Binary);
         writer.Write(Delta);

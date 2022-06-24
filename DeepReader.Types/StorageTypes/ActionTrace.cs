@@ -1,11 +1,13 @@
 ﻿using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Other;
+using Salar.BinaryBuffers;
 using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.Types.StorageTypes
 {
-    public sealed class ActionTrace : PooledObject<ActionTrace>, IParentPooledObject<TransactionTrace>
+    public sealed class ActionTrace : PooledObject<ActionTrace>, IParentPooledObject<TransactionTrace>, IEosioSerializable<ActionTrace>, IFasterSerializable<ActionTrace>
     {
         public ulong GlobalSequence => Receipt.GlobalSequence;
 
@@ -62,7 +64,7 @@ namespace DeepReader.Types.StorageTypes
             ReturnValue = actionTrace.ReturnValue;
         }
 
-        public static ActionTrace ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+        public static ActionTrace ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
         {
             // when Faster wants to deserialize and Object, we take an Object from the Pool
             // when Faster evicts the Object we return it to the Pool
@@ -115,14 +117,67 @@ namespace DeepReader.Types.StorageTypes
             return obj;
         }
 
-        public void WriteToBinaryWriter(BinaryWriter writer)
+        public static ActionTrace ReadFromFaster(BinaryReader reader, bool fromPool = true)
         {
-            Receiver.WriteToBinaryWriter(writer);
+            // when Faster wants to deserialize and Object, we take an Object from the Pool
+            // when Faster evicts the Object we return it to the Pool
+            var obj = TypeObjectPool.Get();
 
-            Receipt.WriteToBinaryWriter(writer);
+            obj.Receiver = Name.ReadFromFaster(reader);
+            obj.Receipt = ActionReceipt.ReadFromFaster(reader);
+            obj.Act = Action.ReadFromFaster(reader);
+            obj.ContextFree = reader.ReadBoolean();
+            obj.ElapsedUs = reader.ReadInt64();
+            obj.Console = reader.ReadString();
+            obj.IsNotify = reader.ReadBoolean();
 
-            Act.WriteToBinaryWriter(writer);
-            
+            obj.RamOps = new RamOp[reader.ReadInt32()];
+            for (int i = 0; i < obj.RamOps.Length; i++)
+            {
+                obj.RamOps[i] = RamOp.ReadFromFaster(reader);
+            }
+
+            obj.TableOps = new TableOp[reader.ReadInt32()];
+            for (int i = 0; i < obj.TableOps.Length; i++)
+            {
+                obj.TableOps[i] = TableOp.ReadFromFaster(reader);
+            }
+
+            obj.DbOps = new DbOp[reader.ReadInt32()];
+            for (int i = 0; i < obj.DbOps.Length; i++)
+            {
+                obj.DbOps[i] = DbOp.ReadFromFaster(reader);
+            }
+
+            obj.ReturnValue = new char[reader.ReadInt32()];
+            for (int i = 0; i < obj.ReturnValue.Length; i++)
+            {
+                obj.ReturnValue[i] = reader.ReadChar();
+            }
+
+            obj.CreatedActionIds = new ulong[reader.ReadInt32()];
+            for (int i = 0; i < obj.CreatedActionIds.Length; i++)
+            {
+                obj.CreatedActionIds[i] = reader.ReadUInt64();
+            }
+
+            var hasCreatorActionId = reader.ReadBoolean();
+            if (hasCreatorActionId)
+                obj.CreatorActionId = reader.ReadUInt64();
+            else
+                obj.CreatorActionId = null;
+
+            return obj;
+        }
+
+        public void WriteToFaster(BinaryWriter writer)
+        {
+            Receiver.WriteToFaster(writer);
+
+            Receipt.WriteToFaster(writer);
+
+            Act.WriteToFaster(writer);
+
             writer.Write(ContextFree);
             writer.Write(ElapsedUs);
             writer.Write(Console);
@@ -132,19 +187,19 @@ namespace DeepReader.Types.StorageTypes
             writer.Write(RamOps.Length);
             foreach (var ramOp in RamOps)
             {
-                ramOp.WriteToBinaryWriter(writer);
+                ramOp.WriteToFaster(writer);
             }
 
             writer.Write(TableOps.Length);
             foreach (var tableOp in TableOps)
             {
-                tableOp.WriteToBinaryWriter(writer);
+                tableOp.WriteToFaster(writer);
             }
 
             writer.Write(DbOps.Length);
             foreach (var dbOp in DbOps)
             {
-                dbOp.WriteToBinaryWriter(writer);
+                dbOp.WriteToFaster(writer);
             }
 
             writer.Write(ReturnValue.Length);

@@ -1,11 +1,13 @@
+using Salar.BinaryBuffers;
+
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// Variant<TransactionId, PackedTransaction>
 /// </summary>
-public abstract class TransactionVariant : IEosioSerializable<TransactionVariant>
+public abstract class TransactionVariant : IEosioSerializable<TransactionVariant>, IFasterSerializable<TransactionVariant>
 {
-    public static TransactionVariant ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static TransactionVariant ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         var type = reader.ReadByte();
         switch (type)
@@ -19,7 +21,21 @@ public abstract class TransactionVariant : IEosioSerializable<TransactionVariant
         }
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static TransactionVariant ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        var type = reader.ReadByte();
+        switch (type)
+        {
+            case 0:
+                return TransactionId.ReadFromFaster(reader, fromPool);
+            case 1:
+                return PackedTransaction.ReadFromFaster(reader, fromPool);
+            default:
+                throw new Exception("BlockSigningAuthorityVariant {type} unknown");
+        }
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
     {
         if (this is TransactionId transactionId)
         {
@@ -29,7 +45,7 @@ public abstract class TransactionVariant : IEosioSerializable<TransactionVariant
         else if (this is PackedTransaction packedTransaction)
         {
             writer.Write((byte)1);
-            packedTransaction.WriteToBinaryWriter(writer);
+            packedTransaction.WriteToFaster(writer);
         }
     }
 }

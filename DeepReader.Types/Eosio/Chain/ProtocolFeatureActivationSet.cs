@@ -1,4 +1,6 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -9,7 +11,7 @@ public sealed class ProtocolFeatureActivationSet : IEosioSerializable<ProtocolFe
 {
     public Checksum256[] ProtocolFeatures;
 
-    public ProtocolFeatureActivationSet(BinaryReader reader)
+    public ProtocolFeatureActivationSet(BinaryBufferReader reader)
     {
         ProtocolFeatures = new Checksum256[reader.Read7BitEncodedInt()];
 
@@ -18,7 +20,7 @@ public sealed class ProtocolFeatureActivationSet : IEosioSerializable<ProtocolFe
             ProtocolFeatures[i] = Checksum256.ReadFromBinaryReader(reader);
         }
     }
-    public static ProtocolFeatureActivationSet ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static ProtocolFeatureActivationSet ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new ProtocolFeatureActivationSet(reader);
     }

@@ -7,11 +7,11 @@ public sealed class BlockValueSerializer : BinaryObjectSerializer<Block>
 {
     public override void Deserialize(out Block obj)
     {
-        obj = Block.ReadFromBinaryReader(reader);
+        obj = Block.ReadFromFaster(reader);
     }
 
     public override void Serialize(ref Block obj)
     {
-        obj.WriteToBinaryWriter(writer);
+        obj.WriteToFaster(writer);
     }
 }

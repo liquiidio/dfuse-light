@@ -7,11 +7,11 @@ public sealed class ActionTraceValueSerializer : BinaryObjectSerializer<ActionTr
 {
     public override void Deserialize(out ActionTrace obj)
     {
-        obj = ActionTrace.ReadFromBinaryReader(reader);
+        obj = ActionTrace.ReadFromFaster(reader);
     }
 
     public override void Serialize(ref ActionTrace obj)
     {
-        obj.WriteToBinaryWriter(writer);
+        obj.WriteToFaster(writer);
     }
 }

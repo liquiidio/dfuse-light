@@ -1,13 +1,15 @@
 ﻿using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
 using Microsoft.Extensions.ObjectPool;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/transaction.hpp
 /// </summary>
-public sealed class PackedTransaction : TransactionVariant, IEosioSerializable<PackedTransaction>
+public sealed class PackedTransaction : TransactionVariant, IEosioSerializable<PackedTransaction>, IFasterSerializable<PackedTransaction>
 {
     // can't inherit directly from PooledObject here
     // ReSharper disable once InconsistentNaming
@@ -35,7 +37,7 @@ public sealed class PackedTransaction : TransactionVariant, IEosioSerializable<P
         
     }
 
-    public new static PackedTransaction ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public new static PackedTransaction ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         var obj = TypeObjectPool.Get();
 
@@ -53,7 +55,7 @@ public sealed class PackedTransaction : TransactionVariant, IEosioSerializable<P
         return obj;
     }
 
-    public new static PackedTransaction ReadFromBinaryReaderWithoutPooling(BinaryReader reader)
+    public static PackedTransaction ReadFromBinaryReaderWithoutPooling(BinaryBufferReader reader)
     {
         var obj = new PackedTransaction();
 
@@ -71,12 +73,30 @@ public sealed class PackedTransaction : TransactionVariant, IEosioSerializable<P
         return obj;
     }
 
-    public new void WriteToBinaryWriter(BinaryWriter writer)
+    public new static PackedTransaction ReadFromFaster(BinaryReader reader, bool fromPool)
+    {
+        var obj = TypeObjectPool.Get();
+
+        obj.Signatures = new Signature[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < obj.Signatures.Length; i++)
+        {
+            obj.Signatures[i] = Signature.ReadFromFaster(reader);
+        }
+
+        obj.Compression = reader.ReadByte();
+
+        obj.PackedContextFreeData = reader.ReadBytes(reader.Read7BitEncodedInt());
+        obj.PackedTrx = reader.ReadBytes(reader.Read7BitEncodedInt());
+
+        return obj;
+    }
+
+    public new void WriteToFaster(BinaryWriter writer)
     {
         writer.Write(Signatures.Length);
         foreach (var signature in Signatures)
         {
-            signature.WriteToBinaryWriter(writer);
+            signature.WriteToFaster(writer);
         }
 
         writer.Write(Compression);

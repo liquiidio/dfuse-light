@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -32,7 +34,7 @@ public class TransactionHeader : IEosioSerializable<TransactionHeader>
     [JsonPropertyName("delay_sec")]
     public uint DelaySec;
 
-    public TransactionHeader(BinaryReader reader)
+    public TransactionHeader(BinaryBufferReader reader)
     {
         Expiration = Timestamp.ReadFromBinaryReader(reader);
         RefBlockNum = reader.ReadUInt16();
@@ -42,7 +44,7 @@ public class TransactionHeader : IEosioSerializable<TransactionHeader>
         DelaySec = (uint)reader.Read7BitEncodedInt();
     }
 
-    public static TransactionHeader ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static TransactionHeader ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new TransactionHeader(reader);
     }

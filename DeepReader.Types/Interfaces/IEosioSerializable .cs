@@ -1,4 +1,6 @@
-﻿namespace DeepReader.Types.Interfaces
+﻿using Salar.BinaryBuffers;
+
+namespace DeepReader.Types.Interfaces
 {
     public interface IEosioSerializable
     {
@@ -7,6 +9,6 @@
 
     public interface IEosioSerializable<out T> : IEosioSerializable
     {
-        static abstract T ReadFromBinaryReader(BinaryReader reader, bool fromPool = true);
+        static abstract T ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true);
     }
 }

@@ -1,3 +1,5 @@
+using Salar.BinaryBuffers;
+
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
@@ -9,7 +11,7 @@ public sealed class BlockState : BlockHeaderState, IEosioSerializable<BlockState
 
     public bool Validated;
 
-    public BlockState(BinaryReader reader) : base(reader)
+    public BlockState(BinaryBufferReader reader) : base(reader)
     {
         var readBlock = reader.ReadBoolean();
 
@@ -19,7 +21,7 @@ public sealed class BlockState : BlockHeaderState, IEosioSerializable<BlockState
         Validated = reader.ReadBoolean();
     }
 
-    public new static BlockState ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public new static BlockState ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new BlockState(reader);
     }

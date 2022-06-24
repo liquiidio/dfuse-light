@@ -1,4 +1,7 @@
-﻿namespace DeepReader.Types.Fc;
+﻿using DeepReader.Types.Extensions;
+using Salar.BinaryBuffers;
+
+namespace DeepReader.Types.Fc;
 
 /// <summary>
 /// libraries/fc/include/fc/io/varint.hpp
@@ -17,7 +20,7 @@ public sealed class VarUint32 : BinaryType, IEosioSerializable<VarUint32>
         return value.Value;
     }
 
-    public static VarUint32 ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static VarUint32 ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     { 
         return (uint)reader.Read7BitEncodedInt();
     }

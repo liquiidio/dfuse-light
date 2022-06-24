@@ -1,4 +1,6 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -10,7 +12,7 @@ public sealed class IncrementalMerkle : IEosioSerializable<IncrementalMerkle>
     public Checksum256[] ActiveNodes;
     public ulong NodeCount;
 
-    public IncrementalMerkle(BinaryReader reader)
+    public IncrementalMerkle(BinaryBufferReader reader)
     {
         ActiveNodes = new Checksum256[reader.Read7BitEncodedInt()];
         for (int i = 0; i < ActiveNodes.Length; i++)
@@ -20,7 +22,7 @@ public sealed class IncrementalMerkle : IEosioSerializable<IncrementalMerkle>
 
         NodeCount = reader.ReadUInt64();
     }
-    public static IncrementalMerkle ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static IncrementalMerkle ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new IncrementalMerkle(reader);
     }

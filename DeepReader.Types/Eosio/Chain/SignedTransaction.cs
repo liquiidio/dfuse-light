@@ -1,5 +1,7 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -12,7 +14,7 @@ public sealed class SignedTransaction : Transaction, IEosioSerializable<SignedTr
 
     public Bytes[] ContextFreeData; //< for each context-free action, there is an entry here
 
-    public SignedTransaction(BinaryReader reader) : base(reader)
+    public SignedTransaction(BinaryBufferReader reader) : base(reader)
     {
         if (reader.BaseStream.Position == reader.BaseStream.Length) // Don't know exactly why but sometimes the stream is at it's end here already.
         {
@@ -34,7 +36,7 @@ public sealed class SignedTransaction : Transaction, IEosioSerializable<SignedTr
         }
     }
 
-    public new static SignedTransaction ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public new static SignedTransaction ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new SignedTransaction(reader);
     }

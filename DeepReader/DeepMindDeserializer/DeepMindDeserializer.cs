@@ -3,6 +3,7 @@ using DeepReader.Types.Interfaces;
 using KGySoft.CoreLibraries;
 using Microsoft.IO;
 using Prometheus;
+using Salar.BinaryBuffers;
 using System.Buffers;
 
 namespace DeepReader.DeepMindDeserializer;
@@ -28,21 +29,24 @@ public static class DeepMindDeserializer
         var length = chunk.Length >> 1;
         var bytes = ArrayPool.Rent(length);// rent bytes from pool
         Decoder.HexToBytes(chunk, bytes, length);
-        using var stream = StreamManager.GetStream(bytes);// copies buffer/bytes
-        stream.SetLength(length);
-        using var reader = new BinaryReader(stream);
+        //using var stream = StreamManager.GetStream(bytes);// copies buffer/bytes
+        //stream.SetLength(length);
+        //using var reader = new BinaryReader(stream);
+        var binaryBufferReader = new BinaryBufferReader(bytes);
         ArrayPool<byte>.Shared.Return(bytes);// return buffer/bytes
-
-        return T.ReadFromBinaryReader(reader);
+        
+        return T.ReadFromBinaryReader(binaryBufferReader);
     }
 
     public static T Deserialize<T>(ReadOnlySpan<byte> bytes) where T : IEosioSerializable<T>
     {
         DeserializedBlocksCount.Inc();// TODO @Haron this seems not to be correct as it increments not only for Blocks but also for any other Type
 
-        using var stream = StreamManager.GetStream(bytes);
-        using var reader = new BinaryReader(stream);
-        var obj = T.ReadFromBinaryReader(reader);
+        //using var stream = StreamManager.GetStream(bytes);
+        //using var reader = new BinaryReader(stream);
+        var binaryBufferReader = new BinaryBufferReader(bytes.ToArray());
+        
+        var obj = T.ReadFromBinaryReader(binaryBufferReader);
 
         return obj;
     }

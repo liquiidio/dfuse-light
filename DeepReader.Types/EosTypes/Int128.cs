@@ -1,4 +1,5 @@
 ﻿using DeepReader.Types.Fc;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.EosTypes;
 
@@ -16,7 +17,7 @@ public sealed class Int128 : BinaryType, IEosioSerializable<Int128>
         return value.Binary;
     }
 
-    public static Int128 ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static Int128 ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return reader.ReadBytes(Int128ByteLength);
     }

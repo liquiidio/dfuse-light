@@ -3,11 +3,12 @@ using DeepReader.Types.Fc;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(NameJsonConverter))]
-public sealed class Name : BinaryType, IEosioSerializable<Name>
+public sealed class Name : BinaryType, IEosioSerializable<Name>, IFasterSerializable<Name>
 {
     private const int NameByteLength = 8;
 
@@ -32,12 +33,17 @@ public sealed class Name : BinaryType, IEosioSerializable<Name>
     //    _stringVal = stringVal;
     //    Binary = binary;
     //}
-    public static Name ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static Name ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return NameCache.GetOrCreate(reader.ReadUInt64());
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static Name ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        return NameCache.GetOrCreate(reader.ReadUInt64());
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
     {
         writer.Write(Binary);
     }
