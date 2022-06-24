@@ -1,13 +1,13 @@
-﻿using DeepReader.Storage.Faster.Abis;
-using DeepReader.Storage.Faster.ActionTraces;
-using DeepReader.Storage.Faster.Blocks;
-using DeepReader.Storage.Faster.Transactions;
-using DeepReader.Storage.Options;
+﻿using DeepReader.Storage.Options;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.StorageTypes;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Options;
 using System.Reflection;
+using DeepReader.Storage.Faster.ActionTraces.Standalone;
+using DeepReader.Storage.Faster.Blocks.Standalone;
+using DeepReader.Storage.Faster.Transactions.Standalone;
+using DeepReader.Storage.Faster.Abis.Standalone;
 
 namespace DeepReader.Storage.Faster
 {
@@ -30,6 +30,9 @@ namespace DeepReader.Storage.Faster
             _fasterStorageOptions = storageOptionsMonitor.CurrentValue;
             storageOptionsMonitor.OnChange(OnFasterStorageOptionsChanged);
 
+            // @Haron, your Code is probably just for testing but
+            // depending on if this is a Server, Client or Standalone we instantiate either Standalone,Server or Client
+
             _blockStore = new BlockStore(_fasterStorageOptions, eventSender, metricsCollector);
             _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender, metricsCollector);
             _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender, metricsCollector);
@@ -45,13 +48,15 @@ namespace DeepReader.Storage.Faster
         {
             _fasterStorageOptions = newOptions;
         }
-        public long BlocksIndexed => _blockStore.BlocksIndexed;
 
+        public long BlocksIndexed => _blockStore.BlocksIndexed;
+        
         public long TransactionsIndexed => _transactionStore.TransactionsIndexed;
 
         public async Task StoreBlockAsync(Block block)
         {
             await _blockStore.WriteBlock(block);
+            //await _blockStoreClient.WriteBlock(block);
         }
 
         public async Task StoreTransactionAsync(TransactionTrace transactionTrace)

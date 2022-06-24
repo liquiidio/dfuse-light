@@ -4,6 +4,7 @@ using DeepReader.HostedServices;
 using DeepReader.Options;
 using DeepReader.Pools;
 using DeepReader.Storage.Faster;
+using DeepReader.Storage.Faster.Blocks;
 using DeepReader.Types;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
