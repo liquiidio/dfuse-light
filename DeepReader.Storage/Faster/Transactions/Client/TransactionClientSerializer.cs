@@ -44,11 +44,6 @@ namespace DeepReader.Storage.Faster.Transactions.Client
             return true;
         }
 
-        public unsafe bool Write(ref TransactionInput i, ref byte* dst, int length)
-        {
-            throw new NotImplementedException();
-        }
-
         public unsafe TransactionTrace ReadOutput(ref byte* src)
         {
             var length = Unsafe.Read<int>(src);
