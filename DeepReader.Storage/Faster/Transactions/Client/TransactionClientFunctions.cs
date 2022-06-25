@@ -4,41 +4,47 @@ using FASTER.client;
 
 namespace DeepReader.Storage.Faster.Transactions.Client
 {
-    internal class TransactionClientFunctions : ICallbackFunctions<TransactionId, TransactionTrace, TransactionInput, TransactionOutput, TransactionContext>
+    // notes Output is TransactionTrace or Wrapper, must be same type as Output in TransactionClientSerializer
+    // FASTER.client.ClientSession<T> internally calls ClientSerializer.ReadOutput and then ReadCompletionCallback etc.
+
+    internal class TransactionClientFunctions : ICallbackFunctions<TransactionId, TransactionTrace, TransactionInput, TransactionTrace, TransactionContext>
     {
-        public void DeleteCompletionCallback(ref TransactionId key, TransactionContext ctx)
+        public void ReadCompletionCallback(ref TransactionId key, ref TransactionInput input, ref TransactionTrace output,
+            TransactionContext ctx, Status status)
         {
-
-        }
-
-        public void PublishCompletionCallback(ref TransactionId key, ref TransactionTrace value, TransactionContext ctx)
-        {
-
-        }
-
-        public void ReadCompletionCallback(ref TransactionId key, ref TransactionInput input, ref TransactionOutput output, TransactionContext ctx, Status status)
-        {
-
-        }
-
-        public void RMWCompletionCallback(ref TransactionId key, ref TransactionInput input, ref TransactionOutput output, TransactionContext ctx, Status status)
-        {
-
-        }
-
-        public void SubscribeCallback(ref TransactionId key, ref TransactionTrace value, TransactionContext ctx)
-        {
-
-        }
-
-        public void SubscribeKVCallback(ref TransactionId key, ref TransactionInput input, ref TransactionOutput output, TransactionContext ctx, Status status)
-        {
-
+            throw new NotImplementedException();
         }
 
         public void UpsertCompletionCallback(ref TransactionId key, ref TransactionTrace value, TransactionContext ctx)
         {
+            throw new NotImplementedException();
+        }
 
+        public void RMWCompletionCallback(ref TransactionId key, ref TransactionInput input, ref TransactionTrace output,
+            TransactionContext ctx, Status status)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeleteCompletionCallback(ref TransactionId key, TransactionContext ctx)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SubscribeKVCallback(ref TransactionId key, ref TransactionInput input, ref TransactionTrace output,
+            TransactionContext ctx, Status status)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void PublishCompletionCallback(ref TransactionId key, ref TransactionTrace value, TransactionContext ctx)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SubscribeCallback(ref TransactionId key, ref TransactionTrace value, TransactionContext ctx)
+        {
+            throw new NotImplementedException();
         }
     }
 }

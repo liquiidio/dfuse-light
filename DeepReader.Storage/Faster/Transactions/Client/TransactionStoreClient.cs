@@ -16,7 +16,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         private const string ip = "127.0.0.1";
         private const int port = 5003;
         private static Encoding _encode = Encoding.UTF8;
-        private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionClientFunctions, TransactionClientSerializer>> _sessionPool;
+        private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionTrace, TransactionContext, TransactionClientFunctions, TransactionClientSerializer>> _sessionPool;
 
         private readonly FasterKVClient<TransactionId, TransactionTrace> _client;
 
@@ -25,12 +25,12 @@ namespace DeepReader.Storage.Faster.Transactions.Client
             _client = new FasterKVClient<TransactionId, TransactionTrace>(ip, port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
 
             _sessionPool =
-                new AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput, TransactionContext,
+                new AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionTrace, TransactionContext,
                     TransactionClientFunctions, TransactionClientSerializer>>(
                     size: 4,    // TODO no idea how many sessions make sense and do work,
                                 // hopefully Faster-Serve just blocks if it can't handle the amount of sessions and data :D
                     () => _client
-                        .NewSession<TransactionInput, TransactionOutput, TransactionContext, TransactionClientFunctions,
+                        .NewSession<TransactionInput, TransactionTrace, TransactionContext, TransactionClientFunctions,
                             TransactionClientSerializer>(new TransactionClientFunctions(), WireFormat.WebSocket,
                             new TransactionClientSerializer()));
         }
@@ -63,7 +63,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
                 var (status, output) = await session.ReadAsync(new TransactionId(transactionId));
                 _sessionPool.Return(session);
-                return (status.Found, output.Value);
+                return (status.Found, output);
             }
         }
     }
