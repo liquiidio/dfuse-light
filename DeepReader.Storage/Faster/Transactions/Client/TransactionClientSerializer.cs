@@ -7,7 +7,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
 {
     // notes Output is TransactionTrace or Wrapper, must be same type as Output in TransactionClientFunctions
     // FASTER.client.ClientSession<T> internally calls ReadOutput and then ClientFunctions.ReadCompletionCallback etc.
-    internal class TransactionClientSerializer : IClientSerializer<TransactionId, TransactionTrace, TransactionInput, TransactionTrace>
+    internal class TransactionClientSerializer : IClientSerializer<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace>
     {
         // Write(ref Key)
         // almost always used with Write(ref Value) or Write(ref Input)
@@ -24,8 +24,15 @@ namespace DeepReader.Storage.Faster.Transactions.Client
             return true;
         }
 
+        // typeof(Value) == typeof(Input) in our case so only one Write-method for both
         // Write(ref Value)
         // InternalUpsert, InternalPublish
+        // Write(ref Input)
+        // InternalRead, InternalSubscribeKV, InternalRMW
+        // -> messageType
+        //  -> serialNo
+        //   -> key
+        //    -> input
         public unsafe bool Write(ref TransactionTrace v, ref byte* dst, int length)
         {
             // TODO hmhm, we need to add the length here first ?
@@ -37,12 +44,6 @@ namespace DeepReader.Storage.Faster.Transactions.Client
             return true;
         }
 
-        // Write(ref Input)
-        // InternalRead, InternalSubscribeKV, InternalRMW
-        // -> messageType
-        //  -> serialNo
-        //   -> key
-        //    -> input
         public unsafe bool Write(ref TransactionInput i, ref byte* dst, int length)
         {
             throw new NotImplementedException();
