@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using DeepReader.Storage.Faster.Transactions.Standalone;
+using DeepReader.Types.EosTypes;
 using DeepReader.Types.StorageTypes;
 using FASTER.common;
 
@@ -59,13 +60,28 @@ namespace DeepReader.Storage.Faster.Transactions.Client
 
         public unsafe TransactionId ReadKey(ref byte* src)
         {
-            throw new NotImplementedException();
+            // TODO clean this up
+            BinaryReader reader = new BinaryReader(new UnmanagedMemoryStream(src, Checksum256.Checksum256ByteLength));
+            var trxId = Types.Eosio.Chain.TransactionId.ReadFromBinaryReader(reader);
+            TransactionId id = new TransactionId(trxId);
+            // TODO the writer/stream internally increasing the pointer?
+            src += Checksum256.Checksum256ByteLength;
+            return id;
         }
 
         // ReadKey and ReadValue seem to only be used in Subscriptions (e.g in Subscription-events in ClientSession
         public unsafe TransactionTrace ReadValue(ref byte* src)
         {
-            throw new NotImplementedException();
+            // TODO clean this up
+            var length = Unsafe.Read<int>(src);
+            src += sizeof(int);
+            // TODO we need to add the length on Server
+            // TODO 2 is Unsafe.Read<T> increasing the pointer?
+            BinaryReader reader = new BinaryReader(new UnmanagedMemoryStream(src, length));
+            var trace = TransactionTrace.ReadFromBinaryReader(reader);
+            // TODO the writer/stream internally increasing the pointer?
+            src += reader.BaseStream.Position; // TODO, position or position+1 ? 
+            return trace;
         }
     }
 }

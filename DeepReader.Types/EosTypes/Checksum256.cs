@@ -8,7 +8,7 @@ namespace DeepReader.Types.EosTypes;
 [JsonConverter(typeof(Checksum256JsonConverter))]
 public sealed class Checksum256 : PooledObject<Checksum256>, IEosioSerializable<Checksum256>
 {
-    private const int Checksum256ByteLength = 32;
+    public const int Checksum256ByteLength = 32; // TODO different names for constants in general
 
     [JsonIgnore]
     public byte[] Binary { get; set; } = Array.Empty<byte>();
