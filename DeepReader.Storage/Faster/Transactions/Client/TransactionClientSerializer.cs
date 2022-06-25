@@ -61,9 +61,9 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         public unsafe TransactionId ReadKey(ref byte* src)
         {
             // TODO clean this up
-            BinaryReader reader = new BinaryReader(new UnmanagedMemoryStream(src, Checksum256.Checksum256ByteLength));
+            var reader = new BinaryReader(new UnmanagedMemoryStream(src, Checksum256.Checksum256ByteLength));
             var trxId = Types.Eosio.Chain.TransactionId.ReadFromBinaryReader(reader);
-            TransactionId id = new TransactionId(trxId);
+            var id = new TransactionId(trxId);
             // TODO the writer/stream internally increasing the pointer?
             src += Checksum256.Checksum256ByteLength;
             return id;
@@ -77,7 +77,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
             src += sizeof(int);
             // TODO we need to add the length on Server
             // TODO 2 is Unsafe.Read<T> increasing the pointer?
-            BinaryReader reader = new BinaryReader(new UnmanagedMemoryStream(src, length));
+            var reader = new BinaryReader(new UnmanagedMemoryStream(src, length));
             var trace = TransactionTrace.ReadFromBinaryReader(reader);
             // TODO the writer/stream internally increasing the pointer?
             src += reader.BaseStream.Position; // TODO, position or position+1 ? 
