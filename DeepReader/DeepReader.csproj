@@ -57,7 +57,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\BinaryBuffers\src\BinaryBuffers\BinaryBuffers.csproj" />
 		<ProjectReference Include="..\DeepReader.Apis\DeepReader.Apis.csproj" />
 		<ProjectReference Include="..\DeepReader.Storage\DeepReader.Storage.csproj" />
 		<ProjectReference Include="..\DeepReader.Types\DeepReader.Types.csproj" />

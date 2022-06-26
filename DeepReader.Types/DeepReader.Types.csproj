@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BinaryBuffers\src\BinaryBuffers\BinaryBuffers.csproj" />
     <ProjectReference Include="..\FASTER\cs\src\core\FASTER.core.csproj" />
   </ItemGroup>
 

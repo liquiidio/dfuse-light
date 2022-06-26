@@ -7,4 +7,4 @@ global using Extension = System.Collections.Generic.KeyValuePair<ushort, char[]>
 
 // Todo: @corvin from haron, this should probably not be here
 global using DeepReader.Types.Interfaces;
-global using BinaryBuffers;
+global using DeepReader.Types.Infrastructure;
