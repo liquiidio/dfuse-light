@@ -13,7 +13,7 @@ namespace DeepReader.Storage.Faster.Transactions.Server
         readonly ServerOptions _serverOptions;
         readonly IFasterServer server;
         readonly TransactionFasterKVProvider provider;
-        readonly SubscribeKVBroker<TransactionId, TransactionTrace, TransactionInput, IKeyInputSerializer<TransactionId, TransactionInput>> kvBroker;
+        readonly SubscribeKVBroker<TransactionId, TransactionTrace, TransactionId, IKeyInputSerializer<TransactionId, TransactionId>> kvBroker;
         readonly SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>> broker;
         readonly LogSettings logSettings;
 
@@ -38,7 +38,7 @@ namespace DeepReader.Storage.Faster.Transactions.Server
 
             if (!_serverOptions.DisablePubSub)
             {
-                kvBroker = new SubscribeKVBroker<TransactionId, TransactionTrace, TransactionInput, IKeyInputSerializer<TransactionId, TransactionInput>>(new TransactionKeyInputSerializer(), null, _serverOptions.PubSubPageSizeBytes(), true);
+                kvBroker = new SubscribeKVBroker<TransactionId, TransactionTrace, TransactionId, IKeyInputSerializer<TransactionId, TransactionId>>(new TransactionKeyInputSerializer(), null, _serverOptions.PubSubPageSizeBytes(), true);
                 broker = new SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>>(new TransactionKeyInputSerializer(), null, _serverOptions.PubSubPageSizeBytes(), true);
             }
 

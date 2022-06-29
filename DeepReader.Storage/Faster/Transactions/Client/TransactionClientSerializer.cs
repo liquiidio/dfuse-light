@@ -18,9 +18,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         {
             var stream = new UnmanagedMemoryStream(dst, length);
             var writer = new BinaryWriter(stream);
-            k.Id.WriteToBinaryWriter(writer);
-            // TODO the writer/stream internally increasing the pointer?
-            // TODO do we need to add the length here? As Checksum256 is fixed size?
+            k.Id.WriteToBinaryWriter(writer); // we don't add the size here as Checksum256 is fixed size
 
             return true;
         }
@@ -36,21 +34,19 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         //    -> input
         public unsafe bool Write(ref TransactionTrace v, ref byte* dst, int length)
         {
-            // TODO hmhm, we need to add the length here first ?
-            var stream = new UnmanagedMemoryStream(dst, length);
-            var writer = new BinaryWriter(stream);
+            var writer = new BinaryWriter(new UnmanagedMemoryStream(dst, length));
+            writer.BaseStream.Position += sizeof(long);
             v.WriteToBinaryWriter(writer);
-            // TODO the writer/stream internally increasing the pointer?
-
+            Unsafe.Write(dst, writer.BaseStream.Position - sizeof(ulong)); // write size to begin of dst
+            dst += writer.BaseStream.Position;
             return true;
         }
 
         public unsafe TransactionTrace ReadOutput(ref byte* src)
         {
-            var length = Unsafe.Read<int>(src);
-            src += sizeof(int);
-            // TODO we need to add the length on Server
-            // TODO 2 is Unsafe.Read<T> increasing the pointer?
+            var length = Unsafe.Read<long>(src);
+            src += sizeof(long);
+            // length is written in TransactionServerSerializer.Write(...)
             var reader = new BinaryReader(new UnmanagedMemoryStream(src, length));
             src += length;
             return TransactionTrace.ReadFromBinaryReader(reader);
@@ -64,7 +60,6 @@ namespace DeepReader.Storage.Faster.Transactions.Client
             var reader = new BinaryReader(new UnmanagedMemoryStream(src, Checksum256.Checksum256ByteLength));
             var trxId = Types.Eosio.Chain.TransactionId.ReadFromBinaryReader(reader);
             var id = new TransactionId(trxId);
-            // TODO the writer/stream internally increasing the pointer?
             src += Checksum256.Checksum256ByteLength;
             return id;
         }
@@ -73,14 +68,12 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         public unsafe TransactionTrace ReadValue(ref byte* src)
         {
             // TODO clean this up
-            var length = Unsafe.Read<int>(src);
-            src += sizeof(int);
-            // TODO we need to add the length on Server
-            // TODO 2 is Unsafe.Read<T> increasing the pointer?
+            var length = Unsafe.Read<long>(src);
+            src += sizeof(long);
+            // length is written in TransactionServerSerializer.Write(...)
             var reader = new BinaryReader(new UnmanagedMemoryStream(src, length));
             var trace = TransactionTrace.ReadFromBinaryReader(reader);
-            // TODO the writer/stream internally increasing the pointer?
-            src += reader.BaseStream.Position; // TODO, position or position+1 ? 
+            src += reader.BaseStream.Position;
             return trace;
         }
     }

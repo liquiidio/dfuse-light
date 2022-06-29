@@ -6,11 +6,11 @@ using FASTER.server;
 
 namespace DeepReader.Storage.Faster.Transactions.Server
 {
-    internal class TransactionFasterKVProvider : FasterKVProviderBase<TransactionId, TransactionTrace, TransactionInput,
-    TransactionOutput, TransactionServerFunctions, TransactionServerSerializer>
+    internal class TransactionFasterKVProvider : FasterKVProviderBase<TransactionId, TransactionTrace, TransactionId,
+    TransactionTrace, TransactionServerFunctions, TransactionServerSerializer>
     {
         public TransactionFasterKVProvider(FasterKV<TransactionId, TransactionTrace> store, TransactionServerSerializer serializer,
-      SubscribeKVBroker<TransactionId, TransactionTrace, TransactionInput, IKeyInputSerializer<TransactionId, TransactionInput>> kvBroker = null,
+      SubscribeKVBroker<TransactionId, TransactionTrace, TransactionId, IKeyInputSerializer<TransactionId, TransactionId>> kvBroker = null,
       SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>> broker = null, bool recoverStore = false,
       MaxSizeSettings maxSizeSettings = null)
       : base(store, serializer, kvBroker, broker, recoverStore, maxSizeSettings)
