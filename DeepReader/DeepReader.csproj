@@ -21,7 +21,7 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 		<Optimize>False</Optimize>
 		<DefineConstants>DEBUG</DefineConstants>
-		<DebugType>full</DebugType>
+		<DebugType>portable</DebugType>
 		<OutputPath>bin\$(Platform)\Debug\</OutputPath>
 	</PropertyGroup>
 

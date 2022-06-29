@@ -16,6 +16,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         private const string ip = "127.0.0.1";
         private const int port = 5003;
         private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace, TransactionContext, TransactionClientFunctions, TransactionClientSerializer>> _sessionPool;
+        private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace, TransactionContext, TransactionClientFunctions, TransactionClientSerializer>> _readerSessionPool;
 
         private readonly FasterKVClient<TransactionId, TransactionTrace> _client;
 
@@ -26,8 +27,18 @@ namespace DeepReader.Storage.Faster.Transactions.Client
             _sessionPool =
                 new AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace, TransactionContext,
                     TransactionClientFunctions, TransactionClientSerializer>>(
-                    size: 4,    // TODO no idea how many sessions make sense and do work,
+                    size: 20,    // TODO no idea how many sessions make sense and do work,
                                 // hopefully Faster-Serve just blocks if it can't handle the amount of sessions and data :D
+                    () => _client
+                        .NewSession<TransactionTrace, TransactionTrace, TransactionContext, TransactionClientFunctions,
+                            TransactionClientSerializer>(new TransactionClientFunctions(), WireFormat.DefaultVarLenKV,
+                            new TransactionClientSerializer()));
+
+            _readerSessionPool =
+                new AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace, TransactionContext,
+                    TransactionClientFunctions, TransactionClientSerializer>>(
+                    size: 20,    // TODO no idea how many sessions make sense and do work,
+                    // hopefully Faster-Serve just blocks if it can't handle the amount of sessions and data :D
                     () => _client
                         .NewSession<TransactionTrace, TransactionTrace, TransactionContext, TransactionClientFunctions,
                             TransactionClientSerializer>(new TransactionClientFunctions(), WireFormat.DefaultVarLenKV,
@@ -51,6 +62,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
                 await session.UpsertAsync(transactionId, transaction);
+                _sessionPool.Return(session);
                 return FASTER.core.Status.CreatePending();
             }
         }

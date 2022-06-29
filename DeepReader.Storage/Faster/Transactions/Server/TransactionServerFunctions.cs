@@ -120,6 +120,7 @@ namespace DeepReader.Storage.Faster.Transactions.Server
 
         public bool SingleWriter(ref TransactionId key, ref TransactionId input, ref TransactionTrace src, ref TransactionTrace dst, ref TransactionTrace output, ref UpsertInfo upsertInfo, WriteReason reason)
         {
+            dst = src;
             return true;
         }
     }

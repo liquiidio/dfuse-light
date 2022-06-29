@@ -135,9 +135,9 @@ namespace DeepReader.Storage.Faster.Transactions.Server
         {
             var stream = new UnmanagedMemoryStream(dst, length);
             var writer = new BinaryWriter(stream);
-            writer.BaseStream.Position += sizeof(long); // reserve sizeof(long) so we can write the length after serialization
+            writer.BaseStream.Position += sizeof(int); // reserve sizeof(long) so we can write the length after serialization
             v.WriteToBinaryWriter(writer); // serialize !
-            Unsafe.Write(dst, writer.BaseStream.Position - sizeof(ulong));  // write length into reserved memory
+            Unsafe.Write(dst, writer.BaseStream.Position - sizeof(int));  // write length into reserved memory
             dst += writer.BaseStream.Position;  // set pointer to new end
 
             return true;

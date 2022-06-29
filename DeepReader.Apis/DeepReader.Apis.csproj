@@ -7,6 +7,7 @@
 	<EnablePreviewFeatures>true</EnablePreviewFeatures>
 	<!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles> uncomment to persist generated files-->
 	<!--<CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>-->
+	<DebugType>portable</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
