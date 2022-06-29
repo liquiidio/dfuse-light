@@ -39,7 +39,7 @@ namespace DeepReader.Storage.Faster.Transactions.Server
 
         public void DisposeDeserializedFromDisk(ref TransactionId key, ref TransactionTrace value)
         {
-            throw new NotImplementedException();
+
         }
 
         public void DisposeInitialUpdater(ref TransactionId key, ref TransactionId input, ref TransactionTrace value, ref TransactionTrace output, ref RMWInfo rmwInfo)

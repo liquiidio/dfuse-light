@@ -50,6 +50,8 @@ namespace DeepReader.Storage.Faster.Transactions.Server
             server = new FasterServerTcp(_serverOptions.Address, _serverOptions.Port);
             server.Register(WireFormat.DefaultVarLenKV, provider);
             server.Register(WireFormat.WebSocket, provider);
+
+            server.Start();
         }
     }
 }

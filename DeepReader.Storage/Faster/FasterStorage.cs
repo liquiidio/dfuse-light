@@ -8,13 +8,17 @@ using DeepReader.Storage.Faster.ActionTraces.Standalone;
 using DeepReader.Storage.Faster.Blocks.Standalone;
 using DeepReader.Storage.Faster.Transactions.Standalone;
 using DeepReader.Storage.Faster.Abis.Standalone;
+using DeepReader.Storage.Faster.Transactions.Base;
+using DeepReader.Storage.Faster.Transactions.Client;
+using DeepReader.Storage.Faster.Transactions.Server;
 
 namespace DeepReader.Storage.Faster
 {
     internal sealed class FasterStorage : IStorageAdapter
     {
         private readonly BlockStore _blockStore;
-        private readonly TransactionStore _transactionStore;
+        private readonly TransactionStore _transactionStoreServer;
+        private readonly TransactionStoreBase _transactionStore;
         private readonly ActionTraceStore _actionTraceStore;
         private readonly AbiStore _abiStore;
 
@@ -34,7 +38,8 @@ namespace DeepReader.Storage.Faster
             // depending on if this is a Server, Client or Standalone we instantiate either Standalone,Server or Client
 
             _blockStore = new BlockStore(_fasterStorageOptions, eventSender, metricsCollector);
-            _transactionStore = new TransactionStore(_fasterStorageOptions, eventSender, metricsCollector);
+            _transactionStoreServer = new TransactionStoreServer(_fasterStorageOptions, eventSender, metricsCollector);
+            _transactionStore = new TransactionStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
             _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender, metricsCollector);
             _abiStore = new AbiStore(_fasterStorageOptions, eventSender, metricsCollector);
 
@@ -51,7 +56,7 @@ namespace DeepReader.Storage.Faster
 
         public long BlocksIndexed => _blockStore.BlocksIndexed;
         
-        public long TransactionsIndexed => _transactionStore.TransactionsIndexed;
+        public long TransactionsIndexed => _transactionStoreServer.TransactionsIndexed;
 
         public async Task StoreBlockAsync(Block block)
         {

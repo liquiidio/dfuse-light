@@ -84,10 +84,12 @@ namespace DeepReader.Storage.Faster.Transactions.Server
         // seems like the ref-output is never really used and after some internal calls just passed to xxxServerFunctions while calling diverse Methods
         public unsafe ref TransactionId ReadKeyByRef(ref byte* src) // src is the bytes received over websocket
         {
-            var reader = new BinaryReader(new UnmanagedMemoryStream(src, Checksum256.Checksum256ByteLength));
+            var reader = new BinaryReader(new UnmanagedMemoryStream(src, Checksum256.Checksum256ByteLength + sizeof(int)));
+            var length = reader.ReadInt32();
+            // Todo, we could verify the size here
             var trxId = Types.Eosio.Chain.TransactionId.ReadFromBinaryReader(reader);
             _key = new TransactionId(trxId);
-            src += Checksum256.Checksum256ByteLength;
+            src += Checksum256.Checksum256ByteLength + sizeof(int);
             return ref _key;
         }
 
@@ -99,6 +101,7 @@ namespace DeepReader.Storage.Faster.Transactions.Server
 
             // this is read from the store so it doesn't have the length-prefix 
             var reader = new BinaryReader(new UnmanagedMemoryStream(src, ushort.MaxValue));
+            var length = reader.ReadInt32();
             _value = TransactionTrace.ReadFromBinaryReader(reader);
             src += reader.BaseStream.Position;
             return ref _value;

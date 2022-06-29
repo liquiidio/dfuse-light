@@ -13,10 +13,16 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<Optimize>False</Optimize>
+		<DefineConstants>DEBUG</DefineConstants>
+		<DebugType>portable</DebugType>
+		<OutputPath>bin\$(Platform)\Debug\</OutputPath>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 		<Optimize>False</Optimize>
+		<DefineConstants>DEBUG</DefineConstants>
+		<DebugType>full</DebugType>
+		<OutputPath>bin\$(Platform)\Debug\</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>

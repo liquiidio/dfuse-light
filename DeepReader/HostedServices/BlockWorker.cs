@@ -189,6 +189,7 @@ public class BlockWorker : BackgroundService
                         StoreActionTraces(actionTraces)
                     );
                 }
+                break;
             }
             catch (Exception e)
             {

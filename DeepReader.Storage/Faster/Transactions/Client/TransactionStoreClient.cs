@@ -30,8 +30,9 @@ namespace DeepReader.Storage.Faster.Transactions.Client
                                 // hopefully Faster-Serve just blocks if it can't handle the amount of sessions and data :D
                     () => _client
                         .NewSession<TransactionTrace, TransactionTrace, TransactionContext, TransactionClientFunctions,
-                            TransactionClientSerializer>(new TransactionClientFunctions(), WireFormat.WebSocket,
+                            TransactionClientSerializer>(new TransactionClientFunctions(), WireFormat.DefaultVarLenKV,
                             new TransactionClientSerializer()));
+
         }
 
         protected override void CollectObservableMetrics(object? sender, EventArgs e)

@@ -16,10 +16,11 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         // length seems to be the overal size left for the message
         public unsafe bool Write(ref TransactionId k, ref byte* dst, int length)
         {
-            var stream = new UnmanagedMemoryStream(dst, length);
-            var writer = new BinaryWriter(stream);
-            k.Id.WriteToBinaryWriter(writer); // we don't add the size here as Checksum256 is fixed size
-
+            ReserveHeader(ref dst); // we need to reserve an sizeof(int) here
+            var writer = new BinaryWriter(new UnmanagedMemoryStream(dst, length - sizeof(int), length - sizeof(int), FileAccess.Write));
+            k.Id.WriteToBinaryWriter(writer);
+            SetHeader(ref dst, writer);
+            SetPos(ref dst, writer);
             return true;
         }
 
@@ -34,11 +35,11 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         //    -> input
         public unsafe bool Write(ref TransactionTrace v, ref byte* dst, int length)
         {
-            var writer = new BinaryWriter(new UnmanagedMemoryStream(dst, length));
-            writer.BaseStream.Position += sizeof(long);
+            ReserveHeader(ref dst); // we need to reserve an sizeof(int) here
+            var writer = new BinaryWriter(new UnmanagedMemoryStream(dst, length - sizeof(int), length - sizeof(int), FileAccess.Write));
             v.WriteToBinaryWriter(writer);
-            Unsafe.Write(dst, writer.BaseStream.Position - sizeof(ulong)); // write size to begin of dst
-            dst += writer.BaseStream.Position;
+            SetHeader(ref dst, writer);
+            SetPos(ref dst, writer);
             return true;
         }
 
@@ -47,7 +48,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
             var length = Unsafe.Read<long>(src);
             src += sizeof(long);
             // length is written in TransactionServerSerializer.Write(...)
-            var reader = new BinaryReader(new UnmanagedMemoryStream(src, length));
+            var reader = new BinaryReader(new UnmanagedMemoryStream(src, length, length, FileAccess.Read));
             src += length;
             return TransactionTrace.ReadFromBinaryReader(reader);
         }
@@ -57,7 +58,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         public unsafe TransactionId ReadKey(ref byte* src)
         {
             // TODO clean this up
-            var reader = new BinaryReader(new UnmanagedMemoryStream(src, Checksum256.Checksum256ByteLength));
+            var reader = new BinaryReader(new UnmanagedMemoryStream(src, Checksum256.Checksum256ByteLength, Checksum256.Checksum256ByteLength, FileAccess.Read));
             var trxId = Types.Eosio.Chain.TransactionId.ReadFromBinaryReader(reader);
             var id = new TransactionId(trxId);
             src += Checksum256.Checksum256ByteLength;
@@ -71,10 +72,38 @@ namespace DeepReader.Storage.Faster.Transactions.Client
             var length = Unsafe.Read<long>(src);
             src += sizeof(long);
             // length is written in TransactionServerSerializer.Write(...)
-            var reader = new BinaryReader(new UnmanagedMemoryStream(src, length));
+            var reader = new BinaryReader(new UnmanagedMemoryStream(src, length, length, FileAccess.Read));
             var trace = TransactionTrace.ReadFromBinaryReader(reader);
             src += reader.BaseStream.Position;
             return trace;
+        }
+
+
+        private unsafe void ReserveHeader(ref byte* dst)
+        {
+            dst += sizeof(int);
+        }
+
+        const int kHeaderMask = 0x3 << 30;
+        const int kUnserializedBitMask = 1 << 31;
+
+        private unsafe void SetHeader(ref byte* dst, BinaryWriter writer)
+        {
+            dst -= sizeof(int); // we go back 4 bytes
+            var length = (int)writer.BaseStream.Position;
+            *(int*)dst = (length | kUnserializedBitMask) & ~kHeaderMask;
+            dst += sizeof(int); // we go forward 4 bytes
+        }
+
+        private unsafe void SetPos(ref byte* dst, BinaryWriter writer)
+        {
+            dst += writer.BaseStream.Position;
+        }
+
+        private unsafe void ReadHeader(ref byte* dst, BinaryWriter writer)
+        {
+            var length = (int)writer.BaseStream.Position;
+            *(int*)dst = (length & kHeaderMask);
         }
     }
 }

@@ -64,9 +64,9 @@ namespace DeepReader.Apis
                         .AddCheck<CheckpointIntervalHealthCheck>("CheckpointInterval")
                         .AddCheck<BlocksIndexedHealthCheck>("BlocksIndexed")
                         .AddCheck<TransactionsIndexedHealthCheck>("TransactionsIndexed");
-                    services
-                        .AddHealthChecksUI()
-                        .AddInMemoryStorage();
+                    //services
+                    //    .AddHealthChecksUI()
+                    //    .AddInMemoryStorage();
                     services.AddSingleton<MetricsCollector>();
 
                 });
@@ -101,11 +101,11 @@ namespace DeepReader.Apis
                         endpoints.MapGraphQL();
                         endpoints.MapControllers();
                         endpoints.MapMetrics();
-                        endpoints.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
-                        {
-                            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-                        });
-                        endpoints.MapHealthChecksUI();
+                        //endpoints.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+                        //{
+                        //    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                        //});
+                        //endpoints.MapHealthChecksUI();
                     });
                 });
             });

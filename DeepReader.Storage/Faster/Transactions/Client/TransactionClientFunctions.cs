@@ -9,11 +9,6 @@ namespace DeepReader.Storage.Faster.Transactions.Client
 
     internal class TransactionClientFunctions : ICallbackFunctions<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace, TransactionContext>
     {
-        public void ReadCompletionCallback(ref TransactionId key, ref TransactionInput input, ref TransactionTrace output,
-            TransactionContext ctx, Status status)
-        {
-        }
-
         public void ReadCompletionCallback(ref TransactionId key, ref TransactionTrace input, ref TransactionTrace output,
             TransactionContext ctx, Status status)
         {
@@ -21,6 +16,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
 
         public void UpsertCompletionCallback(ref TransactionId key, ref TransactionTrace value, TransactionContext ctx)
         {
+            Console.WriteLine("UpsertCompletionCallback");
         }
 
         public void RMWCompletionCallback(ref TransactionId key, ref TransactionTrace input, ref TransactionTrace output,
@@ -39,6 +35,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
 
         public void PublishCompletionCallback(ref TransactionId key, ref TransactionTrace value, TransactionContext ctx)
         {
+            Console.WriteLine("PublishCompletionCallback");
         }
 
         public void SubscribeCallback(ref TransactionId key, ref TransactionTrace value, TransactionContext ctx)
