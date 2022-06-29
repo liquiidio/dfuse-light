@@ -15,7 +15,6 @@ namespace DeepReader.Storage.Faster.Transactions.Client
     {
         private const string ip = "127.0.0.1";
         private const int port = 5003;
-        private static Encoding _encode = Encoding.UTF8;
         private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace, TransactionContext, TransactionClientFunctions, TransactionClientSerializer>> _sessionPool;
 
         private readonly FasterKVClient<TransactionId, TransactionTrace> _client;
