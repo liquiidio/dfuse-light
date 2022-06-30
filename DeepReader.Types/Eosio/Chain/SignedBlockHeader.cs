@@ -1,4 +1,5 @@
 using DeepReader.Types.Fc.Crypto;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -9,11 +10,11 @@ public class SignedBlockHeader : BlockHeader, IEosioSerializable<SignedBlockHead
 {
     public Signature ProducerSignature;// ecc.Signature // no pointer!!
 
-    public SignedBlockHeader(BinaryReader reader) : base(reader)
+    public SignedBlockHeader(BinaryBufferReader reader) : base(reader)
     {
         ProducerSignature = Signature.ReadFromBinaryReader(reader);
     }
-    public new static SignedBlockHeader ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public new static SignedBlockHeader ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new SignedBlockHeader(reader);
     }

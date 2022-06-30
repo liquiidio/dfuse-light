@@ -1,11 +1,13 @@
 ﻿using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Other;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.StorageTypes;
 
-public sealed class Block : PooledObject<Block>, IParentPooledObject<Block>
+public sealed class Block : PooledObject<Block>, IParentPooledObject<Block>, IFasterSerializable<Block>
 {
     public Checksum256 Id { get; set; }
 
@@ -48,7 +50,7 @@ public sealed class Block : PooledObject<Block>, IParentPooledObject<Block>
         ProducerSignature = deepMindBlock.ProducerSignature;
     }
 
-    public static Block ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static Block ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         // when Faster wants to deserialize and Object, we take an Object from the Pool
         // when Faster evicts the Object we return it to the Pool
@@ -80,23 +82,55 @@ public sealed class Block : PooledObject<Block>, IParentPooledObject<Block>
         return obj;
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static Block ReadFromFaster(BinaryReader reader, bool fromPool = true)
     {
-        Id.WriteToBinaryWriter(writer);
+        // when Faster wants to deserialize and Object, we take an Object from the Pool
+        // when Faster evicts the Object we return it to the Pool
+        var obj = TypeObjectPool.Get();
+
+        obj.Id = Checksum256.ReadFromFaster(reader);
+        obj.Number = reader.ReadUInt32();
+        obj.Timestamp = Timestamp.ReadFromFaster(reader);
+        obj.Producer = Name.ReadFromFaster(reader);
+        obj.Confirmed = reader.ReadUInt16();
+        obj.Previous = Checksum256.ReadFromFaster(reader);
+        obj.TransactionMroot = Checksum256.ReadFromFaster(reader);
+        obj.ActionMroot = Checksum256.ReadFromFaster(reader);
+        obj.ScheduleVersion = reader.ReadUInt32();
+        obj.ProducerSignature = Signature.ReadFromFaster(reader);
+
+        var hasNewProducers = reader.ReadByte();
+        if (hasNewProducers != 0)
+            obj.NewProducers = ProducerSchedule.ReadFromFaster(reader);
+        else
+            obj.NewProducers = null;
+
+        var count = reader.Read7BitEncodedInt();
+        for (int i = 0; i < count; i++)
+        {
+            obj.TransactionIds.Add(TransactionId.ReadFromFaster(reader));
+        }
+
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
+    {
+        Id.WriteToFaster(writer);
         writer.Write(Number);
-        Timestamp.WriteToBinaryWriter(writer);
-        Producer.WriteToBinaryWriter(writer);
+        Timestamp.WriteToFaster(writer);
+        Producer.WriteToFaster(writer);
         writer.Write(Confirmed);
-        Previous.WriteToBinaryWriter(writer);
-        TransactionMroot.WriteToBinaryWriter(writer);
-        ActionMroot.WriteToBinaryWriter(writer);
+        Previous.WriteToFaster(writer);
+        TransactionMroot.WriteToFaster(writer);
+        ActionMroot.WriteToFaster(writer);
         writer.Write(ScheduleVersion);
-        ProducerSignature.WriteToBinaryWriter(writer);
-        
+        ProducerSignature.WriteToFaster(writer);
+
         writer.Write(NewProducers != null);
         if (NewProducers != null)
         {
-            NewProducers.WriteToBinaryWriter(writer);
+            NewProducers.WriteToFaster(writer);
         }
 
         writer.Write7BitEncodedInt(TransactionIds.Count);

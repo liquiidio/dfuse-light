@@ -2,6 +2,7 @@
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
 using Microsoft.Extensions.ObjectPool;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -9,7 +10,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// Custom type due to Variant-Handling
 /// </summary>
 [JsonConverter(typeof(TransactionIdJsonConverter))]
-public sealed class TransactionId : TransactionVariant
+public sealed class TransactionId : TransactionVariant, IEosioSerializable<TransactionId>, IFasterSerializable<TransactionId>
 {
     // can't inherit directly from PooledObject here
     // ReSharper disable once InconsistentNaming
@@ -50,7 +51,7 @@ public sealed class TransactionId : TransactionVariant
         _stringVal = transactionId;
     }
 
-    public new static TransactionId ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public new static TransactionId ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new TransactionId();
 
@@ -59,7 +60,16 @@ public sealed class TransactionId : TransactionVariant
         return obj;
     }
 
-    public new void WriteToBinaryWriter(BinaryWriter writer)
+    public new static TransactionId ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        var obj = fromPool ? TypeObjectPool.Get() : new TransactionId();
+
+        obj.Binary = reader.ReadBytes(Checksum256ByteLength);
+
+        return obj;
+    }
+
+    public new void WriteToFaster(BinaryWriter writer)
     {
         writer.Write(Binary);
         _stringVal = null;

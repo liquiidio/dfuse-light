@@ -2,6 +2,8 @@ using DeepReader.Types.Eosio.Chain.Detail;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Eosio.Chain.Legacy;
+using Salar.BinaryBuffers;
+using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -20,7 +22,7 @@ public class BlockHeaderState : BlockHeaderStateCommon, IEosioSerializable<Block
 
     public Signature[] AdditionalSignatures;
 
-    public BlockHeaderState(BinaryReader reader)
+    public BlockHeaderState(BinaryBufferReader reader)
     {
         BlockNum = reader.ReadUInt32();
         DPoSProposedIrreversibleBlockNum = reader.ReadUInt32();
@@ -60,7 +62,7 @@ public class BlockHeaderState : BlockHeaderStateCommon, IEosioSerializable<Block
         }
     }
 
-    public new static BlockHeaderState ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public new static BlockHeaderState ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new BlockHeaderState(reader);
     }

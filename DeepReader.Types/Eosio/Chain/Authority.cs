@@ -1,3 +1,6 @@
+using DeepReader.Types.Extensions;
+using Salar.BinaryBuffers;
+
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
@@ -12,7 +15,7 @@ public sealed class Authority : IEosioSerializable<Authority>
 
     public Authority() { }
 
-    public Authority(BinaryReader reader)
+    public Authority(BinaryBufferReader reader)
     {
         Threshold = reader.ReadUInt32();
 
@@ -35,7 +38,7 @@ public sealed class Authority : IEosioSerializable<Authority>
         }
     }
 
-    public static Authority ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static Authority ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new Authority(reader);
     }

@@ -1,26 +1,39 @@
 using DeepReader.Types.EosTypes;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types;
 
-public sealed class AccountRamDelta : IEosioSerializable<AccountRamDelta>
+public sealed class AccountRamDelta : IEosioSerializable<AccountRamDelta>, IFasterSerializable<AccountRamDelta>
 {
     public Name Account;// string
     public long Delta;// int64
 
-    public AccountRamDelta(BinaryReader reader)
+    public AccountRamDelta() { }
+
+    public AccountRamDelta(BinaryBufferReader reader)
     {
         Account = Name.ReadFromBinaryReader(reader);
         Delta = reader.ReadInt64();
     }
 
-    public static AccountRamDelta ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static AccountRamDelta ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new AccountRamDelta(reader);
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static AccountRamDelta ReadFromFaster(BinaryReader reader, bool fromPool = true)
     {
-        Account.WriteToBinaryWriter(writer); // TODO Eosio Name
+        var obj = new AccountRamDelta();
+
+        obj.Account = Name.ReadFromFaster(reader);
+        obj.Delta = reader.ReadInt64();
+
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
+    {
+        Account.WriteToFaster(writer); // TODO Eosio Name
         writer.Write(Delta); // TODO VARINT
     }
 }

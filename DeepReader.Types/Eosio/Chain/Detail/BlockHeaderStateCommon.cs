@@ -1,11 +1,13 @@
 using DeepReader.Types.Eosio.Chain.Legacy;
+using DeepReader.Types.Extensions;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain.Detail;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/block_header_state.hpp
 /// </summary>
-public class BlockHeaderStateCommon
+public class BlockHeaderStateCommon : IEosioSerializable<BlockHeaderStateCommon>, IFasterSerializable<BlockHeaderStateCommon>
 {
     public uint BlockNum;
 
@@ -25,7 +27,7 @@ public class BlockHeaderStateCommon
 
     public byte[] ConfirmCount = Array.Empty<byte>();
 
-    public static BlockHeaderStateCommon ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static BlockHeaderStateCommon ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         var blockStateHeaderCommon = new BlockHeaderStateCommon()
         {
@@ -53,5 +55,15 @@ public class BlockHeaderStateCommon
         blockStateHeaderCommon.ConfirmCount = reader.ReadBytes(reader.Read7BitEncodedInt());
 
         return blockStateHeaderCommon;
+    }
+
+    public static BlockHeaderStateCommon ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
+    {
+        throw new NotImplementedException();
     }
 }

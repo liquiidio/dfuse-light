@@ -1,9 +1,10 @@
 ﻿using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.Other;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.StorageTypes;
 
-public sealed class TransactionTrace : PooledObject<TransactionTrace>, IParentPooledObject<TransactionTrace>
+public sealed class TransactionTrace : PooledObject<TransactionTrace>, IParentPooledObject<TransactionTrace>, IEosioSerializable<TransactionTrace>, IFasterSerializable<TransactionTrace>
 {
     // SHA-256 (FIPS 180-4) of the FCBUFFER-encoded packed transaction
     public TransactionId Id { get; set; } = Array.Empty<byte>();
@@ -38,7 +39,7 @@ public sealed class TransactionTrace : PooledObject<TransactionTrace>, IParentPo
         Scheduled = transactionTrace.Scheduled;
     }
 
-    public static TransactionTrace ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static TransactionTrace ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         // when Faster wants to deserialize and Object, we take an Object from the Pool
         // when Faster evicts the Object we return it to the Pool
@@ -61,16 +62,39 @@ public sealed class TransactionTrace : PooledObject<TransactionTrace>, IParentPo
         return obj;
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static TransactionTrace ReadFromFaster(BinaryReader reader, bool fromPool = true)
     {
-        Id.WriteToBinaryWriter(writer);
+        // when Faster wants to deserialize and Object, we take an Object from the Pool
+        // when Faster evicts the Object we return it to the Pool
+        var obj = TypeObjectPool.Get();
+
+        obj.Id = reader.ReadBytes(32);
+        obj.BlockNum = reader.ReadUInt32();
+        obj.Elapsed = reader.ReadInt64();
+        obj.NetUsage = reader.ReadUInt64();
+        obj.Scheduled = reader.ReadBoolean();
+
+        obj.Receipt = TransactionReceiptHeader.ReadFromFaster(reader);
+
+        obj.ActionTraceIds = new ulong[reader.ReadInt32()];
+        for (int i = 0; i < obj.ActionTraceIds.Length; i++)
+        {
+            obj.ActionTraceIds[i] = reader.ReadUInt64();
+        }
+
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
+    {
+        Id.WriteToFaster(writer);
 
         writer.Write(BlockNum); // TODO VARINT
         writer.Write(Elapsed); // TODO VARINT
         writer.Write(NetUsage); // TODO VARINT
         writer.Write(Scheduled); // TODO VARINT
 
-        Receipt.WriteToBinaryWriter(writer);
+        Receipt.WriteToFaster(writer);
 
         writer.Write(ActionTraceIds.Length);
         foreach (var actionTraceId in ActionTraceIds)

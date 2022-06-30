@@ -1,9 +1,10 @@
 ﻿using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types;
 
-public class RamOp
+public class RamOp : IEosioSerializable<RamOp>, IFasterSerializable<RamOp>
 {
     public RamOpOperation Operation { get; set; } = RamOpOperation.UNKNOWN;//RAMOp_Operation
     public Name Payer { get; set; } = string.Empty;//string
@@ -15,7 +16,7 @@ public class RamOp
 
     }
 
-    public static RamOp ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static RamOp ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         var obj = new RamOp()
         {
@@ -28,10 +29,23 @@ public class RamOp
         return obj;
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static RamOp ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        var obj = new RamOp()
+        {
+            Operation = (RamOpOperation)reader.ReadByte(),
+            Payer = Name.ReadFromFaster(reader),
+            Delta = reader.ReadInt64(),
+            Usage = reader.ReadUInt64()
+        };
+
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
     {
         writer.Write((byte)Operation);
-        Payer.WriteToBinaryWriter(writer);
+        Payer.WriteToFaster(writer);
         writer.Write(Delta);
         writer.Write(Usage);
     }

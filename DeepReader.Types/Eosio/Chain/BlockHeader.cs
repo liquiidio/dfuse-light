@@ -1,4 +1,6 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -25,7 +27,7 @@ public class BlockHeader : IEosioSerializable<BlockHeader>
 
     public Extension[] HeaderExtensions;
 
-    public BlockHeader(BinaryReader reader)
+    public BlockHeader(BinaryBufferReader reader)
     {
         Timestamp = Timestamp.ReadFromBinaryReader(reader);
         Producer = Name.ReadFromBinaryReader(reader);
@@ -47,7 +49,7 @@ public class BlockHeader : IEosioSerializable<BlockHeader>
         }
     }
 
-    public static BlockHeader ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static BlockHeader ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new BlockHeader(reader);
     }

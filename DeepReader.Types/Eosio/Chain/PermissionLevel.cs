@@ -1,12 +1,13 @@
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Other;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/action.hpp
 /// </summary>
-public sealed class PermissionLevel : PooledObject<PermissionLevel>, IEosioSerializable<PermissionLevel>
+public sealed class PermissionLevel : PooledObject<PermissionLevel>, IEosioSerializable<PermissionLevel>, IFasterSerializable<PermissionLevel>
 {
     public Name Actor { get; set; }
     public Name Permission { get; set; }
@@ -17,7 +18,7 @@ public sealed class PermissionLevel : PooledObject<PermissionLevel>, IEosioSeria
         Permission = Name.TypeEmpty;
     }
 
-    public static PermissionLevel ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static PermissionLevel ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new PermissionLevel();
 
@@ -27,10 +28,20 @@ public sealed class PermissionLevel : PooledObject<PermissionLevel>, IEosioSeria
         return obj;
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static PermissionLevel ReadFromFaster(BinaryReader reader, bool fromPool = true)
     {
-        Actor.WriteToBinaryWriter(writer);
-        Permission.WriteToBinaryWriter(writer);
+        var obj = fromPool ? TypeObjectPool.Get() : new PermissionLevel();
+
+        obj.Actor = Name.ReadFromFaster(reader);
+        obj.Permission = Name.ReadFromFaster(reader);
+
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
+    {
+        Actor.WriteToFaster(writer);
+        Permission.WriteToFaster(writer);
 
         TypeObjectPool.Return(this);
     }

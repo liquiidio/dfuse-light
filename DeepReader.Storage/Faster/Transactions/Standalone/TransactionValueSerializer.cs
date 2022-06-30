@@ -7,11 +7,11 @@ public sealed class TransactionValueSerializer : BinaryObjectSerializer<Transact
 {
     public override void Deserialize(out TransactionTrace obj)
     {
-        obj = TransactionTrace.ReadFromBinaryReader(reader);
+        obj = TransactionTrace.ReadFromFaster(reader);
     }
 
     public override void Serialize(ref TransactionTrace obj)
     {
-        obj.WriteToBinaryWriter(writer);
+        obj.WriteToFaster(writer);
     }
 }

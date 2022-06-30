@@ -1,12 +1,14 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Extensions;
 using DeepReader.Types.Other;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/trace.hpp
 /// </summary>
-public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
+public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>, IFasterSerializable<TransactionTrace>
 {
     // SHA-256 (FIPS 180-4) of the FCBUFFER-encoded packed transaction
     public TransactionId Id;
@@ -40,7 +42,7 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
 
     // List of database operations this transaction entailed
     public IList<ExtendedDbOp> DbOps { get; set; } = new List<ExtendedDbOp>();//[]*DBOp
-                                                              // List of deferred transactions operations this transaction entailed
+                                                                              // List of deferred transactions operations this transaction entailed
     public IList<DTrxOp> DtrxOps { get; set; } = new List<DTrxOp>();//[]*DTrxOp
                                                                     // List of feature switching operations (changes to feature switches in
                                                                     // nodeos) this transaction entailed
@@ -49,14 +51,14 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
     public IList<PermOp> PermOps { get; set; } = new List<PermOp>();//[]*PermOp
                                                                     // List of RAM consumption/redemption
     public IList<ExtendedRamOp> RamOps { get; set; } = new List<ExtendedRamOp>();//[]*RAMOp
-                                                                 // List of RAM correction operations (happens only once upon feature
-                                                                 // activation)
+                                                                                 // List of RAM correction operations (happens only once upon feature
+                                                                                 // activation)
     public IList<RamCorrectionOp> RamCorrectionOps { get; set; } = new List<RamCorrectionOp>();//[]*RAMCorrectionOp
                                                                                                // List of changes to rate limiting values
     public IList<RlimitOp> RlimitOps { get; set; } = new List<RlimitOp>();//[]*RlimitOp
                                                                           // List of table creations/deletions
     public IList<ExtendedTableOp> TableOps { get; set; } = new List<ExtendedTableOp>();//[]*TableOp
-                                                                       // Tree of creation, rather than execution
+                                                                                       // Tree of creation, rather than execution
     public IList<CreationTreeNode> CreationTreeRoots { get; set; } = new List<CreationTreeNode>();//[]*CreationFlatNode
 
     //public IList<CreationFlatNode> FlatCreationTree { get; set; } = new List<CreationFlatNode>();//[]*CreationFlatNode
@@ -71,7 +73,7 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
         ActionTraces = Array.Empty<ActionTrace>();
     }
 
-    public TransactionTrace(BinaryReader reader)
+    public TransactionTrace(BinaryBufferReader reader)
     {
         Id = TransactionId.ReadFromBinaryReader(reader);
         BlockNum = reader.ReadUInt32();
@@ -100,9 +102,9 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
             AccountRamDelta = AccountRamDelta.ReadFromBinaryReader(reader);
 
         var readFailedDtrxTrace = reader.ReadBoolean();
-//        if (readFailedDtrxTrace) // TODO
-//            return;
-//            FailedDtrxTrace = ReadFromBinaryReader(reader);
+        //        if (readFailedDtrxTrace) // TODO
+        //            return;
+        //            FailedDtrxTrace = ReadFromBinaryReader(reader);
 
         var readException = reader.ReadBoolean();
         if (readException)
@@ -114,20 +116,72 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>
 
     }
 
-    public static TransactionTrace ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static TransactionTrace ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new TransactionTrace(reader);
     }
+
+    public static TransactionTrace ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        var obj = new TransactionTrace()
+        {
+            Id = TransactionId.ReadFromFaster(reader),
+            BlockNum = reader.ReadUInt32(),
+            BlockTime = Timestamp.ReadFromFaster(reader)
+        };
+
+        var readProducerBlockId = reader.ReadBoolean();
+        if (readProducerBlockId)
+            obj.ProducerBlockId = Checksum256.ReadFromFaster(reader);
+
+        var readReceipt = reader.ReadBoolean();
+        if (readReceipt)
+            obj.Receipt = TransactionReceiptHeader.ReadFromFaster(reader);
+
+        obj.Elapsed = reader.ReadInt64();
+        obj.NetUsage = reader.ReadUInt64();
+        obj.Scheduled = reader.ReadBoolean();
+
+        obj.ActionTraces = new ActionTrace[reader.Read7BitEncodedInt()];
+        for (int i = 0; i < obj.ActionTraces.Length; i++)
+        {
+            obj.ActionTraces[i] = ActionTrace.ReadFromFaster(reader);
+        }
+
+        var readAccountRamDelta = reader.ReadBoolean();
+        if (readAccountRamDelta)
+            obj.AccountRamDelta = AccountRamDelta.ReadFromFaster(reader);
+
+        var readFailedDtrxTrace = reader.ReadBoolean();
+        //        if (readFailedDtrxTrace) // TODO
+        //            return;
+        //            FailedDtrxTrace = ReadFromBinaryReader(reader);
+
+        var readException = reader.ReadBoolean();
+        if (readException)
+            obj.Exception = Except.ReadFromFaster(reader);
+
+        var readErrorCode = reader.ReadBoolean();
+        if (readErrorCode)
+            obj.ErrorCode = reader.ReadUInt64();
+
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
+    {
+        throw new NotImplementedException();
+    }
 }
 
-public sealed class Except : IEosioSerializable<Except>
+public sealed class Except : IEosioSerializable<Except>, IFasterSerializable<Except>
 {
     public long Code;
     public string Name = string.Empty;
     public string Message = string.Empty;
     public ExceptLogMessage[] Stack = Array.Empty<ExceptLogMessage>();
 
-    public static Except? ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public static Except? ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         // TODO: (Corvin) 
         // Corvin: "This is something that was missing my version as well, need to do some research to understand how it's serialized"
@@ -136,7 +190,12 @@ public sealed class Except : IEosioSerializable<Except>
         return null;
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static Except ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
     {
         throw new NotImplementedException();
     }

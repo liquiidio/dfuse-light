@@ -1,3 +1,5 @@
+using Salar.BinaryBuffers;
+
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
@@ -7,11 +9,11 @@ public sealed class TransactionReceipt : TransactionReceiptHeader, IEosioSeriali
 {
     public TransactionVariant Trx;
 
-    public TransactionReceipt(BinaryReader reader) : base(reader)
+    public TransactionReceipt(BinaryBufferReader reader) : base(reader)
     {
         Trx = TransactionVariant.ReadFromBinaryReader(reader);
     }
-    public new static TransactionReceipt ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+    public new static TransactionReceipt ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         return new TransactionReceipt(reader);
     }

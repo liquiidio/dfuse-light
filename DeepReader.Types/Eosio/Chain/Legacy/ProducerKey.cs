@@ -1,12 +1,13 @@
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Other;
+using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain.Legacy;
 
 /// <summary>
 /// libraries/chain/include/eosio/chain/producer_schedule.hpp
 /// </summary>
-public sealed class ProducerKey : PooledObject<ProducerKey>, IEosioSerializable<ProducerKey>
+public sealed class ProducerKey : PooledObject<ProducerKey>, IEosioSerializable<ProducerKey>, IFasterSerializable<ProducerKey>
 {
     public Name AccountName { get; set; }
     public PublicKey BlockSigningKey { get; set; }//ecc.PublicKey
@@ -19,7 +20,8 @@ public sealed class ProducerKey : PooledObject<ProducerKey>, IEosioSerializable<
     {
 
     }
-    public static ProducerKey ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
+
+    public static ProducerKey ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new ProducerKey();
 
@@ -34,10 +36,25 @@ public sealed class ProducerKey : PooledObject<ProducerKey>, IEosioSerializable<
         return obj;
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static ProducerKey ReadFromFaster(BinaryReader reader, bool fromPool = true)
     {
-        AccountName.WriteToBinaryWriter(writer);
-        BlockSigningKey.WriteToBinaryWriter(writer);
+        var obj = fromPool ? TypeObjectPool.Get() : new ProducerKey();
+
+        obj.AccountName = Name.ReadFromFaster(reader);
+
+        obj.BlockSigningKey = PublicKey.ReadFromFaster(reader);
+        /*BlockSigningKey = new PublicKey[reader.Read7BitEncodedInt()];
+        for (var i = 0; i < BlockSigningKey.Length; i++)
+        {
+            BlockSigningKey[i] = reader.ReadPublicKey(); //PubKeyDataSize + 1 byte for type
+        }*/
+        return obj;
+    }
+
+    public void WriteToFaster(BinaryWriter writer)
+    {
+        AccountName.WriteToFaster(writer);
+        BlockSigningKey.WriteToFaster(writer);
     }
 
     public new static void ReturnToPool(ProducerKey obj)
