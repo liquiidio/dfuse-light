@@ -17,7 +17,7 @@ public sealed class PermissionLevel : PooledObject<PermissionLevel>, IEosioSeria
         Permission = Name.TypeEmpty;
     }
 
-    public static PermissionLevel ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static PermissionLevel ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new PermissionLevel();
 

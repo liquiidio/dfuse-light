@@ -19,7 +19,7 @@ public sealed class VarUint64 : BinaryType, IEosioSerializable<VarUint64>
         return value._value;
     }
 
-    public static VarUint64 ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static VarUint64 ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return (ulong)reader.Read7BitEncodedInt64();
     }

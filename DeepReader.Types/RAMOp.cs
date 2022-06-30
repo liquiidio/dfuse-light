@@ -15,7 +15,7 @@ public class RamOp : IEosioSerializable<RamOp>, IFasterSerializable<RamOp>
 
     }
 
-    public static RamOp ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static RamOp ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var obj = new RamOp()
         {

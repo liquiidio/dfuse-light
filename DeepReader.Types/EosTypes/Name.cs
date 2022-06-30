@@ -32,7 +32,7 @@ public sealed class Name : BinaryType, IEosioSerializable<Name>, IFasterSerializ
     //    _stringVal = stringVal;
     //    Binary = binary;
     //}
-    public static Name ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static Name ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return NameCache.GetOrCreate(reader.ReadUInt64());
     }

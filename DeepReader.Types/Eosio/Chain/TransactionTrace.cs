@@ -72,7 +72,7 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>, IFa
         ActionTraces = Array.Empty<ActionTrace>();
     }
 
-    public TransactionTrace(BinaryBufferReader reader)
+    public TransactionTrace(IBufferReader reader)
     {
         Id = TransactionId.ReadFromBinaryReader(reader);
         BlockNum = reader.ReadUInt32();
@@ -115,7 +115,7 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>, IFa
 
     }
 
-    public static TransactionTrace ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static TransactionTrace ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new TransactionTrace(reader);
     }
@@ -180,7 +180,7 @@ public sealed class Except : IEosioSerializable<Except>, IFasterSerializable<Exc
     public string Message = string.Empty;
     public ExceptLogMessage[] Stack = Array.Empty<ExceptLogMessage>();
 
-    public static Except? ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static Except? ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         // TODO: (Corvin) 
         // Corvin: "This is something that was missing my version as well, need to do some research to understand how it's serialized"

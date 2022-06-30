@@ -10,12 +10,12 @@ public sealed class ProducerAuthority : IEosioSerializable<ProducerAuthority>
     public Name AccountName;
     public BlockSigningAuthorityVariant BlockSigningAuthority;
 
-    public ProducerAuthority(BinaryBufferReader reader)
+    public ProducerAuthority(IBufferReader reader)
     {
         AccountName = Name.ReadFromBinaryReader(reader);
         BlockSigningAuthority = BlockSigningAuthorityVariant.ReadFromBinaryReader(reader);
     }
-    public static ProducerAuthority ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static ProducerAuthority ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new ProducerAuthority(reader);
     }

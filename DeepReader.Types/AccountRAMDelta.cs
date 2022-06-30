@@ -9,13 +9,13 @@ public sealed class AccountRamDelta : IEosioSerializable<AccountRamDelta>, IFast
 
     public AccountRamDelta() { }
 
-    public AccountRamDelta(BinaryBufferReader reader)
+    public AccountRamDelta(IBufferReader reader)
     {
         Account = Name.ReadFromBinaryReader(reader);
         Delta = reader.ReadInt64();
     }
 
-    public static AccountRamDelta ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static AccountRamDelta ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new AccountRamDelta(reader);
     }

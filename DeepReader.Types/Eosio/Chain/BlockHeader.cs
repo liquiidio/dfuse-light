@@ -26,7 +26,7 @@ public class BlockHeader : IEosioSerializable<BlockHeader>
 
     public Extension[] HeaderExtensions;
 
-    public BlockHeader(BinaryBufferReader reader)
+    public BlockHeader(IBufferReader reader)
     {
         Timestamp = Timestamp.ReadFromBinaryReader(reader);
         Producer = Name.ReadFromBinaryReader(reader);
@@ -48,7 +48,7 @@ public class BlockHeader : IEosioSerializable<BlockHeader>
         }
     }
 
-    public static BlockHeader ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static BlockHeader ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new BlockHeader(reader);
     }

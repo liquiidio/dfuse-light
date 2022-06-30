@@ -1,12 +1,14 @@
-﻿namespace DeepReader.Types.Infrastructure
+﻿using System.Text;
+using DeepReader.Types.Eosio.Chain;
+using DeepReader.Types.EosTypes;
+using DeepReader.Types.Fc.Crypto;
+using DeepReader.Types.Helpers;
+using Serilog;
+
+namespace DeepReader.Types.Infrastructure
 {
     public interface IBufferReader
     {
-        /// <summary>
-        /// Gets the offset into the stream to start reading from.
-        /// </summary>
-        int Offset { get; }
-
         /// <summary>
         /// Gets the effective length of the readable region of the stream.
         /// </summary>
@@ -88,5 +90,65 @@
         /// Reads 64-bit unsigned integer from the current binary stream and advances the current position within the stream by eight bytes.
         /// </summary>
         ulong ReadUInt64();
+
+        char[] ReadChars(int count);
+
+        char ReadChar();
+
+
+        #region EosTypes
+
+        Signature ReadSignature();
+
+        Checksum160 ReadChecksum160();
+
+        Checksum256 ReadChecksum256();
+
+        TransactionId ReadTransactionId();
+
+        Checksum512 ReadChecksum512();
+
+        ushort ReadVarUint16();
+
+        short ReadVarInt16();
+
+        uint ReadVarUint32();
+
+        int ReadVarInt32();
+
+        ulong ReadVarUint64();
+
+        long ReadVarInt64();
+
+        Uint128 ReadUInt128();
+
+        Int128 ReadInt128();
+
+        string ReadString();
+
+        Bytes ReadBytes();
+
+        PublicKey ReadPublicKey();
+
+        ActionDataBytes ReadActionDataBytes();
+
+        float ReadFloat32();
+
+        double ReadFloat64();
+
+        Float128 ReadFloat128();
+
+        Asset ReadAsset();
+
+        Symbol ReadSymbol();
+
+        SymbolCode ReadSymbolCode();
+
+        int Read7BitEncodedInt();
+
+        long Read7BitEncodedInt64();
+
+        #endregion
+
     }
 }

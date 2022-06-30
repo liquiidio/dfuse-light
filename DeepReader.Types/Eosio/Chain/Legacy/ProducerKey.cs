@@ -20,7 +20,7 @@ public sealed class ProducerKey : PooledObject<ProducerKey>, IEosioSerializable<
 
     }
 
-    public static ProducerKey ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static ProducerKey ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new ProducerKey();
 

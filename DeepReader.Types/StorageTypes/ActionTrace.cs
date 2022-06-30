@@ -52,7 +52,7 @@ namespace DeepReader.Types.StorageTypes
 
         }
 
-        public void CopyFrom(DeepReader.Types.Eosio.Chain.ActionTrace actionTrace)
+        public void CopyFrom(Eosio.Chain.ActionTrace actionTrace)
         {
             Receipt = actionTrace.Receipt!;
             Receiver = actionTrace.Receiver;
@@ -63,7 +63,7 @@ namespace DeepReader.Types.StorageTypes
             ReturnValue = actionTrace.ReturnValue;
         }
 
-        public static ActionTrace ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+        public static ActionTrace ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
         {
             // when Faster wants to deserialize and Object, we take an Object from the Pool
             // when Faster evicts the Object we return it to the Pool

@@ -16,7 +16,7 @@ public sealed class Uint128 : BinaryType, IEosioSerializable<Uint128>
         return value.Binary;
     }
 
-    public static Uint128 ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static Uint128 ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return reader.ReadBytes(Uint128ByteLength);
     }

@@ -26,7 +26,7 @@ public class BlockHeaderStateCommon : IEosioSerializable<BlockHeaderStateCommon>
 
     public byte[] ConfirmCount = Array.Empty<byte>();
 
-    public static BlockHeaderStateCommon ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static BlockHeaderStateCommon ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var blockStateHeaderCommon = new BlockHeaderStateCommon()
         {

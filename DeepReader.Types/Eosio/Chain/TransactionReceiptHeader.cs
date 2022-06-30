@@ -20,14 +20,14 @@ public class TransactionReceiptHeader : IEosioSerializable<TransactionReceiptHea
         NetUsageWords = 0;
     }
 
-    public TransactionReceiptHeader(BinaryBufferReader reader)
+    public TransactionReceiptHeader(IBufferReader reader)
     {
         Status = (TransactionStatus)reader.ReadByte();
         CpuUsageUs = reader.ReadUInt32();
         NetUsageWords = (uint)reader.Read7BitEncodedInt();
     }
 
-    public static TransactionReceiptHeader ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static TransactionReceiptHeader ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new TransactionReceiptHeader(reader);
     }

@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using DeepReader.Storage.Faster.Transactions.Standalone;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Infrastructure;
 using DeepReader.Types.StorageTypes;
 using FASTER.common;
 using FASTER.core;
@@ -38,9 +39,8 @@ namespace DeepReader.Storage.Faster.Transactions.Server
 
             // TODO, not sure if this has length-prefix or not
             // this is read from the store so it doesn't have the length-prefix 
-            var reader = new BinaryReader(new UnmanagedMemoryStream(dcurr, length));
+            var reader = new UnsafeBinaryUnmanagedReader(dcurr, length);
             _output = TransactionTrace.ReadFromBinaryReader(reader);
-            dcurr += reader.BaseStream.Position; // seems like this is not needed as sry is no ref
             return ref _output;
 
             //output = SpanByteAndMemory.FromFixedSpan(new Span<byte>(src, (int)reader.BaseStream.Position));
@@ -58,7 +58,7 @@ namespace DeepReader.Storage.Faster.Transactions.Server
         public int GetLength(ref TransactionTrace o)
         {
             var writer = new BinaryWriter(new MemoryStream());
-            o.WriteToBinaryWriter(writer);
+            o.WriteToFaster(writer);
             return (int)writer.BaseStream.Position;
         }
 
@@ -74,22 +74,20 @@ namespace DeepReader.Storage.Faster.Transactions.Server
             //return ref ret;
 
             // length is static, no need to read or write it for TransactionId
-            var reader = new BinaryReader(new UnmanagedMemoryStream(src, Checksum256.Checksum256ByteLength));
+            var reader = new UnsafeBinaryUnmanagedReader(src, Checksum256.Checksum256ByteLength);
             var trxId = Types.Eosio.Chain.TransactionId.ReadFromBinaryReader(reader);
             _input = new TransactionId(trxId);
-            src += Checksum256.Checksum256ByteLength;
             return ref _input;
         }
 
         // seems like the ref-output is never really used and after some internal calls just passed to xxxServerFunctions while calling diverse Methods
         public unsafe ref TransactionId ReadKeyByRef(ref byte* src) // src is the bytes received over websocket
         {
-            var reader = new BinaryReader(new UnmanagedMemoryStream(src, Checksum256.Checksum256ByteLength + sizeof(int)));
+            var reader = new UnsafeBinaryUnmanagedReader(src, Checksum256.Checksum256ByteLength + sizeof(int));
             var length = reader.ReadInt32();
             // Todo, we could verify the size here
             var trxId = Types.Eosio.Chain.TransactionId.ReadFromBinaryReader(reader);
             _key = new TransactionId(trxId);
-            src += Checksum256.Checksum256ByteLength + sizeof(int);
             return ref _key;
         }
 
@@ -100,10 +98,9 @@ namespace DeepReader.Storage.Faster.Transactions.Server
             //src += sizeof(long); // increase pointer by size of long
 
             // this is read from the store so it doesn't have the length-prefix 
-            var reader = new BinaryReader(new UnmanagedMemoryStream(src, ushort.MaxValue));
+            var reader = new UnsafeBinaryUnmanagedReader(src, ushort.MaxValue);
             var length = reader.ReadInt32();
             _value = TransactionTrace.ReadFromBinaryReader(reader);
-            src += reader.BaseStream.Position;
             return ref _value;
         }
 
@@ -111,9 +108,9 @@ namespace DeepReader.Storage.Faster.Transactions.Server
         public unsafe void SkipOutput(ref byte* dcurr)
         {
             // TODO, not sure if this has length-prefix or not
-            var length = Unsafe.Read<long>(dcurr); // read length of TransactionTrace in bytes
-            dcurr += sizeof(long); // increase pointer by size of long
-            var reader = new BinaryReader(new UnmanagedMemoryStream(dcurr, length));
+            var length = Unsafe.Read<int>(dcurr); // read length of TransactionTrace in bytes
+            dcurr += sizeof(int); // increase pointer by size of long
+            var reader = new UnsafeBinaryUnmanagedReader(dcurr, length);
             TransactionTrace.ReadFromBinaryReader(reader);
             dcurr += length;
         }
@@ -123,7 +120,7 @@ namespace DeepReader.Storage.Faster.Transactions.Server
         {
             // We don't write the length here as Key is fixed length
             var writer = new BinaryWriter(new UnmanagedMemoryStream(dst, length));
-            k.Id.WriteToBinaryWriter(writer); // serialize !
+            k.Id.WriteToFaster(writer); // serialize !
             dst += writer.BaseStream.Position;
 
             return true;
@@ -136,7 +133,7 @@ namespace DeepReader.Storage.Faster.Transactions.Server
             var stream = new UnmanagedMemoryStream(dst, length);
             var writer = new BinaryWriter(stream);
             writer.BaseStream.Position += sizeof(int); // reserve sizeof(long) so we can write the length after serialization
-            v.WriteToBinaryWriter(writer); // serialize !
+            v.WriteToFaster(writer); // serialize !
             Unsafe.Write(dst, writer.BaseStream.Position - sizeof(int));  // write length into reserved memory
             dst += writer.BaseStream.Position;  // set pointer to new end
 

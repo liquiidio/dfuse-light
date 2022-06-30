@@ -5,7 +5,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public abstract class TransactionVariant : IEosioSerializable<TransactionVariant>, IFasterSerializable<TransactionVariant>
 {
-    public static TransactionVariant ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static TransactionVariant ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var type = reader.ReadByte();
         switch (type)

@@ -33,7 +33,7 @@ public class TransactionHeader : IEosioSerializable<TransactionHeader>
     [JsonPropertyName("delay_sec")]
     public uint DelaySec;
 
-    public TransactionHeader(BinaryBufferReader reader)
+    public TransactionHeader(IBufferReader reader)
     {
         Expiration = Timestamp.ReadFromBinaryReader(reader);
         RefBlockNum = reader.ReadUInt16();
@@ -43,7 +43,7 @@ public class TransactionHeader : IEosioSerializable<TransactionHeader>
         DelaySec = (uint)reader.Read7BitEncodedInt();
     }
 
-    public static TransactionHeader ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static TransactionHeader ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new TransactionHeader(reader);
     }

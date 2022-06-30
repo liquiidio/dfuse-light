@@ -36,7 +36,7 @@ public sealed class PackedTransaction : TransactionVariant, IEosioSerializable<P
         
     }
 
-    public new static PackedTransaction ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public new static PackedTransaction ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var obj = TypeObjectPool.Get();
 
@@ -54,7 +54,7 @@ public sealed class PackedTransaction : TransactionVariant, IEosioSerializable<P
         return obj;
     }
 
-    public static PackedTransaction ReadFromBinaryReaderWithoutPooling(BinaryBufferReader reader)
+    public static PackedTransaction ReadFromBinaryReaderWithoutPooling(IBufferReader reader)
     {
         var obj = new PackedTransaction();
 

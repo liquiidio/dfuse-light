@@ -21,7 +21,7 @@ public sealed class Checksum160 : PooledObject<Checksum160>, IEosioSerializable<
         set => _stringVal = value;
     }
 
-    public static Checksum160 ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static Checksum160 ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new Checksum160();
 

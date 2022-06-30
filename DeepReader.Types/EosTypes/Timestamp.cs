@@ -19,7 +19,7 @@ public sealed class Timestamp : PooledObject<Timestamp>, IEosioSerializable<Time
         _ticks = ticks;
     }
 
-    public static Timestamp ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static Timestamp ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         // when Faster wants to deserialize and Object, we take an Object from the Pool
         // when Faster evicts the Object we return it to the Pool

@@ -14,7 +14,7 @@ public sealed class Authority : IEosioSerializable<Authority>
 
     public Authority() { }
 
-    public Authority(BinaryBufferReader reader)
+    public Authority(IBufferReader reader)
     {
         Threshold = reader.ReadUInt32();
 
@@ -37,7 +37,7 @@ public sealed class Authority : IEosioSerializable<Authority>
         }
     }
 
-    public static Authority ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static Authority ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new Authority(reader);
     }

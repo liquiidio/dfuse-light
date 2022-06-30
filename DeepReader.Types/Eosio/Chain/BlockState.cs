@@ -9,7 +9,7 @@ public sealed class BlockState : BlockHeaderState, IEosioSerializable<BlockState
 
     public bool Validated;
 
-    public BlockState(BinaryBufferReader reader) : base(reader)
+    public BlockState(IBufferReader reader) : base(reader)
     {
         var readBlock = reader.ReadBoolean();
 
@@ -19,7 +19,7 @@ public sealed class BlockState : BlockHeaderState, IEosioSerializable<BlockState
         Validated = reader.ReadBoolean();
     }
 
-    public new static BlockState ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public new static BlockState ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new BlockState(reader);
     }

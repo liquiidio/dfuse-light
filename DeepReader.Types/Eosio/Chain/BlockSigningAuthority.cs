@@ -7,7 +7,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public abstract class BlockSigningAuthorityVariant : IEosioSerializable<BlockSigningAuthorityVariant>
 {
-    public static BlockSigningAuthorityVariant ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static BlockSigningAuthorityVariant ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var type = reader.ReadByte();
         switch (type)
@@ -28,7 +28,7 @@ public sealed class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant, IEos
     public uint Threshold;
     public SharedKeyWeight[] Keys;
 
-    public BlockSigningAuthorityV0(BinaryBufferReader reader)
+    public BlockSigningAuthorityV0(IBufferReader reader)
     {
         Threshold = reader.ReadUInt32();
 
@@ -39,7 +39,7 @@ public sealed class BlockSigningAuthorityV0 : BlockSigningAuthorityVariant, IEos
         }
     }
 
-    public new static BlockSigningAuthorityV0 ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public new static BlockSigningAuthorityV0 ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new BlockSigningAuthorityV0(reader);
     }

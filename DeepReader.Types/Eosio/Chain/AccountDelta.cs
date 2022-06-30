@@ -12,7 +12,7 @@ public sealed class AccountDelta : IEosioSerializable<AccountDelta>, IFasterSeri
 
     public AccountDelta() { }
 
-    public AccountDelta(BinaryBufferReader reader)
+    public AccountDelta(IBufferReader reader)
     {
         try
         {
@@ -26,7 +26,7 @@ public sealed class AccountDelta : IEosioSerializable<AccountDelta>, IFasterSeri
         }
     }
 
-    public static AccountDelta ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static AccountDelta ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new AccountDelta(reader);
     }

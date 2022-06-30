@@ -11,12 +11,12 @@ public sealed class PairAccountNameBlockNum : IEosioSerializable<PairAccountName
     public Name AccountName;
     public uint BlockNum;
 
-    public PairAccountNameBlockNum(BinaryBufferReader reader)
+    public PairAccountNameBlockNum(IBufferReader reader)
     {
         AccountName = Name.ReadFromBinaryReader(reader);
         BlockNum = reader.ReadUInt32();
     }
-    public static PairAccountNameBlockNum ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static PairAccountNameBlockNum ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new PairAccountNameBlockNum(reader);
     }

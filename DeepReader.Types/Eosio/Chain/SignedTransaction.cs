@@ -13,7 +13,7 @@ public sealed class SignedTransaction : Transaction, IEosioSerializable<SignedTr
 
     public Bytes[] ContextFreeData; //< for each context-free action, there is an entry here
 
-    public SignedTransaction(BinaryBufferReader reader) : base(reader)
+    public SignedTransaction(IBufferReader reader) : base(reader)
     {
         //if (reader.BaseStream.Position == reader.BaseStream.Length) // Don't know exactly why but sometimes the stream is at it's end here already.
         //{
@@ -45,7 +45,7 @@ public sealed class SignedTransaction : Transaction, IEosioSerializable<SignedTr
        
     }
 
-    public new static SignedTransaction ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public new static SignedTransaction ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new SignedTransaction(reader);
     }

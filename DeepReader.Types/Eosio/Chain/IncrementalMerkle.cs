@@ -11,7 +11,7 @@ public sealed class IncrementalMerkle : IEosioSerializable<IncrementalMerkle>
     public Checksum256[] ActiveNodes;
     public ulong NodeCount;
 
-    public IncrementalMerkle(BinaryBufferReader reader)
+    public IncrementalMerkle(IBufferReader reader)
     {
         ActiveNodes = new Checksum256[reader.Read7BitEncodedInt()];
         for (int i = 0; i < ActiveNodes.Length; i++)
@@ -21,7 +21,7 @@ public sealed class IncrementalMerkle : IEosioSerializable<IncrementalMerkle>
 
         NodeCount = reader.ReadUInt64();
     }
-    public static IncrementalMerkle ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static IncrementalMerkle ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new IncrementalMerkle(reader);
     }

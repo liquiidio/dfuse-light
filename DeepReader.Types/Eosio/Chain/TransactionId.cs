@@ -50,7 +50,7 @@ public sealed class TransactionId : TransactionVariant, IEosioSerializable<Trans
         _stringVal = transactionId;
     }
 
-    public new static TransactionId ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public new static TransactionId ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new TransactionId();
 

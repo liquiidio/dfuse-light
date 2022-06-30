@@ -9,11 +9,11 @@ public class SignedBlockHeader : BlockHeader, IEosioSerializable<SignedBlockHead
 {
     public Signature ProducerSignature;// ecc.Signature // no pointer!!
 
-    public SignedBlockHeader(BinaryBufferReader reader) : base(reader)
+    public SignedBlockHeader(IBufferReader reader) : base(reader)
     {
         ProducerSignature = Signature.ReadFromBinaryReader(reader);
     }
-    public new static SignedBlockHeader ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public new static SignedBlockHeader ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new SignedBlockHeader(reader);
     }

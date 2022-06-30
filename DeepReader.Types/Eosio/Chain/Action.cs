@@ -23,7 +23,7 @@ public sealed class Action : ActionBase, IEosioSerializable<Action>, IFasterSeri
         this.Data = data;
     }
 
-    public Action(BinaryBufferReader reader)
+    public Action(IBufferReader reader)
     {
         Account = Name.ReadFromBinaryReader(reader);
         Name = Name.ReadFromBinaryReader(reader);
@@ -38,7 +38,7 @@ public sealed class Action : ActionBase, IEosioSerializable<Action>, IFasterSeri
         Data = reader.ReadBytes(length);
     }
 
-    public static Action ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static Action ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new Action(reader);
     }

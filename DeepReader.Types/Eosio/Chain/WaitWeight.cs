@@ -10,12 +10,12 @@ public sealed class WaitWeight : IEosioSerializable<WaitWeight>
 
     public WaitWeight() { }
 
-    public WaitWeight(BinaryBufferReader reader)
+    public WaitWeight(IBufferReader reader)
     {
         WaitSec = reader.ReadUInt32();
         Weight = reader.ReadUInt16();
     }
-    public static WaitWeight ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static WaitWeight ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new WaitWeight(reader);
     }

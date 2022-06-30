@@ -5,6 +5,7 @@ using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Helpers;
 using Serilog;
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace DeepReader.Types.Infrastructure
@@ -12,89 +13,93 @@ namespace DeepReader.Types.Infrastructure
     /// <summary>
     /// Implements an <see cref="IBufferReader"/> that can read primitive data types from a byte array.
     /// </summary>
-    public sealed class BinaryBufferReader : IBufferReader
+    public sealed unsafe class UnsafeBinaryUnmanagedReader : IBufferReader
     {
-        private readonly byte[] _data;
-        private int _relativePositon;
+        private byte* _data;
         private int _position;
 
         /// <summary>
-        /// Gets the offset into the underlying byte array to start reading from.
-        /// </summary>
-        public int Offset { get; }
-
-        /// <summary>
         /// Gets the effective length of the readable region of the underlying byte array.
+        /// Returns int.MaxValue if length is unknown
         /// </summary>
-        public int Length { get; }
+        public int Length { get; } = int.MaxValue;
 
         /// <summary>
         /// Gets or sets the current reading position within the underlying byte array.
         /// </summary>
         public int Position
         {
-            get => _relativePositon;
+            get => _position;
             set
             {
-                var newPosition = Offset + value;
-
-                if (value < 0) throw ExceptionHelper.PositionLessThanZeroException(nameof(value));
-                if (value > Length) throw ExceptionHelper.PositionGreaterThanLengthOfByteArrayException(nameof(value));
-
-                _relativePositon = value;
-                _position = newPosition;
+                var diff = _position - value;
+                _position = value;
+                _data += diff;
             }
         }
 
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryBufferReader"/> class based on the specified byte array.
-        /// </summary>
-        /// <param name="data">The byte array to read from.</param>
-        public BinaryBufferReader(byte[] data)
+        public UnsafeBinaryUnmanagedReader(ref byte* data)
         {
-            _data = data ?? throw new ArgumentNullException(nameof(data));
+            if (_data == null)
+                throw new ArgumentNullException(nameof(data));
+
+            _data = data;
             _position = 0;
-            _relativePositon = 0;
-            Offset = 0;
-            Length = data.Length;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryBufferReader"/> class based on the specified byte array.
-        /// <para>A provided offset and length specifies the boundaries to use for reading.</para>
-        /// </summary>
-        /// <param name="data">The byte array to read from.</param>
-        /// <param name="offset">The 0-based offset into the byte array at which to begin reading from.
-        /// <para>Cannot exceed the bounds of the byte array.</para></param>
-        /// <param name="length">The maximum number of bytes that the reader will use for reading, relative to the offset position.
-        /// <para>Cannot exceed the bounds of the byte array.</para></param>
-        public BinaryBufferReader(byte[] data, int offset, int length)
+        public UnsafeBinaryUnmanagedReader(ref byte* data, int length)
         {
-            _data = data ?? throw new ArgumentNullException(nameof(data));
+            if (_data == null)
+                throw new ArgumentNullException(nameof(data));
 
-            if (offset < 0) throw ExceptionHelper.OffsetLessThanZeroException(nameof(offset));
-            if (length < 0) throw ExceptionHelper.LengthLessThanZeroException(nameof(length));
-            if (length > _data.Length - offset) throw ExceptionHelper.LengthGreaterThanEffectiveLengthOfByteArrayException();
+            _data = data;
+            _position = 0;
 
-            _position = offset;
-            _relativePositon = 0;
-            Offset = offset;
             Length = length;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryBufferReader"/> class based on the specified byte array segment.
-        /// </summary>
-        /// <param name="data">The byte array segment to read from.</param>
-        public BinaryBufferReader(in ArraySegment<byte> data)
+        public UnsafeBinaryUnmanagedReader(ref byte* data, int length, int position)
         {
-            _data = data.Array ?? throw new ArgumentNullException(nameof(data));
-            _position = data.Offset;
-            _relativePositon = 0;
-            Offset = data.Offset;
-            Length = data.Count;
+            if (_data == null)
+                throw new ArgumentNullException(nameof(data));
+
+            _data = data;
+            _position = position;
+            
+            Length = length;
         }
+
+        public UnsafeBinaryUnmanagedReader(byte* data)
+        {
+            if (_data == null)
+                throw new ArgumentNullException(nameof(data));
+
+            _data = data;
+            _position = 0;
+        }
+
+        public UnsafeBinaryUnmanagedReader(byte* data, int length)
+        {
+            if (_data == null)
+                throw new ArgumentNullException(nameof(data));
+
+            _data = data;
+            _position = 0;
+
+            Length = length;
+        }
+
+        public UnsafeBinaryUnmanagedReader(byte* data, int length, int position)
+        {
+            if (_data == null)
+                throw new ArgumentNullException(nameof(data));
+
+            _data = data;
+            _position = position;
+
+            Length = length;
+        }
+
 
 
         /// <summary>
@@ -209,20 +214,13 @@ namespace DeepReader.Types.Infrastructure
         /// </summary>
         private byte InternalReadByte()
         {
-            int curPos = _position;
-            int newPos = curPos + 1;
-            int relPos = _relativePositon + 1;
-
-            if ((uint)relPos > (uint)Length)
-            {
-                _relativePositon = Length;
+            if (_position == Length)
                 throw ExceptionHelper.EndOfDataException();
-            }
 
-            _relativePositon = relPos;
-            _position = newPos;
+            _position++;
+            _data++;
 
-            return _data[curPos];
+            return *_data;
         }
 
         /// <summary>
@@ -231,22 +229,17 @@ namespace DeepReader.Types.Infrastructure
         /// <param name="count">The size of the read-only span to return.</param>
         private ReadOnlySpan<byte> InternalReadSpan(int count)
         {
-            if (count <= 0) return ReadOnlySpan<byte>.Empty;
+            if (count <= 0) 
+                return ReadOnlySpan<byte>.Empty;
 
-            int curPos = _position;
-            int newPos = curPos + count;
-            int relPos = _relativePositon + count;
-
-            if ((uint)relPos > (uint)Length)
-            {
-                _relativePositon = Length;
+            if (_position + count > Length)
                 throw ExceptionHelper.EndOfDataException();
-            }
 
-            _relativePositon = relPos;
-            _position = newPos;
+            _position += count;
+            _data += count;
 
-            return new ReadOnlySpan<byte>(_data, curPos, count);
+            return new ReadOnlySpan<byte>(_data-count, count);
+
         }
 
 
@@ -382,6 +375,26 @@ namespace DeepReader.Types.Infrastructure
             return v >> 0;
         }
 
+        public VarUint32 ReadVarUint32Obj()
+        {
+            return ReadVarUint32();
+        }
+
+        public VarInt32 ReadVarInt32Obj()
+        {
+            return ReadVarInt32();
+        }
+
+        public VarUint64 ReadVarUint64Obj()
+        {
+            return ReadVarUint64();
+        }
+
+        public VarInt64 ReadVarInt64Obj()
+        {
+            return ReadVarInt64();
+        }
+
         public Uint128 ReadUInt128()
         {
             return ReadBytes(16);
@@ -394,7 +407,7 @@ namespace DeepReader.Types.Infrastructure
 
         public string ReadString()
         {
-            var length = Convert.ToInt32(Read7BitEncodedInt());
+            var length = Convert.ToInt32(ReadVarLength<int>());
             return length > 0 ? Encoding.UTF8.GetString(ReadBytes(length)) : string.Empty;
         }
 
@@ -570,6 +583,28 @@ namespace DeepReader.Types.Infrastructure
             result |= (ulong)byteReadJustNow << maxBytesWithoutOverflow * 7;
             return (long)result;
 
+        }
+
+        public T ReadVarLength<T>()
+        {
+            return (T)ReadVarLength(typeof(T));
+        }
+
+        public object ReadVarLength(Type type)
+        {
+            if (type == CommonTypes.TypeOfShort)
+                return ReadVarInt16();
+            else if (type == CommonTypes.TypeOfUshort)
+                return ReadVarUint16();
+            else if (type == CommonTypes.TypeOfInt)
+                return ReadVarInt32();
+            else if (type == CommonTypes.TypeOfUint)
+                return ReadVarUint32();
+            else if (type == CommonTypes.TypeOfLong)
+                return ReadVarInt64();
+            else if (type == CommonTypes.TypeOfUlong)
+                return ReadVarUint64();
+            return null!;
         }
 
         #endregion

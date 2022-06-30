@@ -12,7 +12,7 @@ public struct SymbolCode : IEosioSerializable<SymbolCode>
         Code = code;
     }
 
-    public static SymbolCode ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static SymbolCode ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var symbolCode = new SymbolCode();
         symbolCode.Binary = reader.ReadBytes(7); // this is 7 bytes as a whole symbol_code is 8bytes

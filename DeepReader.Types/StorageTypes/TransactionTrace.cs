@@ -38,7 +38,7 @@ public sealed class TransactionTrace : PooledObject<TransactionTrace>, IParentPo
         Scheduled = transactionTrace.Scheduled;
     }
 
-    public static TransactionTrace ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static TransactionTrace ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         // when Faster wants to deserialize and Object, we take an Object from the Pool
         // when Faster evicts the Object we return it to the Pool

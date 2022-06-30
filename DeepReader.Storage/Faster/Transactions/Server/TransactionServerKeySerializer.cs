@@ -1,5 +1,6 @@
 ﻿using DeepReader.Storage.Faster.Transactions.Standalone;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Infrastructure;
 using FASTER.common;
 
 namespace DeepReader.Storage.Faster.Transactions.Server
@@ -25,7 +26,7 @@ namespace DeepReader.Storage.Faster.Transactions.Server
 
         public unsafe ref TransactionId ReadKeyByRef(ref byte* src)
         {
-            var reader = new BinaryReader(new UnmanagedMemoryStream(src, Checksum256.Checksum256ByteLength));
+            var reader = new UnsafeBinaryUnmanagedReader(src, Checksum256.Checksum256ByteLength);
             var trxId = Types.Eosio.Chain.TransactionId.ReadFromBinaryReader(reader);
             _key = new TransactionId(trxId);
             src += Checksum256.Checksum256ByteLength;

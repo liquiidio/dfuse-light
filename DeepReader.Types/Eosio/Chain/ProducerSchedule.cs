@@ -17,7 +17,7 @@ public sealed class ProducerSchedule : PooledObject<ProducerSchedule>, IEosioSer
         Producers = Array.Empty<ProducerKey>();
     }
 
-    public static ProducerSchedule ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static ProducerSchedule ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         // when Faster wants to deserialize and Object, we take an Object from the Pool
         // when Faster evicts the Object we return it to the Pool

@@ -17,7 +17,7 @@ public sealed class TransactionTraceAuthSequence : PooledObject<TransactionTrace
         Sequence = 0;
     }
 
-    public static TransactionTraceAuthSequence ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static TransactionTraceAuthSequence ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new TransactionTraceAuthSequence();
 

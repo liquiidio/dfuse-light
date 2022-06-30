@@ -28,7 +28,7 @@ public class DbOp : IEosioSerializable<DbOp>, IFasterSerializable<DbOp>
 
     }
 
-    public DbOp(BinaryBufferReader reader)
+    public DbOp(IBufferReader reader)
     {
         Operation = (DbOpOperation)reader.ReadByte();
         Code = Name.ReadFromBinaryReader(reader);
@@ -59,7 +59,7 @@ public class DbOp : IEosioSerializable<DbOp>, IFasterSerializable<DbOp>
         }
     }
 
-    public static DbOp ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static DbOp ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new DbOp(reader);
     }

@@ -20,7 +20,7 @@ public class Transaction : TransactionHeader, IEosioSerializable<Transaction>
     [JsonPropertyName("transaction_extensions")]
     public Extension[] TransactionExtensions;
 
-    public Transaction(BinaryBufferReader reader) : base(reader)
+    public Transaction(IBufferReader reader) : base(reader)
     {
         ContextFreeActions = new Action[reader.Read7BitEncodedInt()];
         for (int i = 0; i < ContextFreeActions.Length; i++)
@@ -41,7 +41,7 @@ public class Transaction : TransactionHeader, IEosioSerializable<Transaction>
         }
     }
 
-    public new static Transaction ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public new static Transaction ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new Transaction(reader);
     }

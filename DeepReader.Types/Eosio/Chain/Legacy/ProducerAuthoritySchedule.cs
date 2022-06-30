@@ -10,7 +10,7 @@ public sealed class ProducerAuthoritySchedule : IEosioSerializable<ProducerAutho
     public uint Version;
     public ProducerAuthority[] Producers;
 
-    public ProducerAuthoritySchedule(BinaryBufferReader reader)
+    public ProducerAuthoritySchedule(IBufferReader reader)
     {
         Version = reader.ReadUInt32();
 
@@ -21,7 +21,7 @@ public sealed class ProducerAuthoritySchedule : IEosioSerializable<ProducerAutho
         }
     }
 
-    public static ProducerAuthoritySchedule ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static ProducerAuthoritySchedule ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new ProducerAuthoritySchedule(reader);
     }

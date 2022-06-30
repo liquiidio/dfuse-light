@@ -65,7 +65,7 @@ public sealed class PublicKey : PooledObject<PublicKey>, IEosioSerializable<Publ
     {
     }
 
-    public static PublicKey ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static PublicKey ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new PublicKey();
 

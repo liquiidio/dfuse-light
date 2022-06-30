@@ -21,7 +21,7 @@ public class BlockHeaderState : BlockHeaderStateCommon, IEosioSerializable<Block
 
     public Signature[] AdditionalSignatures;
 
-    public BlockHeaderState(BinaryBufferReader reader)
+    public BlockHeaderState(IBufferReader reader)
     {
         BlockNum = reader.ReadUInt32();
         DPoSProposedIrreversibleBlockNum = reader.ReadUInt32();
@@ -61,7 +61,7 @@ public class BlockHeaderState : BlockHeaderStateCommon, IEosioSerializable<Block
         }
     }
 
-    public new static BlockHeaderState ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public new static BlockHeaderState ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new BlockHeaderState(reader);
     }

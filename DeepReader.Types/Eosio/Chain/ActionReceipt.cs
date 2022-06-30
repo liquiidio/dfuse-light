@@ -24,7 +24,7 @@ public sealed class ActionReceipt : PooledObject<ActionReceipt>, IEosioSerializa
         AuthSequence = Array.Empty<TransactionTraceAuthSequence>();
     }
 
-    public static ActionReceipt ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static ActionReceipt ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new ActionReceipt();
 

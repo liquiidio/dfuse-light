@@ -21,7 +21,7 @@ public sealed class Checksum512 : PooledObject<Checksum512>, IEosioSerializable<
         set => _stringVal = value;
     }
 
-    public static Checksum512 ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static Checksum512 ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new Checksum512();
 

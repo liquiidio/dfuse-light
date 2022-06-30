@@ -47,7 +47,7 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>, IFasterSerial
 
     public ActionTrace() { }
 
-    public ActionTrace(BinaryBufferReader reader)
+    public ActionTrace(IBufferReader reader)
     {
         ActionOrdinal = (uint)reader.Read7BitEncodedInt();
         CreatorActionOrdinal = (uint)reader.Read7BitEncodedInt();
@@ -88,7 +88,7 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>, IFasterSerial
         ReturnValue = reader.ReadChars(reader.Read7BitEncodedInt());
     }
 
-    public static ActionTrace ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static ActionTrace ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new ActionTrace(reader);
     }

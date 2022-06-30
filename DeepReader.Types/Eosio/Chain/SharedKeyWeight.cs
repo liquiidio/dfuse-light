@@ -10,12 +10,12 @@ public sealed class SharedKeyWeight : IEosioSerializable<SharedKeyWeight>
     public PublicKey Key;   // for now public key, is SharedPublicKey in EOSIO (see below)
     public WeightType Weight;
 
-    public SharedKeyWeight(BinaryBufferReader reader)
+    public SharedKeyWeight(IBufferReader reader)
     {
         Key = PublicKey.ReadFromBinaryReader(reader);
         Weight = reader.ReadUInt16();
     }
-    public static SharedKeyWeight ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static SharedKeyWeight ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new SharedKeyWeight(reader);
     }

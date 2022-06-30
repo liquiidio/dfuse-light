@@ -19,7 +19,7 @@ public sealed class VarUint32 : BinaryType, IEosioSerializable<VarUint32>
         return value.Value;
     }
 
-    public static VarUint32 ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static VarUint32 ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     { 
         return (uint)reader.Read7BitEncodedInt();
     }

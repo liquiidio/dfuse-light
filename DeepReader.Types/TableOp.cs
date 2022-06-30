@@ -16,7 +16,7 @@ public class TableOp : IEosioSerializable<TableOp>, IFasterSerializable<TableOp>
 
     }
 
-    public static TableOp ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static TableOp ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var obj = new TableOp()
         {

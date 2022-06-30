@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using DeepReader.Storage.Faster.Transactions.Standalone;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Infrastructure;
 using DeepReader.Types.StorageTypes;
 using FASTER.common;
 
@@ -18,7 +19,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         {
             ReserveHeader(ref dst); // we need to reserve an sizeof(int) here
             var writer = new BinaryWriter(new UnmanagedMemoryStream(dst, length - sizeof(int), length - sizeof(int), FileAccess.Write));
-            k.Id.WriteToBinaryWriter(writer);
+            k.Id.WriteToFaster(writer);
             SetHeader(ref dst, writer);
             SetPos(ref dst, writer);
             return true;
@@ -37,7 +38,7 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         {
             ReserveHeader(ref dst); // we need to reserve an sizeof(int) here
             var writer = new BinaryWriter(new UnmanagedMemoryStream(dst, length - sizeof(int), length - sizeof(int), FileAccess.Write));
-            v.WriteToBinaryWriter(writer);
+            v.WriteToFaster(writer);
             SetHeader(ref dst, writer);
             SetPos(ref dst, writer);
             return true;
@@ -45,11 +46,10 @@ namespace DeepReader.Storage.Faster.Transactions.Client
 
         public unsafe TransactionTrace ReadOutput(ref byte* src)
         {
-            var length = Unsafe.Read<long>(src);
-            src += sizeof(long);
+            var length = Unsafe.Read<int>(src);
+            src += sizeof(int);
             // length is written in TransactionServerSerializer.Write(...)
-            var reader = new BinaryReader(new UnmanagedMemoryStream(src, length, length, FileAccess.Read));
-            src += length;
+            var reader = new UnsafeBinaryUnmanagedReader(ref src, length);
             return TransactionTrace.ReadFromBinaryReader(reader);
         }
 
@@ -58,10 +58,9 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         public unsafe TransactionId ReadKey(ref byte* src)
         {
             // TODO clean this up
-            var reader = new BinaryReader(new UnmanagedMemoryStream(src, Checksum256.Checksum256ByteLength, Checksum256.Checksum256ByteLength, FileAccess.Read));
+            var reader = new UnsafeBinaryUnmanagedReader(src, Checksum256.Checksum256ByteLength);
             var trxId = Types.Eosio.Chain.TransactionId.ReadFromBinaryReader(reader);
             var id = new TransactionId(trxId);
-            src += Checksum256.Checksum256ByteLength;
             return id;
         }
 
@@ -69,12 +68,11 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         public unsafe TransactionTrace ReadValue(ref byte* src)
         {
             // TODO clean this up
-            var length = Unsafe.Read<long>(src);
-            src += sizeof(long);
+            var length = Unsafe.Read<int>(src);
+            src += sizeof(int);
             // length is written in TransactionServerSerializer.Write(...)
-            var reader = new BinaryReader(new UnmanagedMemoryStream(src, length, length, FileAccess.Read));
+            var reader = new UnsafeBinaryUnmanagedReader(src, length);
             var trace = TransactionTrace.ReadFromBinaryReader(reader);
-            src += reader.BaseStream.Position;
             return trace;
         }
 

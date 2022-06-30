@@ -14,7 +14,7 @@ public struct Symbol : IEosioSerializable<Symbol>
         Precision = precision;
     }
 
-    public static Symbol ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static Symbol ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var symbol = new Symbol
         {

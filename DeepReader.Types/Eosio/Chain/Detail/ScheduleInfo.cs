@@ -12,14 +12,14 @@ public struct ScheduleInfo : IEosioSerializable<ScheduleInfo>
     public Checksum256 ScheduleHash;
     public ProducerAuthoritySchedule Schedule;
 
-    public ScheduleInfo(BinaryBufferReader reader)
+    public ScheduleInfo(IBufferReader reader)
     {
         ScheduleLibNum = reader.ReadUInt32();
         ScheduleHash = Checksum256.ReadFromBinaryReader(reader);
         Schedule = ProducerAuthoritySchedule.ReadFromBinaryReader(reader);
     }
 
-    public static ScheduleInfo ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static ScheduleInfo ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new ScheduleInfo(reader);
     }

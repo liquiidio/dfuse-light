@@ -7,6 +7,6 @@
 
     public interface IEosioSerializable<out T> : IEosioSerializable
     {
-        static abstract T ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true);
+        static abstract T ReadFromBinaryReader(IBufferReader reader, bool fromPool = true);
     }
 }

@@ -12,13 +12,13 @@ public sealed class KeyWeight : IEosioSerializable<KeyWeight>
 
     public KeyWeight() { }
 
-    public KeyWeight(BinaryBufferReader reader)
+    public KeyWeight(IBufferReader reader)
     {
         Key = PublicKey.ReadFromBinaryReader(reader);
         Weight = reader.ReadUInt16();
     }
 
-    public static KeyWeight ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static KeyWeight ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new KeyWeight(reader);
     }

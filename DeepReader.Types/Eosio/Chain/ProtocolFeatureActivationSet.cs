@@ -10,7 +10,7 @@ public sealed class ProtocolFeatureActivationSet : IEosioSerializable<ProtocolFe
 {
     public Checksum256[] ProtocolFeatures;
 
-    public ProtocolFeatureActivationSet(BinaryBufferReader reader)
+    public ProtocolFeatureActivationSet(IBufferReader reader)
     {
         ProtocolFeatures = new Checksum256[reader.Read7BitEncodedInt()];
 
@@ -19,7 +19,7 @@ public sealed class ProtocolFeatureActivationSet : IEosioSerializable<ProtocolFe
             ProtocolFeatures[i] = Checksum256.ReadFromBinaryReader(reader);
         }
     }
-    public static ProtocolFeatureActivationSet ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static ProtocolFeatureActivationSet ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         return new ProtocolFeatureActivationSet(reader);
     }

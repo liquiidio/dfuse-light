@@ -21,7 +21,7 @@ public struct Asset : IEosioSerializable<Asset>
         return amount;
     }
 
-    public static Asset ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)
+    public static Asset ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
     {
         var asset = new Asset();
 
