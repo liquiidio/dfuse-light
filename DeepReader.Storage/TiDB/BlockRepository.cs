@@ -5,26 +5,35 @@ namespace DeepReader.Storage.TiDB
 {
     internal class BlockRepository
     {
-        private readonly DataContext _context;
+        private readonly IDbContextFactory<DataContext> _dbContextFactory;
 
-        public BlockRepository(DataContext context)
+        public BlockRepository(IDbContextFactory<DataContext> dbContextFactory)
         {
-            _context = context;
+            _dbContextFactory = dbContextFactory;
         }
 
-        public async Task WriteBlock(Block block)
+        public async Task WriteBlock(Block block, CancellationToken cancellationToken = default)
         {
-            await _context.Blocks.AddAsync(block);
-            await _context.SaveChangesAsync();
+            using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+            if (context is not null)
+            {
+                await context.Blocks.AddAsync(block);
+                await context.SaveChangesAsync();
+            }
         }
 
-        public async Task<(bool, Block)> TryGetBlockById(uint blockNum)
+        public async Task<(bool, Block)> TryGetBlockById(uint blockNum, CancellationToken cancellationToken = default)
         {
-            var block = await _context.Blocks.FirstOrDefaultAsync(b => b.Number == blockNum);
+            using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            if (block is null)
-                return (false, null!);
-            return (true, block);
+            if (context is not null)
+            {
+                var block = await context.Blocks.FirstOrDefaultAsync(b => b.Number == blockNum);
+
+                if (block is not null)
+                    return (true, block);
+            }
+            return (false, null!);
         }
     }
 }

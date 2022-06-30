@@ -5,27 +5,37 @@ namespace DeepReader.Storage.TiDB
 {
     internal class ActionTraceRepository
     {
-        private readonly DataContext _context;
+        private readonly IDbContextFactory<DataContext> _dbContextFactory;
 
-        public ActionTraceRepository(DataContext context)
+        public ActionTraceRepository(IDbContextFactory<DataContext> dbContextFactory)
         {
-            _context = context;
+            _dbContextFactory = dbContextFactory;
         }
 
-        public async Task WriteActionTrace(ActionTrace actionTrace)
+        public async Task WriteActionTrace(ActionTrace actionTrace, CancellationToken cancellationToken = default)
         {
-            await _context.ActionTraces.AddAsync(actionTrace);
-            await _context.SaveChangesAsync();
+            using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            if (context is not null)
+            {
+                await context.ActionTraces.AddAsync(actionTrace);
+                await context.SaveChangesAsync();
+            }
         }
 
-        public async Task<(bool, ActionTrace)> TryGetActionTraceById(ulong globalSequence)
+        public async Task<(bool, ActionTrace)> TryGetActionTraceById(ulong globalSequence, CancellationToken cancellationToken = default)
         {
-            var actionTrace = await _context.ActionTraces.FirstOrDefaultAsync(a => a.GlobalSequence == globalSequence);
+            using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            if (actionTrace is null)
-                return (false, null!);
+            if (context is not null)
+            {
+                var actionTrace = await context.ActionTraces.FirstOrDefaultAsync(a => a.GlobalSequence == globalSequence);
 
-            return (true, actionTrace);
+                if (actionTrace is not null)
+                    return (true, actionTrace);
+            }
+
+            return (false, null!);
         }
     }
 }

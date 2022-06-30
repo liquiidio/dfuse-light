@@ -5,26 +5,36 @@ namespace DeepReader.Storage.TiDB
 {
     internal class TransactionRepository
     {
-        private readonly DataContext _context;
+        private readonly IDbContextFactory<DataContext> _dbContextFactory;
 
-        public TransactionRepository(DataContext context)
+        public TransactionRepository(IDbContextFactory<DataContext> dbContextFactory)
         {
-            _context = context;
+            _dbContextFactory = dbContextFactory;
         }
 
-        public async Task WriteTransaction(TransactionTrace transaction)
+        public async Task WriteTransaction(TransactionTrace transaction, CancellationToken cancellationToken = default)
         {
-            await _context.TransactionTraces.AddAsync(transaction);
-            await _context.SaveChangesAsync();
+            using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            if (context is not null)
+            {
+                await context.TransactionTraces.AddAsync(transaction);
+                await context.SaveChangesAsync();
+            }
         }
 
-        public async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId)
+        public async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId, CancellationToken cancellationToken = default)
         {
-            var transaction = await _context.TransactionTraces.FirstOrDefaultAsync(t => t.Id == transactionId);
+            using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            if (transaction is null)
-                return (false, null!);
-            return (true, transaction);
+            if (context is not null)
+            {
+                var transaction = await context.TransactionTraces.FirstOrDefaultAsync(t => t.Id == transactionId);
+
+                if (transaction is not null)
+                    return (true, transaction);
+            }
+            return (false, null!);
         }
     }
 }

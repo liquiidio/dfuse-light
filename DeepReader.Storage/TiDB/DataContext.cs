@@ -13,5 +13,11 @@ namespace DeepReader.Storage.TiDB
         public DbSet<Block> Blocks { get; set; }
         public DbSet<TransactionTrace> TransactionTraces { get; set; }
         public DbSet<ActionTrace> ActionTraces { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // We will describe relationships between table here
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }
