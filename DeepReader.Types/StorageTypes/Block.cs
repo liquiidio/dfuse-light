@@ -3,7 +3,6 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Other;
-using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.StorageTypes;
 

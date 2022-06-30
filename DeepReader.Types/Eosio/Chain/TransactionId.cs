@@ -2,7 +2,6 @@
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
 using Microsoft.Extensions.ObjectPool;
-using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 

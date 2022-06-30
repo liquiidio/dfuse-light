@@ -1,7 +1,6 @@
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
-using Salar.BinaryBuffers;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -16,24 +15,34 @@ public sealed class SignedTransaction : Transaction, IEosioSerializable<SignedTr
 
     public SignedTransaction(BinaryBufferReader reader) : base(reader)
     {
-        if (reader.BaseStream.Position == reader.BaseStream.Length) // Don't know exactly why but sometimes the stream is at it's end here already.
+        //if (reader.BaseStream.Position == reader.BaseStream.Length) // Don't know exactly why but sometimes the stream is at it's end here already.
+        //{
+           
+        //}
+
+        // I've replaced this with a try catch, I assume if the stream is at its end we will get an error which will be handled by creating empty arrays.
+
+        try
+        {
+            Signatures = new Signature[reader.Read7BitEncodedInt()];
+            for (int i = 0; i < Signatures.Length; i++)
+            {
+                Signatures[i] = Signature.ReadFromBinaryReader(reader);
+            }
+
+            ContextFreeData = new Bytes[reader.Read7BitEncodedInt()];
+            for (int i = 0; i != ContextFreeData.Length; i++)
+            {
+                ContextFreeData[i] = Bytes.ReadFromBinaryReader(reader);
+            }
+        }
+        catch
         {
             Signatures = Array.Empty<Signature>();
             ContextFreeData = Array.Empty<Bytes>();
             return;
         }
-
-        Signatures = new Signature[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < Signatures.Length; i++)
-        {
-            Signatures[i] = Signature.ReadFromBinaryReader(reader);
-        }
-
-        ContextFreeData = new Bytes[reader.Read7BitEncodedInt()];
-        for (int i = 0; i != ContextFreeData.Length; i++)
-        {
-            ContextFreeData[i] = Bytes.ReadFromBinaryReader(reader);
-        }
+       
     }
 
     public new static SignedTransaction ReadFromBinaryReader(BinaryBufferReader reader, bool fromPool = true)

@@ -3,7 +3,6 @@ using DeepReader.Types.Extensions;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
-using Salar.BinaryBuffers;
 using Serilog;
 
 namespace DeepReader.Types.Fc.Crypto;

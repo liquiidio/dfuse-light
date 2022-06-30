@@ -1,6 +1,4 @@
-﻿using Salar.BinaryBuffers;
-
-namespace DeepReader.Types.EosTypes;
+﻿namespace DeepReader.Types.EosTypes;
 
 public struct SymbolCode : IEosioSerializable<SymbolCode>
 {
