@@ -23,6 +23,17 @@ namespace DeepReader.Storage.TiDB
             }
         }
 
+        public async Task WriteActionTraces(IEnumerable<ActionTrace> traces, CancellationToken cancellationToken = default)
+        {
+            using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            if (context is not null)
+            {
+                await context.ActionTraces.AddRangeAsync(traces);
+                await context.SaveChangesAsync();
+            }
+        }
+
         public async Task<(bool, ActionTrace)> TryGetActionTraceById(ulong globalSequence, CancellationToken cancellationToken = default)
         {
             using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
