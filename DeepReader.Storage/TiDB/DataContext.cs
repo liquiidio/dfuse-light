@@ -1,4 +1,5 @@
-﻿using DeepReader.Types.StorageTypes;
+﻿using DeepReader.Storage.Faster.Abis;
+using DeepReader.Types.StorageTypes;
 using Microsoft.EntityFrameworkCore;
 
 namespace DeepReader.Storage.TiDB
@@ -13,6 +14,7 @@ namespace DeepReader.Storage.TiDB
         public DbSet<Block> Blocks { get; set; }
         public DbSet<TransactionTrace> TransactionTraces { get; set; }
         public DbSet<ActionTrace> ActionTraces { get; set; }
+        public DbSet<AbiCacheItem> Abis { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

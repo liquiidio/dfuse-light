@@ -22,18 +22,26 @@ namespace DeepReader.Storage.TiDB
             }
         }
 
-        public async Task<(bool, Block)> TryGetBlockById(uint blockNum, CancellationToken cancellationToken = default)
+        public async Task<(bool, Block)> TryGetBlockById(uint blockNum, bool includeTransactionTraces = false, bool includeActionTraces = false, CancellationToken cancellationToken = default)
         {
             using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            if (context is not null)
-            {
-                var block = await context.Blocks.FirstOrDefaultAsync(b => b.Number == blockNum);
+            if (context is null)
+                return (false, null!);
 
-                if (block is not null)
-                    return (true, block);
-            }
-            return (false, null!);
+            Block? block = null;
+
+            //if (includeTransactionTraces && includeActionTraces)
+            //{
+            //    block = await context.Blocks.FirstOrDefaultAsync(b => b.Number == blockNum);
+            //}
+
+            block = await context.Blocks.FirstOrDefaultAsync(b => b.Number == blockNum);
+
+            if (block is null)
+                return (false, null!);
+
+            return (true, block);
         }
     }
 }
