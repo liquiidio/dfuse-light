@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using DeepReader.Types.Eosio.Chain;
-using DeepReader.Types.EosTypes;
-using DeepReader.Types.Infrastructure;
+﻿using System.Runtime.CompilerServices;
 using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.Interfaces;
 using FASTER.common;
 
-namespace DeepReader.Storage.Faster.Test
+namespace DeepReader.Storage.Faster.StoreBase.Client
 {
     namespace DeepReader.Storage.Faster.Transactions.Client
     {

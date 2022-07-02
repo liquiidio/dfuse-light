@@ -1,15 +1,13 @@
-﻿using DeepReader.Storage.Faster.Base;
-using DeepReader.Storage.Faster.Base.Standalone;
-using DeepReader.Storage.Faster.Test;
+﻿using DeepReader.Storage.Faster.StoreBase;
+using DeepReader.Storage.Faster.StoreBase.Standalone;
 using DeepReader.Storage.Options;
-using DeepReader.Types.Interfaces;
 using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.Blocks
+namespace DeepReader.Storage.Faster.Stores.Blocks
 {
     public class BlockStore : BlockStoreBase
     {

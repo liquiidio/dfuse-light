@@ -1,6 +1,6 @@
 ﻿using FASTER.common;
 
-namespace DeepReader.Storage.Faster.Abis.Server
+namespace DeepReader.Storage.Faster.Stores.Abis.Server
 {
     internal class AbiServerKeySerializer : IKeySerializer<ulong>
     {

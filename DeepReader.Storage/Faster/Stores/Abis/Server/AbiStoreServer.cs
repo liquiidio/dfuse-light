@@ -1,11 +1,11 @@
-﻿using DeepReader.Storage.Faster.Abis.Standalone;
+﻿using DeepReader.Storage.Faster.Stores.Abis.Standalone;
 using DeepReader.Storage.Options;
 using FASTER.common;
 using FASTER.core;
 using FASTER.server;
 using HotChocolate.Subscriptions;
 
-namespace DeepReader.Storage.Faster.Abis.Server
+namespace DeepReader.Storage.Faster.Stores.Abis.Server
 {
     internal class AbiStoreServer : AbiStore
     {

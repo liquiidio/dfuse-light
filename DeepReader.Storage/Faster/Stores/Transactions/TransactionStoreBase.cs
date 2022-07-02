@@ -4,16 +4,16 @@ using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 
-namespace DeepReader.Storage.Faster.Transactions
+namespace DeepReader.Storage.Faster.Stores.Transactions
 {
     public abstract class TransactionStoreBase
     {
-        internal readonly FasterStorageOptions _options;
+        internal int _sessionCount;
 
+        internal readonly FasterStorageOptions _options;
 
         internal ITopicEventSender _eventSender;
         internal MetricsCollector _metricsCollector;
-
 
         internal static readonly SummaryConfiguration SummaryConfiguration = new SummaryConfiguration()
         { MaxAge = TimeSpan.FromSeconds(30) };

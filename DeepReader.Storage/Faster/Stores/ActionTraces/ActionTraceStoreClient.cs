@@ -1,23 +1,20 @@
-﻿using DeepReader.Types.StorageTypes;
-using FASTER.client;
-using System.Text;
+﻿using DeepReader.Storage.Faster.StoreBase;
+using DeepReader.Storage.Faster.StoreBase.Client;
+using DeepReader.Storage.Faster.StoreBase.Client.DeepReader.Storage.Faster.Transactions.Client;
 using DeepReader.Storage.Options;
+using DeepReader.Types.StorageTypes;
+using FASTER.client;
 using FASTER.common;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
-using Status = FASTER.core.Status;
-using DeepReader.Storage.Faster.Test;
-using DeepReader.Storage.Faster.Test.Client;
-using DeepReader.Storage.Faster.Test.DeepReader.Storage.Faster.Transactions.Client;
 
-namespace DeepReader.Storage.Faster.ActionTraces
+namespace DeepReader.Storage.Faster.Stores.ActionTraces
 {
     internal class ActionTraceStoreClient : ActionTraceStoreBase
     {
         private const string ip = "127.0.0.1";
         private const int port = 5005;
-        private static Encoding _encode = Encoding.UTF8;
 
         private readonly AsyncPool<ClientSession<ulong, ActionTrace, ActionTrace, ActionTrace, KeyValueContext,
                 ClientFunctions<UlongKey, ulong, ActionTrace>, ClientSerializer<UlongKey, ulong, ActionTrace>>> _sessionPool;
@@ -32,7 +29,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
                 new AsyncPool<ClientSession<ulong, ActionTrace, ActionTrace, ActionTrace, KeyValueContext,
                     ClientFunctions<UlongKey, ulong, ActionTrace>, ClientSerializer<UlongKey, ulong, ActionTrace>>>(
                     size: 4,    // TODO no idea how many sessions make sense and do work,
-                                // hopefully Faster-Serve just blocks if it can't handle the amount of sessions and data :D
+                                // hopefully Faster-Server just blocks if it can't handle the amount of sessions and data :D
                     () => _client
                         .NewSession<ActionTrace, ActionTrace, KeyValueContext, ClientFunctions<UlongKey, ulong, ActionTrace>,
                             ClientSerializer<UlongKey, ulong, ActionTrace>>(new ClientFunctions<UlongKey, ulong, ActionTrace>(), WireFormat.WebSocket,
@@ -44,7 +41,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
             // Nothing to observe here for now, _client doesn't give any info, we probably have something to observe later
         }
 
-        public override async Task<Status> WriteActionTrace(ActionTrace actionTrace)
+        public override async Task<FASTER.core.Status> WriteActionTrace(ActionTrace actionTrace)
         {
             var actionTraceId = actionTrace.GlobalSequence;
 
@@ -57,7 +54,7 @@ namespace DeepReader.Storage.Faster.ActionTraces
                 await session.UpsertAsync(actionTraceId, actionTrace);
 
                 // UpsertAsync does not return anything here, I assume we have to SubscribeKV to manually verify something was upserted?! 
-                return Status.CreatePending();
+                return FASTER.core.Status.CreatePending();
             }
         }
 

@@ -3,9 +3,8 @@ using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
-using Serilog;
 
-namespace DeepReader.Storage.Faster.ActionTraces
+namespace DeepReader.Storage.Faster.Stores.ActionTraces
 {
     public abstract class ActionTraceStoreBase
     {

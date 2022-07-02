@@ -1,7 +1,7 @@
-﻿using DeepReader.Storage.Faster.Abis.Standalone;
+﻿using DeepReader.Storage.Faster.Stores.Abis.Standalone;
 using FASTER.common;
 
-namespace DeepReader.Storage.Faster.Abis.Client
+namespace DeepReader.Storage.Faster.Stores.Abis.Client
 {
     internal class AbiClientSerializer : IClientSerializer<ulong, AbiCacheItem, AbiInput, AbiOutput>
     {

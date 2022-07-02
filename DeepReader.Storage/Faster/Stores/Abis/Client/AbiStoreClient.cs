@@ -1,5 +1,7 @@
-﻿using DeepReader.Storage.Faster.Abis.Base;
-using DeepReader.Storage.Faster.Abis.Standalone;
+﻿using System.Reflection;
+using System.Text;
+using DeepReader.Storage.Faster.Stores.Abis.Base;
+using DeepReader.Storage.Faster.Stores.Abis.Standalone;
 using DeepReader.Storage.Options;
 using DeepReader.Types.EosTypes;
 using FASTER.client;
@@ -7,11 +9,8 @@ using FASTER.common;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
-using System.Buffers;
-using System.Reflection;
-using System.Text;
 
-namespace DeepReader.Storage.Faster.Abis.Client
+namespace DeepReader.Storage.Faster.Stores.Abis.Client
 {
     internal class AbiStoreClient : AbiStoreBase
     {

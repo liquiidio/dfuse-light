@@ -1,11 +1,10 @@
 ﻿using System.Runtime.CompilerServices;
-using DeepReader.Types.Infrastructure;
 using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.Interfaces;
 using FASTER.common;
 
-namespace DeepReader.Storage.Faster.Test.Server
+namespace DeepReader.Storage.Faster.StoreBase.Server
 {
     public class ServerSerializer<TKey, TKKey, TValue> : IServerSerializer<TKKey, TValue, TKKey, TValue>
         where TKey : IKey<TKKey>

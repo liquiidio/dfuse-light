@@ -1,13 +1,11 @@
-﻿using FASTER.server;
+﻿using DeepReader.Storage.Faster.StoreBase.Server;
 using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using FASTER.common;
-using FASTER.core;
+using FASTER.server;
 using HotChocolate.Subscriptions;
-using DeepReader.Storage.Faster.Base;
-using DeepReader.Storage.Faster.Test.Server;
 
-namespace DeepReader.Storage.Faster.ActionTraces
+namespace DeepReader.Storage.Faster.Stores.ActionTraces
 {
     internal class ActionTraceStoreServer : ActionTraceStore
     {
@@ -16,7 +14,6 @@ namespace DeepReader.Storage.Faster.ActionTraces
         readonly ServerKVProvider<UlongKey, ulong, ActionTrace> provider;
         readonly SubscribeKVBroker<ulong, ActionTrace, ulong, IKeyInputSerializer<ulong, ulong>> kvBroker;
         readonly SubscribeBroker<ulong, ActionTrace, IKeySerializer<ulong>> broker;
-        readonly LogSettings logSettings;
 
         public ActionTraceStoreServer(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {

@@ -1,6 +1,6 @@
 ﻿using FASTER.core;
 
-namespace DeepReader.Storage.Faster.Abis.Standalone;
+namespace DeepReader.Storage.Faster.Stores.Abis.Standalone;
 
 public sealed class AbiValueSerializer : BinaryObjectSerializer<AbiCacheItem>
 {

@@ -1,13 +1,13 @@
-using DeepReader.Storage.Faster.Abis.Base;
+using System.Reflection;
+using DeepReader.Storage.Faster.Stores.Abis.Base;
 using DeepReader.Storage.Options;
 using DeepReader.Types.EosTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 using Serilog;
-using System.Reflection;
 
-namespace DeepReader.Storage.Faster.Abis.Standalone
+namespace DeepReader.Storage.Faster.Stores.Abis.Standalone
 {
     public class AbiStore : AbiStoreBase
     {

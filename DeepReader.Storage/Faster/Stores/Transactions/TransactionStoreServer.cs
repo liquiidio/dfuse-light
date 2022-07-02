@@ -1,4 +1,4 @@
-﻿using DeepReader.Storage.Faster.Test.Server;
+﻿using DeepReader.Storage.Faster.StoreBase.Server;
 using DeepReader.Storage.Options;
 using DeepReader.Types.Eosio.Chain;
 using FASTER.common;
@@ -7,7 +7,7 @@ using FASTER.server;
 using HotChocolate.Subscriptions;
 using TransactionTrace = DeepReader.Types.StorageTypes.TransactionTrace;
 
-namespace DeepReader.Storage.Faster.Transactions
+namespace DeepReader.Storage.Faster.Stores.Transactions
 {
     public class TransactionStoreServer : TransactionStore
     {
@@ -17,7 +17,6 @@ namespace DeepReader.Storage.Faster.Transactions
         readonly SubscribeKVBroker<TransactionId, TransactionTrace, TransactionId, IKeyInputSerializer<TransactionId, TransactionId>> kvBroker;
         readonly SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>> broker;
         readonly LogSettings logSettings;
-
 
         public TransactionStoreServer(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {

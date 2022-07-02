@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DeepReader.Types.Eosio.Chain;
-using DeepReader.Types.EosTypes;
-using DeepReader.Types.Infrastructure;
-using DeepReader.Types.Infrastructure.BinaryReaders;
+﻿using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Interfaces;
 using FASTER.common;
 
-namespace DeepReader.Storage.Faster.Test.Server
+namespace DeepReader.Storage.Faster.StoreBase.Server
 {
     public class ServerKeySerializer<TKey> : IKeySerializer<TKey>
         where TKey : IKey<TKey>

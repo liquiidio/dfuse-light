@@ -1,7 +1,7 @@
-﻿using DeepReader.Storage.Faster.Abis.Standalone;
+﻿using DeepReader.Storage.Faster.Stores.Abis.Standalone;
 using FASTER.client;
 
-namespace DeepReader.Storage.Faster.Abis.Client
+namespace DeepReader.Storage.Faster.Stores.Abis.Client
 {
     internal class AbiClientFunctions : ICallbackFunctions<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext>
     {

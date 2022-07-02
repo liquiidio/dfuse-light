@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DeepReader.Types.Eosio.Chain;
+﻿using System.Diagnostics;
 using DeepReader.Types.Interfaces;
 using FASTER.client;
 
-namespace DeepReader.Storage.Faster.Test.Client
+namespace DeepReader.Storage.Faster.StoreBase.Client
 {
     internal class ClientFunctions<TKey, TKKey, TValue> : ICallbackFunctions<TKKey, TValue, TValue, TValue, KeyValueContext>
     where TKey : IKey<TKKey>

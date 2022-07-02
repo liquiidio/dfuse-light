@@ -1,9 +1,9 @@
-﻿using DeepReader.Storage.Faster.Abis.Standalone;
-using DeepReader.Storage.Options;
+﻿using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using Microsoft.Extensions.Options;
 using Nest;
 using System.Reflection;
+using DeepReader.Storage.Faster.Stores.Abis.Standalone;
 
 namespace DeepReader.Storage.Elastic
 {

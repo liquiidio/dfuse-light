@@ -1,8 +1,8 @@
-﻿using FASTER.core;
+﻿using System.Reflection;
+using FASTER.core;
 using Serilog;
-using System.Reflection;
 
-namespace DeepReader.Storage.Faster.Abis.Standalone;
+namespace DeepReader.Storage.Faster.Stores.Abis.Standalone;
 
 public sealed class AbiFunctions : FunctionsBase<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext>
 {

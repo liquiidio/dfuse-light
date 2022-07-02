@@ -1,6 +1,5 @@
-using DeepReader.Storage.Faster.Base;
-using DeepReader.Storage.Faster.Base.Standalone;
-using DeepReader.Storage.Faster.Test;
+using DeepReader.Storage.Faster.StoreBase;
+using DeepReader.Storage.Faster.StoreBase.Standalone;
 using DeepReader.Storage.Options;
 using DeepReader.Types.Eosio.Chain;
 using FASTER.core;
@@ -9,7 +8,7 @@ using Prometheus;
 using Serilog;
 using TransactionTrace = DeepReader.Types.StorageTypes.TransactionTrace;
 
-namespace DeepReader.Storage.Faster.Transactions
+namespace DeepReader.Storage.Faster.Stores.Transactions
 {
     public class TransactionStore : TransactionStoreBase
     {
@@ -17,8 +16,6 @@ namespace DeepReader.Storage.Faster.Transactions
 
         private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, Input, TransactionTrace,
             KeyValueContext, StandaloneFunctions<TransactionId, TransactionTrace>>> _sessionPool;
-
-        private int _sessionCount;
 
         public TransactionStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {

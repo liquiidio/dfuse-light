@@ -1,7 +1,5 @@
-using DeepReader.Storage.Faster.Base;
-using DeepReader.Storage.Faster.Base.Standalone;
-using DeepReader.Storage.Faster.Test;
-using DeepReader.Storage.Faster.Test.Server;
+using DeepReader.Storage.Faster.StoreBase;
+using DeepReader.Storage.Faster.StoreBase.Standalone;
 using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using FASTER.core;
@@ -9,7 +7,7 @@ using HotChocolate.Subscriptions;
 using Prometheus;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.ActionTraces
+namespace DeepReader.Storage.Faster.Stores.ActionTraces
 {
     public class ActionTraceStore : ActionTraceStoreBase
     {

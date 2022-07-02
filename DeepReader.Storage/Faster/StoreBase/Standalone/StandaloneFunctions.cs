@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DeepReader.Storage.Faster.Test;
-using FASTER.core;
+﻿using FASTER.core;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.Base.Standalone
+namespace DeepReader.Storage.Faster.StoreBase.Standalone
 {
     internal class
         StandaloneFunctions<TKey, TValue> : FunctionsBase<TKey, TValue, Input, TValue, KeyValueContext>

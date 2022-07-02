@@ -1,5 +1,4 @@
-﻿using DeepReader.Storage.Faster.Base;
-using DeepReader.Storage.Faster.Test.Server;
+﻿using DeepReader.Storage.Faster.StoreBase.Server;
 using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using FASTER.common;
@@ -7,7 +6,7 @@ using FASTER.core;
 using FASTER.server;
 using HotChocolate.Subscriptions;
 
-namespace DeepReader.Storage.Faster.Blocks
+namespace DeepReader.Storage.Faster.Stores.Blocks
 {
     public class BlockStoreServer : BlockStore
     {

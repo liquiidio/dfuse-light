@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DeepReader.Types.Other;
+﻿using DeepReader.Types.Other;
 using FASTER.core;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.Base
+namespace DeepReader.Storage.Faster.StoreBase
 {
     internal class PooledObjectEvictionObserver<TKey, TValue> : IObserver<IFasterScanIterator<TKey, TValue>>
         where TValue : PooledObject<TValue>, IParentPooledObject<TValue>, new()

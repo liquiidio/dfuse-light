@@ -1,22 +1,20 @@
-﻿using DeepReader.Storage.Options;
+﻿using DeepReader.Storage.Faster.StoreBase;
+using DeepReader.Storage.Faster.StoreBase.Client;
+using DeepReader.Storage.Faster.StoreBase.Client.DeepReader.Storage.Faster.Transactions.Client;
+using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using FASTER.client;
 using FASTER.common;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
-using System.Text;
-using DeepReader.Storage.Faster.Test;
-using DeepReader.Storage.Faster.Test.Client;
-using DeepReader.Storage.Faster.Test.DeepReader.Storage.Faster.Transactions.Client;
 
-namespace DeepReader.Storage.Faster.Blocks
+namespace DeepReader.Storage.Faster.Stores.Blocks
 {
     internal class BlockStoreClient : BlockStoreBase
     {
         private const string ip = "127.0.0.1";
         private const int port = 5002;
-        private static Encoding _encode = Encoding.UTF8;
 
         private readonly AsyncPool<ClientSession<long, Block, Block, Block, KeyValueContext,
             ClientFunctions<LongKey, long, Block>, ClientSerializer<LongKey, long, Block>>> _sessionPool;
@@ -31,7 +29,7 @@ namespace DeepReader.Storage.Faster.Blocks
                 new AsyncPool<ClientSession<long, Block, Block, Block, KeyValueContext,
                     ClientFunctions<LongKey, long, Block>, ClientSerializer<LongKey, long, Block>>>(
                     size: 4,    // TODO no idea how many sessions make sense and do work,
-                                // hopefully Faster-Serve just blocks if it can't handle the amount of sessions and data :D
+                                // hopefully Faster-Server just blocks if it can't handle the amount of sessions and data :D
                     () => _client
                         .NewSession<Block, Block, KeyValueContext, ClientFunctions<LongKey, long, Block>,
                             ClientSerializer<LongKey, long, Block>>(new ClientFunctions<LongKey, long, Block>(), WireFormat.WebSocket,

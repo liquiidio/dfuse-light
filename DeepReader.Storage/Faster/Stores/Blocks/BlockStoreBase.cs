@@ -4,7 +4,7 @@ using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 
-namespace DeepReader.Storage.Faster.Blocks
+namespace DeepReader.Storage.Faster.Stores.Blocks
 {
     public abstract class BlockStoreBase
     {

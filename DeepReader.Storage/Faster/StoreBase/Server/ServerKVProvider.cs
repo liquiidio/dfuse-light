@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DeepReader.Types.Interfaces;
+﻿using DeepReader.Types.Interfaces;
 using FASTER.common;
 using FASTER.core;
 using FASTER.server;
 
-namespace DeepReader.Storage.Faster.Test.Server
+namespace DeepReader.Storage.Faster.StoreBase.Server
 {
     public class ServerKVProvider<TKey, TKKey, TValue> : FasterKVProviderBase<TKKey, TValue, TKKey,
         TValue, ServerFunctions<TKKey, TValue>, ServerSerializer<TKey, TKKey, TValue>>

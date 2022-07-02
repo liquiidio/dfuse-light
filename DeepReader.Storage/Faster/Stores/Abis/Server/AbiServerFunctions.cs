@@ -1,7 +1,7 @@
-﻿using DeepReader.Storage.Faster.Abis.Standalone;
+﻿using DeepReader.Storage.Faster.Stores.Abis.Standalone;
 using FASTER.core;
 
-namespace DeepReader.Storage.Faster.Abis.Server
+namespace DeepReader.Storage.Faster.Stores.Abis.Server
 {
     internal sealed class AbiServerFunctions : IFunctions<ulong, AbiCacheItem, AbiInput, AbiOutput, long>
     {

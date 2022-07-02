@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FASTER.core;
+﻿using FASTER.core;
 
-namespace DeepReader.Storage.Faster.Test.Server
+namespace DeepReader.Storage.Faster.StoreBase.Server
 {
     public class ServerFunctions<TKey, TValue> : IFunctions<TKey, TValue, TKey, TValue, long>
     {
