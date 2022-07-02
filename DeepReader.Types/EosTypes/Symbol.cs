@@ -1,4 +1,6 @@
-﻿namespace DeepReader.Types.EosTypes;
+﻿using DeepReader.Types.Infrastructure.BinaryReaders;
+
+namespace DeepReader.Types.EosTypes;
 
 public struct Symbol : IEosioSerializable<Symbol>
 {

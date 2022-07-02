@@ -1,5 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
 
@@ -30,7 +32,7 @@ public sealed class Checksum256 : PooledObject<Checksum256>, IEosioSerializable<
         return obj;
     }
 
-    public static Checksum256 ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static Checksum256 ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new Checksum256();
 
@@ -39,7 +41,7 @@ public sealed class Checksum256 : PooledObject<Checksum256>, IEosioSerializable<
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         writer.Write(Binary);
         _stringVal = null;

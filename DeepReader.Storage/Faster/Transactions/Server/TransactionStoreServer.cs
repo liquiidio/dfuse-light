@@ -14,7 +14,7 @@ namespace DeepReader.Storage.Faster.Transactions.Server
     {
         readonly ServerOptions _serverOptions;
         readonly IFasterServer server;
-        readonly ServerKVProvider<TransactionId, TransactionTrace> provider;
+        readonly ServerKVProvider<TransactionId, TransactionId, TransactionTrace> provider;
         readonly SubscribeKVBroker<TransactionId, TransactionTrace, TransactionId, IKeyInputSerializer<TransactionId,TransactionId>> kvBroker;
         readonly SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>> broker;
         readonly LogSettings logSettings;
@@ -44,14 +44,14 @@ namespace DeepReader.Storage.Faster.Transactions.Server
             {
                 kvBroker =
                     new SubscribeKVBroker<TransactionId, TransactionTrace, TransactionId,
-                        IKeyInputSerializer<TransactionId, TransactionId>>(new ServerKeyInputSerializer<TransactionId>(), null,
+                        IKeyInputSerializer<TransactionId, TransactionId>>(new ServerKeyInputSerializer<TransactionId, TransactionId>(), null,
                         _serverOptions.PubSubPageSizeBytes(), true);
                 broker = new SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>>(
-                        new ServerKeyInputSerializer<TransactionId>(), null, 
+                        new ServerKeyInputSerializer<TransactionId, TransactionId>(), null, 
                         _serverOptions.PubSubPageSizeBytes(), true);
             }
 
-            provider = new ServerKVProvider<TransactionId, TransactionTrace>(_store, new ServerSerializer<TransactionId, TransactionTrace>(), kvBroker, broker, _serverOptions.Recover);
+            provider = new ServerKVProvider<TransactionId, TransactionId, TransactionTrace>(_store, new ServerSerializer<TransactionId, TransactionId, TransactionTrace>(), kvBroker, broker, _serverOptions.Recover);
 
             server = new FasterServerTcp(_serverOptions.Address, _serverOptions.Port);
             server.Register(WireFormat.DefaultVarLenKV, provider);

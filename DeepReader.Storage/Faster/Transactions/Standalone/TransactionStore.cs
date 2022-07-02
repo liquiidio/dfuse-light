@@ -49,7 +49,7 @@ namespace DeepReader.Storage.Faster.Transactions.Standalone
             // Needed only for class keys/values
             var serializerSettings = new SerializerSettings<TransactionId, TransactionTrace>
             {
-                keySerializer = () => new IdSerializer<TransactionId>(),
+                keySerializer = () => new KeySerializer<TransactionId, TransactionId>(),
                 valueSerializer = () => new ValueSerializer<TransactionTrace>()
             };
 

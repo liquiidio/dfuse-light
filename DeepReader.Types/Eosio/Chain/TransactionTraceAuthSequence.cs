@@ -1,4 +1,6 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -27,7 +29,7 @@ public sealed class TransactionTraceAuthSequence : PooledObject<TransactionTrace
         return obj;
     }
 
-    public static TransactionTraceAuthSequence ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static TransactionTraceAuthSequence ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new TransactionTraceAuthSequence();
 
@@ -37,7 +39,7 @@ public sealed class TransactionTraceAuthSequence : PooledObject<TransactionTrace
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         Account.WriteToFaster(writer);
         writer.Write(Sequence);

@@ -1,4 +1,6 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -27,7 +29,7 @@ public sealed class PermissionLevel : PooledObject<PermissionLevel>, IEosioSeria
         return obj;
     }
 
-    public static PermissionLevel ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static PermissionLevel ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new PermissionLevel();
 
@@ -37,7 +39,7 @@ public sealed class PermissionLevel : PooledObject<PermissionLevel>, IEosioSeria
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         Actor.WriteToFaster(writer);
         Permission.WriteToFaster(writer);

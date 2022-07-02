@@ -1,5 +1,7 @@
 ﻿using DeepReader.Types.StorageTypes;
 using FASTER.core;
+using DeepReader.Types.Infrastructure.BinaryWriters;
+using DeepReader.Types.Infrastructure.BinaryReaders;
 
 namespace DeepReader.Storage.Faster.ActionTraces.Standalone;
 
@@ -7,11 +9,13 @@ public sealed class ActionTraceValueSerializer : BinaryObjectSerializer<ActionTr
 {
     public override void Deserialize(out ActionTrace obj)
     {
-        obj = ActionTrace.ReadFromFaster(reader);
+        // TODO
+        obj = ActionTrace.ReadFromFaster((IBufferReader)reader);
     }
 
     public override void Serialize(ref ActionTrace obj)
     {
-        obj.WriteToFaster(writer);
+        // TODO
+        obj.WriteToFaster((IBufferWriter)writer);
     }
 }

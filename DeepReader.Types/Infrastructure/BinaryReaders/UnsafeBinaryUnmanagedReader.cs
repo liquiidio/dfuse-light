@@ -8,7 +8,7 @@ using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace DeepReader.Types.Infrastructure
+namespace DeepReader.Types.Infrastructure.BinaryReaders
 {
     /// <summary>
     /// Implements an <see cref="IBufferReader"/> that can read primitive data types from a byte array.
@@ -65,7 +65,7 @@ namespace DeepReader.Types.Infrastructure
 
             _data = data;
             _position = position;
-            
+
             Length = length;
         }
 
@@ -229,7 +229,7 @@ namespace DeepReader.Types.Infrastructure
         /// <param name="count">The size of the read-only span to return.</param>
         private ReadOnlySpan<byte> InternalReadSpan(int count)
         {
-            if (count <= 0) 
+            if (count <= 0)
                 return ReadOnlySpan<byte>.Empty;
 
             if (_position + count > Length)
@@ -238,7 +238,7 @@ namespace DeepReader.Types.Infrastructure
             _position += count;
             _data += count;
 
-            return new ReadOnlySpan<byte>(_data-count, count);
+            return new ReadOnlySpan<byte>(_data - count, count);
 
         }
 
@@ -336,7 +336,7 @@ namespace DeepReader.Types.Infrastructure
             while (true)
             {
                 var b = ReadByte();
-                v |= (int)((b & 0x7f) << bit);
+                v |= (b & 0x7f) << bit;
                 bit += 7;
                 if ((b & 0x80) == 0)
                     break;

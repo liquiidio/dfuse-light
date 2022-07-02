@@ -1,4 +1,5 @@
 using DeepReader.Types.Extensions;
+using DeepReader.Types.Infrastructure.BinaryReaders;
 
 namespace DeepReader.Types.Eosio.Chain.Legacy;
 

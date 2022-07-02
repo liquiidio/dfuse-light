@@ -1,3 +1,6 @@
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
+
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
@@ -19,7 +22,7 @@ public abstract class TransactionVariant : IEosioSerializable<TransactionVariant
         }
     }
 
-    public static TransactionVariant ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static TransactionVariant ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var type = reader.ReadByte();
         switch (type)
@@ -33,7 +36,7 @@ public abstract class TransactionVariant : IEosioSerializable<TransactionVariant
         }
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         if (this is TransactionId transactionId)
         {

@@ -1,4 +1,6 @@
 ﻿using System.Text.Json.Serialization;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
 
@@ -30,7 +32,7 @@ public sealed class Timestamp : PooledObject<Timestamp>, IEosioSerializable<Time
         return obj;
     }
 
-    public static Timestamp ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static Timestamp ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         // when Faster wants to deserialize and Object, we take an Object from the Pool
         // when Faster evicts the Object we return it to the Pool
@@ -41,7 +43,7 @@ public sealed class Timestamp : PooledObject<Timestamp>, IEosioSerializable<Time
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         writer.Write(_ticks);
     }

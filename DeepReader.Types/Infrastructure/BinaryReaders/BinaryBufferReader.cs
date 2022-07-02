@@ -7,7 +7,7 @@ using Serilog;
 using System.Buffers.Binary;
 using System.Text;
 
-namespace DeepReader.Types.Infrastructure
+namespace DeepReader.Types.Infrastructure.BinaryReaders
 {
     /// <summary>
     /// Implements an <see cref="IBufferReader"/> that can read primitive data types from a byte array.
@@ -343,7 +343,7 @@ namespace DeepReader.Types.Infrastructure
             while (true)
             {
                 var b = ReadByte();
-                v |= (int)((b & 0x7f) << bit);
+                v |= (b & 0x7f) << bit;
                 bit += 7;
                 if ((b & 0x80) == 0)
                     break;

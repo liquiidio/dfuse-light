@@ -3,6 +3,7 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Eosio.Chain.Legacy;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.Infrastructure.BinaryReaders;
 
 namespace DeepReader.Types.Eosio.Chain;
 

@@ -1,5 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.JsonConverters;
 using FASTER.core;
 using Microsoft.Extensions.ObjectPool;
@@ -60,7 +62,7 @@ public sealed class TransactionId : TransactionVariant, IEosioSerializable<Trans
         return obj;
     }
 
-    public new static TransactionId ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public new static TransactionId ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new TransactionId();
 
@@ -69,18 +71,18 @@ public sealed class TransactionId : TransactionVariant, IEosioSerializable<Trans
         return obj;
     }
 
-    public new void WriteToFaster(BinaryWriter writer)
+    public new void WriteToFaster(IBufferWriter writer)
     {
         writer.Write(Binary);
         _stringVal = null;
     }
 
-    public void Serialize(BinaryWriter writer)
+    public void Serialize(IBufferWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write(Binary);
     }
 
-    public static void SerializeKey(TransactionId key, BinaryWriter writer)
+    public static void SerializeKey(TransactionId key, IBufferWriter writer)
     {
         writer.Write(key.Binary);
     }
@@ -88,11 +90,6 @@ public sealed class TransactionId : TransactionVariant, IEosioSerializable<Trans
     public static TransactionId DeserializeKey(IBufferReader reader)
     {
         return ReadFromBinaryReader(reader, true);
-    }
-
-    public static TransactionId DeserializeKey(BinaryReader reader)
-    {
-        throw new NotImplementedException();
     }
 
     public bool Equals(TransactionId key)

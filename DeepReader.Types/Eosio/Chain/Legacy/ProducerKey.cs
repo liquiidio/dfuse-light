@@ -1,4 +1,6 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain.Legacy;
@@ -35,7 +37,7 @@ public sealed class ProducerKey : PooledObject<ProducerKey>, IEosioSerializable<
         return obj;
     }
 
-    public static ProducerKey ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static ProducerKey ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new ProducerKey();
 
@@ -50,7 +52,7 @@ public sealed class ProducerKey : PooledObject<ProducerKey>, IEosioSerializable<
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         AccountName.WriteToFaster(writer);
         BlockSigningKey.WriteToFaster(writer);

@@ -1,5 +1,7 @@
 ﻿using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 
 namespace DeepReader.Types;
 
@@ -30,7 +32,7 @@ public class TableOp : IEosioSerializable<TableOp>, IFasterSerializable<TableOp>
         return obj;
     }
 
-    public static TableOp ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static TableOp ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = new TableOp()
         {
@@ -44,7 +46,7 @@ public class TableOp : IEosioSerializable<TableOp>, IFasterSerializable<TableOp>
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         writer.Write((byte)Operation);
         //        writer.Write(Payer.Binary);

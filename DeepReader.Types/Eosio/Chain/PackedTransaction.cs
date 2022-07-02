@@ -1,6 +1,8 @@
 ﻿using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using Microsoft.Extensions.ObjectPool;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -72,7 +74,7 @@ public sealed class PackedTransaction : TransactionVariant, IEosioSerializable<P
         return obj;
     }
 
-    public new static PackedTransaction ReadFromFaster(BinaryReader reader, bool fromPool)
+    public new static PackedTransaction ReadFromFaster(IBufferReader reader, bool fromPool)
     {
         var obj = TypeObjectPool.Get();
 
@@ -90,7 +92,7 @@ public sealed class PackedTransaction : TransactionVariant, IEosioSerializable<P
         return obj;
     }
 
-    public new void WriteToFaster(BinaryWriter writer)
+    public new void WriteToFaster(IBufferWriter writer)
     {
         writer.Write(Signatures.Length);
         foreach (var signature in Signatures)

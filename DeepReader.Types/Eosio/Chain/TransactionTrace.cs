@@ -1,5 +1,7 @@
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -120,7 +122,7 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>, IFa
         return new TransactionTrace(reader);
     }
 
-    public static TransactionTrace ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static TransactionTrace ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = new TransactionTrace()
         {
@@ -167,7 +169,7 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>, IFa
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         throw new NotImplementedException();
     }
@@ -189,12 +191,12 @@ public sealed class Except : IEosioSerializable<Except>, IFasterSerializable<Exc
         return null;
     }
 
-    public static Except ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static Except ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         throw new NotImplementedException();
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         throw new NotImplementedException();
     }

@@ -1,5 +1,7 @@
 using DeepReader.Types.Enums;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -32,7 +34,7 @@ public class TransactionReceiptHeader : IEosioSerializable<TransactionReceiptHea
         return new TransactionReceiptHeader(reader);
     }
 
-    public static TransactionReceiptHeader ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static TransactionReceiptHeader ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         return new TransactionReceiptHeader()
         {
@@ -42,7 +44,7 @@ public class TransactionReceiptHeader : IEosioSerializable<TransactionReceiptHea
         };
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         writer.Write((byte)Status);
         writer.Write(CpuUsageUs);

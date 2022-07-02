@@ -1,6 +1,8 @@
 ﻿using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.Other;
 using Action = DeepReader.Types.Eosio.Chain.Action;
 
@@ -116,7 +118,7 @@ namespace DeepReader.Types.StorageTypes
             return obj;
         }
 
-        public static ActionTrace ReadFromFaster(BinaryReader reader, bool fromPool = true)
+        public static ActionTrace ReadFromFaster(IBufferReader reader, bool fromPool = true)
         {
             // when Faster wants to deserialize and Object, we take an Object from the Pool
             // when Faster evicts the Object we return it to the Pool
@@ -169,7 +171,7 @@ namespace DeepReader.Types.StorageTypes
             return obj;
         }
 
-        public void WriteToFaster(BinaryWriter writer)
+        public void WriteToFaster(IBufferWriter writer)
         {
             Receiver.WriteToFaster(writer);
 

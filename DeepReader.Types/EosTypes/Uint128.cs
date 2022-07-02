@@ -1,4 +1,5 @@
 ﻿using DeepReader.Types.Fc;
+using DeepReader.Types.Infrastructure.BinaryReaders;
 
 namespace DeepReader.Types.EosTypes;
 

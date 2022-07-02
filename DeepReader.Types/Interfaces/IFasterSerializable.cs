@@ -1,8 +1,11 @@
-﻿namespace DeepReader.Types.Interfaces
+﻿using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
+
+namespace DeepReader.Types.Interfaces
 {
-    public interface IFasterSerializable<T>
+    public interface IFasterSerializable<out T>
     {
-        static abstract T ReadFromFaster(BinaryReader reader, bool fromPool = true);
-        void WriteToFaster(BinaryWriter writer);
+        static abstract T ReadFromFaster(IBufferReader reader, bool fromPool = true);
+        void WriteToFaster(IBufferWriter writer);
     }
 }

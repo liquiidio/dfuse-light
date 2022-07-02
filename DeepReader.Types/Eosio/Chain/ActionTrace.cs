@@ -1,5 +1,7 @@
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -93,7 +95,7 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>, IFasterSerial
         return new ActionTrace(reader);
     }
 
-    public static ActionTrace ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static ActionTrace ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = new ActionTrace()
         {
@@ -139,7 +141,7 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>, IFasterSerial
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         writer.Write(ActionOrdinal);
         writer.Write(CreatorActionOrdinal);

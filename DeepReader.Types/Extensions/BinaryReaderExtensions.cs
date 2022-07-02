@@ -1,10 +1,11 @@
-﻿using System.Text;
+﻿using DeepReader.Types.Infrastructure.BinaryReaders;
+using System.Text;
 
 namespace DeepReader.Types.Extensions
 {
     public static class BinaryReaderExtensions
     {
-        public static Extension ReadExtension(this BinaryReader reader)
+        public static Extension ReadExtension(this IBufferReader reader)
         {
             return new KeyValuePair<ushort, char[]>(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
         }
@@ -203,7 +204,7 @@ namespace DeepReader.Types.Extensions
         //    return ;
         //}
 
-        public static string ReadString(this BinaryReader reader)
+        public static string ReadString(this IBufferReader reader)
         {
             var length = reader.Read7BitEncodedInt();// Convert.ToInt32(reader.ReadVarLength<int>());
             return length > 0 ? Encoding.UTF8.GetString(reader.ReadBytes(length)) : string.Empty;

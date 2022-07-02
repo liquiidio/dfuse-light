@@ -1,5 +1,7 @@
 using DeepReader.Types.Eosio.Chain.Legacy;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 
 namespace DeepReader.Types.Eosio.Chain.Detail;
 
@@ -56,12 +58,12 @@ public class BlockHeaderStateCommon : IEosioSerializable<BlockHeaderStateCommon>
         return blockStateHeaderCommon;
     }
 
-    public static BlockHeaderStateCommon ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static BlockHeaderStateCommon ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         throw new NotImplementedException();
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         throw new NotImplementedException();
     }

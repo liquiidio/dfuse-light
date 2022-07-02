@@ -1,6 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.Fc;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
 
@@ -37,12 +39,12 @@ public sealed class Name : BinaryType, IEosioSerializable<Name>, IFasterSerializ
         return NameCache.GetOrCreate(reader.ReadUInt64());
     }
 
-    public static Name ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static Name ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         return NameCache.GetOrCreate(reader.ReadUInt64());
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         writer.Write(Binary);
     }

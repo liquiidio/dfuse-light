@@ -10,20 +10,20 @@ using FASTER.server;
 
 namespace DeepReader.Storage.Faster.Test.Server
 {
-    public class ServerKVProvider<TKey, TValue> : FasterKVProviderBase<TKey, TValue, TKey,
-        TValue, ServerFunctions<TKey, TValue>, ServerSerializer<TKey, TValue>>
-    where TKey : IKey<TKey>
-    where TValue : IEosioSerializable<TValue>, IFasterSerializable<TValue>
+    public class ServerKVProvider<TKey, TKKey, TValue> : FasterKVProviderBase<TKKey, TValue, TKKey,
+        TValue, ServerFunctions<TKKey, TValue>, ServerSerializer<TKey, TKKey, TValue>>
+    where TKey : IKey<TKKey>
+    where TValue : IFasterSerializable<TValue>
     {
-        public ServerKVProvider(FasterKV<TKey, TValue> store, ServerSerializer<TKey, TValue> serializer,
-            SubscribeKVBroker<TKey, TValue, TKey, IKeyInputSerializer<TKey, TKey>> kvBroker = null,
-            SubscribeBroker<TKey, TValue, IKeySerializer<TKey>> broker = null, bool recoverStore = false,
+        public ServerKVProvider(FasterKV<TKKey, TValue> store, ServerSerializer<TKey, TKKey, TValue> serializer,
+            SubscribeKVBroker<TKKey, TValue, TKKey, IKeyInputSerializer<TKKey, TKKey>> kvBroker = null,
+            SubscribeBroker<TKKey, TValue, IKeySerializer<TKKey>> broker = null, bool recoverStore = false,
             MaxSizeSettings maxSizeSettings = null)
             : base(store, serializer, kvBroker, broker, recoverStore, maxSizeSettings)
         {
 
         }
 
-        public override ServerFunctions<TKey, TValue> GetFunctions() => new();
+        public override ServerFunctions<TKKey, TValue> GetFunctions() => new();
     }
 }

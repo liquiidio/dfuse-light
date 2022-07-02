@@ -2,6 +2,8 @@
 using DeepReader.Types.Enums;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.JsonConverters;
 
 namespace DeepReader.Types;
@@ -64,7 +66,7 @@ public class DbOp : IEosioSerializable<DbOp>, IFasterSerializable<DbOp>
         return new DbOp(reader);
     }
 
-    public static DbOp ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static DbOp ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = new DbOp()
         {
@@ -102,7 +104,7 @@ public class DbOp : IEosioSerializable<DbOp>, IFasterSerializable<DbOp>
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         writer.Write((byte)Operation);
         Code.WriteToFaster(writer);

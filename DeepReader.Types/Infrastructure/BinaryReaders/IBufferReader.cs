@@ -5,7 +5,7 @@ using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Helpers;
 using Serilog;
 
-namespace DeepReader.Types.Infrastructure
+namespace DeepReader.Types.Infrastructure.BinaryReaders
 {
     public interface IBufferReader
     {

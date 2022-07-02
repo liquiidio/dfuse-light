@@ -1,6 +1,9 @@
-﻿namespace DeepReader.Types.EosTypes;
+﻿using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 
-public sealed class Float128 : IEosioSerializable<Float128>
+namespace DeepReader.Types.EosTypes;
+
+public sealed class Float128 : IEosioSerializable<Float128>, IFasterSerializable<Float128>
 {
     private const int Float128ByteLength = 16;
 
@@ -21,7 +24,12 @@ public sealed class Float128 : IEosioSerializable<Float128>
         return new Float128(reader.ReadBytes(Float128ByteLength));
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static Float128 ReadFromFaster(IBufferReader reader, bool fromPool = true)
+    {
+        return new Float128(reader.ReadBytes(Float128ByteLength));
+    }
+
+    public void WriteToFaster(IBufferWriter writer)
     {
         writer.Write(_binary);
     }

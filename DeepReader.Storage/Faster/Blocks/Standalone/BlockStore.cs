@@ -1,5 +1,9 @@
-﻿using DeepReader.Storage.Faster.Blocks.Base;
+﻿using DeepReader.Storage.Faster.Base;
+using DeepReader.Storage.Faster.Base.Standalone;
+using DeepReader.Storage.Faster.Blocks.Base;
+using DeepReader.Storage.Faster.Test;
 using DeepReader.Storage.Options;
+using DeepReader.Types.Interfaces;
 using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
@@ -12,10 +16,8 @@ namespace DeepReader.Storage.Faster.Blocks.Standalone
     {
         protected readonly FasterKV<long, Block> _store;
 
-        //private readonly ClientSession<long, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockWriterSession;
-        //private readonly ClientSession<long, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions> _blockReaderSession;
-
-        private readonly AsyncPool<ClientSession<long, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions>> _sessionPool;
+        private readonly AsyncPool<ClientSession<long, Block, Input, Block, KeyValueContext, 
+            StandaloneFunctions<long, Block>>> _sessionPool;
 
         public BlockStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
@@ -46,7 +48,8 @@ namespace DeepReader.Storage.Faster.Blocks.Standalone
             // Needed only for class keys/values
             var serializerSettings = new SerializerSettings<long, Block>
             {
-                valueSerializer = () => new BlockValueSerializer()
+                keySerializer = () => new KeySerializer<LongKey, long>(),
+                valueSerializer = () => new ValueSerializer<Block>()
             };
 
             var checkPointsDir = _options.BlockStoreDir + "checkpoints";
@@ -79,44 +82,25 @@ namespace DeepReader.Storage.Faster.Blocks.Standalone
                 }
             }
 
-            //foreach (var recoverableSession in _store.RecoverableSessions)
-            //{
-            //    if (recoverableSession.Item2 == "BlockWriterSession")
-            //    {
-            //        _blockWriterSession = _store.For(new BlockFunctions())
-            //            .ResumeSession<BlockFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
-            //    }
-            //    else if (recoverableSession.Item2 == "BlockReaderSession")
-            //    {
-            //        _blockReaderSession = _store.For(new BlockFunctions())
-            //            .ResumeSession<BlockFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
-            //    }
-            //}
-
-            //_blockWriterSession ??=
-            //    _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockWriterSession");
-            //_blockReaderSession ??=
-            //    _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockReaderSession");
-
             StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
             if (options.UseReadCache)
                 StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);// must be optional
             StoreEntryCountSummary.Observe(_store.EntryCount);
 
-            var blockEvictionObserver = new BlockEvictionObserver();
+            var blockEvictionObserver = new PooledObjectEvictionObserver<long, Block>();
             _store.Log.SubscribeEvictions(blockEvictionObserver);
 
             if (options.UseReadCache)
                 _store.ReadCache.SubscribeEvictions(blockEvictionObserver);
 
-            _sessionPool = new AsyncPool<ClientSession<long, Block, BlockInput, BlockOutput, BlockContext, BlockFunctions>>(
+            _sessionPool = new AsyncPool<ClientSession<long, Block, Input, Block, KeyValueContext, StandaloneFunctions<long, Block>>>(
                 logSettings.LogDevice.ThrottleLimit,
-                () => _store.For(new BlockFunctions()).NewSession<BlockFunctions>("BlockSession" + Interlocked.Increment(ref _sessionCount)));
+                () => _store.For(new StandaloneFunctions<long, Block>()).NewSession<StandaloneFunctions<long, Block>>("BlockSession" + Interlocked.Increment(ref _sessionCount)));
 
             foreach (var recoverableSession in _store.RecoverableSessions)
             {
-                _sessionPool.Return(_store.For(new BlockFunctions())
-                    .ResumeSession<BlockFunctions>(recoverableSession.Item2, out CommitPoint commitPoint));
+                _sessionPool.Return(_store.For(new StandaloneFunctions<long, Block>())
+                    .ResumeSession<StandaloneFunctions<long, Block>>(recoverableSession.Item2, out CommitPoint commitPoint));
                 _sessionCount++;
             }
 
@@ -159,7 +143,7 @@ namespace DeepReader.Storage.Faster.Blocks.Standalone
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
                 var (status, output) = (await session.ReadAsync(blockNum)).Complete();
                 _sessionPool.Return(session);
-                return (status.Found, output.Value);
+                return (status.Found, output);
             }
         }
 

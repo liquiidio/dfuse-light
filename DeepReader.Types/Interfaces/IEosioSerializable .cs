@@ -1,4 +1,6 @@
-﻿namespace DeepReader.Types.Interfaces
+﻿using DeepReader.Types.Infrastructure.BinaryReaders;
+
+namespace DeepReader.Types.Interfaces
 {
     public interface IEosioSerializable<out T>
     {

@@ -5,6 +5,7 @@ using Microsoft.IO;
 using Prometheus;
 using System.Buffers;
 using DeepReader.Types.Infrastructure;
+using DeepReader.Types.Infrastructure.BinaryReaders;
 
 namespace DeepReader.DeepMindDeserializer;
 

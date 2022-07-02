@@ -10,17 +10,17 @@ using FASTER.core;
 
 namespace DeepReader.Storage.Faster.Base.Standalone
 {
-    internal class ValueSerializer<TValue> : BinaryObjectSerializer<TValue>
-        where TValue : IFasterSerializable<TValue>
+    public class KeySerializer<TKey, TKKey> : BinaryObjectSerializer<TKKey>
+    where TKey : IKey<TKKey>
     {
-        public override void Deserialize(out TValue obj)
+        public override void Deserialize(out TKKey obj)
         {
-            obj = TValue.ReadFromFaster((IBufferReader)reader);
+            obj = TKey.DeserializeKey((IBufferReader)reader);
         }
 
-        public override void Serialize(ref TValue obj)
+        public override void Serialize(ref TKKey obj)
         {
-            obj.WriteToFaster((IBufferWriter)writer);
+            TKey.SerializeKey(obj, (IBufferWriter)writer);
         }
     }
-}
+    }

@@ -1,6 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
 using Serilog;
@@ -75,7 +77,7 @@ public sealed class PublicKey : PooledObject<PublicKey>, IEosioSerializable<Publ
         return obj;
     }
 
-    public static PublicKey ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static PublicKey ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new PublicKey();
 
@@ -85,7 +87,7 @@ public sealed class PublicKey : PooledObject<PublicKey>, IEosioSerializable<Publ
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         writer.Write(Type);
         writer.Write(Binary);

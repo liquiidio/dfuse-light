@@ -1,5 +1,7 @@
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.Other;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -45,7 +47,7 @@ public sealed class ActionReceipt : PooledObject<ActionReceipt>, IEosioSerializa
         return obj;
     }
 
-    public static ActionReceipt ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static ActionReceipt ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = fromPool ? TypeObjectPool.Get() : new ActionReceipt();
 
@@ -66,7 +68,7 @@ public sealed class ActionReceipt : PooledObject<ActionReceipt>, IEosioSerializa
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         Receiver.WriteToFaster(writer);
         ActionDigest.WriteToFaster(writer);

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,19 +8,19 @@ using System.Threading.Tasks;
 
 namespace DeepReader.Types.StorageTypes
 {
-    internal class LongKey : IKey<long>
+    public class LongKey : IKey<long>
     {
-        public static void SerializeKey(long key, BinaryWriter writer)
+        public static implicit operator LongKey(long key)
+        {
+            return new LongKey();
+        }
+
+        public static void SerializeKey(long key, IBufferWriter writer)
         {
             writer.Write(key);
         }
 
         public static long DeserializeKey(IBufferReader reader)
-        {
-            return reader.ReadInt64();
-        }
-
-        public static long DeserializeKey(BinaryReader reader)
         {
             return reader.ReadInt64();
         }

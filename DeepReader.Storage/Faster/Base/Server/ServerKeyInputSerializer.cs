@@ -6,21 +6,22 @@ using System.Threading.Tasks;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Infrastructure;
+using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Interfaces;
 using FASTER.common;
 
 namespace DeepReader.Storage.Faster.Test.Server
 {
-    public class ServerKeyInputSerializer<TKey> : IKeyInputSerializer<TKey, TKey>
-        where TKey : IKey<TKey>
+    public class ServerKeyInputSerializer<TKey, TKKey> : IKeyInputSerializer<TKKey, TKKey>
+        where TKey : IKey<TKKey>
     {
         [ThreadStatic] 
-        private static TKey _key;
+        private static TKKey _key;
 
         [ThreadStatic] 
-        private static TKey _input;
+        private static TKKey _input;
 
-        public bool Match(ref TKey k, bool asciiKey, ref TKey pattern, bool asciiPattern)
+        public bool Match(ref TKKey k, bool asciiKey, ref TKKey pattern, bool asciiPattern)
         {
             // I have no idea what needs to be done here ...
             if (k.Equals(pattern))
@@ -34,13 +35,13 @@ namespace DeepReader.Storage.Faster.Test.Server
             return true;
         }
 
-        public unsafe ref TKey ReadInputByRef(ref byte* src)
+        public unsafe ref TKKey ReadInputByRef(ref byte* src)
         {
             _input = TKey.DeserializeKey(new UnsafeBinaryUnmanagedReader(ref src, ushort.MaxValue));
             return ref _input;
         }
 
-        public unsafe ref TKey ReadKeyByRef(ref byte* src)
+        public unsafe ref TKKey ReadKeyByRef(ref byte* src)
         {
             _key = TKey.DeserializeKey(new UnsafeBinaryUnmanagedReader(ref src, ushort.MaxValue));
             return ref _key;

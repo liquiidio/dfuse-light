@@ -8,6 +8,9 @@ using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 using System.Text;
+using DeepReader.Storage.Faster.Test;
+using DeepReader.Storage.Faster.Test.Client;
+using DeepReader.Storage.Faster.Test.DeepReader.Storage.Faster.Transactions.Client;
 
 namespace DeepReader.Storage.Faster.Blocks.Client
 {
@@ -16,7 +19,7 @@ namespace DeepReader.Storage.Faster.Blocks.Client
         private const string ip = "127.0.0.1";
         private const int port = 5002;
         private static Encoding _encode = Encoding.UTF8;
-        private readonly AsyncPool<ClientSession<long, Block, BlockInput, BlockOutput, BlockContext, BlockClientFunctions, BlockClientSerializer>> _sessionPool;
+        private readonly AsyncPool<ClientSession<long, Block, Block, Block, KeyValueContext, ClientFunctions<LongKey, long, Block>, ClientSerializer<LongKey, long, Block>>> _sessionPool;
 
         private readonly FasterKVClient<long, Block> _client;
 
@@ -25,14 +28,14 @@ namespace DeepReader.Storage.Faster.Blocks.Client
             _client = new FasterKVClient<long, Block>(ip, port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
 
             _sessionPool =
-                new AsyncPool<ClientSession<long, Block, BlockInput, BlockOutput, BlockContext,
-                    BlockClientFunctions, BlockClientSerializer>>(
+                new AsyncPool<ClientSession<long, Block, Block, Block, KeyValueContext,
+                    ClientFunctions<LongKey, long, Block>, ClientSerializer<LongKey, long, Block>>>(
                     size: 4,    // TODO no idea how many sessions make sense and do work,
                                 // hopefully Faster-Serve just blocks if it can't handle the amount of sessions and data :D
                     () => _client
-                        .NewSession<BlockInput, BlockOutput, BlockContext, BlockClientFunctions,
-                            BlockClientSerializer>(new BlockClientFunctions(), WireFormat.WebSocket,
-                            new BlockClientSerializer()));
+                        .NewSession<Block, Block, KeyValueContext, ClientFunctions<LongKey, long, Block>,
+                            ClientSerializer<LongKey, long, Block>>(new ClientFunctions<LongKey, long, Block>(), WireFormat.WebSocket,
+                            new ClientSerializer<LongKey, long, Block>()));
         }
 
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
@@ -66,7 +69,7 @@ namespace DeepReader.Storage.Faster.Blocks.Client
 
                 var (status, output) = await session.ReadAsync(blockNum);
                 _sessionPool.Return(session);
-                return (status.Found, output.Value);
+                return (status.Found, output);
             }
         }
     }

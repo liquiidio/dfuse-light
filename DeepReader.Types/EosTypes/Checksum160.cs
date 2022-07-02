@@ -1,12 +1,14 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.Helpers;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
 
 namespace DeepReader.Types.EosTypes;
 
 [JsonConverter(typeof(Checksum160JsonConverter))]
-public sealed class Checksum160 : PooledObject<Checksum160>, IEosioSerializable<Checksum160>
+public sealed class Checksum160 : PooledObject<Checksum160>, IEosioSerializable<Checksum160>, IFasterSerializable<Checksum160>
 {
     private const int Checksum160ByteLength = 20;
 
@@ -30,7 +32,16 @@ public sealed class Checksum160 : PooledObject<Checksum160>, IEosioSerializable<
         return obj;
     }
 
-    public void WriteToBinaryWriter(BinaryWriter writer)
+    public static Checksum160 ReadFromFaster(IBufferReader reader, bool fromPool = true)
+    {
+        var obj = fromPool ? TypeObjectPool.Get() : new Checksum160();
+
+        obj.Binary = reader.ReadBytes(Checksum160ByteLength);
+
+        return obj;
+    }
+
+    public void WriteToFaster(IBufferWriter writer)
     {
         writer.Write(Binary);
         _stringVal = null;

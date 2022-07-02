@@ -1,3 +1,5 @@
+using DeepReader.Types.Infrastructure.BinaryReaders;
+
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>

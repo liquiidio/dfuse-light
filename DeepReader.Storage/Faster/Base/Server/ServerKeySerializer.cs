@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Infrastructure;
+using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Interfaces;
 using FASTER.common;
 

@@ -21,14 +21,14 @@ namespace DeepReader.Storage.Faster.Transactions.Client
         private const int port = 5003;
 
         private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace,
-                KeyValueContext, KeyValueClientFunctions<TransactionId, TransactionTrace>,
-                KeyValueClientSerializer<TransactionId, TransactionTrace>>>
+                KeyValueContext, ClientFunctions<TransactionId, TransactionId, TransactionTrace>,
+                ClientSerializer<TransactionId, TransactionId, TransactionTrace>>>
             _sessionPool;
 
         private readonly
             AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace,
-                KeyValueContext, KeyValueClientFunctions<TransactionId, TransactionTrace>,
-                KeyValueClientSerializer<TransactionId, TransactionTrace>>> 
+                KeyValueContext, ClientFunctions<TransactionId, TransactionId, TransactionTrace>,
+                ClientSerializer<TransactionId, TransactionId, TransactionTrace>>> 
             _readerSessionPool;
 
         private readonly FasterKVClient<TransactionId, TransactionTrace> _client;
@@ -39,23 +39,23 @@ namespace DeepReader.Storage.Faster.Transactions.Client
 
             _sessionPool =
                 new AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace, KeyValueContext,
-                    KeyValueClientFunctions<TransactionId, TransactionTrace>, KeyValueClientSerializer<TransactionId, TransactionTrace>>>(
+                    ClientFunctions<TransactionId, TransactionId, TransactionTrace>, ClientSerializer<TransactionId, TransactionId, TransactionTrace>>>(
                     size: 20,    // TODO no idea how many sessions make sense and do work,
                                 // hopefully Faster-Serve just blocks if it can't handle the amount of sessions and data :D
                     () => _client
-                        .NewSession<TransactionTrace, TransactionTrace, KeyValueContext, KeyValueClientFunctions<TransactionId, TransactionTrace>,
-                            KeyValueClientSerializer<TransactionId, TransactionTrace>>(new KeyValueClientFunctions<TransactionId, TransactionTrace>(), WireFormat.DefaultVarLenKV,
-                            new KeyValueClientSerializer<TransactionId, TransactionTrace>()));
+                        .NewSession<TransactionTrace, TransactionTrace, KeyValueContext, ClientFunctions<TransactionId, TransactionId, TransactionTrace >,
+                            ClientSerializer<TransactionId, TransactionId, TransactionTrace >>(new ClientFunctions<TransactionId, TransactionId, TransactionTrace>(), WireFormat.DefaultVarLenKV,
+                            new ClientSerializer<TransactionId, TransactionId, TransactionTrace>()));
 
             _readerSessionPool =
                 new AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace, KeyValueContext,
-                    KeyValueClientFunctions<TransactionId, TransactionTrace>, KeyValueClientSerializer<TransactionId, TransactionTrace>>>(
+                    ClientFunctions<TransactionId, TransactionId, TransactionTrace>, ClientSerializer<TransactionId, TransactionId, TransactionTrace>>>(
                     size: 20,    // TODO no idea how many sessions make sense and do work,
                     // hopefully Faster-Serve just blocks if it can't handle the amount of sessions and data :D
                     () => _client
-                        .NewSession<TransactionTrace, TransactionTrace, KeyValueContext, KeyValueClientFunctions<TransactionId, TransactionTrace>,
-                            KeyValueClientSerializer<TransactionId, TransactionTrace>>(new KeyValueClientFunctions<TransactionId, TransactionTrace>(), WireFormat.DefaultVarLenKV,
-                            new KeyValueClientSerializer<TransactionId, TransactionTrace>()));
+                        .NewSession<TransactionTrace, TransactionTrace, KeyValueContext, ClientFunctions<TransactionId, TransactionId, TransactionTrace >,
+                            ClientSerializer<TransactionId, TransactionId, TransactionTrace >>(new ClientFunctions<TransactionId, TransactionId, TransactionTrace>(), WireFormat.DefaultVarLenKV,
+                            new ClientSerializer<TransactionId, TransactionId, TransactionTrace>()));
 
         }
 

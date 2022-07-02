@@ -1,6 +1,8 @@
 using System.Text.Json.Serialization;
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -43,7 +45,7 @@ public sealed class Action : ActionBase, IEosioSerializable<Action>, IFasterSeri
         return new Action(reader);
     }
 
-    public static Action ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static Action ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = new Action()
         {
@@ -64,7 +66,7 @@ public sealed class Action : ActionBase, IEosioSerializable<Action>, IFasterSeri
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         Account.WriteToFaster(writer);
         Name.WriteToFaster(writer);

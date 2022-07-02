@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc;
+using DeepReader.Types.Infrastructure.BinaryReaders;
 
 namespace DeepReader.Types.EosTypes;
 

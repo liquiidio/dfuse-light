@@ -1,5 +1,7 @@
 using DeepReader.Types.EosTypes;
- 
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
+
 namespace DeepReader.Types.Eosio.Chain;
 
 /// <summary>
@@ -31,7 +33,7 @@ public sealed class AccountDelta : IEosioSerializable<AccountDelta>, IFasterSeri
         return new AccountDelta(reader);
     }
 
-    public static AccountDelta ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static AccountDelta ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = new AccountDelta();
 
@@ -41,7 +43,7 @@ public sealed class AccountDelta : IEosioSerializable<AccountDelta>, IFasterSeri
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         writer.Write(Account.Binary);
         writer.Write(Delta);

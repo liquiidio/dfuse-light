@@ -1,4 +1,6 @@
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Infrastructure.BinaryWriters;
 
 namespace DeepReader.Types;
 
@@ -20,7 +22,7 @@ public sealed class AccountRamDelta : IEosioSerializable<AccountRamDelta>, IFast
         return new AccountRamDelta(reader);
     }
 
-    public static AccountRamDelta ReadFromFaster(BinaryReader reader, bool fromPool = true)
+    public static AccountRamDelta ReadFromFaster(IBufferReader reader, bool fromPool = true)
     {
         var obj = new AccountRamDelta();
 
@@ -30,7 +32,7 @@ public sealed class AccountRamDelta : IEosioSerializable<AccountRamDelta>, IFast
         return obj;
     }
 
-    public void WriteToFaster(BinaryWriter writer)
+    public void WriteToFaster(IBufferWriter writer)
     {
         Account.WriteToFaster(writer); // TODO Eosio Name
         writer.Write(Delta); // TODO VARINT
