@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.Helpers;
 using DeepReader.Types.JsonConverters;
+using FASTER.core;
 using Microsoft.Extensions.ObjectPool;
 
 namespace DeepReader.Types.Eosio.Chain;
@@ -9,7 +10,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// Custom type due to Variant-Handling
 /// </summary>
 [JsonConverter(typeof(TransactionIdJsonConverter))]
-public sealed class TransactionId : TransactionVariant, IEosioSerializable<TransactionId>, IFasterSerializable<TransactionId>
+public sealed class TransactionId : TransactionVariant, IEosioSerializable<TransactionId>, IFasterSerializable<TransactionId>, IFasterEqualityComparer<TransactionId>, IKey<TransactionId>
 {
     // can't inherit directly from PooledObject here
     // ReSharper disable once InconsistentNaming
@@ -74,6 +75,31 @@ public sealed class TransactionId : TransactionVariant, IEosioSerializable<Trans
         _stringVal = null;
     }
 
+    public void Serialize(BinaryWriter writer)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static void SerializeKey(TransactionId key, BinaryWriter writer)
+    {
+        writer.Write(key.Binary);
+    }
+
+    public static TransactionId DeserializeKey(IBufferReader reader)
+    {
+        return ReadFromBinaryReader(reader, true);
+    }
+
+    public static TransactionId DeserializeKey(BinaryReader reader)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool Equals(TransactionId key)
+    {
+        return this.Binary.SequenceEqual(key.Binary);
+    }
+
     public static implicit operator TransactionId(string value)
     {
         return new TransactionId(){ StringVal = value };    // TODO string to Binary
@@ -102,6 +128,17 @@ public sealed class TransactionId : TransactionVariant, IEosioSerializable<Trans
     public override string ToString()
     {
         return StringVal;
+    }
+
+    public long GetHashCode64(ref TransactionId id)
+    {
+
+        return id.Binary.Length >= 8 ? BitConverter.ToInt64(id.Binary.Take(8).ToArray()) : 0;
+    }
+
+    public bool Equals(ref TransactionId k1, ref TransactionId k2)
+    {
+        return k1.Binary.SequenceEqual(k2.Binary);
     }
 
     public static readonly TransactionId TypeEmpty = new();

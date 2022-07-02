@@ -74,7 +74,7 @@ public sealed class TransactionTrace : IEosioSerializable<TransactionTrace>, IFa
 
     public TransactionTrace(IBufferReader reader)
     {
-        Id = TransactionId.ReadFromBinaryReader(reader);
+        Id = TransactionId.DeserializeKey(reader);
         BlockNum = reader.ReadUInt32();
         BlockTime = Timestamp.ReadFromBinaryReader(reader);
 

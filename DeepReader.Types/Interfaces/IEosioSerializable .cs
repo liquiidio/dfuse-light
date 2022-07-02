@@ -1,11 +1,6 @@
 ﻿namespace DeepReader.Types.Interfaces
 {
-    public interface IEosioSerializable
-    {
-
-    }
-
-    public interface IEosioSerializable<out T> : IEosioSerializable
+    public interface IEosioSerializable<out T>
     {
         static abstract T ReadFromBinaryReader(IBufferReader reader, bool fromPool = true);
     }

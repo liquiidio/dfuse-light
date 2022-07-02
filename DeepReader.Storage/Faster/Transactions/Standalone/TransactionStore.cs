@@ -1,10 +1,14 @@
+using DeepReader.Storage.Faster.Base;
+using DeepReader.Storage.Faster.Base.Standalone;
+using DeepReader.Storage.Faster.Test;
 using DeepReader.Storage.Faster.Transactions.Base;
 using DeepReader.Storage.Options;
-using DeepReader.Types.StorageTypes;
+using DeepReader.Types.Eosio.Chain;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 using Serilog;
+using TransactionTrace = DeepReader.Types.StorageTypes.TransactionTrace;
 
 namespace DeepReader.Storage.Faster.Transactions.Standalone
 {
@@ -12,8 +16,8 @@ namespace DeepReader.Storage.Faster.Transactions.Standalone
     {
         protected readonly FasterKV<TransactionId, TransactionTrace> _store;
 
-        private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput,
-            TransactionContext, TransactionFunctions>> _sessionPool;
+        private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, Input, TransactionTrace,
+            KeyValueContext, StandaloneFunctions<TransactionId, TransactionTrace>>> _sessionPool;
 
         private int _sessionCount;
 
@@ -45,8 +49,8 @@ namespace DeepReader.Storage.Faster.Transactions.Standalone
             // Needed only for class keys/values
             var serializerSettings = new SerializerSettings<TransactionId, TransactionTrace>
             {
-                keySerializer = () => new TransactionIdSerializer(),
-                valueSerializer = () => new TransactionValueSerializer()
+                keySerializer = () => new IdSerializer<TransactionId>(),
+                valueSerializer = () => new ValueSerializer<TransactionTrace>()
             };
 
             var checkPointsDir = _options.TransactionStoreDir + "checkpoints";
@@ -78,44 +82,26 @@ namespace DeepReader.Storage.Faster.Transactions.Standalone
                 }
             }
 
-            //foreach (var recoverableSession in _store.RecoverableSessions)
-            //{
-            //    if (recoverableSession.Item2 == "TransactionWriterSession")
-            //    {
-            //        _transactionWriterSession = _store.For(new TransactionFunctions())
-            //            .ResumeSession<TransactionFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
-            //    }
-            //    else if (recoverableSession.Item2 == "TransactionReaderSession")
-            //    {
-            //        _transactionReaderSession = _store.For(new TransactionFunctions())
-            //            .ResumeSession<TransactionFunctions>(recoverableSession.Item2, out CommitPoint commitPoint);
-            //    }
-            //}
-
-            //_transactionWriterSession ??=
-            //    _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionSession");
-            //_transactionReaderSession ??=
-            //    _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionReaderSession");
 
             StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
             if (options.UseReadCache)
                 StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);
             StoreEntryCountSummary.Observe(_store.EntryCount);
 
-            var transactionEvictionObserver = new TransactionEvictionObserver();
+            var transactionEvictionObserver = new PooledObjectEvictionObserver<TransactionId, TransactionTrace>();
             _store.Log.SubscribeEvictions(transactionEvictionObserver);
 
             if (options.UseReadCache)
                 _store.ReadCache.SubscribeEvictions(transactionEvictionObserver);
 
-            _sessionPool = new AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionInput, TransactionOutput, TransactionContext, TransactionFunctions>>(
+            _sessionPool = new AsyncPool<ClientSession<TransactionId, TransactionTrace, Input, TransactionTrace, KeyValueContext, StandaloneFunctions<TransactionId, TransactionTrace>>>(
                 logSettings.LogDevice.ThrottleLimit,
-                () => _store.For(new TransactionFunctions()).NewSession<TransactionFunctions>("TransactionSession" + Interlocked.Increment(ref _sessionCount)));
+                () => _store.For(new StandaloneFunctions<TransactionId, TransactionTrace>()).NewSession<StandaloneFunctions<TransactionId, TransactionTrace>>("TransactionSession" + Interlocked.Increment(ref _sessionCount)));
 
             foreach (var recoverableSession in _store.RecoverableSessions)
             {
-                _sessionPool.Return(_store.For(new TransactionFunctions())
-                    .ResumeSession<TransactionFunctions>(recoverableSession.Item2, out CommitPoint commitPoint));
+                _sessionPool.Return(_store.For(new StandaloneFunctions<TransactionId, TransactionTrace>())
+                    .ResumeSession<StandaloneFunctions<TransactionId, TransactionTrace>>(recoverableSession.Item2, out CommitPoint commitPoint));
                 _sessionCount++;
             }
 
@@ -158,7 +144,7 @@ namespace DeepReader.Storage.Faster.Transactions.Standalone
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
                 var (status, output) = (await session.ReadAsync(new TransactionId(transactionId))).Complete();
                 _sessionPool.Return(session);
-                return (status.Found, output.Value);
+                return (status.Found, output);
             }
         }
 

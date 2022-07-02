@@ -75,7 +75,7 @@ public sealed class Block : PooledObject<Block>, IParentPooledObject<Block>, IFa
         var count = reader.Read7BitEncodedInt();
         for (int i = 0; i < count; i++)
         {
-            obj.TransactionIds.Add(TransactionId.ReadFromBinaryReader(reader));
+            obj.TransactionIds.Add(TransactionId.DeserializeKey(reader));
         }
 
         return obj;

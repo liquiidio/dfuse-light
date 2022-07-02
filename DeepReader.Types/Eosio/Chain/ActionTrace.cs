@@ -62,7 +62,7 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>, IFasterSerial
         ContextFree = reader.ReadBoolean();
         ElapsedUs = reader.ReadInt64();
         Console = reader.ReadString();
-        TransactionId = TransactionId.ReadFromBinaryReader(reader);
+        TransactionId = TransactionId.DeserializeKey(reader);
         BlockNum = reader.ReadUInt32();
         BlockTime = Timestamp.ReadFromBinaryReader(reader);
 
