@@ -14,8 +14,8 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 {
     internal class TransactionStoreClient : TransactionStoreBase
     {
-        private const string ip = "127.0.0.1";
-        private const int port = 5003;
+        private const string Ip = "127.0.0.1";
+        private const int Port = 5003;
 
         private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace,
                 KeyValueContext, ClientFunctions<TransactionId, TransactionId, TransactionTrace>,
@@ -32,7 +32,7 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 
         public TransactionStoreClient(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            _client = new FasterKVClient<TransactionId, TransactionTrace>(ip, port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
+            _client = new FasterKVClient<TransactionId, TransactionTrace>(Ip, Port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
 
             _sessionPool =
                 new AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace, KeyValueContext,
@@ -65,9 +65,9 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
         {
             var transactionId = new TransactionId(transaction.Id);
 
-            await _eventSender.SendAsync("TransactionAdded", transaction);
+            await EventSender.SendAsync("TransactionAdded", transaction);
 
-            using (WritingTransactionDurationSummary.NewTimer())
+            using (TypeWritingTransactionDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
@@ -79,7 +79,7 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 
         public override async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(TransactionId transactionId)
         {
-            using (TransactionReaderSessionReadDurationSummary.NewTimer())
+            using (TypeTransactionReaderSessionReadDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);

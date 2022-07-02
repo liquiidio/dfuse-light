@@ -10,39 +10,39 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Base
 {
     public abstract class AbiStoreBase
     {
-        internal int _sessionCount;
+        internal int SessionCount;
 
-        internal readonly FasterStorageOptions _options;
+        internal readonly FasterStorageOptions Options;
 
-        internal readonly ITopicEventSender _eventSender;
-        internal MetricsCollector _metricsCollector;
+        internal readonly ITopicEventSender EventSender;
+        internal MetricsCollector MetricsCollector;
 
-        internal static readonly SummaryConfiguration SummaryConfiguration = new SummaryConfiguration()
+        internal static readonly SummaryConfiguration TypeSummaryConfiguration = new SummaryConfiguration()
         { MaxAge = TimeSpan.FromSeconds(30) };
 
-        internal static readonly Summary WritingAbiDurationSummary =
-          Metrics.CreateSummary("deepreader_storage_faster_write_abi_duration", "Summary of time to store abis to Faster", SummaryConfiguration);
-        internal static readonly Summary StoreLogMemorySizeBytesSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_abi_store_log_memory_size_bytes", "Summary of the faster abi store log memory size in bytes", SummaryConfiguration);
-        internal static readonly Summary StoreReadCacheMemorySizeBytesSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_abi_store_read_cache_memory_size_bytes", "Summary of the faster abi store read cache memory size in bytes", SummaryConfiguration);
-        internal static readonly Summary StoreEntryCountSummary =
-           Metrics.CreateSummary("deepreader_storage_faster_abi_store_read_cache_memory_size_bytes", "Summary of the faster abi store entry count", SummaryConfiguration);
-        internal static readonly Summary StoreTakeLogCheckpointDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_abi_store_take_log_checkpoint_duration", "Summary of time to take a log checkpoint of faster abi store", SummaryConfiguration);
-        internal static readonly Summary StoreTakeIndexCheckpointDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_abi_store_take_index_checkpoint_duration", "Summary of time to take a index checkpoint of faster abi store", SummaryConfiguration);
-        internal static readonly Summary StoreFlushAndEvictLogDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_abi_store_log_flush_and_evict_duration", "Summary of time to flush and evict faster abi store", SummaryConfiguration);
-        internal static readonly Summary AbiReaderSessionReadDurationSummary =
-          Metrics.CreateSummary("deepreader_storage_faster_abi_get_by_id_duration", "Summary of time to try get abi trace by id", SummaryConfiguration);
+        internal static readonly Summary TypeWritingAbiDurationSummary =
+          Metrics.CreateSummary("deepreader_storage_faster_write_abi_duration", "Summary of time to store abis to Faster", TypeSummaryConfiguration);
+        internal static readonly Summary TypeStoreLogMemorySizeBytesSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_abi_store_log_memory_size_bytes", "Summary of the faster abi store log memory size in bytes", TypeSummaryConfiguration);
+        internal static readonly Summary TypeStoreReadCacheMemorySizeBytesSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_abi_store_read_cache_memory_size_bytes", "Summary of the faster abi store read cache memory size in bytes", TypeSummaryConfiguration);
+        internal static readonly Summary TypeStoreEntryCountSummary =
+           Metrics.CreateSummary("deepreader_storage_faster_abi_store_read_cache_memory_size_bytes", "Summary of the faster abi store entry count", TypeSummaryConfiguration);
+        internal static readonly Summary TypeStoreTakeLogCheckpointDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_abi_store_take_log_checkpoint_duration", "Summary of time to take a log checkpoint of faster abi store", TypeSummaryConfiguration);
+        internal static readonly Summary TypeStoreTakeIndexCheckpointDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_abi_store_take_index_checkpoint_duration", "Summary of time to take a index checkpoint of faster abi store", TypeSummaryConfiguration);
+        internal static readonly Summary TypeStoreFlushAndEvictLogDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_abi_store_log_flush_and_evict_duration", "Summary of time to flush and evict faster abi store", TypeSummaryConfiguration);
+        internal static readonly Summary TypeAbiReaderSessionReadDurationSummary =
+          Metrics.CreateSummary("deepreader_storage_faster_abi_get_by_id_duration", "Summary of time to try get abi trace by id", TypeSummaryConfiguration);
 
         protected AbiStoreBase(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
         {
-            _options = options;
-            _eventSender = eventSender;
-            _metricsCollector = metricsCollector;
-            _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
+            Options = options;
+            EventSender = eventSender;
+            MetricsCollector = metricsCollector;
+            MetricsCollector.CollectMetricsHandler += CollectObservableMetrics;
         }
 
         protected abstract void CollectObservableMetrics(object? sender, EventArgs e);

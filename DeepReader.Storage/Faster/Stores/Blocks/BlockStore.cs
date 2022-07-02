@@ -11,22 +11,22 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
 {
     public class BlockStore : BlockStoreBase
     {
-        protected readonly FasterKV<long, Block> _store;
+        protected readonly FasterKV<long, Block> Store;
 
         private readonly AsyncPool<ClientSession<long, Block, Input, Block, KeyValueContext,
             StandaloneFunctions<long, Block>>> _sessionPool;
 
         public BlockStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            if (!_options.BlockStoreDir.EndsWith("/"))
-                _options.BlockStoreDir += "/";
+            if (!Options.BlockStoreDir.EndsWith("/"))
+                Options.BlockStoreDir += "/";
 
 
             // Create files for storing data
-            var log = Devices.CreateLogDevice(_options.BlockStoreDir + "hlog.log");
+            var log = Devices.CreateLogDevice(Options.BlockStoreDir + "hlog.log");
 
             // Log for storing serialized objects; needed only for class keys/values
-            var objlog = Devices.CreateLogDevice(_options.BlockStoreDir + "hlog.obj.log");
+            var objlog = Devices.CreateLogDevice(Options.BlockStoreDir + "hlog.obj.log");
 
             // Define settings for log
             var logSettings = new LogSettings
@@ -49,15 +49,15 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
                 valueSerializer = () => new ValueSerializer<Block>()
             };
 
-            var checkPointsDir = _options.BlockStoreDir + "checkpoints";
+            var checkPointsDir = Options.BlockStoreDir + "checkpoints";
 
             var checkpointManager = new DeviceLogCommitCheckpointManager(
                 new LocalStorageNamedDeviceFactory(),
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
 
-            _store = new FasterKV<long, Block>(
-                size: _options.MaxBlocksCacheEntries, // Cache Lines for Blocks
+            Store = new FasterKV<long, Block>(
+                size: Options.MaxBlocksCacheEntries, // Cache Lines for Blocks
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
@@ -69,7 +69,7 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
                 try
                 {
                     Log.Information("Recovering BlockStore");
-                    _store.Recover(1);
+                    Store.Recover(1);
                     Log.Information("BlockStore recovered");
                 }
                 catch (Exception e)
@@ -79,48 +79,48 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
                 }
             }
 
-            StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
+            TypeStoreLogMemorySizeBytesSummary.Observe(Store.Log.MemorySizeBytes);
             if (options.UseReadCache)
-                StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);// must be optional
-            StoreEntryCountSummary.Observe(_store.EntryCount);
+                TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);// must be optional
+            TypeStoreEntryCountSummary.Observe(Store.EntryCount);
 
             var blockEvictionObserver = new PooledObjectEvictionObserver<long, Block>();
-            _store.Log.SubscribeEvictions(blockEvictionObserver);
+            Store.Log.SubscribeEvictions(blockEvictionObserver);
 
             if (options.UseReadCache)
-                _store.ReadCache.SubscribeEvictions(blockEvictionObserver);
+                Store.ReadCache.SubscribeEvictions(blockEvictionObserver);
 
             _sessionPool = new AsyncPool<ClientSession<long, Block, Input, Block, KeyValueContext, StandaloneFunctions<long, Block>>>(
                 logSettings.LogDevice.ThrottleLimit,
-                () => _store.For(new StandaloneFunctions<long, Block>()).NewSession<StandaloneFunctions<long, Block>>("BlockSession" + Interlocked.Increment(ref _sessionCount)));
+                () => Store.For(new StandaloneFunctions<long, Block>()).NewSession<StandaloneFunctions<long, Block>>("BlockSession" + Interlocked.Increment(ref SessionCount)));
 
-            foreach (var recoverableSession in _store.RecoverableSessions)
+            foreach (var recoverableSession in Store.RecoverableSessions)
             {
-                _sessionPool.Return(_store.For(new StandaloneFunctions<long, Block>())
+                _sessionPool.Return(Store.For(new StandaloneFunctions<long, Block>())
                     .ResumeSession<StandaloneFunctions<long, Block>>(recoverableSession.Item2, out CommitPoint commitPoint));
-                _sessionCount++;
+                SessionCount++;
             }
 
             new Thread(CommitThread).Start();
         }
 
-        public long BlocksIndexed => _store.EntryCount;
+        public long BlocksIndexed => Store.EntryCount;
 
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
-            StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
-            if (_options.UseReadCache)
-                StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);
-            StoreEntryCountSummary.Observe(_store.EntryCount);
+            TypeStoreLogMemorySizeBytesSummary.Observe(Store.Log.MemorySizeBytes);
+            if (Options.UseReadCache)
+                TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);
+            TypeStoreEntryCountSummary.Observe(Store.EntryCount);
         }
 
         public override async Task<Status> WriteBlock(Block block)
         {
             long blockId = block.Number;
 
-            await _eventSender.SendAsync("BlockAdded", block);
+            await EventSender.SendAsync("BlockAdded", block);
 
-            using (WritingBlockDuration.NewTimer())
+            using (TypeWritingBlockDuration.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
@@ -134,7 +134,7 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
 
         public override async Task<(bool, Block)> TryGetBlockById(uint blockNum)
         {
-            using (BlockReaderSessionReadDurationSummary.NewTimer())
+            using (TypeBlockReaderSessionReadDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
@@ -146,7 +146,7 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
 
         private void CommitThread()
         {
-            if (_options.LogCheckpointInterval is null or 0)
+            if (Options.LogCheckpointInterval is null or 0)
                 return;
 
             int logCheckpointsTaken = 0;
@@ -155,21 +155,21 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
             {
                 try
                 {
-                    Thread.Sleep(_options.LogCheckpointInterval.Value);
+                    Thread.Sleep(Options.LogCheckpointInterval.Value);
 
-                    using (StoreTakeLogCheckpointDurationSummary.NewTimer())
-                        _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
+                    using (TypeStoreTakeLogCheckpointDurationSummary.NewTimer())
+                        Store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
 
-                    if (_options.FlushAfterCheckpoint)
+                    if (Options.FlushAfterCheckpoint)
                     {
-                        using (StoreFlushAndEvictLogDurationSummary.NewTimer())
-                            _store.Log.FlushAndEvict(true);
+                        using (TypeStoreFlushAndEvictLogDurationSummary.NewTimer())
+                            Store.Log.FlushAndEvict(true);
                     }
 
-                    if (logCheckpointsTaken % _options.IndexCheckpointMultiplier == 0)
+                    if (logCheckpointsTaken % Options.IndexCheckpointMultiplier == 0)
                     {
-                        using (StoreTakeIndexCheckpointDurationSummary.NewTimer())
-                            _store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
+                        using (TypeStoreTakeIndexCheckpointDurationSummary.NewTimer())
+                            Store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
                     }
 
                     logCheckpointsTaken++;

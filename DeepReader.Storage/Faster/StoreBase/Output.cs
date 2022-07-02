@@ -2,6 +2,6 @@
 {
     internal class Output<TValue>
     {
-        TValue value;
+        TValue _value;
     }
 }

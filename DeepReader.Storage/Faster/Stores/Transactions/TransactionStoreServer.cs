@@ -12,11 +12,11 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
     public class TransactionStoreServer : TransactionStore
     {
         readonly ServerOptions _serverOptions;
-        readonly IFasterServer server;
-        readonly ServerKVProvider<TransactionId, TransactionId, TransactionTrace> provider;
-        readonly SubscribeKVBroker<TransactionId, TransactionTrace, TransactionId, IKeyInputSerializer<TransactionId, TransactionId>> kvBroker;
-        readonly SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>> broker;
-        readonly LogSettings logSettings;
+        readonly IFasterServer _server;
+        readonly ServerKvProvider<TransactionId, TransactionId, TransactionTrace> _provider;
+        readonly SubscribeKVBroker<TransactionId, TransactionTrace, TransactionId, IKeyInputSerializer<TransactionId, TransactionId>> _kvBroker;
+        readonly SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>> _broker;
+        readonly LogSettings _logSettings;
 
         public TransactionStoreServer(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
@@ -40,22 +40,22 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 
             if (!_serverOptions.DisablePubSub)
             {
-                kvBroker =
+                _kvBroker =
                     new SubscribeKVBroker<TransactionId, TransactionTrace, TransactionId,
                         IKeyInputSerializer<TransactionId, TransactionId>>(new ServerKeyInputSerializer<TransactionId, TransactionId>(), null,
                         _serverOptions.PubSubPageSizeBytes(), true);
-                broker = new SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>>(
+                _broker = new SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>>(
                         new ServerKeyInputSerializer<TransactionId, TransactionId>(), null,
                         _serverOptions.PubSubPageSizeBytes(), true);
             }
 
-            provider = new ServerKVProvider<TransactionId, TransactionId, TransactionTrace>(_store, new ServerSerializer<TransactionId, TransactionId, TransactionTrace>(), kvBroker, broker, _serverOptions.Recover);
+            _provider = new ServerKvProvider<TransactionId, TransactionId, TransactionTrace>(Store, new ServerSerializer<TransactionId, TransactionId, TransactionTrace>(), _kvBroker, _broker, _serverOptions.Recover);
 
-            server = new FasterServerTcp(_serverOptions.Address, _serverOptions.Port);
-            server.Register(WireFormat.DefaultVarLenKV, provider);
-            server.Register(WireFormat.WebSocket, provider);
+            _server = new FasterServerTcp(_serverOptions.Address, _serverOptions.Port);
+            _server.Register(WireFormat.DefaultVarLenKV, _provider);
+            _server.Register(WireFormat.WebSocket, _provider);
 
-            server.Start();
+            _server.Start();
         }
     }
 }

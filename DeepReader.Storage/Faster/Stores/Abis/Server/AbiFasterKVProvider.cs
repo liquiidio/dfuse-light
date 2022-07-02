@@ -5,10 +5,10 @@ using FASTER.server;
 
 namespace DeepReader.Storage.Faster.Stores.Abis.Server
 {
-    internal sealed class AbiFasterKVProvider : FasterKVProviderBase<ulong, AbiCacheItem, AbiInput,
+    internal sealed class AbiFasterKvProvider : FasterKVProviderBase<ulong, AbiCacheItem, AbiInput,
     AbiOutput, AbiServerFunctions, AbiServerSerializer>
     {
-        public AbiFasterKVProvider(FasterKV<ulong, AbiCacheItem> store, AbiServerSerializer serializer,
+        public AbiFasterKvProvider(FasterKV<ulong, AbiCacheItem> store, AbiServerSerializer serializer,
        SubscribeKVBroker<ulong, AbiCacheItem, AbiInput, IKeyInputSerializer<ulong, AbiInput>> kvBroker = null,
        SubscribeBroker<ulong, AbiCacheItem, IKeySerializer<ulong>> broker = null, bool recoverStore = false,
        MaxSizeSettings maxSizeSettings = null)

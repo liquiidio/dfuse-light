@@ -4,7 +4,7 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
 {
     public class ServerFunctions<TKey, TValue> : IFunctions<TKey, TValue, TKey, TValue, long>
     {
-        public void CheckpointCompletionCallback(int sessionID, string sessionName, CommitPoint commitPoint)
+        public void CheckpointCompletionCallback(int sessionId, string sessionName, CommitPoint commitPoint)
         {
 
         }

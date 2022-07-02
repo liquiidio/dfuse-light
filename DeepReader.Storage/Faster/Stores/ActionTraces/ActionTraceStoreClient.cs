@@ -13,8 +13,8 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
 {
     internal class ActionTraceStoreClient : ActionTraceStoreBase
     {
-        private const string ip = "127.0.0.1";
-        private const int port = 5005;
+        private const string Ip = "127.0.0.1";
+        private const int Port = 5005;
 
         private readonly AsyncPool<ClientSession<ulong, ActionTrace, ActionTrace, ActionTrace, KeyValueContext,
                 ClientFunctions<UlongKey, ulong, ActionTrace>, ClientSerializer<UlongKey, ulong, ActionTrace>>> _sessionPool;
@@ -23,7 +23,7 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
 
         public ActionTraceStoreClient(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            _client = new FasterKVClient<ulong, ActionTrace>(ip, port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
+            _client = new FasterKVClient<ulong, ActionTrace>(Ip, Port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
 
             _sessionPool =
                 new AsyncPool<ClientSession<ulong, ActionTrace, ActionTrace, ActionTrace, KeyValueContext,
@@ -45,9 +45,9 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
         {
             var actionTraceId = actionTrace.GlobalSequence;
 
-            await _eventSender.SendAsync("ActionTraceAdded", actionTrace);
+            await EventSender.SendAsync("ActionTraceAdded", actionTrace);
 
-            using (WritingActionTraceDurationSummary.NewTimer())
+            using (TypeWritingActionTraceDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
@@ -60,7 +60,7 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
 
         public override async Task<(bool, ActionTrace)> TryGetActionTraceById(ulong globalSequence)
         {
-            using (ActionTraceReaderSessionReadDurationSummary.NewTimer())
+            using (TypeActionTraceReaderSessionReadDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);

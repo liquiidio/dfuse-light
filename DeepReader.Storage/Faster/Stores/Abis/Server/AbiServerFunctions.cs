@@ -5,7 +5,7 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Server
 {
     internal sealed class AbiServerFunctions : IFunctions<ulong, AbiCacheItem, AbiInput, AbiOutput, long>
     {
-        public void CheckpointCompletionCallback(int sessionID, string sessionName, CommitPoint commitPoint)
+        public void CheckpointCompletionCallback(int sessionId, string sessionName, CommitPoint commitPoint)
         {
 
         }

@@ -14,8 +14,8 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Client
 {
     internal class AbiStoreClient : AbiStoreBase
     {
-        private const string ip = "127.0.0.1";
-        private const int port = 5004;
+        private const string Ip = "127.0.0.1";
+        private const int Port = 5004;
         private static Encoding _encode = Encoding.UTF8;
         private readonly AsyncPool<ClientSession<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiClientFunctions, AbiClientSerializer>> _sessionPool;
 
@@ -23,7 +23,7 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Client
 
         public AbiStoreClient(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            _client = new FasterKVClient<ulong, AbiCacheItem>(ip, port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
+            _client = new FasterKVClient<ulong, AbiCacheItem>(Ip, Port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
 
             _sessionPool =
                 new AsyncPool<ClientSession<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext,
@@ -45,9 +45,9 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Client
         {
             var abiId = abi.Id;
 
-            await _eventSender.SendAsync("AbiAdded", abi);
+            await EventSender.SendAsync("AbiAdded", abi);
 
-            using (WritingAbiDurationSummary.NewTimer())
+            using (TypeWritingAbiDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
@@ -66,7 +66,7 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Client
 
         public override async Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Name account)
         {
-            using (AbiReaderSessionReadDurationSummary.NewTimer())
+            using (TypeAbiReaderSessionReadDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
@@ -78,7 +78,7 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Client
 
         public override async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence)
         {
-            using (AbiReaderSessionReadDurationSummary.NewTimer())
+            using (TypeAbiReaderSessionReadDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
@@ -107,7 +107,7 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Client
 
         public override async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Name account)
         {
-            using (AbiReaderSessionReadDurationSummary.NewTimer())
+            using (TypeAbiReaderSessionReadDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);

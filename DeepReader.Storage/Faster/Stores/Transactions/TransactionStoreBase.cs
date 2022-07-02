@@ -8,39 +8,39 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 {
     public abstract class TransactionStoreBase
     {
-        internal int _sessionCount;
+        internal int SessionCount;
 
-        internal readonly FasterStorageOptions _options;
+        internal readonly FasterStorageOptions Options;
 
-        internal ITopicEventSender _eventSender;
-        internal MetricsCollector _metricsCollector;
+        internal ITopicEventSender EventSender;
+        internal MetricsCollector MetricsCollector;
 
-        internal static readonly SummaryConfiguration SummaryConfiguration = new SummaryConfiguration()
+        internal static readonly SummaryConfiguration TypeSummaryConfiguration = new SummaryConfiguration()
         { MaxAge = TimeSpan.FromSeconds(30) };
 
-        internal static readonly Summary WritingTransactionDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_write_transaction_duration", "Summary of time to store transactions to Faster", SummaryConfiguration);
-        internal static readonly Summary StoreLogMemorySizeBytesSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_log_memory_size_bytes", "Summary of the faster transaction store log memory size in bytes", SummaryConfiguration);
-        internal static readonly Summary StoreReadCacheMemorySizeBytesSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Summary of the faster transaction store read cache memory size in bytes", SummaryConfiguration);
-        internal static readonly Summary StoreEntryCountSummary =
-           Metrics.CreateSummary("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Summary of the faster transaction store entry count", SummaryConfiguration);
-        internal static readonly Summary StoreTakeLogCheckpointDurationSummary =
-          Metrics.CreateSummary("deepreader_storage_faster_transaction_store_take_log_checkpoint_duration", "Summary of time to take a log checkpoint of faster transaction store", SummaryConfiguration);
-        internal static readonly Summary StoreTakeIndexCheckpointDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_take_index_checkpoint_duration", "Summary of time to take a index checkpoint of faster transaction store", SummaryConfiguration);
-        internal static readonly Summary StoreFlushAndEvictLogDurationSummary =
-            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_log_flush_and_evict_duration", "Summary of time to flush and evict faster transaction store", SummaryConfiguration);
-        internal static readonly Summary TransactionReaderSessionReadDurationSummary =
-          Metrics.CreateSummary("deepreader_storage_faster_transaction_get_by_id_duration", "Summary of time to try get transaction trace by id", SummaryConfiguration);
+        internal static readonly Summary TypeWritingTransactionDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_write_transaction_duration", "Summary of time to store transactions to Faster", TypeSummaryConfiguration);
+        internal static readonly Summary TypeStoreLogMemorySizeBytesSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_log_memory_size_bytes", "Summary of the faster transaction store log memory size in bytes", TypeSummaryConfiguration);
+        internal static readonly Summary TypeStoreReadCacheMemorySizeBytesSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Summary of the faster transaction store read cache memory size in bytes", TypeSummaryConfiguration);
+        internal static readonly Summary TypeStoreEntryCountSummary =
+           Metrics.CreateSummary("deepreader_storage_faster_transaction_store_read_cache_memory_size_bytes", "Summary of the faster transaction store entry count", TypeSummaryConfiguration);
+        internal static readonly Summary TypeStoreTakeLogCheckpointDurationSummary =
+          Metrics.CreateSummary("deepreader_storage_faster_transaction_store_take_log_checkpoint_duration", "Summary of time to take a log checkpoint of faster transaction store", TypeSummaryConfiguration);
+        internal static readonly Summary TypeStoreTakeIndexCheckpointDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_take_index_checkpoint_duration", "Summary of time to take a index checkpoint of faster transaction store", TypeSummaryConfiguration);
+        internal static readonly Summary TypeStoreFlushAndEvictLogDurationSummary =
+            Metrics.CreateSummary("deepreader_storage_faster_transaction_store_log_flush_and_evict_duration", "Summary of time to flush and evict faster transaction store", TypeSummaryConfiguration);
+        internal static readonly Summary TypeTransactionReaderSessionReadDurationSummary =
+          Metrics.CreateSummary("deepreader_storage_faster_transaction_get_by_id_duration", "Summary of time to try get transaction trace by id", TypeSummaryConfiguration);
 
         protected TransactionStoreBase(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
         {
-            _options = options;
-            _eventSender = eventSender;
-            _metricsCollector = metricsCollector;
-            _metricsCollector.CollectMetricsHandler += CollectObservableMetrics;
+            Options = options;
+            EventSender = eventSender;
+            MetricsCollector = metricsCollector;
+            MetricsCollector.CollectMetricsHandler += CollectObservableMetrics;
         }
 
         protected abstract void CollectObservableMetrics(object? sender, EventArgs e);

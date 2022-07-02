@@ -13,8 +13,8 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
 {
     internal class BlockStoreClient : BlockStoreBase
     {
-        private const string ip = "127.0.0.1";
-        private const int port = 5002;
+        private const string Ip = "127.0.0.1";
+        private const int Port = 5002;
 
         private readonly AsyncPool<ClientSession<long, Block, Block, Block, KeyValueContext,
             ClientFunctions<LongKey, long, Block>, ClientSerializer<LongKey, long, Block>>> _sessionPool;
@@ -23,7 +23,7 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
 
         public BlockStoreClient(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            _client = new FasterKVClient<long, Block>(ip, port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
+            _client = new FasterKVClient<long, Block>(Ip, Port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
 
             _sessionPool =
                 new AsyncPool<ClientSession<long, Block, Block, Block, KeyValueContext,
@@ -45,9 +45,9 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
         {
             long blockId = block.Number;
 
-            await _eventSender.SendAsync("BlockAdded", block);
+            await EventSender.SendAsync("BlockAdded", block);
 
-            using (WritingBlockDuration.NewTimer())
+            using (TypeWritingBlockDuration.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
@@ -60,7 +60,7 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
 
         public override async Task<(bool, Block)> TryGetBlockById(uint blockNum)
         {
-            using (BlockReaderSessionReadDurationSummary.NewTimer())
+            using (TypeBlockReaderSessionReadDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);

@@ -11,11 +11,11 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
     public class BlockStoreServer : BlockStore
     {
         readonly ServerOptions _serverOptions;
-        readonly IFasterServer server;
-        readonly ServerKVProvider<LongKey, long, Block> provider;
-        readonly SubscribeKVBroker<long, Block, long, IKeyInputSerializer<long, long>> kvBroker;
-        readonly SubscribeBroker<long, Block, IKeySerializer<long>> broker;
-        readonly LogSettings logSettings;
+        readonly IFasterServer _server;
+        readonly ServerKvProvider<LongKey, long, Block> _provider;
+        readonly SubscribeKVBroker<long, Block, long, IKeyInputSerializer<long, long>> _kvBroker;
+        readonly SubscribeBroker<long, Block, IKeySerializer<long>> _broker;
+        readonly LogSettings _logSettings;
 
 
         public BlockStoreServer(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
@@ -38,18 +38,18 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
 
             if (!_serverOptions.DisablePubSub)
             {
-                kvBroker = new SubscribeKVBroker<long, Block, long, IKeyInputSerializer<long, long>>(
+                _kvBroker = new SubscribeKVBroker<long, Block, long, IKeyInputSerializer<long, long>>(
                     new ServerKeyInputSerializer<LongKey, long>(), null, _serverOptions.PubSubPageSizeBytes(), true);
-                broker = new SubscribeBroker<long, Block, IKeySerializer<long>>(
+                _broker = new SubscribeBroker<long, Block, IKeySerializer<long>>(
                     new ServerKeyInputSerializer<LongKey, long>(), null, _serverOptions.PubSubPageSizeBytes(), true);
             }
 
             // Create session provider for VarLen
-            provider = new ServerKVProvider<LongKey, long, Block>(_store, new ServerSerializer<LongKey, long, Block>(), kvBroker, broker, _serverOptions.Recover);
+            _provider = new ServerKvProvider<LongKey, long, Block>(Store, new ServerSerializer<LongKey, long, Block>(), _kvBroker, _broker, _serverOptions.Recover);
 
-            server = new FasterServerTcp(_serverOptions.Address, _serverOptions.Port);
-            server.Register(WireFormat.DefaultVarLenKV, provider);
-            server.Register(WireFormat.WebSocket, provider);
+            _server = new FasterServerTcp(_serverOptions.Address, _serverOptions.Port);
+            _server.Register(WireFormat.DefaultVarLenKV, _provider);
+            _server.Register(WireFormat.WebSocket, _provider);
         }
     }
 }

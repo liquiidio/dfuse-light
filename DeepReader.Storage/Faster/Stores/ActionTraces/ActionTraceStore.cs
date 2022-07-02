@@ -11,27 +11,27 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
 {
     public class ActionTraceStore : ActionTraceStoreBase
     {
-        protected readonly FasterKV<ulong, ActionTrace> _store;
+        protected readonly FasterKV<ulong, ActionTrace> Store;
 
         private readonly AsyncPool<ClientSession<ulong, ActionTrace, Input, ActionTrace, KeyValueContext, StandaloneFunctions<ulong, ActionTrace>>> _sessionPool;
 
         public ActionTraceStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            if (!_options.ActionTraceStoreDir.EndsWith("/"))
+            if (!Options.ActionTraceStoreDir.EndsWith("/"))
                 options.ActionTraceStoreDir += "/";
 
             // Create files for storing data
-            var log = Devices.CreateLogDevice(_options.ActionTraceStoreDir + "hlog.log");
+            var log = Devices.CreateLogDevice(Options.ActionTraceStoreDir + "hlog.log");
 
             // Log for storing serialized objects; needed only for class keys/values
-            var objlog = Devices.CreateLogDevice(_options.ActionTraceStoreDir + "hlog.obj.log");
+            var objlog = Devices.CreateLogDevice(Options.ActionTraceStoreDir + "hlog.obj.log");
 
             // Define settings for log
             var logSettings = new LogSettings
             {
                 LogDevice = log,
                 ObjectLogDevice = objlog,
-                ReadCacheSettings = _options.UseReadCache ? new ReadCacheSettings() : null,
+                ReadCacheSettings = Options.UseReadCache ? new ReadCacheSettings() : null,
                 // to calculate below:
                 // 12 = 00001111 11111111 = 4095 = 4K
                 // 34 = 00000011 11111111 11111111 11111111 11111111 = 17179869183 = 16G
@@ -47,14 +47,14 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
                 valueSerializer = () => new ValueSerializer<ActionTrace>()
             };
 
-            var checkPointsDir = _options.ActionTraceStoreDir + "checkpoints";
+            var checkPointsDir = Options.ActionTraceStoreDir + "checkpoints";
 
             var checkpointManager = new DeviceLogCommitCheckpointManager(
                 new LocalStorageNamedDeviceFactory(),
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
-            _store = new FasterKV<ulong, ActionTrace>(
-                size: _options.MaxActionTracesCacheEntries, // Cache Lines for ActionTraces
+            Store = new FasterKV<ulong, ActionTrace>(
+                size: Options.MaxActionTracesCacheEntries, // Cache Lines for ActionTraces
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
@@ -66,7 +66,7 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
                 try
                 {
                     Log.Information("Recovering ActionTraceStore");
-                    _store.Recover(1);
+                    Store.Recover(1);
                     Log.Information("ActionTraceStore recovered");
                 }
                 catch (Exception e)
@@ -77,20 +77,20 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
             }
 
             var actionTraceEvictionObserver = new PooledObjectEvictionObserver<ulong, ActionTrace>();
-            _store.Log.SubscribeEvictions(actionTraceEvictionObserver);
+            Store.Log.SubscribeEvictions(actionTraceEvictionObserver);
 
             if (options.UseReadCache)
-                _store.ReadCache.SubscribeEvictions(actionTraceEvictionObserver);
+                Store.ReadCache.SubscribeEvictions(actionTraceEvictionObserver);
 
             _sessionPool = new AsyncPool<ClientSession<ulong, ActionTrace, Input, ActionTrace, KeyValueContext, StandaloneFunctions<ulong, ActionTrace>>>(
                 logSettings.LogDevice.ThrottleLimit,
-                () => _store.For(new StandaloneFunctions<ulong, ActionTrace>()).NewSession<StandaloneFunctions<ulong, ActionTrace>>("ActionTraceSession" + Interlocked.Increment(ref _sessionCount)));
+                () => Store.For(new StandaloneFunctions<ulong, ActionTrace>()).NewSession<StandaloneFunctions<ulong, ActionTrace>>("ActionTraceSession" + Interlocked.Increment(ref SessionCount)));
 
-            foreach (var recoverableSession in _store.RecoverableSessions)
+            foreach (var recoverableSession in Store.RecoverableSessions)
             {
-                _sessionPool.Return(_store.For(new StandaloneFunctions<ulong, ActionTrace>())
+                _sessionPool.Return(Store.For(new StandaloneFunctions<ulong, ActionTrace>())
                     .ResumeSession<StandaloneFunctions<ulong, ActionTrace>>(recoverableSession.Item2, out CommitPoint commitPoint));
-                _sessionCount++;
+                SessionCount++;
             }
 
             new Thread(CommitThread).Start();
@@ -99,19 +99,19 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
 
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
-            StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
-            if (_options.UseReadCache)
-                StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);
-            StoreEntryCountSummary.Observe(_store.EntryCount);
+            TypeStoreLogMemorySizeBytesSummary.Observe(Store.Log.MemorySizeBytes);
+            if (Options.UseReadCache)
+                TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);
+            TypeStoreEntryCountSummary.Observe(Store.EntryCount);
         }
 
         public override async Task<Status> WriteActionTrace(ActionTrace actionTrace)
         {
             var actionTraceId = actionTrace.GlobalSequence;
 
-            await _eventSender.SendAsync("ActionTraceAdded", actionTrace);
+            await EventSender.SendAsync("ActionTraceAdded", actionTrace);
 
-            using (WritingActionTraceDurationSummary.NewTimer())
+            using (TypeWritingActionTraceDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
@@ -125,7 +125,7 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
 
         public override async Task<(bool, ActionTrace)> TryGetActionTraceById(ulong globalSequence)
         {
-            using (ActionTraceReaderSessionReadDurationSummary.NewTimer())
+            using (TypeActionTraceReaderSessionReadDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
@@ -137,7 +137,7 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
 
         internal void CommitThread()
         {
-            if (_options.LogCheckpointInterval is null or 0)
+            if (Options.LogCheckpointInterval is null or 0)
                 return;
 
             int logCheckpointsTaken = 0;
@@ -146,21 +146,21 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
             {
                 try
                 {
-                    Thread.Sleep(_options.LogCheckpointInterval.Value);
+                    Thread.Sleep(Options.LogCheckpointInterval.Value);
 
-                    using (StoreTakeLogCheckpointDurationSummary.NewTimer())
-                        _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
+                    using (TypeStoreTakeLogCheckpointDurationSummary.NewTimer())
+                        Store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
 
-                    if (_options.FlushAfterCheckpoint)
+                    if (Options.FlushAfterCheckpoint)
                     {
-                        using (StoreFlushAndEvictLogDurationSummary.NewTimer())
-                            _store.Log.FlushAndEvict(true);
+                        using (TypeStoreFlushAndEvictLogDurationSummary.NewTimer())
+                            Store.Log.FlushAndEvict(true);
                     }
 
-                    if (logCheckpointsTaken % _options.IndexCheckpointMultiplier == 0)
+                    if (logCheckpointsTaken % Options.IndexCheckpointMultiplier == 0)
                     {
-                        using (StoreTakeIndexCheckpointDurationSummary.NewTimer())
-                            _store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
+                        using (TypeStoreTakeIndexCheckpointDurationSummary.NewTimer())
+                            Store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
                     }
 
                     logCheckpointsTaken++;

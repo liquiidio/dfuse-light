@@ -12,28 +12,28 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 {
     public class TransactionStore : TransactionStoreBase
     {
-        protected readonly FasterKV<TransactionId, TransactionTrace> _store;
+        protected readonly FasterKV<TransactionId, TransactionTrace> Store;
 
         private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, Input, TransactionTrace,
             KeyValueContext, StandaloneFunctions<TransactionId, TransactionTrace>>> _sessionPool;
 
         public TransactionStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            if (!_options.TransactionStoreDir.EndsWith("/"))
+            if (!Options.TransactionStoreDir.EndsWith("/"))
                 options.TransactionStoreDir += "/";
 
             // Create files for storing data
-            var log = Devices.CreateLogDevice(_options.TransactionStoreDir + "hlog.log");
+            var log = Devices.CreateLogDevice(Options.TransactionStoreDir + "hlog.log");
 
             // Log for storing serialized objects; needed only for class keys/values
-            var objlog = Devices.CreateLogDevice(_options.TransactionStoreDir + "hlog.obj.log");
+            var objlog = Devices.CreateLogDevice(Options.TransactionStoreDir + "hlog.obj.log");
 
             // Define settings for log
             var logSettings = new LogSettings
             {
                 LogDevice = log,
                 ObjectLogDevice = objlog,
-                ReadCacheSettings = _options.UseReadCache ? new ReadCacheSettings() : null,
+                ReadCacheSettings = Options.UseReadCache ? new ReadCacheSettings() : null,
                 // to calculate below:
                 // 12 = 00001111 11111111 = 4095 = 4K
                 // 34 = 00000011 11111111 11111111 11111111 11111111 = 17179869183 = 16G
@@ -49,14 +49,14 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
                 valueSerializer = () => new ValueSerializer<TransactionTrace>()
             };
 
-            var checkPointsDir = _options.TransactionStoreDir + "checkpoints";
+            var checkPointsDir = Options.TransactionStoreDir + "checkpoints";
 
             var checkpointManager = new DeviceLogCommitCheckpointManager(
                 new LocalStorageNamedDeviceFactory(),
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
-            _store = new FasterKV<TransactionId, TransactionTrace>(
-                size: _options.MaxTransactionsCacheEntries, // Cache Lines for Transactions
+            Store = new FasterKV<TransactionId, TransactionTrace>(
+                size: Options.MaxTransactionsCacheEntries, // Cache Lines for Transactions
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
@@ -68,7 +68,7 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
                 try
                 {
                     Log.Information("Recovering TransactionStore");
-                    _store.Recover(1);
+                    Store.Recover(1);
                     Log.Information("TransactionStore recovered");
                 }
                 catch (Exception e)
@@ -79,48 +79,48 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
             }
 
 
-            StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
+            TypeStoreLogMemorySizeBytesSummary.Observe(Store.Log.MemorySizeBytes);
             if (options.UseReadCache)
-                StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);
-            StoreEntryCountSummary.Observe(_store.EntryCount);
+                TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);
+            TypeStoreEntryCountSummary.Observe(Store.EntryCount);
 
             var transactionEvictionObserver = new PooledObjectEvictionObserver<TransactionId, TransactionTrace>();
-            _store.Log.SubscribeEvictions(transactionEvictionObserver);
+            Store.Log.SubscribeEvictions(transactionEvictionObserver);
 
             if (options.UseReadCache)
-                _store.ReadCache.SubscribeEvictions(transactionEvictionObserver);
+                Store.ReadCache.SubscribeEvictions(transactionEvictionObserver);
 
             _sessionPool = new AsyncPool<ClientSession<TransactionId, TransactionTrace, Input, TransactionTrace, KeyValueContext, StandaloneFunctions<TransactionId, TransactionTrace>>>(
                 logSettings.LogDevice.ThrottleLimit,
-                () => _store.For(new StandaloneFunctions<TransactionId, TransactionTrace>()).NewSession<StandaloneFunctions<TransactionId, TransactionTrace>>("TransactionSession" + Interlocked.Increment(ref _sessionCount)));
+                () => Store.For(new StandaloneFunctions<TransactionId, TransactionTrace>()).NewSession<StandaloneFunctions<TransactionId, TransactionTrace>>("TransactionSession" + Interlocked.Increment(ref SessionCount)));
 
-            foreach (var recoverableSession in _store.RecoverableSessions)
+            foreach (var recoverableSession in Store.RecoverableSessions)
             {
-                _sessionPool.Return(_store.For(new StandaloneFunctions<TransactionId, TransactionTrace>())
+                _sessionPool.Return(Store.For(new StandaloneFunctions<TransactionId, TransactionTrace>())
                     .ResumeSession<StandaloneFunctions<TransactionId, TransactionTrace>>(recoverableSession.Item2, out CommitPoint commitPoint));
-                _sessionCount++;
+                SessionCount++;
             }
 
             new Thread(CommitThread).Start();
         }
 
-        public long TransactionsIndexed => _store.EntryCount;
+        public long TransactionsIndexed => Store.EntryCount;
 
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
-            StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
-            if (_options.UseReadCache)
-                StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);
-            StoreEntryCountSummary.Observe(_store.EntryCount);
+            TypeStoreLogMemorySizeBytesSummary.Observe(Store.Log.MemorySizeBytes);
+            if (Options.UseReadCache)
+                TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);
+            TypeStoreEntryCountSummary.Observe(Store.EntryCount);
         }
 
         public override async Task<Status> WriteTransaction(TransactionTrace transaction)
         {
             var transactionId = new TransactionId(transaction.Id);
 
-            await _eventSender.SendAsync("TransactionAdded", transaction);
+            await EventSender.SendAsync("TransactionAdded", transaction);
 
-            using (WritingTransactionDurationSummary.NewTimer())
+            using (TypeWritingTransactionDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
@@ -134,7 +134,7 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 
         public override async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(TransactionId transactionId)
         {
-            using (TransactionReaderSessionReadDurationSummary.NewTimer())
+            using (TypeTransactionReaderSessionReadDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
@@ -146,7 +146,7 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 
         private void CommitThread()
         {
-            if (_options.LogCheckpointInterval is null or 0)
+            if (Options.LogCheckpointInterval is null or 0)
                 return;
 
             int logCheckpointsTaken = 0;
@@ -155,21 +155,21 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
             {
                 try
                 {
-                    Thread.Sleep(_options.LogCheckpointInterval.Value);
+                    Thread.Sleep(Options.LogCheckpointInterval.Value);
 
-                    using (StoreTakeLogCheckpointDurationSummary.NewTimer())
-                        _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
+                    using (TypeStoreTakeLogCheckpointDurationSummary.NewTimer())
+                        Store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
 
-                    if (_options.FlushAfterCheckpoint)
+                    if (Options.FlushAfterCheckpoint)
                     {
-                        using (StoreFlushAndEvictLogDurationSummary.NewTimer())
-                            _store.Log.FlushAndEvict(true);
+                        using (TypeStoreFlushAndEvictLogDurationSummary.NewTimer())
+                            Store.Log.FlushAndEvict(true);
                     }
 
-                    if (logCheckpointsTaken % _options.IndexCheckpointMultiplier == 0)
+                    if (logCheckpointsTaken % Options.IndexCheckpointMultiplier == 0)
                     {
-                        using (StoreTakeIndexCheckpointDurationSummary.NewTimer())
-                            _store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
+                        using (TypeStoreTakeIndexCheckpointDurationSummary.NewTimer())
+                            Store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
                     }
 
                     logCheckpointsTaken++;
