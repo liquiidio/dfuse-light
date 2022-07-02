@@ -1,29 +1,35 @@
-using DeepReader.Storage.Faster.ActionTraces.Base;
+using DeepReader.Storage.Faster.Base;
+using DeepReader.Storage.Faster.Base.Standalone;
+using DeepReader.Storage.Faster.Test;
 using DeepReader.Storage.Options;
-using DeepReader.Types.StorageTypes;
+using DeepReader.Types.Eosio.Chain;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 using Serilog;
+using TransactionTrace = DeepReader.Types.StorageTypes.TransactionTrace;
 
-namespace DeepReader.Storage.Faster.ActionTraces.Standalone
+namespace DeepReader.Storage.Faster.Transactions
 {
-    public class ActionTraceStore : ActionTraceStoreBase
+    public class TransactionStore : TransactionStoreBase
     {
-        protected readonly FasterKV<ulong, ActionTrace> _store;
+        protected readonly FasterKV<TransactionId, TransactionTrace> _store;
 
-        private readonly AsyncPool<ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions>> _sessionPool;
+        private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, Input, TransactionTrace,
+            KeyValueContext, StandaloneFunctions<TransactionId, TransactionTrace>>> _sessionPool;
 
-        public ActionTraceStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
+        private int _sessionCount;
+
+        public TransactionStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            if (!_options.ActionTraceStoreDir.EndsWith("/"))
-                options.ActionTraceStoreDir += "/";
+            if (!_options.TransactionStoreDir.EndsWith("/"))
+                options.TransactionStoreDir += "/";
 
             // Create files for storing data
-            var log = Devices.CreateLogDevice(_options.ActionTraceStoreDir + "hlog.log");
+            var log = Devices.CreateLogDevice(_options.TransactionStoreDir + "hlog.log");
 
             // Log for storing serialized objects; needed only for class keys/values
-            var objlog = Devices.CreateLogDevice(_options.ActionTraceStoreDir + "hlog.obj.log");
+            var objlog = Devices.CreateLogDevice(_options.TransactionStoreDir + "hlog.obj.log");
 
             // Define settings for log
             var logSettings = new LogSettings
@@ -40,32 +46,33 @@ namespace DeepReader.Storage.Faster.ActionTraces.Standalone
 
             // Define serializers; otherwise FASTER will use the slower DataContract
             // Needed only for class keys/values
-            var serializerSettings = new SerializerSettings<ulong, ActionTrace>
+            var serializerSettings = new SerializerSettings<TransactionId, TransactionTrace>
             {
-                valueSerializer = () => new ActionTraceValueSerializer()
+                keySerializer = () => new KeySerializer<TransactionId, TransactionId>(),
+                valueSerializer = () => new ValueSerializer<TransactionTrace>()
             };
 
-            var checkPointsDir = _options.ActionTraceStoreDir + "checkpoints";
+            var checkPointsDir = _options.TransactionStoreDir + "checkpoints";
 
             var checkpointManager = new DeviceLogCommitCheckpointManager(
                 new LocalStorageNamedDeviceFactory(),
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
-            _store = new FasterKV<ulong, ActionTrace>(
-                size: _options.MaxActionTracesCacheEntries, // Cache Lines for ActionTraces
+            _store = new FasterKV<TransactionId, TransactionTrace>(
+                size: _options.MaxTransactionsCacheEntries, // Cache Lines for Transactions
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
-                new FasterSequentialULongKeyComparer()
+                comparer: new TransactionId()
             );
 
             if (Directory.Exists(checkPointsDir))
             {
                 try
                 {
-                    Log.Information("Recovering ActionTraceStore");
+                    Log.Information("Recovering TransactionStore");
                     _store.Recover(1);
-                    Log.Information("ActionTraceStore recovered");
+                    Log.Information("TransactionStore recovered");
                 }
                 catch (Exception e)
                 {
@@ -74,26 +81,33 @@ namespace DeepReader.Storage.Faster.ActionTraces.Standalone
                 }
             }
 
-            var actionTraceEvictionObserver = new ActionTraceEvictionObserver();
-            _store.Log.SubscribeEvictions(actionTraceEvictionObserver);
+
+            StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
+            if (options.UseReadCache)
+                StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);
+            StoreEntryCountSummary.Observe(_store.EntryCount);
+
+            var transactionEvictionObserver = new PooledObjectEvictionObserver<TransactionId, TransactionTrace>();
+            _store.Log.SubscribeEvictions(transactionEvictionObserver);
 
             if (options.UseReadCache)
-                _store.ReadCache.SubscribeEvictions(actionTraceEvictionObserver);
+                _store.ReadCache.SubscribeEvictions(transactionEvictionObserver);
 
-            _sessionPool = new AsyncPool<ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceFunctions>>(
+            _sessionPool = new AsyncPool<ClientSession<TransactionId, TransactionTrace, Input, TransactionTrace, KeyValueContext, StandaloneFunctions<TransactionId, TransactionTrace>>>(
                 logSettings.LogDevice.ThrottleLimit,
-                () => _store.For(new ActionTraceFunctions()).NewSession<ActionTraceFunctions>("ActionTraceSession" + Interlocked.Increment(ref _sessionCount)));
+                () => _store.For(new StandaloneFunctions<TransactionId, TransactionTrace>()).NewSession<StandaloneFunctions<TransactionId, TransactionTrace>>("TransactionSession" + Interlocked.Increment(ref _sessionCount)));
 
             foreach (var recoverableSession in _store.RecoverableSessions)
             {
-                _sessionPool.Return(_store.For(new ActionTraceFunctions())
-                    .ResumeSession<ActionTraceFunctions>(recoverableSession.Item2, out CommitPoint commitPoint));
+                _sessionPool.Return(_store.For(new StandaloneFunctions<TransactionId, TransactionTrace>())
+                    .ResumeSession<StandaloneFunctions<TransactionId, TransactionTrace>>(recoverableSession.Item2, out CommitPoint commitPoint));
                 _sessionCount++;
             }
 
             new Thread(CommitThread).Start();
         }
 
+        public long TransactionsIndexed => _store.EntryCount;
 
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
@@ -103,17 +117,17 @@ namespace DeepReader.Storage.Faster.ActionTraces.Standalone
             StoreEntryCountSummary.Observe(_store.EntryCount);
         }
 
-        public override async Task<Status> WriteActionTrace(ActionTrace actionTrace)
+        public override async Task<Status> WriteTransaction(TransactionTrace transaction)
         {
-            var actionTraceId = actionTrace.GlobalSequence;
+            var transactionId = new TransactionId(transaction.Id);
 
-            await _eventSender.SendAsync("ActionTraceAdded", actionTrace);
+            await _eventSender.SendAsync("TransactionAdded", transaction);
 
-            using (WritingActionTraceDurationSummary.NewTimer())
+            using (WritingTransactionDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
-                var result = await session.UpsertAsync(ref actionTraceId, ref actionTrace);
+                var result = await session.UpsertAsync(ref transactionId, ref transaction);
                 while (result.Status.IsPending)
                     result = await result.CompleteAsync();
                 _sessionPool.Return(session);
@@ -121,19 +135,19 @@ namespace DeepReader.Storage.Faster.ActionTraces.Standalone
             }
         }
 
-        public override async Task<(bool, ActionTrace)> TryGetActionTraceById(ulong globalSequence)
+        public override async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(TransactionId transactionId)
         {
-            using (ActionTraceReaderSessionReadDurationSummary.NewTimer())
+            using (TransactionReaderSessionReadDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
-                var (status, output) = (await session.ReadAsync(globalSequence)).Complete();
+                var (status, output) = (await session.ReadAsync(new TransactionId(transactionId))).Complete();
                 _sessionPool.Return(session);
-                return (status.Found, output.Value);
+                return (status.Found, output);
             }
         }
 
-        internal void CommitThread()
+        private void CommitThread()
         {
             if (_options.LogCheckpointInterval is null or 0)
                 return;
@@ -169,6 +183,5 @@ namespace DeepReader.Storage.Faster.ActionTraces.Standalone
                 }
             }
         }
-
     }
 }

@@ -1,5 +1,4 @@
 ﻿using DeepReader.Storage.Faster.Test.Server;
-using DeepReader.Storage.Faster.Transactions.Standalone;
 using DeepReader.Storage.Options;
 using DeepReader.Types.Eosio.Chain;
 using FASTER.common;
@@ -8,14 +7,14 @@ using FASTER.server;
 using HotChocolate.Subscriptions;
 using TransactionTrace = DeepReader.Types.StorageTypes.TransactionTrace;
 
-namespace DeepReader.Storage.Faster.Transactions.Server
+namespace DeepReader.Storage.Faster.Transactions
 {
     public class TransactionStoreServer : TransactionStore
     {
         readonly ServerOptions _serverOptions;
         readonly IFasterServer server;
         readonly ServerKVProvider<TransactionId, TransactionId, TransactionTrace> provider;
-        readonly SubscribeKVBroker<TransactionId, TransactionTrace, TransactionId, IKeyInputSerializer<TransactionId,TransactionId>> kvBroker;
+        readonly SubscribeKVBroker<TransactionId, TransactionTrace, TransactionId, IKeyInputSerializer<TransactionId, TransactionId>> kvBroker;
         readonly SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>> broker;
         readonly LogSettings logSettings;
 
@@ -47,7 +46,7 @@ namespace DeepReader.Storage.Faster.Transactions.Server
                         IKeyInputSerializer<TransactionId, TransactionId>>(new ServerKeyInputSerializer<TransactionId, TransactionId>(), null,
                         _serverOptions.PubSubPageSizeBytes(), true);
                 broker = new SubscribeBroker<TransactionId, TransactionTrace, IKeySerializer<TransactionId>>(
-                        new ServerKeyInputSerializer<TransactionId, TransactionId>(), null, 
+                        new ServerKeyInputSerializer<TransactionId, TransactionId>(), null,
                         _serverOptions.PubSubPageSizeBytes(), true);
             }
 

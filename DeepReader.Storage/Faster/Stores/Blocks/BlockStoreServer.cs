@@ -1,5 +1,4 @@
 ﻿using DeepReader.Storage.Faster.Base;
-using DeepReader.Storage.Faster.Blocks.Standalone;
 using DeepReader.Storage.Faster.Test.Server;
 using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
@@ -8,7 +7,7 @@ using FASTER.core;
 using FASTER.server;
 using HotChocolate.Subscriptions;
 
-namespace DeepReader.Storage.Faster.Blocks.Server
+namespace DeepReader.Storage.Faster.Blocks
 {
     public class BlockStoreServer : BlockStore
     {
@@ -40,8 +39,10 @@ namespace DeepReader.Storage.Faster.Blocks.Server
 
             if (!_serverOptions.DisablePubSub)
             {
-                kvBroker = new SubscribeKVBroker<long, Block, long, IKeyInputSerializer<long, long>>(new ServerKeyInputSerializer<LongKey, long>(), null, _serverOptions.PubSubPageSizeBytes(), true);
-                broker = new SubscribeBroker<long, Block, IKeySerializer<long>>(new ServerKeyInputSerializer<LongKey, long>(), null, _serverOptions.PubSubPageSizeBytes(), true);
+                kvBroker = new SubscribeKVBroker<long, Block, long, IKeyInputSerializer<long, long>>(
+                    new ServerKeyInputSerializer<LongKey, long>(), null, _serverOptions.PubSubPageSizeBytes(), true);
+                broker = new SubscribeBroker<long, Block, IKeySerializer<long>>(
+                    new ServerKeyInputSerializer<LongKey, long>(), null, _serverOptions.PubSubPageSizeBytes(), true);
             }
 
             // Create session provider for VarLen

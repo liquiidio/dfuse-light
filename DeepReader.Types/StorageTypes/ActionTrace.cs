@@ -8,7 +8,7 @@ using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.Types.StorageTypes
 {
-    public sealed class ActionTrace : PooledObject<ActionTrace>, IParentPooledObject<TransactionTrace>, IEosioSerializable<ActionTrace>, IFasterSerializable<ActionTrace>
+    public sealed class ActionTrace : PooledObject<ActionTrace>, IParentPooledObject<ActionTrace>, IEosioSerializable<ActionTrace>, IFasterSerializable<ActionTrace>
     {
         public ulong GlobalSequence => Receipt.GlobalSequence;
 

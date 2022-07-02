@@ -7,17 +7,20 @@ using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 using Status = FASTER.core.Status;
-using DeepReader.Storage.Faster.ActionTraces.Base;
-using DeepReader.Storage.Faster.ActionTraces.Standalone;
+using DeepReader.Storage.Faster.Test;
+using DeepReader.Storage.Faster.Test.Client;
+using DeepReader.Storage.Faster.Test.DeepReader.Storage.Faster.Transactions.Client;
 
-namespace DeepReader.Storage.Faster.ActionTraces.Client
+namespace DeepReader.Storage.Faster.ActionTraces
 {
     internal class ActionTraceStoreClient : ActionTraceStoreBase
     {
         private const string ip = "127.0.0.1";
         private const int port = 5005;
         private static Encoding _encode = Encoding.UTF8;
-        private readonly AsyncPool<ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceClientFunctions, ActionTraceClientSerializer>> _sessionPool;
+
+        private readonly AsyncPool<ClientSession<ulong, ActionTrace, ActionTrace, ActionTrace, KeyValueContext,
+                ClientFunctions<UlongKey, ulong, ActionTrace>, ClientSerializer<UlongKey, ulong, ActionTrace>>> _sessionPool;
 
         private readonly FasterKVClient<ulong, ActionTrace> _client;
 
@@ -26,14 +29,14 @@ namespace DeepReader.Storage.Faster.ActionTraces.Client
             _client = new FasterKVClient<ulong, ActionTrace>(ip, port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
 
             _sessionPool =
-                new AsyncPool<ClientSession<ulong, ActionTrace, ActionTraceInput, ActionTraceOutput, ActionTraceContext,
-                    ActionTraceClientFunctions, ActionTraceClientSerializer>>(
+                new AsyncPool<ClientSession<ulong, ActionTrace, ActionTrace, ActionTrace, KeyValueContext,
+                    ClientFunctions<UlongKey, ulong, ActionTrace>, ClientSerializer<UlongKey, ulong, ActionTrace>>>(
                     size: 4,    // TODO no idea how many sessions make sense and do work,
                                 // hopefully Faster-Serve just blocks if it can't handle the amount of sessions and data :D
                     () => _client
-                        .NewSession<ActionTraceInput, ActionTraceOutput, ActionTraceContext, ActionTraceClientFunctions,
-                            ActionTraceClientSerializer>(new ActionTraceClientFunctions(), WireFormat.WebSocket,
-                            new ActionTraceClientSerializer()));
+                        .NewSession<ActionTrace, ActionTrace, KeyValueContext, ClientFunctions<UlongKey, ulong, ActionTrace>,
+                            ClientSerializer<UlongKey, ulong, ActionTrace>>(new ClientFunctions<UlongKey, ulong, ActionTrace>(), WireFormat.WebSocket,
+                            new ClientSerializer<UlongKey, ulong, ActionTrace>()));
         }
 
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
@@ -66,7 +69,7 @@ namespace DeepReader.Storage.Faster.ActionTraces.Client
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
                 var (status, output) = await session.ReadAsync(globalSequence); // No Complete()-Call here for some reason
                 _sessionPool.Return(session);
-                return (status.Found, output.Value);
+                return (status.Found, output);
             }
         }
     }

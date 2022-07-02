@@ -1,79 +1,75 @@
-﻿using DeepReader.Storage.Faster.Base;
+using DeepReader.Storage.Faster.Base;
 using DeepReader.Storage.Faster.Base.Standalone;
-using DeepReader.Storage.Faster.Blocks.Base;
 using DeepReader.Storage.Faster.Test;
+using DeepReader.Storage.Faster.Test.Server;
 using DeepReader.Storage.Options;
-using DeepReader.Types.Interfaces;
 using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.Blocks.Standalone
+namespace DeepReader.Storage.Faster.ActionTraces
 {
-    public class BlockStore : BlockStoreBase
+    public class ActionTraceStore : ActionTraceStoreBase
     {
-        protected readonly FasterKV<long, Block> _store;
+        protected readonly FasterKV<ulong, ActionTrace> _store;
 
-        private readonly AsyncPool<ClientSession<long, Block, Input, Block, KeyValueContext, 
-            StandaloneFunctions<long, Block>>> _sessionPool;
+        private readonly AsyncPool<ClientSession<ulong, ActionTrace, Input, ActionTrace, KeyValueContext, StandaloneFunctions<ulong, ActionTrace>>> _sessionPool;
 
-        public BlockStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
+        public ActionTraceStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            if (!_options.BlockStoreDir.EndsWith("/"))
-                _options.BlockStoreDir += "/";
-
+            if (!_options.ActionTraceStoreDir.EndsWith("/"))
+                options.ActionTraceStoreDir += "/";
 
             // Create files for storing data
-            var log = Devices.CreateLogDevice(_options.BlockStoreDir + "hlog.log");
+            var log = Devices.CreateLogDevice(_options.ActionTraceStoreDir + "hlog.log");
 
             // Log for storing serialized objects; needed only for class keys/values
-            var objlog = Devices.CreateLogDevice(_options.BlockStoreDir + "hlog.obj.log");
+            var objlog = Devices.CreateLogDevice(_options.ActionTraceStoreDir + "hlog.obj.log");
 
             // Define settings for log
             var logSettings = new LogSettings
             {
                 LogDevice = log,
                 ObjectLogDevice = objlog,
-                ReadCacheSettings = options.UseReadCache ? new ReadCacheSettings() : null,
+                ReadCacheSettings = _options.UseReadCache ? new ReadCacheSettings() : null,
                 // to calculate below:
                 // 12 = 00001111 11111111 = 4095 = 4K
-                // 34 = 11111111 11111111 11111111 11111111 = 17179869183 = 16G
+                // 34 = 00000011 11111111 11111111 11111111 11111111 = 17179869183 = 16G
                 PageSizeBits = 14, // (16K pages)
-                MemorySizeBits = 32 // (4G memory for main log)
+                MemorySizeBits = 33 // (8G memory for main log)
             };
 
             // Define serializers; otherwise FASTER will use the slower DataContract
             // Needed only for class keys/values
-            var serializerSettings = new SerializerSettings<long, Block>
+            var serializerSettings = new SerializerSettings<ulong, ActionTrace>
             {
-                keySerializer = () => new KeySerializer<LongKey, long>(),
-                valueSerializer = () => new ValueSerializer<Block>()
+                keySerializer = () => new KeySerializer<UlongKey, ulong>(),
+                valueSerializer = () => new ValueSerializer<ActionTrace>()
             };
 
-            var checkPointsDir = _options.BlockStoreDir + "checkpoints";
+            var checkPointsDir = _options.ActionTraceStoreDir + "checkpoints";
 
             var checkpointManager = new DeviceLogCommitCheckpointManager(
                 new LocalStorageNamedDeviceFactory(),
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
-
-            _store = new FasterKV<long, Block>(
-                size: _options.MaxBlocksCacheEntries, // Cache Lines for Blocks
+            _store = new FasterKV<ulong, ActionTrace>(
+                size: _options.MaxActionTracesCacheEntries, // Cache Lines for ActionTraces
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
-                new FasterSequentialLongKeyComparer()
+                new FasterSequentialULongKeyComparer()
             );
 
             if (Directory.Exists(checkPointsDir))
             {
                 try
                 {
-                    Log.Information("Recovering BlockStore");
+                    Log.Information("Recovering ActionTraceStore");
                     _store.Recover(1);
-                    Log.Information("BlockStore recovered");
+                    Log.Information("ActionTraceStore recovered");
                 }
                 catch (Exception e)
                 {
@@ -82,32 +78,26 @@ namespace DeepReader.Storage.Faster.Blocks.Standalone
                 }
             }
 
-            StoreLogMemorySizeBytesSummary.Observe(_store.Log.MemorySizeBytes);
-            if (options.UseReadCache)
-                StoreReadCacheMemorySizeBytesSummary.Observe(_store.ReadCache.MemorySizeBytes);// must be optional
-            StoreEntryCountSummary.Observe(_store.EntryCount);
-
-            var blockEvictionObserver = new PooledObjectEvictionObserver<long, Block>();
-            _store.Log.SubscribeEvictions(blockEvictionObserver);
+            var actionTraceEvictionObserver = new PooledObjectEvictionObserver<ulong, ActionTrace>();
+            _store.Log.SubscribeEvictions(actionTraceEvictionObserver);
 
             if (options.UseReadCache)
-                _store.ReadCache.SubscribeEvictions(blockEvictionObserver);
+                _store.ReadCache.SubscribeEvictions(actionTraceEvictionObserver);
 
-            _sessionPool = new AsyncPool<ClientSession<long, Block, Input, Block, KeyValueContext, StandaloneFunctions<long, Block>>>(
+            _sessionPool = new AsyncPool<ClientSession<ulong, ActionTrace, Input, ActionTrace, KeyValueContext, StandaloneFunctions<ulong, ActionTrace>>>(
                 logSettings.LogDevice.ThrottleLimit,
-                () => _store.For(new StandaloneFunctions<long, Block>()).NewSession<StandaloneFunctions<long, Block>>("BlockSession" + Interlocked.Increment(ref _sessionCount)));
+                () => _store.For(new StandaloneFunctions<ulong, ActionTrace>()).NewSession<StandaloneFunctions<ulong, ActionTrace>>("ActionTraceSession" + Interlocked.Increment(ref _sessionCount)));
 
             foreach (var recoverableSession in _store.RecoverableSessions)
             {
-                _sessionPool.Return(_store.For(new StandaloneFunctions<long, Block>())
-                    .ResumeSession<StandaloneFunctions<long, Block>>(recoverableSession.Item2, out CommitPoint commitPoint));
+                _sessionPool.Return(_store.For(new StandaloneFunctions<ulong, ActionTrace>())
+                    .ResumeSession<StandaloneFunctions<ulong, ActionTrace>>(recoverableSession.Item2, out CommitPoint commitPoint));
                 _sessionCount++;
             }
 
             new Thread(CommitThread).Start();
         }
 
-        public long BlocksIndexed => _store.EntryCount;
 
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
@@ -117,17 +107,17 @@ namespace DeepReader.Storage.Faster.Blocks.Standalone
             StoreEntryCountSummary.Observe(_store.EntryCount);
         }
 
-        public override async Task<Status> WriteBlock(Block block)
+        public override async Task<Status> WriteActionTrace(ActionTrace actionTrace)
         {
-            long blockId = block.Number;
+            var actionTraceId = actionTrace.GlobalSequence;
 
-            await _eventSender.SendAsync("BlockAdded", block);
+            await _eventSender.SendAsync("ActionTraceAdded", actionTrace);
 
-            using (WritingBlockDuration.NewTimer())
+            using (WritingActionTraceDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
-                var result = await session.UpsertAsync(ref blockId, ref block);
+                var result = await session.UpsertAsync(ref actionTraceId, ref actionTrace);
                 while (result.Status.IsPending)
                     result = await result.CompleteAsync();
                 _sessionPool.Return(session);
@@ -135,19 +125,19 @@ namespace DeepReader.Storage.Faster.Blocks.Standalone
             }
         }
 
-        public override async Task<(bool, Block)> TryGetBlockById(uint blockNum)
+        public override async Task<(bool, ActionTrace)> TryGetActionTraceById(ulong globalSequence)
         {
-            using (BlockReaderSessionReadDurationSummary.NewTimer())
+            using (ActionTraceReaderSessionReadDurationSummary.NewTimer())
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
-                var (status, output) = (await session.ReadAsync(blockNum)).Complete();
+                var (status, output) = (await session.ReadAsync(globalSequence)).Complete();
                 _sessionPool.Return(session);
                 return (status.Found, output);
             }
         }
 
-        private void CommitThread()
+        internal void CommitThread()
         {
             if (_options.LogCheckpointInterval is null or 0)
                 return;
@@ -183,5 +173,6 @@ namespace DeepReader.Storage.Faster.Blocks.Standalone
                 }
             }
         }
+
     }
 }

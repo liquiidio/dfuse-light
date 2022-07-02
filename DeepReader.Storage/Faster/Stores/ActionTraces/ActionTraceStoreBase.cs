@@ -5,7 +5,7 @@ using HotChocolate.Subscriptions;
 using Prometheus;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.ActionTraces.Base
+namespace DeepReader.Storage.Faster.ActionTraces
 {
     public abstract class ActionTraceStoreBase
     {

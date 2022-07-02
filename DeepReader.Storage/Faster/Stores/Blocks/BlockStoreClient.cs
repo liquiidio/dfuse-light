@@ -1,6 +1,4 @@
-﻿using DeepReader.Storage.Faster.Blocks.Base;
-using DeepReader.Storage.Faster.Blocks.Standalone;
-using DeepReader.Storage.Options;
+﻿using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using FASTER.client;
 using FASTER.common;
@@ -12,14 +10,16 @@ using DeepReader.Storage.Faster.Test;
 using DeepReader.Storage.Faster.Test.Client;
 using DeepReader.Storage.Faster.Test.DeepReader.Storage.Faster.Transactions.Client;
 
-namespace DeepReader.Storage.Faster.Blocks.Client
+namespace DeepReader.Storage.Faster.Blocks
 {
     internal class BlockStoreClient : BlockStoreBase
     {
         private const string ip = "127.0.0.1";
         private const int port = 5002;
         private static Encoding _encode = Encoding.UTF8;
-        private readonly AsyncPool<ClientSession<long, Block, Block, Block, KeyValueContext, ClientFunctions<LongKey, long, Block>, ClientSerializer<LongKey, long, Block>>> _sessionPool;
+
+        private readonly AsyncPool<ClientSession<long, Block, Block, Block, KeyValueContext,
+            ClientFunctions<LongKey, long, Block>, ClientSerializer<LongKey, long, Block>>> _sessionPool;
 
         private readonly FasterKVClient<long, Block> _client;
 
@@ -40,7 +40,7 @@ namespace DeepReader.Storage.Faster.Blocks.Client
 
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
-            
+
         }
 
         public override async Task<FASTER.core.Status> WriteBlock(Block block)
@@ -53,7 +53,7 @@ namespace DeepReader.Storage.Faster.Blocks.Client
             {
                 if (!_sessionPool.TryGet(out var session))
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
-                
+
                 await session.UpsertAsync(blockId, block);
 
                 return FASTER.core.Status.CreatePending();

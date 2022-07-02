@@ -4,13 +4,10 @@ using DeepReader.Types.StorageTypes;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Options;
 using System.Reflection;
-using DeepReader.Storage.Faster.ActionTraces.Standalone;
-using DeepReader.Storage.Faster.Blocks.Standalone;
-using DeepReader.Storage.Faster.Transactions.Standalone;
 using DeepReader.Storage.Faster.Abis.Standalone;
-using DeepReader.Storage.Faster.Transactions.Base;
-using DeepReader.Storage.Faster.Transactions.Client;
-using DeepReader.Storage.Faster.Transactions.Server;
+using DeepReader.Storage.Faster.ActionTraces;
+using DeepReader.Storage.Faster.Blocks;
+using DeepReader.Storage.Faster.Transactions;
 
 namespace DeepReader.Storage.Faster
 {

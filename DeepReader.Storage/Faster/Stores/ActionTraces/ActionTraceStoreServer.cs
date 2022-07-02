@@ -4,16 +4,17 @@ using DeepReader.Types.StorageTypes;
 using FASTER.common;
 using FASTER.core;
 using HotChocolate.Subscriptions;
-using DeepReader.Storage.Faster.ActionTraces.Standalone;
+using DeepReader.Storage.Faster.Base;
+using DeepReader.Storage.Faster.Test.Server;
 
-namespace DeepReader.Storage.Faster.ActionTraces.Server
+namespace DeepReader.Storage.Faster.ActionTraces
 {
     internal class ActionTraceStoreServer : ActionTraceStore
     {
         readonly ServerOptions _serverOptions;
         readonly IFasterServer server;
-        readonly ActionTraceFasterKVProvider provider;
-        readonly SubscribeKVBroker<ulong, ActionTrace, ActionTraceInput, IKeyInputSerializer<ulong, ActionTraceInput>> kvBroker;
+        readonly ServerKVProvider<UlongKey, ulong, ActionTrace> provider;
+        readonly SubscribeKVBroker<ulong, ActionTrace, ulong, IKeyInputSerializer<ulong, ulong>> kvBroker;
         readonly SubscribeBroker<ulong, ActionTrace, IKeySerializer<ulong>> broker;
         readonly LogSettings logSettings;
 
@@ -40,12 +41,14 @@ namespace DeepReader.Storage.Faster.ActionTraces.Server
 
             if (!_serverOptions.DisablePubSub)
             {
-                kvBroker = new SubscribeKVBroker<ulong, ActionTrace, ActionTraceInput, IKeyInputSerializer<ulong, ActionTraceInput>>(new ActionTraceKeyInputSerializer(), null, _serverOptions.PubSubPageSizeBytes(), true);
-                broker = new SubscribeBroker<ulong, ActionTrace, IKeySerializer<ulong>>(new ActionTraceServerKeySerializer(), null, _serverOptions.PubSubPageSizeBytes(), true);
+                kvBroker = new SubscribeKVBroker<ulong, ActionTrace, ulong, IKeyInputSerializer<ulong, ulong>>(
+                    new ServerKeyInputSerializer<UlongKey, ulong>(), null, _serverOptions.PubSubPageSizeBytes(), true);
+                broker = new SubscribeBroker<ulong, ActionTrace, IKeySerializer<ulong>>(
+                    new ServerKeyInputSerializer<UlongKey, ulong>(), null, _serverOptions.PubSubPageSizeBytes(), true);
             }
 
             // Create session provider for VarLen
-            provider = new ActionTraceFasterKVProvider(_store, new ActionTraceServerSerializer(), kvBroker, broker, _serverOptions.Recover);
+            provider = new ServerKVProvider<UlongKey, ulong, ActionTrace>(_store, new ServerSerializer<UlongKey, ulong, ActionTrace>(), kvBroker, broker, _serverOptions.Recover);
 
             server = new FasterServerTcp(_serverOptions.Address, _serverOptions.Port);
             server.Register(WireFormat.DefaultVarLenKV, provider);

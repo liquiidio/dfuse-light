@@ -4,7 +4,7 @@ using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 
-namespace DeepReader.Storage.Faster.Transactions.Base
+namespace DeepReader.Storage.Faster.Transactions
 {
     public abstract class TransactionStoreBase
     {
