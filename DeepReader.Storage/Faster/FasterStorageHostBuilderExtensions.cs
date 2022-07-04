@@ -36,28 +36,37 @@ namespace DeepReader.Storage.Faster
 
             builder.ConfigureServices((hostContext, services) =>
             {
-                services.Configure<FasterStandaloneOptions>(config => hostContext.Configuration.GetSection("FasterStandaloneOptions").Bind(config));
-                services.Configure<FasterServerOptions>(config => hostContext.Configuration.GetSection("FasterServerOptions").Bind(config));
-                services.Configure<FasterClientOptions>(config => hostContext.Configuration.GetSection("FasterClientOptions").Bind(config));
-
                 services.AddSingleton(provider =>
                 {
                     IStorageAdapter storageAdapter = null;
-                    if (provider.GetRequiredService<IOptionsMonitor<FasterStandaloneOptions>>().CurrentValue != null)
+                    if (hostContext.Configuration.GetSection("FasterStandaloneOptions").GetChildren().Count() != 0)
+                    {
+                        services.Configure<FasterStandaloneOptions>(config => hostContext.Configuration.GetSection("FasterStandaloneOptions").Bind(config));
+
                         storageAdapter = new FasterStorage(
                             provider.GetRequiredService<IOptionsMonitor<FasterStandaloneOptions>>(),
                             provider.GetRequiredService<ITopicEventSender>(),
                             provider.GetRequiredService<MetricsCollector>());
-                    else if (provider.GetRequiredService<IOptionsMonitor<FasterServerOptions>>().CurrentValue != null)
+                    }
+                    else if (hostContext.Configuration.GetSection("FasterServerOptions").GetChildren().Count() != 0)
+                    {
+                        services.Configure<FasterServerOptions>(config =>
+                            hostContext.Configuration.GetSection("FasterServerOptions").Bind(config));
+
                         storageAdapter = new FasterStorage(
                             provider.GetRequiredService<IOptionsMonitor<FasterServerOptions>>(),
                             provider.GetRequiredService<ITopicEventSender>(),
                             provider.GetRequiredService<MetricsCollector>());
-                    else if(provider.GetRequiredService<IOptionsMonitor<FasterClientOptions>>().CurrentValue != null)
+                    }
+                    else if (hostContext.Configuration.GetSection("FasterClientOptions").GetChildren().Count() != 0)
+                    {
+                        services.Configure<FasterClientOptions>(config => hostContext.Configuration.GetSection("FasterClientOptions").Bind(config));
+
                         storageAdapter = new FasterStorage(
                             provider.GetRequiredService<IOptionsMonitor<FasterClientOptions>>(),
                             provider.GetRequiredService<ITopicEventSender>(),
                             provider.GetRequiredService<MetricsCollector>());
+                    }
                     else
                         throw new Exception("Configuration-File for Faster missing");
 

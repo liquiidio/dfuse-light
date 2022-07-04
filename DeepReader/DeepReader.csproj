@@ -26,9 +26,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Content Remove="faster.client.settings.json" />
+	  <Content Remove="faster.client.settings.example.json" />
 	  <Content Remove="faster.server.settings.json" />
-	  <Content Remove="faster.standalone.settings.json" />
+	  <Content Remove="faster.standalone.settings.example.json" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -44,9 +44,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="faster.client.settings.json" />
-	  <None Include="faster.standalone.settings.json" />
-	  <None Include="faster.server.settings.json" />
+	  <None Include="faster.client.settings.example.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Include="faster.standalone.settings.example.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Include="faster.server.settings.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 	<ItemGroup>
