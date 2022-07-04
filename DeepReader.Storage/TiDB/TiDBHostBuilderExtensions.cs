@@ -17,7 +17,7 @@ namespace DeepReader.Storage.TiDB
         /// logger is not specified but <paramref name="dispose" /> is <c>true</c>, the <see cref="M:Serilog.Log.CloseAndFlush" /> method will be
         /// called on the static <see cref="T:Serilog.Log" /> class instead.</param>
         /// <returns>The host builder.</returns>
-        public static IHostBuilder UseFasterStorage(
+        public static IHostBuilder UseTiDB(
             this IHostBuilder builder,
             ILogger logger = null!,
             bool dispose = false)

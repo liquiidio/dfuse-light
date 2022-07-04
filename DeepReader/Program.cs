@@ -4,6 +4,7 @@ using DeepReader.HostedServices;
 using DeepReader.Options;
 using DeepReader.Pools;
 using DeepReader.Storage.Faster;
+using DeepReader.Storage.TiDB;
 using DeepReader.Types;
 using KGySoft.CoreLibraries;
 using Microsoft.Extensions.ObjectPool;
@@ -66,7 +67,7 @@ var host = Host.CreateDefaultBuilder(args)
         });
     })
     .UseDeepReaderApis()
-    .UseFasterStorage()
+    .UseTiDB()
 #if !DEBUG
     .UseSystemd()
 #endif

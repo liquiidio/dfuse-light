@@ -92,6 +92,8 @@ public class AbiCacheItem
     public ulong Id;
     public SortedDictionary<ulong, AssemblyWrapper> AbiVersions = new();
 
+    public AbiCacheItem() { }
+
     public AbiCacheItem(ulong id)
     {
         Id = id;
