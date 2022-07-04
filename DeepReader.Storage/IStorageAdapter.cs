@@ -1,7 +1,7 @@
 ﻿using DeepReader.Types.EosTypes;
 using DeepReader.Types.StorageTypes;
 using System.Reflection;
-using DeepReader.Storage.Faster.Stores.Abis.Standalone;
+using DeepReader.Storage.Faster.Stores.Abis.Custom;
 
 namespace DeepReader.Storage
 {

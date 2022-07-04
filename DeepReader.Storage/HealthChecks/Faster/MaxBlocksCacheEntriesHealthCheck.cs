@@ -1,4 +1,4 @@
-﻿using DeepReader.Storage.Options;
+﻿using DeepReader.Storage.Faster.Options;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
@@ -6,9 +6,9 @@ namespace DeepReader.Storage.HealthChecks.Faster
 {
     public class MaxBlocksCacheEntriesHealthCheck : IHealthCheck
     {
-        public IOptionsMonitor<FasterStorageOptions> StorageOptionsMonitor { get; }
+        public IOptionsMonitor<FasterStandaloneOptions> StorageOptionsMonitor { get; }
 
-        public MaxBlocksCacheEntriesHealthCheck(IOptionsMonitor<FasterStorageOptions> storageOptionsMonitor)
+        public MaxBlocksCacheEntriesHealthCheck(IOptionsMonitor<FasterStandaloneOptions> storageOptionsMonitor)
         {
             StorageOptionsMonitor = storageOptionsMonitor;
         }

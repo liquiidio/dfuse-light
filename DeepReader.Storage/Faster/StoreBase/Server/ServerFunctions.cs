@@ -2,7 +2,7 @@
 
 namespace DeepReader.Storage.Faster.StoreBase.Server
 {
-    public class ServerFunctions<TKey, TValue> : IFunctions<TKey, TValue, TKey, TValue, long>
+    public class ServerFunctions<TKey, TValue> : IFunctions<TKey, TValue, TValue, TValue, long>
     {
         public void CheckpointCompletionCallback(int sessionId, string sessionName, CommitPoint commitPoint)
         {
@@ -14,32 +14,32 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
             return true;
         }
 
-        public bool ConcurrentReader(ref TKey key, ref TKey input, ref TValue value,
+        public bool ConcurrentReader(ref TKey key, ref TValue input, ref TValue value,
             ref TValue dst, ref ReadInfo readInfo)
         {
             dst = value;
             return true;
         }
 
-        public void ReadCompletionCallback(ref TKey key, ref TKey input, ref TValue output, long ctx, Status status,
+        public void ReadCompletionCallback(ref TKey key, ref TValue input, ref TValue output, long ctx, Status status,
             RecordMetadata recordMetadata)
         {
 
         }
 
-        public bool ConcurrentWriter(ref TKey key, ref TKey input, ref TValue src,
+        public bool ConcurrentWriter(ref TKey key, ref TValue input, ref TValue src,
             ref TValue dst, ref TValue output, ref UpsertInfo upsertInfo)
         {
             return true;
         }
 
-        public bool CopyUpdater(ref TKey key, ref TKey input, ref TValue oldValue,
+        public bool CopyUpdater(ref TKey key, ref TValue input, ref TValue oldValue,
             ref TValue newValue, ref TValue output, ref RMWInfo rmwInfo)
         {
             return true;
         }
 
-        public void DisposeCopyUpdater(ref TKey key, ref TKey input, ref TValue oldValue,
+        public void DisposeCopyUpdater(ref TKey key, ref TValue input, ref TValue oldValue,
             ref TValue newValue, ref TValue output, ref RMWInfo rmwInfo)
         {
 
@@ -50,7 +50,7 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
 
         }
 
-        public void DisposeInitialUpdater(ref TKey key, ref TKey input, ref TValue value,
+        public void DisposeInitialUpdater(ref TKey key, ref TValue input, ref TValue value,
             ref TValue output, ref RMWInfo rmwInfo)
         {
 
@@ -61,49 +61,49 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
 
         }
 
-        public void DisposeSingleWriter(ref TKey key, ref TKey input, ref TValue src,
+        public void DisposeSingleWriter(ref TKey key, ref TValue input, ref TValue src,
             ref TValue dst, ref TValue output, ref UpsertInfo upsertInfo, WriteReason reason)
         {
 
         }
 
-        public bool InitialUpdater(ref TKey key, ref TKey input, ref TValue value,
+        public bool InitialUpdater(ref TKey key, ref TValue input, ref TValue value,
             ref TValue output, ref RMWInfo rmwInfo)
         {
             return true;
         }
 
-        public bool InPlaceUpdater(ref TKey key, ref TKey input, ref TValue value,
+        public bool InPlaceUpdater(ref TKey key, ref TValue input, ref TValue value,
             ref TValue output, ref RMWInfo rmwInfo)
         {
             return true;
         }
 
-        public void RMWCompletionCallback(ref TKey key, ref TKey input, ref TValue output, long ctx, Status status,
+        public void RMWCompletionCallback(ref TKey key, ref TValue input, ref TValue output, long ctx, Status status,
             RecordMetadata recordMetadata)
         {
         }
 
 
-        public bool NeedCopyUpdate(ref TKey key, ref TKey input, ref TValue oldValue,
+        public bool NeedCopyUpdate(ref TKey key, ref TValue input, ref TValue oldValue,
             ref TValue output, ref RMWInfo rmwInfo)
         {
             return true;
         }
 
-        public bool NeedInitialUpdate(ref TKey key, ref TKey input, ref TValue output,
+        public bool NeedInitialUpdate(ref TKey key, ref TValue input, ref TValue output,
             ref RMWInfo rmwInfo)
         {
             return true;
         }
 
-        public void PostCopyUpdater(ref TKey key, ref TKey input, ref TValue oldValue,
+        public void PostCopyUpdater(ref TKey key, ref TValue input, ref TValue oldValue,
             ref TValue newValue, ref TValue output, ref RMWInfo rmwInfo)
         {
 
         }
 
-        public void PostInitialUpdater(ref TKey key, ref TKey input, ref TValue value,
+        public void PostInitialUpdater(ref TKey key, ref TValue input, ref TValue value,
             ref TValue output, ref RMWInfo rmwInfo)
         {
 
@@ -114,7 +114,7 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
 
         }
 
-        public void PostSingleWriter(ref TKey key, ref TKey input, ref TValue src,
+        public void PostSingleWriter(ref TKey key, ref TValue input, ref TValue src,
             ref TValue dst, ref TValue output, ref UpsertInfo upsertInfo, WriteReason reason)
         {
 
@@ -125,14 +125,14 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
             return true;
         }
 
-        public bool SingleReader(ref TKey key, ref TKey input, ref TValue value,
+        public bool SingleReader(ref TKey key, ref TValue input, ref TValue value,
             ref TValue dst, ref ReadInfo readInfo)
         {
             dst = value;
             return true;
         }
 
-        public bool SingleWriter(ref TKey key, ref TKey input, ref TValue src,
+        public bool SingleWriter(ref TKey key, ref TValue input, ref TValue src,
             ref TValue dst, ref TValue output, ref UpsertInfo upsertInfo, WriteReason reason)
         {
             dst = src;

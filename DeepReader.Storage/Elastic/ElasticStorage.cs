@@ -3,7 +3,7 @@ using DeepReader.Types.StorageTypes;
 using Microsoft.Extensions.Options;
 using Nest;
 using System.Reflection;
-using DeepReader.Storage.Faster.Stores.Abis.Standalone;
+using DeepReader.Storage.Faster.Stores.Abis.Custom;
 
 namespace DeepReader.Storage.Elastic
 {

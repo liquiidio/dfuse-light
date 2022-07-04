@@ -1,4 +1,4 @@
-using DeepReader.Storage.Options;
+using DeepReader.Storage.Faster.Options;
 using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
@@ -8,12 +8,11 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
 {
     public abstract class ActionTraceStoreBase
     {
-        internal readonly FasterStorageOptions Options;
+        internal readonly IFasterStorageOptions Options;
 
         internal int SessionCount;
 
         internal readonly ITopicEventSender EventSender;
-
         internal MetricsCollector MetricsCollector;
 
         internal static readonly SummaryConfiguration TypeSummaryConfiguration = new SummaryConfiguration()
@@ -36,7 +35,7 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
         internal static readonly Summary TypeActionTraceReaderSessionReadDurationSummary =
           Metrics.CreateSummary("deepreader_storage_faster_action_trace_get_by_id_duration", "Summary of time to try get actionTrace trace by id", TypeSummaryConfiguration);
 
-        protected ActionTraceStoreBase(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
+        protected ActionTraceStoreBase(IFasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
         {
             Options = options;
             EventSender = eventSender;

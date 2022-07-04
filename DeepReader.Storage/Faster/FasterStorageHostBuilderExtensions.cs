@@ -1,4 +1,4 @@
-﻿using DeepReader.Storage.Options;
+﻿using DeepReader.Storage.Faster.Options;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,16 +27,40 @@ namespace DeepReader.Storage.Faster
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
+            builder.ConfigureAppConfiguration((context, configBuilder) =>
+            {
+                configBuilder.AddJsonFile("faster.standalone.settings.json", true, true);
+                configBuilder.AddJsonFile("faster.server.settings.json", true, true);
+                configBuilder.AddJsonFile("faster.client.settings.json", true, true);
+            });
+
             builder.ConfigureServices((hostContext, services) =>
             {
-                services.Configure<FasterStorageOptions>(config => hostContext.Configuration.GetSection("FasterStorageOptions").Bind(config));
-                
+                services.Configure<FasterStandaloneOptions>(config => hostContext.Configuration.GetSection("FasterStandaloneOptions").Bind(config));
+                services.Configure<FasterServerOptions>(config => hostContext.Configuration.GetSection("FasterServerOptions").Bind(config));
+                services.Configure<FasterClientOptions>(config => hostContext.Configuration.GetSection("FasterClientOptions").Bind(config));
+
                 services.AddSingleton(provider =>
                 {
-                    IStorageAdapter storageAdapter = new FasterStorage(
-                        provider.GetRequiredService<IOptionsMonitor<FasterStorageOptions>>(),
-                        provider.GetRequiredService<ITopicEventSender>(),
-                        provider.GetRequiredService<MetricsCollector>());
+                    IStorageAdapter storageAdapter = null;
+                    if (provider.GetRequiredService<IOptionsMonitor<FasterStandaloneOptions>>().CurrentValue != null)
+                        storageAdapter = new FasterStorage(
+                            provider.GetRequiredService<IOptionsMonitor<FasterStandaloneOptions>>(),
+                            provider.GetRequiredService<ITopicEventSender>(),
+                            provider.GetRequiredService<MetricsCollector>());
+                    else if (provider.GetRequiredService<IOptionsMonitor<FasterServerOptions>>().CurrentValue != null)
+                        storageAdapter = new FasterStorage(
+                            provider.GetRequiredService<IOptionsMonitor<FasterServerOptions>>(),
+                            provider.GetRequiredService<ITopicEventSender>(),
+                            provider.GetRequiredService<MetricsCollector>());
+                    else if(provider.GetRequiredService<IOptionsMonitor<FasterClientOptions>>().CurrentValue != null)
+                        storageAdapter = new FasterStorage(
+                            provider.GetRequiredService<IOptionsMonitor<FasterClientOptions>>(),
+                            provider.GetRequiredService<ITopicEventSender>(),
+                            provider.GetRequiredService<MetricsCollector>());
+                    else
+                        throw new Exception("Configuration-File for Faster missing");
+
                     return storageAdapter;
                 });
             });

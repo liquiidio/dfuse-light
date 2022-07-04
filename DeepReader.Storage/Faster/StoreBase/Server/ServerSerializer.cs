@@ -6,11 +6,11 @@ using FASTER.common;
 
 namespace DeepReader.Storage.Faster.StoreBase.Server
 {
-    public class ServerSerializer<TKey, TKKey, TValue> : IServerSerializer<TKKey, TValue, TKKey, TValue>
+    public class ServerSerializer<TKey, TKKey, TValue> : IServerSerializer<TKKey, TValue, TValue, TValue>
         where TKey : IKey<TKKey>
         where TValue : IFasterSerializable<TValue>
     {
-        [ThreadStatic] private static TKKey _input;
+        [ThreadStatic] private static TValue _input;
 
         [ThreadStatic] private static TValue _output;
 
@@ -34,10 +34,10 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
             return (int)writer.Position;
         }
 
-        public unsafe ref TKKey ReadInputByRef(ref byte* src)
+        public unsafe ref TValue ReadInputByRef(ref byte* src)
         {
             var reader = new UnsafeBinaryUnmanagedReader(src, ushort.MaxValue);
-            _input = TKey.DeserializeKey(reader);
+            _input = TValue.ReadFromFaster(reader);
             return ref _input;
         }
 

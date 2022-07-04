@@ -4,7 +4,7 @@ using FASTER.client;
 
 namespace DeepReader.Storage.Faster.StoreBase.Client
 {
-    internal class ClientFunctions<TKey, TKKey, TValue> : ICallbackFunctions<TKKey, TValue, TValue, TValue, KeyValueContext>
+    public class ClientFunctions<TKey, TKKey, TValue> : ICallbackFunctions<TKKey, TValue, TValue, TValue, KeyValueContext>
     where TKey : IKey<TKKey>
     where TValue : IFasterSerializable<TValue>
     {

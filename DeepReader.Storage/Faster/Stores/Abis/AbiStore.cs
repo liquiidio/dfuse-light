@@ -1,37 +1,42 @@
 using System.Reflection;
-using DeepReader.Storage.Faster.Stores.Abis.Base;
-using DeepReader.Storage.Options;
+using DeepReader.Storage.Faster.Options;
+using DeepReader.Storage.Faster.StoreBase;
+using DeepReader.Storage.Faster.StoreBase.Standalone;
+using DeepReader.Storage.Faster.Stores.Abis.Custom;
 using DeepReader.Types.EosTypes;
+using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 using Serilog;
 
-namespace DeepReader.Storage.Faster.Stores.Abis.Standalone
+namespace DeepReader.Storage.Faster.Stores.Abis
 {
     public class AbiStore : AbiStoreBase
     {
+        private FasterStandaloneOptions StandaloneOptions => (FasterStandaloneOptions)Options;
+
         protected readonly FasterKV<ulong, AbiCacheItem> Store;
 
-        private readonly AsyncPool<ClientSession<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiFunctions>> _sessionPool;
+        private readonly AsyncPool<ClientSession<ulong, AbiCacheItem, AbiCacheItem, AbiCacheItem, KeyValueContext, StandaloneAbiFunctions>> _sessionPool;
 
-        public AbiStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
+        public AbiStore(IFasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            if (!Options.AbiStoreDir.EndsWith("/"))
-                options.AbiStoreDir += "/";
+            if (!StandaloneOptions.AbiStoreDir.EndsWith("/"))
+                StandaloneOptions.AbiStoreDir += "/";
 
             // Create files for storing data
-            var log = Devices.CreateLogDevice(Options.AbiStoreDir + "hlog.log");
+            var log = Devices.CreateLogDevice(StandaloneOptions.AbiStoreDir + "hlog.log");
 
             // Log for storing serialized objects; needed only for class keys/values
-            var objlog = Devices.CreateLogDevice(Options.AbiStoreDir + "hlog.obj.log");
+            var objlog = Devices.CreateLogDevice(StandaloneOptions.AbiStoreDir + "hlog.obj.log");
 
             // Define settings for log
             var logSettings = new LogSettings
             {
                 LogDevice = log,
                 ObjectLogDevice = objlog,
-                ReadCacheSettings = Options.UseReadCache ? new ReadCacheSettings() : null,
+                ReadCacheSettings = StandaloneOptions.UseReadCache ? new ReadCacheSettings() : null,
                 // to calculate below:
                 // 12 = 00001111 11111111 = 4095 = 4K
                 // 34 = 00000011 11111111 11111111 11111111 11111111 = 17179869183 = 16G
@@ -43,17 +48,18 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Standalone
             // Needed only for class keys/values
             var serializerSettings = new SerializerSettings<ulong, AbiCacheItem>
             {
-                valueSerializer = () => new AbiValueSerializer()
+                keySerializer = () => new KeySerializer<UlongKey, ulong>(),
+                valueSerializer = () => new ValueSerializer<AbiCacheItem>()
             };
 
-            var checkPointsDir = Options.AbiStoreDir + "checkpoints";
+            var checkPointsDir = StandaloneOptions.AbiStoreDir + "checkpoints";
 
             var checkpointManager = new DeviceLogCommitCheckpointManager(
                 new LocalStorageNamedDeviceFactory(),
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
             Store = new FasterKV<ulong, AbiCacheItem>(
-                size: Options.MaxAbiCacheEntries, // Cache Lines for Abis
+                size: StandaloneOptions.MaxAbiCacheEntries, // Cache Lines for Abis
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
@@ -75,19 +81,14 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Standalone
                 }
             }
 
-            //_abiWriterSession ??=
-            //    _store.For(new AbiFunctions()).NewSession<AbiFunctions>("AbiWriterSession");
-            //_abiReaderSession ??=
-            //    _store.For(new AbiFunctions()).NewSession<AbiFunctions>("AbiReaderSession");
-
-            _sessionPool = new AsyncPool<ClientSession<ulong, AbiCacheItem, AbiInput, AbiOutput, AbiContext, AbiFunctions>>(
+            _sessionPool = new AsyncPool<ClientSession<ulong, AbiCacheItem, AbiCacheItem, AbiCacheItem, KeyValueContext, StandaloneAbiFunctions>>(
                 logSettings.LogDevice.ThrottleLimit,
-                () => Store.For(new AbiFunctions()).NewSession<AbiFunctions>("AbiSession" + Interlocked.Increment(ref SessionCount)));
+                () => Store.For(new StandaloneAbiFunctions()).NewSession<StandaloneAbiFunctions>("AbiSession" + Interlocked.Increment(ref SessionCount)));
 
             foreach (var recoverableSession in Store.RecoverableSessions)
             {
-                _sessionPool.Return(Store.For(new AbiFunctions())
-                    .ResumeSession<AbiFunctions>(recoverableSession.Item2, out CommitPoint commitPoint));
+                _sessionPool.Return(Store.For(new StandaloneAbiFunctions())
+                    .ResumeSession<StandaloneAbiFunctions>(recoverableSession.Item2, out CommitPoint commitPoint));
                 SessionCount++;
             }
 
@@ -97,7 +98,7 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Standalone
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
             TypeStoreLogMemorySizeBytesSummary.Observe(Store.Log.MemorySizeBytes);
-            if (Options.UseReadCache)
+            if (StandaloneOptions.UseReadCache)
                 TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);
             TypeStoreEntryCountSummary.Observe(Store.EntryCount);
         }
@@ -124,7 +125,7 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Standalone
         {
             if (!_sessionPool.TryGet(out var session))
                 session = await _sessionPool.GetAsync().ConfigureAwait(false);
-            (await session.RMWAsync(account.IntVal, new AbiInput(account.IntVal, globalSequence, assembly))).Complete();
+            (await session.RMWAsync(account.IntVal, new AbiCacheItem(account.IntVal, globalSequence, assembly))).Complete();
             _sessionPool.Return(session);
         }
 
@@ -136,7 +137,7 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Standalone
                     session = await _sessionPool.GetAsync().ConfigureAwait(false);
                 var (status, output) = (await session.ReadAsync(account.IntVal)).Complete();
                 _sessionPool.Return(session);
-                return (status.Found, output.Value);
+                return (status.Found, output);
             }
         }
 
@@ -149,10 +150,10 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Standalone
                 var (status, output) = (await session.ReadAsync(account.IntVal)).Complete();
                 _sessionPool.Return(session);
 
-                if (status.Found && output.Value.AbiVersions.Any(av => av.Key <= globalSequence))
+                if (status.Found && output.AbiVersions.Any(av => av.Key <= globalSequence))
                 {
                     // returns the index of the Abi matching the globalSequence or binary complement of the next item (negative)
-                    var abiVersionIndex = output.Value.AbiVersions.Keys.ToList().BinarySearch(globalSequence);
+                    var abiVersionIndex = output.AbiVersions.Keys.ToList().BinarySearch(globalSequence);
 
                     // if negative, revert the binary complement
                     if (abiVersionIndex < 0)
@@ -161,8 +162,8 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Standalone
                     if (abiVersionIndex > 0)
                         abiVersionIndex--;
 
-                    var abiVersionsArry = output.Value.AbiVersions.ToArray();
-                    if (abiVersionIndex >= 0 && abiVersionsArry.Length > abiVersionIndex)
+                    var abiVersionsArry = output.AbiVersions.ToArray();
+                    if (abiVersionsArry.Length > abiVersionIndex)
                         return (status.Found, abiVersionsArry[abiVersionIndex]);
                 }
                 return (false, new KeyValuePair<ulong, AssemblyWrapper>());
@@ -178,9 +179,9 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Standalone
                 var (status, output) = (await session.ReadAsync(account.IntVal)).Complete();
                 _sessionPool.Return(session);
 
-                if (status.Found && output.Value.AbiVersions.Count > 0)
+                if (status.Found && output.AbiVersions.Count > 0)
                 {
-                    return (status.Found, output.Value.AbiVersions.Last());
+                    return (status.Found, output.AbiVersions.Last());
                 }
                 return (false, new KeyValuePair<ulong, AssemblyWrapper>());
             }
@@ -188,7 +189,7 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Standalone
 
         private void CommitThread()
         {
-            if (Options.LogCheckpointInterval is null or 0)
+            if (StandaloneOptions.LogCheckpointInterval is null or 0)
                 return;
 
             int logCheckpointsTaken = 0;
@@ -197,18 +198,18 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Standalone
             {
                 try
                 {
-                    Thread.Sleep(Options.LogCheckpointInterval.Value);
+                    Thread.Sleep(StandaloneOptions.LogCheckpointInterval.Value);
 
                     using (TypeStoreTakeLogCheckpointDurationSummary.NewTimer())
                         Store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
 
-                    if (Options.FlushAfterCheckpoint)
+                    if (StandaloneOptions.FlushAfterCheckpoint)
                     {
                         using (TypeStoreFlushAndEvictLogDurationSummary.NewTimer())
                             Store.Log.FlushAndEvict(true);
                     }
 
-                    if (logCheckpointsTaken % Options.IndexCheckpointMultiplier == 0)
+                    if (logCheckpointsTaken % StandaloneOptions.IndexCheckpointMultiplier == 0)
                     {
                         using (TypeStoreTakeIndexCheckpointDurationSummary.NewTimer())
                             Store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();

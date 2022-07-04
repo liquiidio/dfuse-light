@@ -1,6 +1,6 @@
-﻿using DeepReader.Storage.Faster.StoreBase;
+﻿using DeepReader.Storage.Faster.Options;
+using DeepReader.Storage.Faster.StoreBase;
 using DeepReader.Storage.Faster.StoreBase.Standalone;
-using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
@@ -9,31 +9,35 @@ using Serilog;
 
 namespace DeepReader.Storage.Faster.Stores.Blocks
 {
-    public class BlockStore : BlockStoreBase
+    public class BlockStore : BlockStoreBase 
     {
+        private FasterStandaloneOptions StandaloneOptions => (FasterStandaloneOptions)Options;
+
         protected readonly FasterKV<long, Block> Store;
 
-        private readonly AsyncPool<ClientSession<long, Block, Input, Block, KeyValueContext,
+        private readonly AsyncPool<ClientSession<long, Block, Block, Block, KeyValueContext,
             StandaloneFunctions<long, Block>>> _sessionPool;
 
-        public BlockStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
+        public new long BlocksIndexed => Store.EntryCount;
+
+        public BlockStore(IFasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            if (!Options.BlockStoreDir.EndsWith("/"))
-                Options.BlockStoreDir += "/";
+            if (!StandaloneOptions.BlockStoreDir.EndsWith("/"))
+                StandaloneOptions.BlockStoreDir += "/";
 
 
             // Create files for storing data
-            var log = Devices.CreateLogDevice(Options.BlockStoreDir + "hlog.log");
+            var log = Devices.CreateLogDevice(StandaloneOptions.BlockStoreDir + "hlog.log");
 
             // Log for storing serialized objects; needed only for class keys/values
-            var objlog = Devices.CreateLogDevice(Options.BlockStoreDir + "hlog.obj.log");
+            var objlog = Devices.CreateLogDevice(StandaloneOptions.BlockStoreDir + "hlog.obj.log");
 
             // Define settings for log
             var logSettings = new LogSettings
             {
                 LogDevice = log,
                 ObjectLogDevice = objlog,
-                ReadCacheSettings = options.UseReadCache ? new ReadCacheSettings() : null,
+                ReadCacheSettings = StandaloneOptions.UseReadCache ? new ReadCacheSettings() : null,
                 // to calculate below:
                 // 12 = 00001111 11111111 = 4095 = 4K
                 // 34 = 11111111 11111111 11111111 11111111 = 17179869183 = 16G
@@ -49,7 +53,7 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
                 valueSerializer = () => new ValueSerializer<Block>()
             };
 
-            var checkPointsDir = Options.BlockStoreDir + "checkpoints";
+            var checkPointsDir = StandaloneOptions.BlockStoreDir + "checkpoints";
 
             var checkpointManager = new DeviceLogCommitCheckpointManager(
                 new LocalStorageNamedDeviceFactory(),
@@ -57,7 +61,7 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
 
 
             Store = new FasterKV<long, Block>(
-                size: Options.MaxBlocksCacheEntries, // Cache Lines for Blocks
+                size: StandaloneOptions.MaxBlocksCacheEntries, // Cache Lines for Blocks
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
@@ -80,17 +84,17 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
             }
 
             TypeStoreLogMemorySizeBytesSummary.Observe(Store.Log.MemorySizeBytes);
-            if (options.UseReadCache)
+            if (StandaloneOptions.UseReadCache)
                 TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);// must be optional
             TypeStoreEntryCountSummary.Observe(Store.EntryCount);
 
             var blockEvictionObserver = new PooledObjectEvictionObserver<long, Block>();
             Store.Log.SubscribeEvictions(blockEvictionObserver);
 
-            if (options.UseReadCache)
+            if (StandaloneOptions.UseReadCache)
                 Store.ReadCache.SubscribeEvictions(blockEvictionObserver);
 
-            _sessionPool = new AsyncPool<ClientSession<long, Block, Input, Block, KeyValueContext, StandaloneFunctions<long, Block>>>(
+            _sessionPool = new AsyncPool<ClientSession<long, Block, Block, Block, KeyValueContext, StandaloneFunctions<long, Block>>>(
                 logSettings.LogDevice.ThrottleLimit,
                 () => Store.For(new StandaloneFunctions<long, Block>()).NewSession<StandaloneFunctions<long, Block>>("BlockSession" + Interlocked.Increment(ref SessionCount)));
 
@@ -104,12 +108,10 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
             new Thread(CommitThread).Start();
         }
 
-        public long BlocksIndexed => Store.EntryCount;
-
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
             TypeStoreLogMemorySizeBytesSummary.Observe(Store.Log.MemorySizeBytes);
-            if (Options.UseReadCache)
+            if (StandaloneOptions.UseReadCache)
                 TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);
             TypeStoreEntryCountSummary.Observe(Store.EntryCount);
         }
@@ -146,7 +148,7 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
 
         private void CommitThread()
         {
-            if (Options.LogCheckpointInterval is null or 0)
+            if (StandaloneOptions.LogCheckpointInterval is null or 0)
                 return;
 
             int logCheckpointsTaken = 0;
@@ -155,18 +157,18 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
             {
                 try
                 {
-                    Thread.Sleep(Options.LogCheckpointInterval.Value);
+                    Thread.Sleep(StandaloneOptions.LogCheckpointInterval.Value);
 
                     using (TypeStoreTakeLogCheckpointDurationSummary.NewTimer())
                         Store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
 
-                    if (Options.FlushAfterCheckpoint)
+                    if (StandaloneOptions.FlushAfterCheckpoint)
                     {
                         using (TypeStoreFlushAndEvictLogDurationSummary.NewTimer())
                             Store.Log.FlushAndEvict(true);
                     }
 
-                    if (logCheckpointsTaken % Options.IndexCheckpointMultiplier == 0)
+                    if (logCheckpointsTaken % StandaloneOptions.IndexCheckpointMultiplier == 0)
                     {
                         using (TypeStoreTakeIndexCheckpointDurationSummary.NewTimer())
                             Store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();

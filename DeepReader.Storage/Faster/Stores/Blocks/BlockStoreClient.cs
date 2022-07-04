@@ -1,7 +1,7 @@
-﻿using DeepReader.Storage.Faster.StoreBase;
+﻿using DeepReader.Storage.Faster.Options;
+using DeepReader.Storage.Faster.StoreBase;
 using DeepReader.Storage.Faster.StoreBase.Client;
 using DeepReader.Storage.Faster.StoreBase.Client.DeepReader.Storage.Faster.Transactions.Client;
-using DeepReader.Storage.Options;
 using DeepReader.Types.StorageTypes;
 using FASTER.client;
 using FASTER.common;
@@ -13,17 +13,16 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
 {
     internal class BlockStoreClient : BlockStoreBase
     {
-        private const string Ip = "127.0.0.1";
-        private const int Port = 5002;
+        private FasterClientOptions ClientOptions => (FasterClientOptions)Options;
 
         private readonly AsyncPool<ClientSession<long, Block, Block, Block, KeyValueContext,
             ClientFunctions<LongKey, long, Block>, ClientSerializer<LongKey, long, Block>>> _sessionPool;
 
         private readonly FasterKVClient<long, Block> _client;
 
-        public BlockStoreClient(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
+        public BlockStoreClient(IFasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            _client = new FasterKVClient<long, Block>(Ip, Port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
+            _client = new FasterKVClient<long, Block>(ClientOptions.IpAddress, ClientOptions.Port);
 
             _sessionPool =
                 new AsyncPool<ClientSession<long, Block, Block, Block, KeyValueContext,
@@ -32,7 +31,7 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
                                 // hopefully Faster-Server just blocks if it can't handle the amount of sessions and data :D
                     () => _client
                         .NewSession<Block, Block, KeyValueContext, ClientFunctions<LongKey, long, Block>,
-                            ClientSerializer<LongKey, long, Block>>(new ClientFunctions<LongKey, long, Block>(), WireFormat.WebSocket,
+                            ClientSerializer<LongKey, long, Block>>(new ClientFunctions<LongKey, long, Block>(), WireFormat.DefaultVarLenKV,
                             new ClientSerializer<LongKey, long, Block>()));
         }
 

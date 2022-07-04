@@ -1,18 +1,18 @@
 ﻿using System.Reflection;
-using DeepReader.Storage.Faster.Stores.Abis.Standalone;
-using DeepReader.Storage.Options;
+using DeepReader.Storage.Faster.Options;
+using DeepReader.Storage.Faster.Stores.Abis.Custom;
 using DeepReader.Types.EosTypes;
 using FASTER.core;
 using HotChocolate.Subscriptions;
 using Prometheus;
 
-namespace DeepReader.Storage.Faster.Stores.Abis.Base
+namespace DeepReader.Storage.Faster.Stores.Abis
 {
     public abstract class AbiStoreBase
     {
         internal int SessionCount;
 
-        internal readonly FasterStorageOptions Options;
+        internal readonly IFasterStorageOptions Options;
 
         internal readonly ITopicEventSender EventSender;
         internal MetricsCollector MetricsCollector;
@@ -37,7 +37,7 @@ namespace DeepReader.Storage.Faster.Stores.Abis.Base
         internal static readonly Summary TypeAbiReaderSessionReadDurationSummary =
           Metrics.CreateSummary("deepreader_storage_faster_abi_get_by_id_duration", "Summary of time to try get abi trace by id", TypeSummaryConfiguration);
 
-        protected AbiStoreBase(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
+        protected AbiStoreBase(IFasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector)
         {
             Options = options;
             EventSender = eventSender;

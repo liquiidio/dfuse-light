@@ -4,14 +4,15 @@ using FASTER.common;
 
 namespace DeepReader.Storage.Faster.StoreBase.Server
 {
-    public class ServerKeyInputSerializer<TKey, TKKey> : IKeyInputSerializer<TKKey, TKKey>
+    public class ServerKeyInputSerializer<TKey, TKKey, TInput> : IKeyInputSerializer<TKKey, TInput>
         where TKey : IKey<TKKey>
+        where TInput : IFasterSerializable<TInput>
     {
         [ThreadStatic] 
         private static TKKey _key;
 
         [ThreadStatic] 
-        private static TKKey _input;
+        private static TInput _input;
 
         public bool Match(ref TKKey k, bool asciiKey, ref TKKey pattern, bool asciiPattern)
         {
@@ -27,9 +28,9 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
             return true;
         }
 
-        public unsafe ref TKKey ReadInputByRef(ref byte* src)
+        public unsafe ref TInput ReadInputByRef(ref byte* src)
         {
-            _input = TKey.DeserializeKey(new UnsafeBinaryUnmanagedReader(ref src, ushort.MaxValue));
+            _input = TInput.ReadFromFaster(new UnsafeBinaryUnmanagedReader(ref src, ushort.MaxValue));
             return ref _input;
         }
 

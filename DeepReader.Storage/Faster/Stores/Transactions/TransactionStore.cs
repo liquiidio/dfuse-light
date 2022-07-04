@@ -1,6 +1,6 @@
+using DeepReader.Storage.Faster.Options;
 using DeepReader.Storage.Faster.StoreBase;
 using DeepReader.Storage.Faster.StoreBase.Standalone;
-using DeepReader.Storage.Options;
 using DeepReader.Types.Eosio.Chain;
 using FASTER.core;
 using HotChocolate.Subscriptions;
@@ -12,28 +12,32 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 {
     public class TransactionStore : TransactionStoreBase
     {
+        private FasterStandaloneOptions StandaloneOptions => (FasterStandaloneOptions)Options;
+
         protected readonly FasterKV<TransactionId, TransactionTrace> Store;
 
-        private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, Input, TransactionTrace,
+        private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace,
             KeyValueContext, StandaloneFunctions<TransactionId, TransactionTrace>>> _sessionPool;
 
-        public TransactionStore(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
+        public new long TransactionsIndexed => Store.EntryCount;
+
+        public TransactionStore(IFasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            if (!Options.TransactionStoreDir.EndsWith("/"))
-                options.TransactionStoreDir += "/";
+            if (!StandaloneOptions.TransactionStoreDir.EndsWith("/"))
+                StandaloneOptions.TransactionStoreDir += "/";
 
             // Create files for storing data
-            var log = Devices.CreateLogDevice(Options.TransactionStoreDir + "hlog.log");
+            var log = Devices.CreateLogDevice(StandaloneOptions.TransactionStoreDir + "hlog.log");
 
             // Log for storing serialized objects; needed only for class keys/values
-            var objlog = Devices.CreateLogDevice(Options.TransactionStoreDir + "hlog.obj.log");
+            var objlog = Devices.CreateLogDevice(StandaloneOptions.TransactionStoreDir + "hlog.obj.log");
 
             // Define settings for log
             var logSettings = new LogSettings
             {
                 LogDevice = log,
                 ObjectLogDevice = objlog,
-                ReadCacheSettings = Options.UseReadCache ? new ReadCacheSettings() : null,
+                ReadCacheSettings = StandaloneOptions.UseReadCache ? new ReadCacheSettings() : null,
                 // to calculate below:
                 // 12 = 00001111 11111111 = 4095 = 4K
                 // 34 = 00000011 11111111 11111111 11111111 11111111 = 17179869183 = 16G
@@ -49,14 +53,14 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
                 valueSerializer = () => new ValueSerializer<TransactionTrace>()
             };
 
-            var checkPointsDir = Options.TransactionStoreDir + "checkpoints";
+            var checkPointsDir = StandaloneOptions.TransactionStoreDir + "checkpoints";
 
             var checkpointManager = new DeviceLogCommitCheckpointManager(
                 new LocalStorageNamedDeviceFactory(),
                 new DefaultCheckpointNamingScheme(checkPointsDir), true);
 
             Store = new FasterKV<TransactionId, TransactionTrace>(
-                size: Options.MaxTransactionsCacheEntries, // Cache Lines for Transactions
+                size: StandaloneOptions.MaxTransactionsCacheEntries, // Cache Lines for Transactions
                 logSettings: logSettings,
                 checkpointSettings: new CheckpointSettings { CheckpointManager = checkpointManager },
                 serializerSettings: serializerSettings,
@@ -80,17 +84,17 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 
 
             TypeStoreLogMemorySizeBytesSummary.Observe(Store.Log.MemorySizeBytes);
-            if (options.UseReadCache)
+            if (StandaloneOptions.UseReadCache)
                 TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);
             TypeStoreEntryCountSummary.Observe(Store.EntryCount);
 
             var transactionEvictionObserver = new PooledObjectEvictionObserver<TransactionId, TransactionTrace>();
             Store.Log.SubscribeEvictions(transactionEvictionObserver);
 
-            if (options.UseReadCache)
+            if (StandaloneOptions.UseReadCache)
                 Store.ReadCache.SubscribeEvictions(transactionEvictionObserver);
 
-            _sessionPool = new AsyncPool<ClientSession<TransactionId, TransactionTrace, Input, TransactionTrace, KeyValueContext, StandaloneFunctions<TransactionId, TransactionTrace>>>(
+            _sessionPool = new AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace, KeyValueContext, StandaloneFunctions<TransactionId, TransactionTrace>>>(
                 logSettings.LogDevice.ThrottleLimit,
                 () => Store.For(new StandaloneFunctions<TransactionId, TransactionTrace>()).NewSession<StandaloneFunctions<TransactionId, TransactionTrace>>("TransactionSession" + Interlocked.Increment(ref SessionCount)));
 
@@ -104,12 +108,10 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
             new Thread(CommitThread).Start();
         }
 
-        public long TransactionsIndexed => Store.EntryCount;
-
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
             TypeStoreLogMemorySizeBytesSummary.Observe(Store.Log.MemorySizeBytes);
-            if (Options.UseReadCache)
+            if (StandaloneOptions.UseReadCache)
                 TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);
             TypeStoreEntryCountSummary.Observe(Store.EntryCount);
         }
@@ -146,7 +148,7 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 
         private void CommitThread()
         {
-            if (Options.LogCheckpointInterval is null or 0)
+            if (StandaloneOptions.LogCheckpointInterval is null or 0)
                 return;
 
             int logCheckpointsTaken = 0;
@@ -155,18 +157,18 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
             {
                 try
                 {
-                    Thread.Sleep(Options.LogCheckpointInterval.Value);
+                    Thread.Sleep(StandaloneOptions.LogCheckpointInterval.Value);
 
                     using (TypeStoreTakeLogCheckpointDurationSummary.NewTimer())
                         Store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
 
-                    if (Options.FlushAfterCheckpoint)
+                    if (StandaloneOptions.FlushAfterCheckpoint)
                     {
                         using (TypeStoreFlushAndEvictLogDurationSummary.NewTimer())
                             Store.Log.FlushAndEvict(true);
                     }
 
-                    if (logCheckpointsTaken % Options.IndexCheckpointMultiplier == 0)
+                    if (logCheckpointsTaken % StandaloneOptions.IndexCheckpointMultiplier == 0)
                     {
                         using (TypeStoreTakeIndexCheckpointDurationSummary.NewTimer())
                             Store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();

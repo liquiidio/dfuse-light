@@ -1,0 +1,6 @@
+﻿{
+  "FasterClientOptions": {
+    "IpAddress": "", // Ip Address of Server to connect to
+    "Port": 0 // Port on Server to connect to
+  }
+}

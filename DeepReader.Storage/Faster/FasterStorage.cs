@@ -1,44 +1,61 @@
-﻿using DeepReader.Storage.Options;
-using DeepReader.Types.EosTypes;
+﻿using DeepReader.Types.EosTypes;
 using DeepReader.Types.StorageTypes;
 using HotChocolate.Subscriptions;
 using Microsoft.Extensions.Options;
 using System.Reflection;
-using DeepReader.Storage.Faster.Stores.Abis.Standalone;
 using DeepReader.Storage.Faster.Stores.ActionTraces;
 using DeepReader.Storage.Faster.Stores.Blocks;
 using DeepReader.Storage.Faster.Stores.Transactions;
+using DeepReader.Storage.Faster.Options;
+using DeepReader.Storage.Faster.Stores.Abis;
+using DeepReader.Storage.Faster.Stores.Abis.Custom;
 
 namespace DeepReader.Storage.Faster
 {
     internal sealed class FasterStorage : IStorageAdapter
     {
-        private readonly BlockStore _blockStore;
-        private readonly TransactionStore _transactionStoreServer;
+        private readonly BlockStoreBase _blockStore;
         private readonly TransactionStoreBase _transactionStore;
-        private readonly ActionTraceStore _actionTraceStore;
-        private readonly AbiStore _abiStore;
+        private readonly ActionTraceStoreBase _actionTraceStore;
+        private readonly AbiStoreBase _abiStore;
 
-        private FasterStorageOptions _fasterStorageOptions;
+        private readonly TransactionStore _transactionStoreServer;
+
+
+        private IFasterStorageOptions _fasterStorageOptions;
 
         private readonly ParallelOptions _parallelOptions;
 
         public FasterStorage(
-            IOptionsMonitor<FasterStorageOptions> storageOptionsMonitor,
+            IOptionsMonitor<IFasterStorageOptions> storageOptionsMonitor,
             ITopicEventSender eventSender,
             MetricsCollector metricsCollector)
         {
             _fasterStorageOptions = storageOptionsMonitor.CurrentValue;
             storageOptionsMonitor.OnChange(OnFasterStorageOptionsChanged);
 
-            // @Haron, your Code is probably just for testing but
-            // depending on if this is a Server, Client or Standalone we instantiate either Standalone,Server or Client
+            if (_fasterStorageOptions is FasterStandaloneOptions fasterStandaloneOptions)
+            {
+                _blockStore = new BlockStore(fasterStandaloneOptions, eventSender, metricsCollector);
+                _transactionStore = new TransactionStore(fasterStandaloneOptions, eventSender, metricsCollector);
+                _actionTraceStore = new ActionTraceStore(fasterStandaloneOptions, eventSender, metricsCollector);
+                _abiStore = new AbiStore(fasterStandaloneOptions, eventSender, metricsCollector);
 
-            _blockStore = new BlockStore(_fasterStorageOptions, eventSender, metricsCollector);
-            _transactionStoreServer = new TransactionStoreServer(_fasterStorageOptions, eventSender, metricsCollector);
-            _transactionStore = new TransactionStoreClient(_fasterStorageOptions, eventSender, metricsCollector);
-            _actionTraceStore = new ActionTraceStore(_fasterStorageOptions, eventSender, metricsCollector);
-            _abiStore = new AbiStore(_fasterStorageOptions, eventSender, metricsCollector);
+            }
+            else if (_fasterStorageOptions is FasterServerOptions fasterServerOptions)
+            {
+                _blockStore = new BlockStoreServer(fasterServerOptions, eventSender, metricsCollector);
+                _transactionStore = new TransactionStoreServer(fasterServerOptions, eventSender, metricsCollector);
+                _actionTraceStore = new ActionTraceStoreServer(fasterServerOptions, eventSender, metricsCollector);
+                _abiStore = new AbiStoreServer(fasterServerOptions, eventSender, metricsCollector);
+            }
+            else if (_fasterStorageOptions is FasterClientOptions fasterClientOptions)
+            {
+                _blockStore = new BlockStoreClient(fasterClientOptions, eventSender, metricsCollector);
+                _transactionStore = new TransactionStoreClient(fasterClientOptions, eventSender, metricsCollector);
+                _actionTraceStore = new ActionTraceStoreClient(fasterClientOptions, eventSender, metricsCollector);
+                _abiStore = new AbiStoreClient(fasterClientOptions, eventSender, metricsCollector);
+            }
 
             _parallelOptions = new ParallelOptions
             {
@@ -46,14 +63,14 @@ namespace DeepReader.Storage.Faster
             };
         }
 
-        private void OnFasterStorageOptionsChanged(FasterStorageOptions newOptions)
+        private void OnFasterStorageOptionsChanged(IFasterStorageOptions newOptions)
         {
             _fasterStorageOptions = newOptions;
         }
 
         public long BlocksIndexed => _blockStore.BlocksIndexed;
         
-        public long TransactionsIndexed => _transactionStoreServer.TransactionsIndexed;
+        public long TransactionsIndexed => _transactionStore.TransactionsIndexed;
 
         public async Task StoreBlockAsync(Block block)
         {

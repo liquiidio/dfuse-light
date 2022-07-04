@@ -1,7 +1,7 @@
-﻿using DeepReader.Storage.Faster.StoreBase;
+﻿using DeepReader.Storage.Faster.Options;
+using DeepReader.Storage.Faster.StoreBase;
 using DeepReader.Storage.Faster.StoreBase.Client;
 using DeepReader.Storage.Faster.StoreBase.Client.DeepReader.Storage.Faster.Transactions.Client;
-using DeepReader.Storage.Options;
 using DeepReader.Types.Eosio.Chain;
 using FASTER.client;
 using FASTER.common;
@@ -14,8 +14,7 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 {
     internal class TransactionStoreClient : TransactionStoreBase
     {
-        private const string Ip = "127.0.0.1";
-        private const int Port = 5003;
+        private FasterClientOptions ClientOptions => (FasterClientOptions)Options;
 
         private readonly AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace,
                 KeyValueContext, ClientFunctions<TransactionId, TransactionId, TransactionTrace>,
@@ -30,9 +29,9 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 
         private readonly FasterKVClient<TransactionId, TransactionTrace> _client;
 
-        public TransactionStoreClient(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
+        public TransactionStoreClient(IFasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            _client = new FasterKVClient<TransactionId, TransactionTrace>(Ip, Port); // TODO @Haron, IP and Port into Options/Config/appsettings.json
+            _client = new FasterKVClient<TransactionId, TransactionTrace>(ClientOptions.IpAddress, ClientOptions.Port);
 
             _sessionPool =
                 new AsyncPool<ClientSession<TransactionId, TransactionTrace, TransactionTrace, TransactionTrace, KeyValueContext,

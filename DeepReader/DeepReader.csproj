@@ -26,6 +26,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Remove="faster.client.settings.json" />
+	  <Content Remove="faster.server.settings.json" />
+	  <Content Remove="faster.standalone.settings.json" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Remove="config\mindreader\config.ini" />
 		<None Remove="config\mindreader\genesis.json.000" />
 	</ItemGroup>
@@ -35,6 +41,12 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="config\mindreader\genesis.json.000" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="faster.client.settings.json" />
+	  <None Include="faster.standalone.settings.json" />
+	  <None Include="faster.server.settings.json" />
 	</ItemGroup>
 
 	<ItemGroup>

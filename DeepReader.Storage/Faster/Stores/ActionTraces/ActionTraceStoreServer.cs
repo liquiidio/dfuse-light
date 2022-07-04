@@ -1,5 +1,5 @@
-﻿using DeepReader.Storage.Faster.StoreBase.Server;
-using DeepReader.Storage.Options;
+﻿using DeepReader.Storage.Faster.Options;
+using DeepReader.Storage.Faster.StoreBase.Server;
 using DeepReader.Types.StorageTypes;
 using FASTER.common;
 using FASTER.server;
@@ -9,45 +9,27 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
 {
     internal class ActionTraceStoreServer : ActionTraceStore
     {
-        readonly ServerOptions _serverOptions;
+        private FasterServerOptions ServerOptions => (FasterServerOptions)Options;
+
         readonly IFasterServer _server;
-        readonly ServerKvProvider<UlongKey, ulong, ActionTrace> _provider;
-        readonly SubscribeKVBroker<ulong, ActionTrace, ulong, IKeyInputSerializer<ulong, ulong>> _kvBroker;
+        readonly ServerKVProvider<UlongKey, ulong, ActionTrace> _provider;
+        readonly SubscribeKVBroker<ulong, ActionTrace, ActionTrace, IKeyInputSerializer<ulong, ActionTrace>> _kvBroker;
         readonly SubscribeBroker<ulong, ActionTrace, IKeySerializer<ulong>> _broker;
 
-        public ActionTraceStoreServer(FasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
+        public ActionTraceStoreServer(IFasterStorageOptions options, ITopicEventSender eventSender, MetricsCollector metricsCollector) : base(options, eventSender, metricsCollector)
         {
-            // We already have the Store and everything set up in base-class ActionTraceStore
-
-
-            _serverOptions = new ServerOptions()
+            if (!ServerOptions.DisablePubSub)
             {
-                Port = 5005,
-                Address = "127.0.0.1",
-                MemorySize = "16g",
-                PageSize = "32m",
-                SegmentSize = "1g",
-                IndexSize = "8g",
-                EnableStorageTier = false,
-                LogDir = null,
-                CheckpointDir = null,
-                Recover = false,
-                DisablePubSub = false,
-                PubSubPageSize = "4k"
-            };
-
-            if (!_serverOptions.DisablePubSub)
-            {
-                _kvBroker = new SubscribeKVBroker<ulong, ActionTrace, ulong, IKeyInputSerializer<ulong, ulong>>(
-                    new ServerKeyInputSerializer<UlongKey, ulong>(), null, _serverOptions.PubSubPageSizeBytes(), true);
+                _kvBroker = new SubscribeKVBroker<ulong, ActionTrace, ActionTrace, IKeyInputSerializer<ulong, ActionTrace>>(
+                    new ServerKeyInputSerializer<UlongKey, ulong, ActionTrace>(), null, ServerOptions.PubSubPageSizeBytes, true);
                 _broker = new SubscribeBroker<ulong, ActionTrace, IKeySerializer<ulong>>(
-                    new ServerKeyInputSerializer<UlongKey, ulong>(), null, _serverOptions.PubSubPageSizeBytes(), true);
+                    new ServerKeyInputSerializer<UlongKey, ulong, ActionTrace>(), null, ServerOptions.PubSubPageSizeBytes, true);
             }
 
             // Create session provider for VarLen
-            _provider = new ServerKvProvider<UlongKey, ulong, ActionTrace>(Store, new ServerSerializer<UlongKey, ulong, ActionTrace>(), _kvBroker, _broker, _serverOptions.Recover);
+            _provider = new ServerKVProvider<UlongKey, ulong, ActionTrace>(Store, new ServerSerializer<UlongKey, ulong, ActionTrace>(), _kvBroker, _broker);
 
-            _server = new FasterServerTcp(_serverOptions.Address, _serverOptions.Port);
+            _server = new FasterServerTcp(ServerOptions.IpAddress, ServerOptions.Port);
             _server.Register(WireFormat.DefaultVarLenKV, _provider);
             _server.Register(WireFormat.WebSocket, _provider);
         }
