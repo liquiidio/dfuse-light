@@ -87,6 +87,7 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
             if (StandaloneOptions.UseReadCache)
                 TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);// must be optional
             TypeStoreEntryCountSummary.Observe(Store.EntryCount);
+            MetricsCollector.CollectMetricsHandler += CollectObservableMetrics;
 
             var blockEvictionObserver = new PooledObjectEvictionObserver<long, Block>();
             Store.Log.SubscribeEvictions(blockEvictionObserver);

@@ -29,7 +29,7 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
             // Create session provider for VarLen
             _provider = new ServerKVProvider<UlongKey, ulong, ActionTrace>(Store, new ServerSerializer<UlongKey, ulong, ActionTrace>(), _kvBroker, _broker);
 
-            _server = new FasterServerTcp(ServerOptions.IpAddress, ServerOptions.Port);
+            _server = new FasterServerTcp(ServerOptions.IpAddress, ServerOptions.ActionStorePort);
             _server.Register(WireFormat.DefaultVarLenKV, _provider);
             _server.Register(WireFormat.WebSocket, _provider);
         }

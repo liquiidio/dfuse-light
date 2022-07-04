@@ -33,7 +33,7 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 
             _provider = new ServerKVProvider<TransactionId, TransactionId, TransactionTrace>(Store, new ServerSerializer<TransactionId, TransactionId, TransactionTrace>(), _kvBroker, _broker);
 
-            _server = new FasterServerTcp(ServerOptions.IpAddress, ServerOptions.Port);
+            _server = new FasterServerTcp(ServerOptions.IpAddress, ServerOptions.TransactionStorePort);
             _server.Register(WireFormat.DefaultVarLenKV, _provider);
             _server.Register(WireFormat.WebSocket, _provider);
 

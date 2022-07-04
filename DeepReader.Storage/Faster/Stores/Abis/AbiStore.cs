@@ -81,6 +81,8 @@ namespace DeepReader.Storage.Faster.Stores.Abis
                 }
             }
 
+            MetricsCollector.CollectMetricsHandler += CollectObservableMetrics;
+
             _sessionPool = new AsyncPool<ClientSession<ulong, AbiCacheItem, AbiCacheItem, AbiCacheItem, KeyValueContext, StandaloneAbiFunctions>>(
                 logSettings.LogDevice.ThrottleLimit,
                 () => Store.For(new StandaloneAbiFunctions()).NewSession<StandaloneAbiFunctions>("AbiSession" + Interlocked.Increment(ref SessionCount)));

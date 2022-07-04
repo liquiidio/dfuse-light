@@ -19,37 +19,38 @@ namespace DeepReader.Storage.Faster
         private readonly ActionTraceStoreBase _actionTraceStore;
         private readonly AbiStoreBase _abiStore;
 
-        private readonly TransactionStore _transactionStoreServer;
+        private readonly TransactionStoreClient _transactionStoreClient;
 
-
-        private IFasterStorageOptions _fasterStorageOptions;
 
         private readonly ParallelOptions _parallelOptions;
 
         public FasterStorage(
-            IOptionsMonitor<IFasterStorageOptions> storageOptionsMonitor,
+            IFasterStorageOptions storageOptions,
             ITopicEventSender eventSender,
             MetricsCollector metricsCollector)
         {
-            _fasterStorageOptions = storageOptionsMonitor.CurrentValue;
-            storageOptionsMonitor.OnChange(OnFasterStorageOptionsChanged);
 
-            if (_fasterStorageOptions is FasterStandaloneOptions fasterStandaloneOptions)
-            {
-                _blockStore = new BlockStore(fasterStandaloneOptions, eventSender, metricsCollector);
-                _transactionStore = new TransactionStore(fasterStandaloneOptions, eventSender, metricsCollector);
-                _actionTraceStore = new ActionTraceStore(fasterStandaloneOptions, eventSender, metricsCollector);
-                _abiStore = new AbiStore(fasterStandaloneOptions, eventSender, metricsCollector);
-
-            }
-            else if (_fasterStorageOptions is FasterServerOptions fasterServerOptions)
+            if (storageOptions is FasterServerOptions fasterServerOptions)
             {
                 _blockStore = new BlockStoreServer(fasterServerOptions, eventSender, metricsCollector);
                 _transactionStore = new TransactionStoreServer(fasterServerOptions, eventSender, metricsCollector);
                 _actionTraceStore = new ActionTraceStoreServer(fasterServerOptions, eventSender, metricsCollector);
                 _abiStore = new AbiStoreServer(fasterServerOptions, eventSender, metricsCollector);
+
+                _transactionStoreClient = new TransactionStoreClient(new FasterClientOptions()
+                {
+                    IpAddress = fasterServerOptions.IpAddress,
+                    Port = fasterServerOptions.TransactionStorePort
+                }, eventSender, metricsCollector);
             }
-            else if (_fasterStorageOptions is FasterClientOptions fasterClientOptions)
+            else if (storageOptions is FasterStandaloneOptions fasterStandaloneOptions)
+            {
+                _blockStore = new BlockStore(fasterStandaloneOptions, eventSender, metricsCollector);
+                _transactionStore = new TransactionStore(fasterStandaloneOptions, eventSender, metricsCollector);
+                _actionTraceStore = new ActionTraceStore(fasterStandaloneOptions, eventSender, metricsCollector);
+                _abiStore = new AbiStore(fasterStandaloneOptions, eventSender, metricsCollector);
+            }
+            else if (storageOptions is FasterClientOptions fasterClientOptions)
             {
                 _blockStore = new BlockStoreClient(fasterClientOptions, eventSender, metricsCollector);
                 _transactionStore = new TransactionStoreClient(fasterClientOptions, eventSender, metricsCollector);
@@ -61,11 +62,6 @@ namespace DeepReader.Storage.Faster
             {
                 MaxDegreeOfParallelism = 6 // TODO, put in config with reasonable name
             };
-        }
-
-        private void OnFasterStorageOptionsChanged(IFasterStorageOptions newOptions)
-        {
-            _fasterStorageOptions = newOptions;
         }
 
         public long BlocksIndexed => _blockStore.BlocksIndexed;

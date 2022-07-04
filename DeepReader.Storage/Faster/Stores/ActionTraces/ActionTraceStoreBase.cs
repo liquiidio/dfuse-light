@@ -40,7 +40,6 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
             Options = options;
             EventSender = eventSender;
             MetricsCollector = metricsCollector;
-            MetricsCollector.CollectMetricsHandler += CollectObservableMetrics;
         }
 
         protected abstract void CollectObservableMetrics(object? sender, EventArgs e);

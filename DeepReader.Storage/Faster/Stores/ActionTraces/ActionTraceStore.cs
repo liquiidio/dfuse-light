@@ -78,6 +78,8 @@ namespace DeepReader.Storage.Faster.Stores.ActionTraces
                 }
             }
 
+            MetricsCollector.CollectMetricsHandler += CollectObservableMetrics;
+
             var actionTraceEvictionObserver = new PooledObjectEvictionObserver<ulong, ActionTrace>();
             Store.Log.SubscribeEvictions(actionTraceEvictionObserver);
 

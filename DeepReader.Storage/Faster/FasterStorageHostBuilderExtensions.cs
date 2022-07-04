@@ -27,6 +27,7 @@ namespace DeepReader.Storage.Faster
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
+
             builder.ConfigureAppConfiguration((context, configBuilder) =>
             {
                 configBuilder.AddJsonFile("faster.standalone.settings.json", true, true);
@@ -41,29 +42,25 @@ namespace DeepReader.Storage.Faster
                     IStorageAdapter storageAdapter = null;
                     if (hostContext.Configuration.GetSection("FasterStandaloneOptions").GetChildren().Count() != 0)
                     {
-                        services.Configure<FasterStandaloneOptions>(config => hostContext.Configuration.GetSection("FasterStandaloneOptions").Bind(config));
-
                         storageAdapter = new FasterStorage(
-                            provider.GetRequiredService<IOptionsMonitor<FasterStandaloneOptions>>(),
+                            hostContext.Configuration.GetSection("FasterStandaloneOptions").Get<FasterStandaloneOptions>(),
                             provider.GetRequiredService<ITopicEventSender>(),
                             provider.GetRequiredService<MetricsCollector>());
                     }
                     else if (hostContext.Configuration.GetSection("FasterServerOptions").GetChildren().Count() != 0)
                     {
-                        services.Configure<FasterServerOptions>(config =>
-                            hostContext.Configuration.GetSection("FasterServerOptions").Bind(config));
+                        var options = hostContext.Configuration.GetSection("FasterServerOptions")
+                            .Get<FasterServerOptions>();
 
                         storageAdapter = new FasterStorage(
-                            provider.GetRequiredService<IOptionsMonitor<FasterServerOptions>>(),
+                            hostContext.Configuration.GetSection("FasterServerOptions").Get<FasterServerOptions>(),
                             provider.GetRequiredService<ITopicEventSender>(),
                             provider.GetRequiredService<MetricsCollector>());
                     }
                     else if (hostContext.Configuration.GetSection("FasterClientOptions").GetChildren().Count() != 0)
                     {
-                        services.Configure<FasterClientOptions>(config => hostContext.Configuration.GetSection("FasterClientOptions").Bind(config));
-
                         storageAdapter = new FasterStorage(
-                            provider.GetRequiredService<IOptionsMonitor<FasterClientOptions>>(),
+                            hostContext.Configuration.GetSection("FasterClientOptions").Get<FasterClientOptions>(),
                             provider.GetRequiredService<ITopicEventSender>(),
                             provider.GetRequiredService<MetricsCollector>());
                     }

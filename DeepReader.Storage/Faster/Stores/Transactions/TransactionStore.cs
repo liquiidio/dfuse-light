@@ -87,6 +87,7 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
             if (StandaloneOptions.UseReadCache)
                 TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);
             TypeStoreEntryCountSummary.Observe(Store.EntryCount);
+            MetricsCollector.CollectMetricsHandler += CollectObservableMetrics;
 
             var transactionEvictionObserver = new PooledObjectEvictionObserver<TransactionId, TransactionTrace>();
             Store.Log.SubscribeEvictions(transactionEvictionObserver);
@@ -110,6 +111,9 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
 
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
         {
+            if(Store?.Log == null)
+                return;
+
             TypeStoreLogMemorySizeBytesSummary.Observe(Store.Log.MemorySizeBytes);
             if (StandaloneOptions.UseReadCache)
                 TypeStoreReadCacheMemorySizeBytesSummary.Observe(Store.ReadCache.MemorySizeBytes);

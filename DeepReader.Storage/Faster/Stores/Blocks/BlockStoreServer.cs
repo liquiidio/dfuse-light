@@ -30,7 +30,7 @@ namespace DeepReader.Storage.Faster.Stores.Blocks
             // Create session provider for VarLen
             _provider = new ServerKVProvider<LongKey, long, Block>(Store, new ServerSerializer<LongKey, long, Block>(), _kvBroker, _broker);
 
-            _server = new FasterServerTcp(ServerOptions.IpAddress, ServerOptions.Port);
+            _server = new FasterServerTcp(ServerOptions.IpAddress, ServerOptions.BlockStorePort);
             _server.Register(WireFormat.DefaultVarLenKV, _provider);
             _server.Register(WireFormat.WebSocket, _provider);
         }
