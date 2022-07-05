@@ -7,7 +7,16 @@ namespace DeepReader.Types.StorageTypes
 {
     public sealed class ActionTrace : PooledObject<ActionTrace>, IParentPooledObject<TransactionTrace>
     {
-        public ulong GlobalSequence => Receipt.GlobalSequence;
+        public ulong GlobalSequence 
+        {
+            get
+            {
+                return Receipt.GlobalSequence;
+            }
+            set
+            {
+            }
+        }
 
         // executionindex
 
@@ -17,12 +26,12 @@ namespace DeepReader.Types.StorageTypes
 
         public Action Act { get; set; } = new();
 
-        public RamOp[] RamOps { get; set; } = Array.Empty<RamOp>();
+        public List<RamOp> RamOps { get; set; } = new List<RamOp>();
 
         // dtrxOps
 
-        public TableOp[] TableOps { get; set; } = Array.Empty<TableOp>();
-        public DbOp[] DbOps { get; set; } = Array.Empty<DbOp>();
+        public List<TableOp> TableOps { get; set; } = new List<TableOp>();
+        public List<DbOp> DbOps { get; set; } = new List<DbOp>();
 
         public string Console { get; set; } = string.Empty;
 
@@ -76,20 +85,20 @@ namespace DeepReader.Types.StorageTypes
             obj.Console = reader.ReadString();
             obj.IsNotify = reader.ReadBoolean();
 
-            obj.RamOps = new RamOp[reader.ReadInt32()];
-            for (int i = 0; i < obj.RamOps.Length; i++)
+            obj.RamOps = new List<RamOp>(reader.ReadInt32());
+            for (int i = 0; i < obj.RamOps.Count; i++)
             {
                 obj.RamOps[i] = RamOp.ReadFromBinaryReader(reader);
             }
 
-            obj.TableOps = new TableOp[reader.ReadInt32()];
-            for (int i = 0; i < obj.TableOps.Length; i++)
+            obj.TableOps = new List<TableOp>(reader.ReadInt32());
+            for (int i = 0; i < obj.TableOps.Count; i++)
             {
                 obj.TableOps[i] = TableOp.ReadFromBinaryReader(reader);
             }
 
-            obj.DbOps = new DbOp[reader.ReadInt32()];
-            for (int i = 0; i < obj.DbOps.Length; i++)
+            obj.DbOps = new List<DbOp>(reader.ReadInt32());
+            for (int i = 0; i < obj.DbOps.Count; i++)
             {
                 obj.DbOps[i] = DbOp.ReadFromBinaryReader(reader);
             }
@@ -129,19 +138,19 @@ namespace DeepReader.Types.StorageTypes
 
             writer.Write(IsNotify);
 
-            writer.Write(RamOps.Length);
+            writer.Write(RamOps.Count);
             foreach (var ramOp in RamOps)
             {
                 ramOp.WriteToBinaryWriter(writer);
             }
 
-            writer.Write(TableOps.Length);
+            writer.Write(TableOps.Count);
             foreach (var tableOp in TableOps)
             {
                 tableOp.WriteToBinaryWriter(writer);
             }
 
-            writer.Write(DbOps.Length);
+            writer.Write(DbOps.Count);
             foreach (var dbOp in DbOps)
             {
                 dbOp.WriteToBinaryWriter(writer);
@@ -172,10 +181,10 @@ namespace DeepReader.Types.StorageTypes
         {
             if(Receipt != null)
                 ActionReceipt.ReturnToPool(Receipt);
-//            Action Act
-            RamOps = Array.Empty<RamOp>();
-            TableOps = Array.Empty<TableOp>();
-            DbOps = Array.Empty<DbOp>();
+            //            Action Act
+            RamOps = new List<RamOp>();
+            TableOps = new List<TableOp>();
+            DbOps = new List<DbOp>();
             CreatedActions = Array.Empty<ActionTrace>();
             if (CreatorAction != null)
             {

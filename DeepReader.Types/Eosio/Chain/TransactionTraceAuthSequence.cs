@@ -8,6 +8,8 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public sealed class TransactionTraceAuthSequence : PooledObject<TransactionTraceAuthSequence>, IEosioSerializable<TransactionTraceAuthSequence>
 {
+    public ulong Id { get; set; }
+
     public Name Account { get; set; }
     public ulong Sequence { get; set; }
 

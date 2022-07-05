@@ -8,6 +8,7 @@ namespace DeepReader.Types.Eosio.Chain.Legacy;
 /// </summary>
 public sealed class ProducerKey : PooledObject<ProducerKey>, IEosioSerializable<ProducerKey>
 {
+    public int Id { get; set; }
     public Name AccountName { get; set; }
     public PublicKey BlockSigningKey { get; set; }//ecc.PublicKey
 

@@ -5,6 +5,8 @@ namespace DeepReader.Types;
 
 public class TableOp
 {
+    public ulong Id { get; set; }
+
     public TableOpOperation Operation { get; set; } = TableOpOperation.UNKNOWN;//TableOp_Operation
                                                                                //    public Name Payer { get; set; } = string.Empty;//string
     public Name Code { get; set; } = string.Empty;//string

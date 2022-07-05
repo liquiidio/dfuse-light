@@ -8,6 +8,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public sealed class ProducerSchedule : PooledObject<ProducerSchedule>, IEosioSerializable<ProducerSchedule>
 {
+    public ulong Id { get; set; }
     public uint Version { get; set; }//uint32
     public ProducerKey[] Producers { get; set; }//[]*ProducerKey
 

@@ -6,6 +6,7 @@ namespace DeepReader.Types.StorageTypes;
 public sealed class TransactionTrace : PooledObject<TransactionTrace>, IParentPooledObject<TransactionTrace>
 {
     // SHA-256 (FIPS 180-4) of the FCBUFFER-encoded packed transaction
+    [System.ComponentModel.DataAnnotations.Key]
     public TransactionId Id { get; set; } = Array.Empty<byte>();
 
     public uint BlockNum { get; set; } = 0;

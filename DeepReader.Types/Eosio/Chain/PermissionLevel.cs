@@ -8,6 +8,8 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public sealed class PermissionLevel : PooledObject<PermissionLevel>, IEosioSerializable<PermissionLevel>
 {
+    public ulong Id { get; set; }
+
     public Name Actor { get; set; }
     public Name Permission { get; set; }
 

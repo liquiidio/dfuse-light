@@ -7,6 +7,7 @@ namespace DeepReader.Types.StorageTypes;
 
 public sealed class Block : PooledObject<Block>, IParentPooledObject<Block>
 {
+    [System.ComponentModel.DataAnnotations.Key]
     public Checksum256 Id { get; set; }
 
     public uint Number { get; set; }

@@ -8,6 +8,8 @@ namespace DeepReader.Types;
 [JsonConverter(typeof(DbOpJsonConverter))]
 public class DbOp
 {
+    public ulong Id { get; set; }
+
     public DbOpOperation Operation { get; set; } = DbOpOperation.UNKNOWN;//DBOp_Operation
     public Name Code { get; set; } = string.Empty;//string
     public Name TableName { get; set; } = string.Empty;//string

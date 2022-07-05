@@ -8,6 +8,8 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public sealed class Action : ActionBase, IEosioSerializable<Action>
 {
+    public ulong Id { get; set; }
+
     // abi-field-name: data ,abi-field-type: bytes
     [JsonPropertyName("data")]
     public ActionDataBytes Data { get; set; }

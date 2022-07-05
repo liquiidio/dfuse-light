@@ -1,5 +1,4 @@
 using DeepReader.Types.Enums;
-using DeepReader.Types.Extensions;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -8,7 +7,7 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public class TransactionReceiptHeader : IEosioSerializable<TransactionReceiptHeader>
 {
-
+    public ulong Id { get; set; }
     public TransactionStatus Status { get; set; }    // fc::enum_type<uint8_t,status_enum> v
     public uint CpuUsageUs { get; set; }
     public uint NetUsageWords { get; set; }

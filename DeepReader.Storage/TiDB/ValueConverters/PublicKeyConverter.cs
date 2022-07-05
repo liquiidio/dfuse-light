@@ -3,12 +3,13 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DeepReader.Storage.TiDB.ValueConverters
 {
-    public class NameConverter : ValueConverter<Name, ulong>
+    internal class PublicKeyConverter : ValueConverter<PublicKey, string>
     {
-        public NameConverter() : base(
-            v => (ulong)v,
-            v => (Name)v.ToString())
+        public PublicKeyConverter() : base(
+            v => v.StringVal,
+            v => (PublicKey)v)
         {
+
         }
     }
 }

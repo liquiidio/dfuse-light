@@ -9,6 +9,8 @@ public sealed class Timestamp : PooledObject<Timestamp>, IEosioSerializable<Time
 {
     private uint _ticks;
 
+    public uint Ticks => _ticks;
+
     public Timestamp()
     {
 

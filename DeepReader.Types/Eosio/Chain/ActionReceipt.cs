@@ -8,6 +8,8 @@ namespace DeepReader.Types.Eosio.Chain;
 /// </summary>
 public sealed class ActionReceipt : PooledObject<ActionReceipt>, IEosioSerializable<ActionReceipt>
 {
+    public ulong Id { get; set; }
+
     public Name Receiver { get; set; }
     public Checksum256 ActionDigest { get; set; }
     public ulong GlobalSequence { get; set; }

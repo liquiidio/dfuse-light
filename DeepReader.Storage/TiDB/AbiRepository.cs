@@ -19,7 +19,7 @@ namespace DeepReader.Storage.TiDB
             using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
             if (context is not null)
             {
-                await context.Abis.AddAsync(abi);
+                //await context.Abis.AddAsync(abi);
                 await context.SaveChangesAsync();
             }
         }

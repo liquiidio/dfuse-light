@@ -182,11 +182,11 @@ public class BlockWorker : BackgroundService
                 using (StoreWritingTime.NewTimer())
                 {
                     await Task.WhenAll(
-                        _storageAdapter.StoreBlockAsync(block),
+                        _storageAdapter.StoreBlockAsync(block)
 
-                        StoreTransactionTraces(transactionTraces),
+                        //StoreTransactionTraces(transactionTraces),
 
-                        StoreActionTraces(actionTraces)
+                        //StoreActionTraces(actionTraces)
                     );
                 }
             }
@@ -249,9 +249,9 @@ public class BlockWorker : BackgroundService
             childActionTrace.CreatedActions = childCreatedActionTraces.ToArray();
             childActionTrace.CreatedActionIds = childCreatedActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
             
-            childActionTrace.DbOps = trx.DbOps.Where(dbop => dbop.ActionIndex == creationTreeNode.ActionIndex).Cast<DbOp>().ToArray();
-            childActionTrace.RamOps = trx.RamOps.Where(ramop => ramop.ActionIndex == creationTreeNode.ActionIndex).Cast<RamOp>().ToArray();
-            childActionTrace.TableOps = trx.TableOps.Where(tableop => tableop.ActionIndex == creationTreeNode.ActionIndex).Cast<TableOp>().ToArray();
+            childActionTrace.DbOps = trx.DbOps.Where(dbop => dbop.ActionIndex == creationTreeNode.ActionIndex).Cast<DbOp>().ToList();
+            childActionTrace.RamOps = trx.RamOps.Where(ramop => ramop.ActionIndex == creationTreeNode.ActionIndex).Cast<RamOp>().ToList();
+            childActionTrace.TableOps = trx.TableOps.Where(tableop => tableop.ActionIndex == creationTreeNode.ActionIndex).Cast<TableOp>().ToList();
         }
         else
             Log.Error($"CreationTreeChild-Issues in trx {trx.Id.StringVal}");
@@ -347,9 +347,9 @@ public class BlockWorker : BackgroundService
             rootAction.CreatedActions = createdActionTraces.ToArray();
             rootAction.CreatedActionIds = createdActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
 
-            rootAction.DbOps = trx.DbOps.Where(dbop => dbop.ActionIndex == creationTreeRoot.ActionIndex).Cast<DbOp>().ToArray();
-            rootAction.RamOps = trx.RamOps.Where(ramop => ramop.ActionIndex == creationTreeRoot.ActionIndex).Cast<RamOp>().ToArray();
-            rootAction.TableOps = trx.TableOps.Where(tableop => tableop.ActionIndex == creationTreeRoot.ActionIndex).Cast<TableOp>().ToArray();
+            rootAction.DbOps = trx.DbOps.Where(dbop => dbop.ActionIndex == creationTreeRoot.ActionIndex).Cast<DbOp>().ToList();
+            rootAction.RamOps = trx.RamOps.Where(ramop => ramop.ActionIndex == creationTreeRoot.ActionIndex).Cast<RamOp>().ToList();
+            rootAction.TableOps = trx.TableOps.Where(tableop => tableop.ActionIndex == creationTreeRoot.ActionIndex).Cast<TableOp>().ToList();
         }
         else
             Log.Error($"CreationTreeRoot-Issues in trx {trx.Id.StringVal}");

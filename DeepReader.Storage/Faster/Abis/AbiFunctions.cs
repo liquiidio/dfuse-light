@@ -89,8 +89,8 @@ public sealed class AbiFunctions : FunctionsBase<ulong, AbiCacheItem, AbiInput, 
 
 public class AbiCacheItem
 {
-    public ulong Id;
-    public SortedDictionary<ulong, AssemblyWrapper> AbiVersions = new();
+    public ulong Id { get; set; }
+    public SortedDictionary<ulong, AssemblyWrapper> AbiVersions { get; set; } = new();
 
     public AbiCacheItem() { }
 
@@ -109,6 +109,8 @@ public class AssemblyWrapper
     public Assembly Assembly => _assembly ??= (_binary != null ? Assembly.Load(_binary) : null);
 
     public byte[] Binary => _binary ??= AssemblyToByteArray();
+
+    public AssemblyWrapper() { }
 
     public AssemblyWrapper(Assembly assembly)
     {

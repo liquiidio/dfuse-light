@@ -5,6 +5,8 @@ namespace DeepReader.Types;
 
 public class RamOp
 {
+    public ulong Id { get; set; }
+
     public RamOpOperation Operation { get; set; } = RamOpOperation.UNKNOWN;//RAMOp_Operation
     public Name Payer { get; set; } = string.Empty;//string
     public long Delta { get; set; } = 0;//int64

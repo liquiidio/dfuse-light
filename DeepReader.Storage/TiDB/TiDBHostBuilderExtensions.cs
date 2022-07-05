@@ -26,8 +26,15 @@ namespace DeepReader.Storage.TiDB
                 throw new ArgumentNullException(nameof(builder));
             builder.ConfigureServices((hostContext, services) =>
             {
-                services.AddPooledDbContextFactory<DataContext>(options => options.UseMySQL(hostContext.Configuration["ConnectionStrings:TiDBConnection"]));
-                
+                var connectionString = hostContext.Configuration["ConnectionStrings:TiDBConnection"];
+                services.AddPooledDbContextFactory<DataContext>((serviceProvider, options) =>
+                {
+                    options.UseMySql(connectionString, MySqlServerVersion.AutoDetect(connectionString), x =>
+                    {
+                        x.MigrationsAssembly("DeepReader");
+                    });
+                });
+
                 services.AddSingleton<BlockRepository>();
                 services.AddSingleton<TransactionRepository>();
                 services.AddSingleton<ActionTraceRepository>();

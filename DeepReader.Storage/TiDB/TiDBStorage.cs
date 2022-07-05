@@ -18,9 +18,9 @@ namespace DeepReader.Storage.TiDB
             _actionTraceRepository = actionTraceRepository;
         }
 
-        public long BlocksIndexed => throw new NotImplementedException();
+        public long BlocksIndexed => 0;
 
-        public long TransactionsIndexed => throw new NotImplementedException();
+        public long TransactionsIndexed => 0;
 
         public async Task<(bool, ActionTrace)> GetActionTraceAsync(ulong globalSequence)
         {
