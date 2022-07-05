@@ -23,8 +23,6 @@
             return new ArgumentOutOfRangeException(positionParameterName, $"{positionWord} must be greater than or equal to zero.");
         }
 
-
-
         public static ArgumentOutOfRangeException PositionGreaterThanLengthOfByteArrayException(string positionParameterName)
         {
             return PositionGreaterThanDataStreamLengthException(positionParameterName, "Position (zero-based)", "byte array");

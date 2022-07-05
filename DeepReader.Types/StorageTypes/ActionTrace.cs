@@ -3,6 +3,7 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Infrastructure.BinaryWriters;
+using DeepReader.Types.Interfaces;
 using DeepReader.Types.Other;
 using Action = DeepReader.Types.Eosio.Chain.Action;
 
@@ -35,7 +36,8 @@ namespace DeepReader.Types.StorageTypes
 
 //        public AccountDelta[] AccountRamDeltas { get; set; } = Array.Empty<AccountDelta>();
 
-        public char[] ReturnValue { get; set; } = Array.Empty<char>(); // TODO, string?
+        // we use byte[] here as char is two byte in C# and one byte in C++
+        public byte[] ReturnValue { get; set; } = Array.Empty<byte>();
 
         public bool IsNotify { get; set; } = false;
 
@@ -97,10 +99,10 @@ namespace DeepReader.Types.StorageTypes
                 obj.DbOps[i] = DbOp.ReadFromBinaryReader(reader);
             }
 
-            obj.ReturnValue = new char[reader.ReadInt32()];
+            obj.ReturnValue = new byte[reader.ReadInt32()];
             for (int i = 0; i < obj.ReturnValue.Length; i++)
             {
-                obj.ReturnValue[i] = reader.ReadChar();
+                obj.ReturnValue[i] = reader.ReadByte();
             }
 
             obj.CreatedActionIds = new ulong[reader.ReadInt32()];
@@ -150,10 +152,10 @@ namespace DeepReader.Types.StorageTypes
                 obj.DbOps[i] = DbOp.ReadFromFaster(reader);
             }
 
-            obj.ReturnValue = new char[reader.ReadInt32()];
+            obj.ReturnValue = new byte[reader.ReadInt32()];
             for (int i = 0; i < obj.ReturnValue.Length; i++)
             {
-                obj.ReturnValue[i] = reader.ReadChar();
+                obj.ReturnValue[i] = reader.ReadByte();
             }
 
             obj.CreatedActionIds = new ulong[reader.ReadInt32()];

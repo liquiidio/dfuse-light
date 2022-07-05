@@ -407,7 +407,7 @@ namespace DeepReader.Types.Infrastructure.BinaryReaders
 
         public string ReadString()
         {
-            var length = Convert.ToInt32(ReadVarLength<int>());
+            var length = Read7BitEncodedInt();
             return length > 0 ? Encoding.UTF8.GetString(ReadBytes(length)) : string.Empty;
         }
 
@@ -583,28 +583,6 @@ namespace DeepReader.Types.Infrastructure.BinaryReaders
             result |= (ulong)byteReadJustNow << maxBytesWithoutOverflow * 7;
             return (long)result;
 
-        }
-
-        public T ReadVarLength<T>()
-        {
-            return (T)ReadVarLength(typeof(T));
-        }
-
-        public object ReadVarLength(Type type)
-        {
-            if (type == CommonTypes.TypeOfShort)
-                return ReadVarInt16();
-            else if (type == CommonTypes.TypeOfUshort)
-                return ReadVarUint16();
-            else if (type == CommonTypes.TypeOfInt)
-                return ReadVarInt32();
-            else if (type == CommonTypes.TypeOfUint)
-                return ReadVarUint32();
-            else if (type == CommonTypes.TypeOfLong)
-                return ReadVarInt64();
-            else if (type == CommonTypes.TypeOfUlong)
-                return ReadVarUint64();
-            return null!;
         }
 
         #endregion

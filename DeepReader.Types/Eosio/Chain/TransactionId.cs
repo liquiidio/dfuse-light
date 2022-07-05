@@ -2,6 +2,7 @@
 using DeepReader.Types.Helpers;
 using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Infrastructure.BinaryWriters;
+using DeepReader.Types.Interfaces;
 using DeepReader.Types.JsonConverters;
 using FASTER.core;
 using Microsoft.Extensions.ObjectPool;
@@ -99,12 +100,13 @@ public sealed class TransactionId : TransactionVariant, IEosioSerializable<Trans
 
     public static implicit operator TransactionId(string value)
     {
-        return new TransactionId(){ StringVal = value };    // TODO string to Binary
+        return new TransactionId() { StringVal = value, Binary = SerializationHelper.StringToByteArray(value) };
     }
 
     public static implicit operator TransactionId(ReadOnlySpan<char> value)
     {
-        return new TransactionId() { StringVal = value.ToString() };    // TODO string to Binary or (even better) span to binary
+        var stringVal = value.ToString();
+        return new TransactionId() { StringVal = stringVal, Binary = SerializationHelper.StringToByteArray(stringVal) };
     }
 
     public static implicit operator string(TransactionId value)

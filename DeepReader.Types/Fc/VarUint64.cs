@@ -1,5 +1,6 @@
 ﻿using DeepReader.Types.Extensions;
 using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Interfaces;
 
 namespace DeepReader.Types.Fc;
 

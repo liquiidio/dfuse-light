@@ -1,5 +1,6 @@
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Interfaces;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -23,7 +24,7 @@ public sealed class SignedBlock : SignedBlockHeader, IEosioSerializable<SignedBl
         BlockExtensions = new Extension[reader.Read7BitEncodedInt()];
         for (int i = 0; i != BlockExtensions.Length; i++)
         {
-            BlockExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
+            BlockExtensions[i] = reader.ReadExtension();
         }
     }
 

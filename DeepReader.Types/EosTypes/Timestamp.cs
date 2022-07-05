@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Infrastructure.BinaryWriters;
+using DeepReader.Types.Interfaces;
 using DeepReader.Types.JsonConverters;
 using DeepReader.Types.Other;
 

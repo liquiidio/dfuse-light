@@ -3,6 +3,7 @@ using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Infrastructure.BinaryWriters;
+using DeepReader.Types.Interfaces;
 using Microsoft.Extensions.ObjectPool;
 
 namespace DeepReader.Types.Eosio.Chain;

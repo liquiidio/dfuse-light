@@ -4,6 +4,7 @@ using DeepReader.Types.Fc.Crypto;
 using DeepReader.Types.Eosio.Chain.Legacy;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Interfaces;
 
 namespace DeepReader.Types.Eosio.Chain;
 

@@ -2,6 +2,7 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Infrastructure.BinaryWriters;
+using DeepReader.Types.Interfaces;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -45,7 +46,8 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>, IFasterSerial
 
     public ulong? ErrorCode;
 
-    public char[] ReturnValue;	// TODO, string?
+    // char in c++ is one byte, char in C# is 2 bytes so we use a byte here now
+    public byte[] ReturnValue;
 
     public ActionTrace() { }
 
@@ -87,7 +89,7 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>, IFasterSerial
         if (readErrorCode)
             ErrorCode = reader.ReadUInt64();
 
-        ReturnValue = reader.ReadChars(reader.Read7BitEncodedInt());
+        ReturnValue = reader.ReadBytes(reader.Read7BitEncodedInt());
     }
 
     public static ActionTrace ReadFromBinaryReader(IBufferReader reader, bool fromPool = true)
@@ -136,7 +138,7 @@ public sealed class ActionTrace : IEosioSerializable<ActionTrace>, IFasterSerial
         if (readErrorCode)
             obj.ErrorCode = reader.ReadUInt64();
 
-        obj.ReturnValue = reader.ReadChars(reader.Read7BitEncodedInt());
+        obj.ReturnValue = reader.ReadBytes(reader.Read7BitEncodedInt());
 
         return obj;
     }

@@ -110,12 +110,12 @@ namespace DeepReader.Types.Infrastructure.BinaryWriters
 
         public void Write7BitEncodedInt(int value)
         {
-            throw new NotImplementedException();
+            _binaryWriter.Write7BitEncodedInt(value);
         }
 
         public void Write(in ReadOnlySpan<char> value)
         {
-            throw new NotImplementedException();
+            _binaryWriter.Write(value);
         }
 
         public ReadOnlySpan<byte> ToReadOnlySpan()

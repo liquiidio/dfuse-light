@@ -308,7 +308,7 @@ public class ParseCtx
         _block.ValidBlockSigningAuthority = blockState.ValidBlockSigningAuthority;
         _block.BlockSigningKey = blockState.ValidBlockSigningAuthority is BlockSigningAuthorityV0 blockSigningAuthority ? blockSigningAuthority.Keys.FirstOrDefault()?.Key ?? PublicKey.TypeEmpty : PublicKey.TypeEmpty;
         _block.ConfirmCount = blockState.ConfirmCount.ToArray();
-        _block.BlockExtensions = blockState.Block?.BlockExtensions ?? Array.Empty<KeyValuePair<ushort, char[]>>();
+        _block.BlockExtensions = blockState.Block?.BlockExtensions ?? Array.Empty<KeyValuePair<ushort, byte[]>>();
         _block.ProducerSignature = blockState.Block?.ProducerSignature ?? Signature.TypeEmpty;
         _block.UnfilteredTransactions = blockState.Block?.Transactions.ToList() ?? new List<TransactionReceipt>();
 

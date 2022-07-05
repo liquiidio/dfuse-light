@@ -3,6 +3,7 @@ using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Infrastructure.BinaryWriters;
+using DeepReader.Types.Interfaces;
 
 namespace DeepReader.Types.Eosio.Chain;
 

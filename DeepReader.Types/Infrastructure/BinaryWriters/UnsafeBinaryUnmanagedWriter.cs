@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,103 +9,170 @@ namespace DeepReader.Types.Infrastructure.BinaryWriters
 {
     public class UnsafeBinaryUnmanagedWriter : IBufferWriter
     {
-        private UnmanagedMemoryStream unmanagedMemoryStream;
+        private unsafe byte* data;
 
-        public UnsafeBinaryUnmanagedWriter(UnmanagedMemoryStream unmanagedMemoryStream)
+        public unsafe UnsafeBinaryUnmanagedWriter(ref byte* data, int length)
         {
-            this.unmanagedMemoryStream = unmanagedMemoryStream;
+            this.data = data;
+            this.Length = length;
+        }
+
+        public unsafe UnsafeBinaryUnmanagedWriter(ref byte* data)
+        {
+            this.data = data;
         }
 
         public long Length { get; }
         public long Position { get; set; }
-        public void Write(bool value)
+
+        public unsafe void Write(bool value)
         {
-            throw new NotImplementedException();
+            const int size = sizeof(bool);
+            CheckLength(size);
+            Unsafe.Write(data, value);
+            SetPosition(size);
         }
 
-        public void Write(byte value)
+        public unsafe void Write(byte value)
         {
-            throw new NotImplementedException();
+            const int size = sizeof(byte);
+            CheckLength(size);
+            Unsafe.Write(data, value);
+            SetPosition(size);
         }
 
-        public void Write(byte[] buffer)
+        public unsafe void Write(byte[] buffer)
         {
-            throw new NotImplementedException();
+            var size = buffer.Length;
+            CheckLength(size);
+            Unsafe.Write(data, buffer);
+            SetPosition(size);
         }
 
-        public void Write(byte[] buffer, int offset, int length)
+        public unsafe void Write(byte[] buffer, int offset, int length)
         {
-            throw new NotImplementedException();
+            CheckLength(length);
+            Unsafe.Write(data + offset, buffer.Take(length));
+            SetPosition(length);
         }
 
-        public void Write(decimal value)
+        public unsafe void Write(decimal value)
         {
-            throw new NotImplementedException();
+            const int size = sizeof(decimal);
+            CheckLength(size);
+            Unsafe.Write(data, value);
+            SetPosition(size);
         }
 
-        public void Write(double value)
+        public unsafe void Write(double value)
         {
-            throw new NotImplementedException();
+            const int size = sizeof(double);
+            CheckLength(size);
+            Unsafe.Write(data, value);
+            SetPosition(size);
         }
 
-        public void Write(short value)
+        public unsafe void Write(short value)
         {
-            throw new NotImplementedException();
+            const int size = sizeof(short);
+            CheckLength(size);
+            Unsafe.Write(data, value);
+            SetPosition(size);
         }
 
-        public void Write(int value)
+        public unsafe void Write(int value)
         {
-            throw new NotImplementedException();
+            const int size = sizeof(int);
+            CheckLength(size);
+            Unsafe.Write(data, value);
+            SetPosition(size);
         }
 
-        public void Write(long value)
+        public unsafe void Write(long value)
         {
-            throw new NotImplementedException();
+            const int size = sizeof(long);
+            CheckLength(size);
+            Unsafe.Write(data, value);
+            SetPosition(size);
         }
 
-        public void Write(sbyte value)
+        public unsafe void Write(sbyte value)
         {
-            throw new NotImplementedException();
+            const int size = sizeof(sbyte);
+            CheckLength(size);
+            Unsafe.Write(data, value);
+            SetPosition(size);
         }
 
-        public void Write(float value)
+        public unsafe void Write(float value)
         {
-            throw new NotImplementedException();
+            const int size = sizeof(float);
+            CheckLength(size);
+            Unsafe.Write(data, value);
+            SetPosition(size);
         }
 
-        public void Write(in ReadOnlySpan<byte> buffer)
+        public unsafe void Write(in ReadOnlySpan<byte> buffer)
         {
-            throw new NotImplementedException();
+            var size = buffer.Length;
+            CheckLength(size);
+            Unsafe.Write(data, buffer.ToArray());
+            SetPosition(size);
+
         }
 
-        public void Write(ushort value)
+        public unsafe void Write(ushort value)
         {
-            throw new NotImplementedException();
+            const int size = sizeof(ushort);
+            CheckLength(size);
+            Unsafe.Write(data, value);
+            SetPosition(size);
         }
 
-        public void Write(uint value)
+        public unsafe void Write(uint value)
         {
-            throw new NotImplementedException();
+            const int size = sizeof(uint);
+            CheckLength(size);
+            Unsafe.Write(data, value);
+            SetPosition(size);
         }
 
-        public void Write(ulong value)
+        public unsafe void Write(ulong value)
         {
-            throw new NotImplementedException();
+            const int size = sizeof(ulong);
+            CheckLength(size);
+            Unsafe.Write(data, value);
+            SetPosition(size);
         }
 
-        public void Write7BitEncodedInt(int value)
+        public unsafe void Write7BitEncodedInt(int value)
         {
-            throw new NotImplementedException();
+
         }
 
-        public void Write(in ReadOnlySpan<char> value)
+        public unsafe void Write(in ReadOnlySpan<char> value)
         {
-            throw new NotImplementedException();
+            var size = value.Length;
+            CheckLength(size);
+            Unsafe.Write(data, value.ToArray());
+            SetPosition(size);
         }
 
         public ReadOnlySpan<byte> ToReadOnlySpan()
         {
             throw new NotImplementedException();
+        }
+
+        private void CheckLength(int size)
+        {
+            if (Position + size > Length)
+                throw new ArgumentOutOfRangeException("size", "Index out of Range");
+        }
+
+        private unsafe void SetPosition(int size)
+        {
+            Position += size;
+            data += size;
         }
     }
 }

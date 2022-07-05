@@ -16,7 +16,7 @@ namespace DeepReader.Storage.Faster.StoreBase.Client
             public unsafe bool Write(ref TKKey k, ref byte* dst, int length)
             {
                 ReserveHeader(ref dst);
-                var writer = new UnsafeBinaryUnmanagedWriter(new UnmanagedMemoryStream(dst, length - sizeof(int), length - sizeof(int), FileAccess.Write));
+                var writer = new UnsafeBinaryUnmanagedWriter(ref dst, length);
                 TKey.SerializeKey(k, writer);
                 SetHeader(ref dst, writer);
                 SetPos(ref dst, writer);
@@ -26,7 +26,7 @@ namespace DeepReader.Storage.Faster.StoreBase.Client
             public unsafe bool Write(ref TValue v, ref byte* dst, int length)
             {
                 ReserveHeader(ref dst);
-                var writer = new UnsafeBinaryUnmanagedWriter(new UnmanagedMemoryStream(dst, length - sizeof(int), length - sizeof(int), FileAccess.Write));
+                var writer = new UnsafeBinaryUnmanagedWriter(ref dst, length);
                 v.WriteToFaster(writer);
                 SetHeader(ref dst, writer);
                 SetPos(ref dst, writer);

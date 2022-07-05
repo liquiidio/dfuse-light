@@ -1,6 +1,7 @@
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Infrastructure.BinaryWriters;
+using DeepReader.Types.Interfaces;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -18,7 +19,7 @@ public sealed class AccountDelta : IEosioSerializable<AccountDelta>, IFasterSeri
     {
         try
         {
-            Account = Name.ReadFromBinaryReader(reader); // TODO
+            Account = Name.ReadFromBinaryReader(reader);
             Delta = reader.ReadInt64();
         }
         catch (Exception e)
@@ -37,7 +38,7 @@ public sealed class AccountDelta : IEosioSerializable<AccountDelta>, IFasterSeri
     {
         var obj = new AccountDelta();
 
-        obj.Account = Name.ReadFromFaster(reader); // TODO
+        obj.Account = Name.ReadFromFaster(reader);
         obj.Delta = reader.ReadInt64();
 
         return obj;

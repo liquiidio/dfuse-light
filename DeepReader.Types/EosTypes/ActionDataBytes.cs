@@ -27,17 +27,6 @@ public sealed class ActionDataBytes : Bytes<object>
         return value.Binary;
     }
 
-    public async Task DeserializeAsync(Type targetType, CancellationToken cancellationToken)
-    {
-//        Instance = await DeepMindDeserializer.DeepMindDeserializer.DeserializeAsync(Binary, targetType, cancellationToken);
-    }
-
-    public void Deserialize(Type targetType)
-    {
-//        Instance = DeepMindDeserializer.DeepMindDeserializer.Deserialize(Binary, targetType);
-
-    }
-
-    public JsonElement? Json { get; set; } // TODO
+    public JsonElement? Json { get; set; }
     public string Hex { get; set; } // TODO
 }

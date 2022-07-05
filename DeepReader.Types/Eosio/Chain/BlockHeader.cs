@@ -1,6 +1,7 @@
 using DeepReader.Types.EosTypes;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Interfaces;
 
 namespace DeepReader.Types.Eosio.Chain;
 
@@ -45,7 +46,7 @@ public class BlockHeader : IEosioSerializable<BlockHeader>
         HeaderExtensions = new Extension[reader.Read7BitEncodedInt()];
         for (int i = 0; i < HeaderExtensions.Length; i++)
         {
-            HeaderExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
+            HeaderExtensions[i] = reader.ReadExtension();
         }
     }
 

@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.Extensions;
 using DeepReader.Types.Infrastructure.BinaryReaders;
+using DeepReader.Types.Interfaces;
 using Action = DeepReader.Types.Eosio.Chain.Action;
 
 /// <summary>
@@ -38,7 +39,7 @@ public class Transaction : TransactionHeader, IEosioSerializable<Transaction>
         TransactionExtensions = new Extension[reader.Read7BitEncodedInt()];
         for (int i = 0; i < TransactionExtensions.Length; i++)
         {
-            TransactionExtensions[i] = new Extension(reader.ReadUInt16(), reader.ReadChars(reader.Read7BitEncodedInt()));
+            TransactionExtensions[i] = reader.ReadExtension();
         }
     }
 
