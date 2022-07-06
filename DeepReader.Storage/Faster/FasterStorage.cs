@@ -84,13 +84,13 @@ namespace DeepReader.Storage.Faster
                 });
                 block.Transactions = transactionTraceArray.ToList();
             }
-            if (found && includeActionTraces && block.Transactions?.FirstOrDefault()?.ActionTraces.Length == 0) // if length != 0 values are already loaded and referenced
+            if (found && includeActionTraces && block.Transactions?.FirstOrDefault()?.ActionTraces.Count == 0) // if length != 0 values are already loaded and referenced
             {
                 await Parallel.ForEachAsync(block.Transactions, _parallelOptions, async (transaction, _) =>
                 {
                     if (transaction != null)
                     {
-                        transaction.ActionTraces = new ActionTrace[transaction.ActionTraceIds.Length];
+                        transaction.ActionTraces = new List<ActionTrace>(transaction.ActionTraceIds.Length);
                         // not sure if this is clever or over-parallelized
                         await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
                         {
@@ -110,9 +110,9 @@ namespace DeepReader.Storage.Faster
         public async Task<(bool, TransactionTrace)> GetTransactionAsync(string transactionId, bool includeActionTraces = false)
         {
             var (found, transaction) = await _transactionStore.TryGetTransactionTraceById(new Types.Eosio.Chain.TransactionId(transactionId));
-            if (found && includeActionTraces && transaction.ActionTraces.Length == 0)  // if length != 0 values are already loaded and referenced
+            if (found && includeActionTraces && transaction.ActionTraces.Count == 0)  // if length != 0 values are already loaded and referenced
             {
-                transaction.ActionTraces = new ActionTrace[transaction.ActionTraceIds.Length];
+                transaction.ActionTraces = new List<ActionTrace>(transaction.ActionTraceIds.Length);
                 // not sure if this is clever or over-parallelized
                 await Parallel.ForEachAsync(transaction.ActionTraceIds, _parallelOptions, async (actionTraceId, _) =>
                 {

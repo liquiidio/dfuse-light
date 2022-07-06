@@ -106,7 +106,7 @@ public sealed class Name : BinaryType, IEosioSerializable<Name>
 
     public static bool operator ==(Name obj1, Name obj2)
     {
-        return obj1._intVal == obj2._intVal;
+        return obj1?._intVal == obj2?._intVal;
     }
 
     public static bool operator !=(Name obj1, Name obj2)

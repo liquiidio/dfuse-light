@@ -90,7 +90,7 @@ public class BlockWorker : BackgroundService
         _storageAdapter = storageAdapter;
 
         _filterEmptyTransactionsFilter = _deepReaderOptions.FilterEmptyTransactions
-            ? transactionTrace => transactionTrace.ActionTraces.Length > 0
+            ? transactionTrace => transactionTrace.ActionTraces.Count > 0
             : _ => true;
 
         _actionFilter = _deepReaderOptions.Filter.BuildActionFilter();
@@ -155,6 +155,8 @@ public class BlockWorker : BackgroundService
                     Log.Information($"Current Threads: {Process.GetCurrentProcess().Threads.Count}");
                 }
 
+                Log.Information("block_number: " + deepMindBlock.Number);
+
                 block = Types.StorageTypes.Block.FromPool();
 
                 actionTraces.Clear();
@@ -165,19 +167,27 @@ public class BlockWorker : BackgroundService
                     PostProcess(deepMindBlock, block, actionTraces);
                 }
 
+                Log.Information("action_traces_count" + actionTraces.Count);
+
                 TransactionsPerBlock.Observe(block.TransactionIds.Count);
                 ActionTracesPerBlock.Observe(actionTraces.Count);
 
 
+                Log.Information("block_transcations_count: " + block.Transactions.Count);
                 // need to copy the transactionsList here as when a block gets evicted, the list gets cleared
                 // (theoretically possible before call finishes - but very unlikely)
                 transactionTraces.AddRange(block.Transactions);
                 actionTraces = actionTraces.Where(a => a.Receipt != null).ToList();
 
+                Log.Information("transactionTraces_addRange: " + transactionTraces.Count);
+                Log.Information("actionTraces_filtered: " + actionTraces.Count);
+
                 // this (currently) needs to be done before storage as eviction
                 // will put actionTraces and childs back into pools
                 // (theoretically possible before call finishes - but very unlikely)
-                await CheckForAbiUpdates(actionTraces);
+                
+                // TODO 
+                //await CheckForAbiUpdates(actionTraces);
 
                 using (StoreWritingTime.NewTimer())
                 {
@@ -271,7 +281,7 @@ public class BlockWorker : BackgroundService
 
             if (!trx.DtrxOps.Any(dtrxOp => dtrxOp.Operation == DTrxOpOperation.FAILED))
             {
-                var rootActionTraces = new Types.StorageTypes.ActionTrace[trx.CreationTreeRoots.Count];
+                var rootActionTraces = new List<Types.StorageTypes.ActionTrace>(trx.CreationTreeRoots.Count);
 
                 for (var creationTreeRootIndex = 0;
                      creationTreeRootIndex < trx.CreationTreeRoots.Count;
@@ -282,7 +292,7 @@ public class BlockWorker : BackgroundService
                         actionTraces);
                 }
 
-                rootActionTraces = rootActionTraces.Where(a => a.Receipt != null).ToArray();
+                rootActionTraces = rootActionTraces.Where(a => a.Receipt != null).ToList();
                 transactionTrace.ActionTraces = rootActionTraces;
                 transactionTrace.ActionTraceIds = rootActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
             }
@@ -324,8 +334,15 @@ public class BlockWorker : BackgroundService
         block.CopyFrom(deepMindBlock);
     }
 
-    private void ProcessCreationTreeRoot(CreationTreeNode creationTreeRoot, int creationTreeRootIndex, TransactionTrace trx, Types.StorageTypes.ActionTrace[] rootActionTraces, List<Types.StorageTypes.ActionTrace> actionTraces)
+    private void ProcessCreationTreeRoot(CreationTreeNode creationTreeRoot, int creationTreeRootIndex, TransactionTrace trx, List<Types.StorageTypes.ActionTrace> rootActionTraces, List<Types.StorageTypes.ActionTrace> actionTraces)
     {
+        Log.Information("creation_tree_root_index_count: " + creationTreeRootIndex);
+        Log.Information("root_action_traces_count: " + rootActionTraces.Count);
+        Log.Information("action_traces_count: " + actionTraces.Count);
+
+        if (rootActionTraces.Count == 0)
+            return;
+
         if (creationTreeRoot.Kind == CreationOpKind.ROOT)
         {
             var rootAction = Types.StorageTypes.ActionTrace.FromPool(); // returned to the Pool when Faster evicts it

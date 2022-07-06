@@ -25,7 +25,7 @@ namespace DeepReader.Apis.Other
             MaxDegreeOfParallelism = 3
         };
 
-        public static async Task DeserializeActions(ActionTrace[] actionTraces, IStorageAdapter storage)
+        public static async Task DeserializeActions(List<ActionTrace> actionTraces, IStorageAdapter storage)
         {
             await Parallel.ForEachAsync(actionTraces, ActionTraceSerializerParallelOptions, async (actionTrace, _) =>
             {

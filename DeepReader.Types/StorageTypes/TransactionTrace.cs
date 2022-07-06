@@ -20,7 +20,7 @@ public sealed class TransactionTrace : PooledObject<TransactionTrace>, IParentPo
 
     public bool Scheduled { get; set; } = false;
 
-    public ActionTrace[] ActionTraces { get; set; } = Array.Empty<ActionTrace>();
+    public List<ActionTrace> ActionTraces { get; set; } = new List<ActionTrace>();
 
     public ulong[] ActionTraceIds { get; set; } = Array.Empty<ulong>();
 
@@ -85,7 +85,7 @@ public sealed class TransactionTrace : PooledObject<TransactionTrace>, IParentPo
         TransactionId.ReturnToPool(Id);
         //        TransactionReceiptHeader Receipt
 
-        ActionTraces = Array.Empty<ActionTrace>();
+        ActionTraces = new List<ActionTrace>();
 
         TypeObjectPool.Return(this);
     }

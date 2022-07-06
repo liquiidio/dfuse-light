@@ -46,6 +46,7 @@ namespace DeepReader.Storage.TiDB
 
         public async Task StoreBlockAsync(Block block)
         {
+            Serilog.Log.Information("tidb_store_block_async called.");
             await _blockRepository.WriteBlock(block);
         }
 
