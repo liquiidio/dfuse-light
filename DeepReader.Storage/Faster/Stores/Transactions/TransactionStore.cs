@@ -106,7 +106,7 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
                 SessionCount++;
             }
 
-            new Thread(CommitThread).Start();
+            //new Thread(CommitThread).Start();
         }
 
         protected override void CollectObservableMetrics(object? sender, EventArgs e)
@@ -150,40 +150,69 @@ namespace DeepReader.Storage.Faster.Stores.Transactions
             }
         }
 
-        private void CommitThread()
-        {
-            if (StandaloneOptions.LogCheckpointInterval is null or 0)
-                return;
+        //private void CommitThread()
+        //{
+        //    if (StandaloneOptions.LogCheckpointInterval is null or 0)
+        //        return;
 
+        //    int logCheckpointsTaken = 0;
+
+        //    while (true)
+        //    {
+        //        try
+        //        {
+        //            Thread.Sleep(StandaloneOptions.LogCheckpointInterval.Value);
+
+        //            using (TypeStoreTakeLogCheckpointDurationSummary.NewTimer())
+        //                Store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
+
+        //            if (StandaloneOptions.FlushAfterCheckpoint)
+        //            {
+        //                using (TypeStoreFlushAndEvictLogDurationSummary.NewTimer())
+        //                    Store.Log.FlushAndEvict(true);
+        //            }
+
+        //            if (logCheckpointsTaken % StandaloneOptions.IndexCheckpointMultiplier == 0)
+        //            {
+        //                using (TypeStoreTakeIndexCheckpointDurationSummary.NewTimer())
+        //                    Store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
+        //            }
+
+        //            logCheckpointsTaken++;
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Log.Error(ex, "");
+        //        }
+        //    }
+        //}
+
+        public async Task Commit()
+        {
             int logCheckpointsTaken = 0;
 
-            while (true)
+            try
             {
-                try
+                using (TypeStoreTakeLogCheckpointDurationSummary.NewTimer())
+                    Store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
+
+                if (StandaloneOptions.FlushAfterCheckpoint)
                 {
-                    Thread.Sleep(StandaloneOptions.LogCheckpointInterval.Value);
-
-                    using (TypeStoreTakeLogCheckpointDurationSummary.NewTimer())
-                        Store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver, true).GetAwaiter().GetResult();
-
-                    if (StandaloneOptions.FlushAfterCheckpoint)
-                    {
-                        using (TypeStoreFlushAndEvictLogDurationSummary.NewTimer())
-                            Store.Log.FlushAndEvict(true);
-                    }
-
-                    if (logCheckpointsTaken % StandaloneOptions.IndexCheckpointMultiplier == 0)
-                    {
-                        using (TypeStoreTakeIndexCheckpointDurationSummary.NewTimer())
-                            Store.TakeIndexCheckpointAsync().GetAwaiter().GetResult();
-                    }
-
-                    logCheckpointsTaken++;
+                    using (TypeStoreFlushAndEvictLogDurationSummary.NewTimer())
+                        Store.Log.FlushAndEvict(true);
                 }
-                catch (Exception ex)
+
+                if (logCheckpointsTaken % StandaloneOptions.IndexCheckpointMultiplier == 0)
                 {
-                    Log.Error(ex, "");
+                    using (TypeStoreTakeIndexCheckpointDurationSummary.NewTimer())
+                        await Store.TakeIndexCheckpointAsync();
                 }
+
+                logCheckpointsTaken++;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "");
             }
         }
     }

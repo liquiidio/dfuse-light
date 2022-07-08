@@ -1,6 +1,7 @@
 ﻿using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Interfaces;
 using FASTER.common;
+using BinaryReader = DeepReader.Types.Infrastructure.BinaryReaders.BinaryReader;
 
 namespace DeepReader.Storage.Faster.StoreBase.Server
 {
@@ -30,13 +31,13 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
 
         public unsafe ref TInput ReadInputByRef(ref byte* src)
         {
-            _input = TInput.ReadFromFaster(new UnsafeBinaryUnmanagedReader(ref src, ushort.MaxValue));
+            _input = TInput.ReadFromFaster(new BinaryReader(ref src, ushort.MaxValue));
             return ref _input;
         }
 
         public unsafe ref TKKey ReadKeyByRef(ref byte* src)
         {
-            _key = TKey.DeserializeKey(new UnsafeBinaryUnmanagedReader(ref src, ushort.MaxValue));
+            _key = TKey.DeserializeKey(new BinaryReader(ref src, ushort.MaxValue));
             return ref _key;
         }
     }

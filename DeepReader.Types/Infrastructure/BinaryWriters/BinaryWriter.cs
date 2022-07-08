@@ -12,9 +12,9 @@ namespace DeepReader.Types.Infrastructure.BinaryWriters
     /// <summary>
     /// class wraps BinaryWriter in the IBufferWriter-interface
     /// </summary>
-    internal class BinaryWriter : IBufferWriter
+    public class BinaryWriter : IBufferWriter
     {
-        System.IO.BinaryWriter _binaryWriter;
+        private readonly System.IO.BinaryWriter _binaryWriter;
 
         public static implicit operator BinaryWriter(System.IO.BinaryWriter binaryWriter)
         {
@@ -24,6 +24,11 @@ namespace DeepReader.Types.Infrastructure.BinaryWriters
         public BinaryWriter(System.IO.BinaryWriter binaryWriter)
         {
             _binaryWriter = binaryWriter;
+        }
+
+        public unsafe BinaryWriter(byte* src, long length)
+        {
+            _binaryWriter = new System.IO.BinaryWriter(new UnmanagedMemoryStream(src, length, length, FileAccess.Write));
         }
 
         public long Length => _binaryWriter.BaseStream.Length;

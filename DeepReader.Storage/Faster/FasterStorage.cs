@@ -9,6 +9,7 @@ using DeepReader.Storage.Faster.Stores.Transactions;
 using DeepReader.Storage.Faster.Options;
 using DeepReader.Storage.Faster.Stores.Abis;
 using DeepReader.Storage.Faster.Stores.Abis.Custom;
+using Serilog;
 
 namespace DeepReader.Storage.Faster
 {
@@ -24,12 +25,15 @@ namespace DeepReader.Storage.Faster
 
         private readonly ParallelOptions _parallelOptions;
 
+        private IFasterStorageOptions _options;
+
         public FasterStorage(
             IFasterStorageOptions storageOptions,
             ITopicEventSender eventSender,
             MetricsCollector metricsCollector)
         {
 
+            _options = storageOptions;
             if (storageOptions is FasterServerOptions fasterServerOptions)
             {
                 _blockStore = new BlockStoreServer(fasterServerOptions, eventSender, metricsCollector);
@@ -42,6 +46,8 @@ namespace DeepReader.Storage.Faster
                     IpAddress = fasterServerOptions.IpAddress,
                     Port = fasterServerOptions.TransactionStorePort
                 }, eventSender, metricsCollector);
+
+                new Thread(CommitThread).Start();
             }
             else if (storageOptions is FasterStandaloneOptions fasterStandaloneOptions)
             {
@@ -49,6 +55,8 @@ namespace DeepReader.Storage.Faster
                 _transactionStore = new TransactionStore(fasterStandaloneOptions, eventSender, metricsCollector);
                 _actionTraceStore = new ActionTraceStore(fasterStandaloneOptions, eventSender, metricsCollector);
                 _abiStore = new AbiStore(fasterStandaloneOptions, eventSender, metricsCollector);
+
+                new Thread(CommitThread).Start();
             }
             else if (storageOptions is FasterClientOptions fasterClientOptions)
             {
@@ -64,6 +72,42 @@ namespace DeepReader.Storage.Faster
             };
         }
 
+        private void CommitThread()
+        {
+            var options = (FasterStandaloneOptions)_options;
+            if (options.LogCheckpointInterval is null or 0)
+                return;
+
+            var blockStore = (BlockStore)_blockStore;
+            var transactionStore = (TransactionStore)_transactionStore;
+            var actionTraceStore = (ActionTraceStore)_actionTraceStore;
+            var abiStore = (AbiStore)_abiStore;
+
+            while (true)
+            {
+                Thread.Sleep(options.LogCheckpointInterval.Value);
+
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        var tasks = new List<Task>
+                        {
+                            blockStore.Commit(),
+                            transactionStore.Commit(),
+                            actionTraceStore.Commit(),
+                            abiStore.Commit()
+                        };
+                        await Task.WhenAll(tasks);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "");
+                    }
+                }).GetAwaiter().GetResult();
+            }
+        }
+
         public long BlocksIndexed => _blockStore.BlocksIndexed;
         
         public long TransactionsIndexed => _transactionStore.TransactionsIndexed;
@@ -76,7 +120,7 @@ namespace DeepReader.Storage.Faster
 
         public async Task StoreTransactionAsync(TransactionTrace transactionTrace)
         {
-            await _transactionStore.WriteTransaction(transactionTrace);
+            await _transactionStoreClient.WriteTransaction(transactionTrace);
         }
 
         public async Task StoreActionTraceAsync(ActionTrace actionTrace)
@@ -96,7 +140,7 @@ namespace DeepReader.Storage.Faster
                     if (transactionId != null)
                     {
                         var (foundTrx, transaction) =
-                            await _transactionStore.TryGetTransactionTraceById(transactionId);
+                            await _transactionStoreClient.TryGetTransactionTraceById(transactionId);
                         int index;
                         if (foundTrx && (index = block.TransactionIds.IndexOf(transactionId)) >= 0)
                             transactionTraceArray[index] = transaction;
@@ -129,7 +173,7 @@ namespace DeepReader.Storage.Faster
 
         public async Task<(bool, TransactionTrace)> GetTransactionAsync(string transactionId, bool includeActionTraces = false)
         {
-            var (found, transaction) = await _transactionStore.TryGetTransactionTraceById(new Types.Eosio.Chain.TransactionId(transactionId));
+            var (found, transaction) = await _transactionStoreClient.TryGetTransactionTraceById(new Types.Eosio.Chain.TransactionId(transactionId));
             if (found && includeActionTraces && transaction.ActionTraces.Length == 0)  // if length != 0 values are already loaded and referenced
             {
                 transaction.ActionTraces = new ActionTrace[transaction.ActionTraceIds.Length];

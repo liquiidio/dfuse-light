@@ -89,10 +89,28 @@ public class DlogReaderWorker : BackgroundService
         await _deepMindProcess.RunAsync(clt);
     }
 
+#if DEBUG
+    private bool _killingNodeos = false;
+    private async void Kill()
+    {
+        Debug.WriteLine("Killing Nodeos");
+        _killingNodeos = true;
+        _deepMindProcess.OutputDataReceived -= OnNodeosDataReceived;
+        _deepMindProcess.ErrorDataReceived -= OnNodeosDataReceived;
+        await _deepMindProcess.KillAsync(CancellationToken.None);
+        Debug.WriteLine("Nodeos Killed!");
+    }
+#endif
+
     private void OnNodeosDataReceived(object sender, DataReceivedEventArgs e)
     {
         try
         {
+//#if DEBUG
+//            if (!_killingNodeos && BlockWorker.KillNodeos)
+//                Kill();
+//#endif
+
             if (e.Data != null && e.Data.StartsWith("DMLOG"))
             {
                 if (e.Data.StartsWith("DMLOG START_BLOCK"))

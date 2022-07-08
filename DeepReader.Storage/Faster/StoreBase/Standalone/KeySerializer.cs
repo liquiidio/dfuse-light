@@ -10,12 +10,12 @@ namespace DeepReader.Storage.Faster.StoreBase.Standalone
     {
         public override void Deserialize(out TKKey obj)
         {
-            obj = TKey.DeserializeKey((IBufferReader)reader);
+            obj = TKey.DeserializeKey(new Types.Infrastructure.BinaryReaders.BinaryReader(reader));
         }
 
         public override void Serialize(ref TKKey obj)
         {
-            TKey.SerializeKey(obj, (IBufferWriter)writer);
+            TKey.SerializeKey(obj, new Types.Infrastructure.BinaryWriters.BinaryWriter(writer));
         }
     }
     }

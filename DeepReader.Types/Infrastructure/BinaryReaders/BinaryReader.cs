@@ -28,6 +28,12 @@ namespace DeepReader.Types.Infrastructure.BinaryReaders
             _binaryReader = binaryReader;
         }
 
+        public unsafe BinaryReader(ref byte* data, int length)
+        {
+            _binaryReader =
+                new System.IO.BinaryReader(new UnmanagedMemoryStream(data, length, length, FileAccess.Read));
+        }
+
         public int Length => (int)_binaryReader.BaseStream.Length;
         public int Position => (int)_binaryReader.BaseStream.Position;
 
@@ -228,12 +234,12 @@ namespace DeepReader.Types.Infrastructure.BinaryReaders
 
         public int Read7BitEncodedInt()
         {
-            throw new NotImplementedException();
+           return _binaryReader.Read7BitEncodedInt();
         }
 
         public long Read7BitEncodedInt64()
         {
-            throw new NotImplementedException();
+            return _binaryReader.Read7BitEncodedInt64();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Interfaces;
 using FASTER.common;
+using BinaryReader = DeepReader.Types.Infrastructure.BinaryReaders.BinaryReader;
 
 namespace DeepReader.Storage.Faster.StoreBase.Server
 {
@@ -26,7 +27,7 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
 
         public unsafe ref TKey ReadKeyByRef(ref byte* src)
         {
-            var reader = new UnsafeBinaryUnmanagedReader(src, ushort.MaxValue);
+            var reader = new BinaryReader(ref src, ushort.MaxValue);
             _key = TKey.DeserializeKey(reader);
             return ref _key;
         }

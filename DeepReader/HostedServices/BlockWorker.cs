@@ -14,6 +14,7 @@ using Serilog;
 using System.Diagnostics;
 using System.Threading.Channels;
 using DeepReader.Types.Enums;
+using DeepReader.Types.Infrastructure.BinaryReaders;
 
 namespace DeepReader.HostedServices;
 
@@ -132,6 +133,8 @@ public class BlockWorker : BackgroundService
         await Task.WhenAll(blockProcessingTasks);
     }
 
+    public static bool KillNodeos = false;
+
     private async Task ProcessBlocks(CancellationToken cancellationToken)
     {
         uint blockNum = 0;
@@ -143,6 +146,12 @@ public class BlockWorker : BackgroundService
         {
             try
             {
+//#if DEBUG
+//         if(deepMindBlock.Number == 5000)
+//             KillNodeos = true;
+//#endif
+
+
                 if (deepMindBlock.Number % 1000 == 0)
                 {
                     if (_blocksChannel.CanCount)
@@ -424,8 +433,7 @@ public class BlockWorker : BackgroundService
                     var clrType = assemblyPair.Value.Assembly.GetType($"_setabi"); // type is always setabi here
                     if (clrType != null)
                     {                
-                        using var stream = StreamManager.GetStream(setAbiTrace.Act.Data);// copies buffer/bytes
-                        using var reader = new BinaryReader(stream);
+                        var reader = new BinaryBufferReader(setAbiTrace.Act.Data);
 
                         var obj = Activator.CreateInstance(clrType, reader);
 

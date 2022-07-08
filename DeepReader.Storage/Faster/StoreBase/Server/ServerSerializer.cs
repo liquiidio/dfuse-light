@@ -1,8 +1,12 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using DeepReader.Types.Helpers;
 using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.Interfaces;
 using FASTER.common;
+using BinaryReader = DeepReader.Types.Infrastructure.BinaryReaders.BinaryReader;
+using BinaryWriter = DeepReader.Types.Infrastructure.BinaryWriters.BinaryWriter;
 
 namespace DeepReader.Storage.Faster.StoreBase.Server
 {
@@ -22,41 +26,65 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
         {
             // TODO, not sure if this has length-prefix or not
             // this is read from the store so it doesn't have the length-prefix 
-            var reader = new UnsafeBinaryUnmanagedReader(dcurr, length);
+            var reader = new BinaryReader(ref dcurr, length);
             _output = TValue.ReadFromFaster(reader);
+            var test = _output;
             return ref _output;
         }
 
         public int GetLength(ref TValue o)
         {
-            var writer = (IBufferWriter)new BinaryWriter(new MemoryStream());
+            var writer = new Types.Infrastructure.BinaryWriters.BinaryWriter(new System.IO.BinaryWriter(new MemoryStream()));
             o.WriteToFaster(writer);
+
             return (int)writer.Position;
         }
 
         public unsafe ref TValue ReadInputByRef(ref byte* src)
         {
-            var reader = new UnsafeBinaryUnmanagedReader(src, ushort.MaxValue);
-            _input = TValue.ReadFromFaster(reader);
+            var reader = new BinaryReader(ref src, ushort.MaxValue);
+            var length = reader.ReadInt32();
+            if (length != 0)
+            {
+                _input = TValue.ReadFromFaster(reader);
+                var test = _input;
+                src += reader.Position;
+            }
+            else
+                _input = default(TValue);
             return ref _input;
         }
 
 
         public unsafe ref TKKey ReadKeyByRef(ref byte* src)
         {
-            var reader = new UnsafeBinaryUnmanagedReader(src, ushort.MaxValue);
+            var reader = new BinaryReader(ref src, ushort.MaxValue);
             var length = reader.ReadInt32();
             // TODO , we could verify the size here
             _key = TKey.DeserializeKey(reader);
+            var test = _key;
+            src += reader.Position;
             return ref _key;
         }
 
         public unsafe ref TValue ReadValueByRef(ref byte* src)
         {
-            // this is read from the store so it doesn't have the length-prefix 
-            var reader = new UnsafeBinaryUnmanagedReader(src, ushort.MaxValue);
-            var length = reader.ReadInt32();
-            _value = TValue.ReadFromFaster(reader);
+            int length;
+            try
+            {
+                // this is read from the store so it doesn't have the length-prefix 
+                var reader = new BinaryReader(ref src, ushort.MaxValue);
+                length = reader.ReadInt32();
+                _value = TValue.ReadFromFaster(reader);
+                var test = _value;
+                src += reader.Position;
+                return ref _value;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+            _value = default(TValue);
             return ref _value;
         }
 
@@ -66,14 +94,14 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
             // TODO, not sure if this has length-prefix or not
             var length = Unsafe.Read<int>(dcurr); // read length of TransactionTrace in bytes
             dcurr += sizeof(int); // increase pointer by size of long
-            var reader = new UnsafeBinaryUnmanagedReader(dcurr, length);
+            var reader = new BinaryReader(ref dcurr, length);
             TValue.ReadFromFaster(reader);
             dcurr += length;
         }
 
         public unsafe bool Write(ref TKKey k, ref byte* dst, int length) // length is max memory available/left
         {
-            var writer = (IBufferWriter)new BinaryWriter(new UnmanagedMemoryStream(dst, length));
+            var writer = new BinaryWriter(dst, length);
             TKey.SerializeKey(k, writer); // serialize !
             dst += writer.Position;
 
@@ -82,7 +110,7 @@ namespace DeepReader.Storage.Faster.StoreBase.Server
 
         public unsafe bool Write(ref TValue v, ref byte* dst, int length) // length is max memory available/left
         {
-            var writer = (IBufferWriter)new BinaryWriter(new UnmanagedMemoryStream(dst, length));
+            var writer = new BinaryWriter(dst, length);
             writer.Position += sizeof(int); // reserve sizeof(long) so we can write the length after serialization
             v.WriteToFaster(writer); // serialize !
             Unsafe.Write(dst, writer.Position - sizeof(int)); // write length into reserved memory

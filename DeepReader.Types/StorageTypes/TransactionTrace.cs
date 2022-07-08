@@ -1,4 +1,6 @@
-﻿using DeepReader.Types.Eosio.Chain;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using DeepReader.Types.Eosio.Chain;
 using DeepReader.Types.Infrastructure.BinaryReaders;
 using DeepReader.Types.Infrastructure.BinaryWriters;
 using DeepReader.Types.Interfaces;

@@ -11,6 +11,7 @@ using Sentry.Extensions.Logging.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 
+ThreadPool.SetMaxThreads(1000, 10);
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>

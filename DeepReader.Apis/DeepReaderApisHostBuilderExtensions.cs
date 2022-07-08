@@ -68,7 +68,6 @@ namespace DeepReader.Apis
                     //    .AddHealthChecksUI()
                     //    .AddInMemoryStorage();
                     services.AddSingleton<MetricsCollector>();
-
                 });
                 webBuilder.Configure((context, app) =>
                 {
@@ -107,6 +106,7 @@ namespace DeepReader.Apis
                         //});
                         //endpoints.MapHealthChecksUI();
                     });
+                    app.Build();
                 });
             });
             return builder;

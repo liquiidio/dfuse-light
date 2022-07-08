@@ -10,6 +10,7 @@ using DeepReader.Types.Extensions;
 using DeepReader.Types.Fc;
 using Serilog;
 using System.Text.RegularExpressions;
+using DeepReader.Types.Infrastructure.BinaryReaders;
 using Action = DeepReader.Types.Eosio.Chain.Action;
 
 namespace DeepReader.AssemblyGenerator
@@ -18,9 +19,9 @@ namespace DeepReader.AssemblyGenerator
     {
         #region 
 
-        private static readonly Type BinaryReaderType = typeof(BinaryReader);
+        private static readonly Type BinaryBufferReaderType = typeof(BinaryBufferReader);
 
-        private static readonly Type[] binaryReaderAttr = new Type[] { BinaryReaderType };
+        private static readonly Type[] binaryReaderAttr = new Type[] { BinaryBufferReaderType };
 
         #endregion
 
@@ -250,7 +251,7 @@ namespace DeepReader.AssemblyGenerator
                     // Load "this"
                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
 
-                    // Get the constructor of our new type with BinaryReader-Param so we can add generated IL-Code
+                    // Get the constructor of our new type with BinaryBufferReader-Param so we can add generated IL-Code
                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, defaultConstructor); // TODO, call Object-constructor instead?
 
                     // Iterate all Fields, writes IL-Code to set their values
@@ -290,7 +291,7 @@ namespace DeepReader.AssemblyGenerator
                                 // Load "this" onto stack
                                 binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
 
-                                // Load BinaryReader reference onto stack
+                                // Load BinaryBufferReader reference onto stack
                                 binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
 
                                 // Read the length of the array and put it onto the stack
@@ -410,7 +411,7 @@ namespace DeepReader.AssemblyGenerator
                                     readOptionalEnd = binaryReaderConstructorIlGenerator.DefineLabel();
                                     // Load "this" onto stack
                                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
-                                    // Load BinaryReader reference onto stack
+                                    // Load BinaryBufferReader reference onto stack
                                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
                                     // Read Byte/Boolean (put on stack)
                                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Call, ReadBoolean);
@@ -419,7 +420,7 @@ namespace DeepReader.AssemblyGenerator
 
                                     // Load "this" onto stack
                                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
-                                    // Load BinaryReader reference onto stack
+                                    // Load BinaryBufferReader reference onto stack
                                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
 
                                     // Call the Reader/Deserialization-Method
@@ -454,7 +455,7 @@ namespace DeepReader.AssemblyGenerator
 
                                     // Load "this" onto stack
                                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_0);
-                                    // Load BinaryReader reference onto stack
+                                    // Load BinaryBufferReader reference onto stack
                                     binaryReaderConstructorIlGenerator.Emit(OpCodes.Ldarg_1);
 
                                     // Call the Reader/Deserialization-Method
@@ -531,47 +532,45 @@ namespace DeepReader.AssemblyGenerator
             return methodInfo;
         }
 
-        #region BinaryReader standard methods
+        #region BinaryBufferReader standard methods
 
-        private static readonly MethodInfo Read7BitEncodedInt = typeof(BinaryReader).GetMethod(nameof(BinaryReader.Read7BitEncodedInt))!;
+        private static readonly MethodInfo Read7BitEncodedInt = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.Read7BitEncodedInt))!;
 
-        private static MethodInfo Read7BitEncodedInt64 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.Read7BitEncodedInt64))!;
+        private static MethodInfo Read7BitEncodedInt64 = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.Read7BitEncodedInt64))!;
 
-        private static readonly MethodInfo ReadBoolean = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadBoolean))!;
+        private static readonly MethodInfo ReadBoolean = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadBoolean))!;
 
-        private static readonly MethodInfo ReadByte = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadByte))!;
+        private static readonly MethodInfo ReadByte = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadByte))!;
 
-//        private static MethodInfo ReadBytes = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadBytes))!;// needs arg
+//        private static MethodInfo ReadBytes = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadBytes))!;// needs arg
 
-        private static readonly MethodInfo ReadChar = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadChar))!;
+        private static readonly MethodInfo ReadChar = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadChar))!;
 
-        private static MethodInfo ReadChars = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadChars))!;// needs arg
+        private static MethodInfo ReadChars = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadChars))!;// needs arg
 
-        private static readonly MethodInfo ReadDecimal = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadDecimal))!;
+        private static readonly MethodInfo ReadDecimal = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadDecimal))!;
 
-        private static readonly MethodInfo ReadFloat = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadSingle))!;
+        private static readonly MethodInfo ReadFloat = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadSingle))!;
 
-        private static readonly MethodInfo ReadDouble = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadDouble))!;
+        private static readonly MethodInfo ReadDouble = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadDouble))!;
 
-        private static MethodInfo ReadHalf = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadHalf))!;
+        private static readonly MethodInfo ReadInt16 = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadInt16))!;
 
-        private static readonly MethodInfo ReadInt16 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadInt16))!;
+        private static readonly MethodInfo ReadInt32 = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadInt32))!;
 
-        private static readonly MethodInfo ReadInt32 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadInt32))!;
+        private static readonly MethodInfo ReadInt64 = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadInt64))!;
 
-        private static readonly MethodInfo ReadInt64 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadInt64))!;
+        private static readonly MethodInfo ReadSByte = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadSByte))!;
 
-        private static readonly MethodInfo ReadSByte = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadSByte))!;
-
-        //private static MethodInfo ReadSingle = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadSingle))!;
+        //private static MethodInfo ReadSingle = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadSingle))!;
 
         private static readonly MethodInfo ReadString = typeof(BinaryReaderExtensions).GetMethod(nameof(BinaryReaderExtensions.ReadString))!;
 
-        private static readonly MethodInfo ReadUInt16 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadUInt16))!;
+        private static readonly MethodInfo ReadUInt16 = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadUInt16))!;
 
-        private static readonly MethodInfo ReadUInt32 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadUInt32))!;
+        private static readonly MethodInfo ReadUInt32 = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadUInt32))!;
 
-        private static readonly MethodInfo ReadUInt64 = typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadUInt64))!;
+        private static readonly MethodInfo ReadUInt64 = typeof(BinaryBufferReader).GetMethod(nameof(BinaryBufferReader.ReadUInt64))!;
 
         private static readonly MethodInfo ReadVarBytes = typeof(Bytes).GetMethod(nameof(Bytes.ReadFromBinaryReader))!; // Bytes, ActionDataBytes
 
