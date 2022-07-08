@@ -14,7 +14,7 @@ public sealed class ActionReceipt : PooledObject<ActionReceipt>, IEosioSerializa
     public Checksum256 ActionDigest { get; set; }
     public ulong GlobalSequence { get; set; }
     public ulong ReceiveSequence { get; set; }
-    public TransactionTraceAuthSequence[] AuthSequence { get; set; }
+    public List<TransactionTraceAuthSequence> AuthSequence { get; set; }
     public uint CodeSequence { get; set; }
     public uint AbiSequence { get; set; }
 
@@ -22,7 +22,7 @@ public sealed class ActionReceipt : PooledObject<ActionReceipt>, IEosioSerializa
     {
         Receiver = Name.TypeEmpty;
         ActionDigest = Checksum256.TypeEmpty;
-        AuthSequence = Array.Empty<TransactionTraceAuthSequence>();
+        AuthSequence = new List<TransactionTraceAuthSequence>();
     }
 
     public static ActionReceipt ReadFromBinaryReader(BinaryReader reader, bool fromPool = true)
@@ -34,10 +34,11 @@ public sealed class ActionReceipt : PooledObject<ActionReceipt>, IEosioSerializa
         obj.GlobalSequence = reader.ReadUInt64();
         obj.ReceiveSequence = reader.ReadUInt64();
 
-        obj.AuthSequence = new TransactionTraceAuthSequence[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < obj.AuthSequence.Length; i++)
+        var transactionTraceCount = reader.Read7BitEncodedInt();
+        obj.AuthSequence = new List<TransactionTraceAuthSequence>(transactionTraceCount);
+        for (int i = 0; i < transactionTraceCount; i++)
         {
-            obj.AuthSequence[i] = TransactionTraceAuthSequence.ReadFromBinaryReader(reader);
+            obj.AuthSequence.Add(TransactionTraceAuthSequence.ReadFromBinaryReader(reader));
         }
 
         obj.CodeSequence = (uint)reader.Read7BitEncodedInt();
@@ -53,7 +54,7 @@ public sealed class ActionReceipt : PooledObject<ActionReceipt>, IEosioSerializa
         writer.Write(GlobalSequence);
         writer.Write(ReceiveSequence);
 
-        writer.Write7BitEncodedInt(AuthSequence.Length);
+        writer.Write7BitEncodedInt(AuthSequence.Count);
         foreach (var transactionTraceAuthSequence in AuthSequence)
         {
             transactionTraceAuthSequence.WriteToBinaryWriter(writer);
@@ -70,7 +71,7 @@ public sealed class ActionReceipt : PooledObject<ActionReceipt>, IEosioSerializa
         {
             TransactionTraceAuthSequence.ReturnToPool(transactionTraceAuthSequence);
         }
-        obj.AuthSequence = Array.Empty<TransactionTraceAuthSequence>();
+        obj.AuthSequence = new List<TransactionTraceAuthSequence>();
 
         TypeObjectPool.Return(obj);
     }

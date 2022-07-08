@@ -155,8 +155,6 @@ public class BlockWorker : BackgroundService
                     Log.Information($"Current Threads: {Process.GetCurrentProcess().Threads.Count}");
                 }
 
-                Log.Information("block_number: " + deepMindBlock.Number);
-
                 block = Types.StorageTypes.Block.FromPool();
 
                 actionTraces.Clear();
@@ -167,20 +165,13 @@ public class BlockWorker : BackgroundService
                     PostProcess(deepMindBlock, block, actionTraces);
                 }
 
-                Log.Information("action_traces_count" + actionTraces.Count);
-
                 TransactionsPerBlock.Observe(block.TransactionIds.Count);
                 ActionTracesPerBlock.Observe(actionTraces.Count);
 
-
-                Log.Information("block_transcations_count: " + block.Transactions.Count);
                 // need to copy the transactionsList here as when a block gets evicted, the list gets cleared
                 // (theoretically possible before call finishes - but very unlikely)
                 transactionTraces.AddRange(block.Transactions);
                 actionTraces = actionTraces.Where(a => a.Receipt != null).ToList();
-
-                Log.Information("transactionTraces_addRange: " + transactionTraces.Count);
-                Log.Information("actionTraces_filtered: " + actionTraces.Count);
 
                 // this (currently) needs to be done before storage as eviction
                 // will put actionTraces and childs back into pools
@@ -192,7 +183,7 @@ public class BlockWorker : BackgroundService
                 using (StoreWritingTime.NewTimer())
                 {
                     await Task.WhenAll(
-                        _storageAdapter.StoreBlockAsync(block)
+                        //_storageAdapter.StoreBlockAsync(block)
 
                         //StoreTransactionTraces(transactionTraces),
 
@@ -256,7 +247,7 @@ public class BlockWorker : BackgroundService
             
             childActionTrace.CreatorActionId = creatorAction.Receipt.GlobalSequence;
 
-            childActionTrace.CreatedActions = childCreatedActionTraces.ToArray();
+            childActionTrace.CreatedActions = childCreatedActionTraces.ToList();
             childActionTrace.CreatedActionIds = childCreatedActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
             
             childActionTrace.DbOps = trx.DbOps.Where(dbop => dbop.ActionIndex == creationTreeNode.ActionIndex).Cast<DbOp>().ToList();
@@ -285,7 +276,6 @@ public class BlockWorker : BackgroundService
                 // but assigning values at a specific index will not work, therefore rootActionTraces[N] will fail
                 // var rootActionTraces = new List<Types.StorageTypes.ActionTrace>(trx.CreationTreeRoots.Count)
                 var rootActionTraces = new Types.StorageTypes.ActionTrace[trx.CreationTreeRoots.Count];
-
                 for (var creationTreeRootIndex = 0;
                      creationTreeRootIndex < trx.CreationTreeRoots.Count;
                      creationTreeRootIndex++)
@@ -339,13 +329,7 @@ public class BlockWorker : BackgroundService
 
     private void ProcessCreationTreeRoot(CreationTreeNode creationTreeRoot, int creationTreeRootIndex, TransactionTrace trx, Types.StorageTypes.ActionTrace[] rootActionTraces, List<Types.StorageTypes.ActionTrace> actionTraces)
     {
-        Log.Information("creation_tree_root_index_count: " + creationTreeRootIndex);
-        Log.Information("root_action_traces_count: " + rootActionTraces.Length);
-        Log.Information("action_traces_count: " + actionTraces.Count);
-
         //@Haron rootActionTraces.Count is always 0 on the first call.
-        //if (rootActionTraces.Count == 0)
-        //    return;
 
         if (creationTreeRoot.Kind == CreationOpKind.ROOT)
         {
@@ -365,7 +349,7 @@ public class BlockWorker : BackgroundService
                     Log.Error($"CreationTreeChild-Issues in trx {trx.Id.StringVal}");
             }
 
-            rootAction.CreatedActions = createdActionTraces.ToArray();
+            rootAction.CreatedActions = createdActionTraces.ToList();
             rootAction.CreatedActionIds = createdActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
 
             rootAction.DbOps = trx.DbOps.Where(dbop => dbop.ActionIndex == creationTreeRoot.ActionIndex).Cast<DbOp>().ToList();

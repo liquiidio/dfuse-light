@@ -67,8 +67,8 @@ var host = Host.CreateDefaultBuilder(args)
         });
     })
     .UseDeepReaderApis()
-    .UseFasterStorage()
-    //.UseTiDB()
+    //.UseFasterStorage()
+    .UseTiDB()
 #if !DEBUG
     .UseSystemd()
 #endif

@@ -47,7 +47,7 @@ namespace DeepReader.Types.StorageTypes
 
         public ulong[] CreatedActionIds { get; set; }
 
-        public ActionTrace[] CreatedActions { get; set; } = Array.Empty<ActionTrace>();
+        public List<ActionTrace> CreatedActions { get; set; } = new List<ActionTrace>();
 
         public ulong? CreatorActionId { get; set; }
 
@@ -85,22 +85,25 @@ namespace DeepReader.Types.StorageTypes
             obj.Console = reader.ReadString();
             obj.IsNotify = reader.ReadBoolean();
 
-            obj.RamOps = new List<RamOp>(reader.ReadInt32());
-            for (int i = 0; i < obj.RamOps.Count; i++)
+            var ramOpsCount = reader.ReadInt32();
+            obj.RamOps = new List<RamOp>(ramOpsCount);
+            for (int i = 0; i < ramOpsCount; i++)
             {
-                obj.RamOps[i] = RamOp.ReadFromBinaryReader(reader);
+                obj.RamOps.Add(RamOp.ReadFromBinaryReader(reader));
             }
 
-            obj.TableOps = new List<TableOp>(reader.ReadInt32());
-            for (int i = 0; i < obj.TableOps.Count; i++)
+            var tableOpsCount = reader.ReadInt32();
+            obj.TableOps = new List<TableOp>(tableOpsCount);
+            for (int i = 0; i < tableOpsCount; i++)
             {
-                obj.TableOps[i] = TableOp.ReadFromBinaryReader(reader);
+                obj.TableOps.Add(TableOp.ReadFromBinaryReader(reader));
             }
 
-            obj.DbOps = new List<DbOp>(reader.ReadInt32());
-            for (int i = 0; i < obj.DbOps.Count; i++)
+            var dbOpsCount = reader.ReadInt32();
+            obj.DbOps = new List<DbOp>(dbOpsCount);
+            for (int i = 0; i < dbOpsCount; i++)
             {
-                obj.DbOps[i] = DbOp.ReadFromBinaryReader(reader);
+                obj.DbOps.Add(DbOp.ReadFromBinaryReader(reader));
             }
 
             obj.ReturnValue = new char[reader.ReadInt32()];
@@ -185,7 +188,7 @@ namespace DeepReader.Types.StorageTypes
             RamOps = new List<RamOp>();
             TableOps = new List<TableOp>();
             DbOps = new List<DbOp>();
-            CreatedActions = Array.Empty<ActionTrace>();
+            CreatedActions = new List<ActionTrace>();
             if (CreatorAction != null)
             {
                 ActionTrace.ReturnToPool(CreatorAction);

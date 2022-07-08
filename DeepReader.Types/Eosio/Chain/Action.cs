@@ -19,7 +19,7 @@ public sealed class Action : ActionBase, IEosioSerializable<Action>
         Data = new ActionDataBytes();
     }
 
-    public Action(Name account, Name name, PermissionLevel[] authorization, byte[] data) : base(account, name, authorization)
+    public Action(Name account, Name name, List<PermissionLevel> authorization, byte[] data) : base(account, name, authorization)
     {
         this.Data = data;
     }
@@ -29,10 +29,11 @@ public sealed class Action : ActionBase, IEosioSerializable<Action>
         Account = Name.ReadFromBinaryReader(reader);
         Name = Name.ReadFromBinaryReader(reader);
 
-        Authorization = new PermissionLevel[reader.Read7BitEncodedInt()];
-        for (int i = 0; i < Authorization.Length; i++)
+        var permissionLevelCount = reader.Read7BitEncodedInt();
+        Authorization = new List<PermissionLevel>(permissionLevelCount);
+        for (int i = 0; i < permissionLevelCount; i++)
         {
-            Authorization[i] = PermissionLevel.ReadFromBinaryReader(reader);
+            Authorization.Add(PermissionLevel.ReadFromBinaryReader(reader));
         }
 
         var length = reader.Read7BitEncodedInt();
@@ -49,7 +50,7 @@ public sealed class Action : ActionBase, IEosioSerializable<Action>
         Account.WriteToBinaryWriter(writer);
         Name.WriteToBinaryWriter(writer);
 
-        writer.Write7BitEncodedInt(Authorization.Length);
+        writer.Write7BitEncodedInt(Authorization.Count);
         foreach (var auth in Authorization)
         {
             auth.WriteToBinaryWriter(writer);

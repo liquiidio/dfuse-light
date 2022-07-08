@@ -19,14 +19,14 @@ public class ActionBase
 
     // abi-field-name: authorization ,abi-field-type: permission_level[]
     [JsonPropertyName("authorization")]
-    public PermissionLevel[] Authorization { get; set; } = Array.Empty<PermissionLevel>();
+    public List<PermissionLevel> Authorization { get; set; } = new List<PermissionLevel>();
 
     public ActionBase()
     {
 
     }
 
-    public ActionBase(Name account, Name name, PermissionLevel[] authorization)
+    public ActionBase(Name account, Name name, List<PermissionLevel> authorization)
     {
         this.Account = account;
         this.Name = name;
