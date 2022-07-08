@@ -281,7 +281,10 @@ public class BlockWorker : BackgroundService
 
             if (!trx.DtrxOps.Any(dtrxOp => dtrxOp.Operation == DTrxOpOperation.FAILED))
             {
-                var rootActionTraces = new List<Types.StorageTypes.ActionTrace>(trx.CreationTreeRoots.Count);
+                // @Haron, when instantiating a List with Capacity, it only reserves storage for a specific number of elements
+                // but assigning values at a specific index will not work, therefore rootActionTraces[N] will fail
+                // var rootActionTraces = new List<Types.StorageTypes.ActionTrace>(trx.CreationTreeRoots.Count)
+                var rootActionTraces = new Types.StorageTypes.ActionTrace[trx.CreationTreeRoots.Count];
 
                 for (var creationTreeRootIndex = 0;
                      creationTreeRootIndex < trx.CreationTreeRoots.Count;
@@ -292,8 +295,8 @@ public class BlockWorker : BackgroundService
                         actionTraces);
                 }
 
-                rootActionTraces = rootActionTraces.Where(a => a.Receipt != null).ToList();
-                transactionTrace.ActionTraces = rootActionTraces;
+                rootActionTraces = rootActionTraces.Where(a => a.Receipt != null).ToArray();
+                transactionTrace.ActionTraces = rootActionTraces.ToList();
                 transactionTrace.ActionTraceIds = rootActionTraces.Select(a => a.Receipt.GlobalSequence).ToArray();
             }
             else
@@ -334,14 +337,15 @@ public class BlockWorker : BackgroundService
         block.CopyFrom(deepMindBlock);
     }
 
-    private void ProcessCreationTreeRoot(CreationTreeNode creationTreeRoot, int creationTreeRootIndex, TransactionTrace trx, List<Types.StorageTypes.ActionTrace> rootActionTraces, List<Types.StorageTypes.ActionTrace> actionTraces)
+    private void ProcessCreationTreeRoot(CreationTreeNode creationTreeRoot, int creationTreeRootIndex, TransactionTrace trx, Types.StorageTypes.ActionTrace[] rootActionTraces, List<Types.StorageTypes.ActionTrace> actionTraces)
     {
         Log.Information("creation_tree_root_index_count: " + creationTreeRootIndex);
-        Log.Information("root_action_traces_count: " + rootActionTraces.Count);
+        Log.Information("root_action_traces_count: " + rootActionTraces.Length);
         Log.Information("action_traces_count: " + actionTraces.Count);
 
-        if (rootActionTraces.Count == 0)
-            return;
+        //@Haron rootActionTraces.Count is always 0 on the first call.
+        //if (rootActionTraces.Count == 0)
+        //    return;
 
         if (creationTreeRoot.Kind == CreationOpKind.ROOT)
         {
@@ -370,6 +374,7 @@ public class BlockWorker : BackgroundService
         }
         else
             Log.Error($"CreationTreeRoot-Issues in trx {trx.Id.StringVal}");
+
     }
 
     //private async Task TestAbiDeserializer(List<Types.StorageTypes.TransactionTrace> flattenedTransactionTraces)
