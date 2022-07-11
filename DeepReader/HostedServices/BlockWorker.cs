@@ -178,12 +178,12 @@ public class BlockWorker : BackgroundService
                 // (theoretically possible before call finishes - but very unlikely)
                 
                 // TODO 
-                //await CheckForAbiUpdates(actionTraces);
+                await CheckForAbiUpdates(actionTraces);
 
                 using (StoreWritingTime.NewTimer())
                 {
                     await Task.WhenAll(
-                        //_storageAdapter.StoreBlockAsync(block)
+                        _storageAdapter.StoreBlockAsync(block)
 
                         //StoreTransactionTraces(transactionTraces),
 

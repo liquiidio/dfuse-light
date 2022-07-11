@@ -10,12 +10,14 @@ namespace DeepReader.Storage.TiDB
         private readonly BlockRepository _blockRepository;
         private readonly TransactionRepository _transactionRepository;
         private readonly ActionTraceRepository _actionTraceRepository;
+        private readonly AbiRepository _abiRepository;
 
-        public TiDBStorage(BlockRepository blockRepository, TransactionRepository transactionRepository, ActionTraceRepository actionTraceRepository)
+        public TiDBStorage(BlockRepository blockRepository, TransactionRepository transactionRepository, ActionTraceRepository actionTraceRepository, AbiRepository abiRepository)
         {
             _blockRepository = blockRepository;
             _transactionRepository = transactionRepository;
             _actionTraceRepository = actionTraceRepository;
+            _abiRepository = abiRepository;
         }
 
         public long BlocksIndexed => 0;
@@ -54,24 +56,24 @@ namespace DeepReader.Storage.TiDB
             await _transactionRepository.WriteTransaction(transactionTrace);
         }
 
-        public Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Name account)
+        public async Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Name account)
         {
-            throw new NotImplementedException();
+            return await _abiRepository.TryGetAbiAssembliesById(account);
         }
 
-        public Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence)
+        public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence)
         {
-            throw new NotImplementedException();
+            return await _abiRepository.TryGetAbiAssemblyByIdAndGlobalSequence(account, globalSequence);
         }
 
-        public Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Name account)
+        public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Name account)
         {
-            throw new NotImplementedException();
+            return await _abiRepository.TryGetActiveAbiAssembly(account);
         }
 
-        public Task UpsertAbi(Name account, ulong globalSequence, Assembly assembly)
+        public async Task UpsertAbi(Name account, ulong globalSequence, Assembly assembly)
         {
-            throw new NotImplementedException();
+            await _abiRepository.UpsertAbi(account, globalSequence, assembly);
         }
     }
 }

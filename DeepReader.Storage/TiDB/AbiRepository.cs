@@ -19,29 +19,32 @@ namespace DeepReader.Storage.TiDB
             using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
             if (context is not null)
             {
-                //await context.Abis.AddAsync(abi);
+                await context.Abis.AddAsync(abi);
                 await context.SaveChangesAsync();
             }
         }
 
-        public async Task UpsertAbi(Name account, ulong globalSequence, Assembly assembly)
+        public async Task UpsertAbi(Name account, ulong globalSequence, Assembly assembly, CancellationToken cancellationToken = default)
         {
-            //if (!_sessionPool.TryGet(out var session))
-            //    session = await _sessionPool.GetAsync().ConfigureAwait(false);
-            //(await session.RMWAsync(account.IntVal, new AbiInput(account.IntVal, globalSequence, assembly))).Complete();
-            //_sessionPool.Return(session);
+            using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            if (context is not null)
+            {
+                // Update ABI
+            }
         }
 
-        public async Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Name account)
+        public async Task<(bool, AbiCacheItem)> TryGetAbiAssembliesById(Name account, CancellationToken cancellationToken = default)
         {
-            //using (AbiReaderSessionReadDurationSummary.NewTimer())
-            //{
-            //    if (!_sessionPool.TryGet(out var session))
-            //        session = await _sessionPool.GetAsync().ConfigureAwait(false);
-            //    var (status, output) = (await session.ReadAsync(account.IntVal)).Complete();
-            //    _sessionPool.Return(session);
-            //    return (status.Found, output.Value);
-            //}
+            using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            if (context is not null)
+            {
+                var abi = await context.Abis.FirstOrDefaultAsync(a => a.Id == account.IntVal);
+
+                if (abi is not null)
+                    return (true, abi);
+            }
             return (false, null!);
         }
 

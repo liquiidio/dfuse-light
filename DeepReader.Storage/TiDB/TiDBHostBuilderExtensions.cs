@@ -38,13 +38,15 @@ namespace DeepReader.Storage.TiDB
                 services.AddSingleton<BlockRepository>();
                 services.AddSingleton<TransactionRepository>();
                 services.AddSingleton<ActionTraceRepository>();
+                services.AddSingleton<AbiRepository>();
 
                 services.AddSingleton(provider =>
                 {
                     IStorageAdapter storageAdapter = new TiDBStorage(
                         provider.GetRequiredService<BlockRepository>(),
                         provider.GetRequiredService<TransactionRepository>(),
-                        provider.GetRequiredService<ActionTraceRepository>());
+                        provider.GetRequiredService<ActionTraceRepository>(),
+                        provider.GetRequiredService<AbiRepository>());
                     return storageAdapter;
                 });
             });
