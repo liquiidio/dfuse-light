@@ -1,4 +1,5 @@
-﻿using DeepReader.Storage.TiDB.ValueConverters;
+﻿using DeepReader.Storage.Faster.Abis;
+using DeepReader.Storage.TiDB.ValueConverters;
 using DeepReader.Types.StorageTypes;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +15,7 @@ namespace DeepReader.Storage.TiDB
         public DbSet<Block> Blocks { get; set; }
         public DbSet<TransactionTrace> TransactionTraces { get; set; }
         public DbSet<ActionTrace> ActionTraces { get; set; }
-        //public DbSet<AbiCacheItem> Abis { get; set; }
+        public DbSet<AbiCacheItem> Abis { get; set; }
 
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         {
@@ -25,6 +26,8 @@ namespace DeepReader.Storage.TiDB
             configurationBuilder.Properties<Types.EosTypes.Timestamp>().HaveConversion<TimestampConverter>();
             configurationBuilder.Properties<Types.Eosio.Chain.TransactionId>().HaveConversion<TransactionIdConverter>();
             configurationBuilder.Properties<Types.Fc.Crypto.Signature>().HaveConversion<SignatureConverter>();
+
+            //configurationBuilder.Properties<Faster.Abis.AssemblyWrapper>().HaveConversion<AssemblyWrapperConverter>();
 
             configurationBuilder.Properties<ReadOnlyMemory<byte>>().HaveConversion<ReadOnlyMemoryByteConverter>();
             configurationBuilder.Properties<ReadOnlyMemory<char>>().HaveConversion<ReadOnlyMemoryCharConverter>();
@@ -39,6 +42,8 @@ namespace DeepReader.Storage.TiDB
             modelBuilder.Entity<TransactionTrace>().Ignore(t => t.ActionTraceIds);
 
             modelBuilder.Entity<ActionTrace>().HasKey(a => a.GlobalSequence);
+
+            modelBuilder.Entity<AbiCacheItem>().Property(a => a.AbiVersions).HasConversion<AbiVersionsConverter>();
         }
     }
 }

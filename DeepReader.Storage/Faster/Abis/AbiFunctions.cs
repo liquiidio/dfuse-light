@@ -106,7 +106,7 @@ public class AssemblyWrapper
 
     private Assembly? _assembly;
 
-    public Assembly Assembly => _assembly ??= (_binary != null ? Assembly.Load(_binary) : null);
+    public Assembly Assembly => _assembly ??= (_binary != null ? Assembly.Load(_binary) : null!);
 
     public byte[] Binary => _binary ??= AssemblyToByteArray();
 

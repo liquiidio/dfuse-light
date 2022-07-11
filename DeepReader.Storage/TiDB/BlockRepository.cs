@@ -31,11 +31,27 @@ namespace DeepReader.Storage.TiDB
 
             Block? block = null;
 
-            //if (includeTransactionTraces && includeActionTraces)
+            //if (includeTransactionTraces && !includeActionTraces)
             //{
-            //    block = await context.Blocks.FirstOrDefaultAsync(b => b.Number == blockNum);
+            //    // Return block with transactiontraces
+            //    block = await context.Blocks.Where(b => b.Number == blockNum).Include(b => b.Transactions).FirstOrDefaultAsync();
+
+            //    if (block is null)
+            //        return (false, null!);
+
+            //    return (true, block);
+            //}
+            //else if (includeTransactionTraces && includeActionTraces)
+            //{
+            //    // Return block with transaction traces and actiontraces
+            //    block = await context.Blocks.Where(b => b.Number == blockNum).Include(b => b.Transactions).FirstAsync();
+            //}
+            //else
+            //{
+            //    //return just the block;
             //}
 
+            //block = await context.Blocks.Where(b => b.Number == blockNum).Include(b => b.Transactions).FirstOrDefaultAsync();
             block = await context.Blocks.FirstOrDefaultAsync(b => b.Number == blockNum);
 
             if (block is null)

@@ -29,13 +29,12 @@ namespace DeepReader.Storage.TiDB
 
         public async Task<(bool, Block)> GetBlockAsync(uint blockNum, bool includeTransactionTraces = false, bool includeActionTraces = false)
         {
-            // Todo: //
-            return await _blockRepository.TryGetBlockById(blockNum);
+            return await _blockRepository.TryGetBlockById(blockNum, includeTransactionTraces, includeActionTraces);
         }
 
         public async Task<(bool, TransactionTrace)> GetTransactionAsync(string transactionId, bool includeActionTraces = false)
         {
-            // Todo: //
+            // Todo
             return await _transactionRepository.TryGetTransactionTraceById(transactionId);
         }
 
