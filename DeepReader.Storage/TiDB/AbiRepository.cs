@@ -30,7 +30,16 @@ namespace DeepReader.Storage.TiDB
 
             if (context is not null)
             {
-                // Update ABI
+                var abi = new AbiCacheItem(account.IntVal)
+                {
+                    AbiVersions =
+                    {
+                        [globalSequence] = new AssemblyWrapper(assembly)
+                    }
+                };
+
+                context.Update(abi);
+                await context.SaveChangesAsync();
             }
         }
 
@@ -48,52 +57,47 @@ namespace DeepReader.Storage.TiDB
             return (false, null!);
         }
 
-        public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence)
+        public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence, CancellationToken cancellationToken)
         {
-            //using (AbiReaderSessionReadDurationSummary.NewTimer())
-            //{
-            //    if (!_sessionPool.TryGet(out var session))
-            //        session = await _sessionPool.GetAsync().ConfigureAwait(false);
-            //    var (status, output) = (await session.ReadAsync(account.IntVal)).Complete();
-            //    _sessionPool.Return(session);
+            using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            //    if (status.Found && output.Value.AbiVersions.Any(av => av.Key <= globalSequence))
-            //    {
-            //        // returns the index of the Abi matching the globalSequence or binary complement of the next item (negative)
-            //        var abiVersionIndex = output.Value.AbiVersions.Keys.ToList().BinarySearch(globalSequence);
+            if (context is not null)
+            {
+                var abi = await context.Abis.FirstOrDefaultAsync(a => a.Id == account.IntVal);
 
-            //        // if negative, revert the binary complement
-            //        if (abiVersionIndex < 0)
-            //            abiVersionIndex = ~abiVersionIndex;
-            //        // we always want the previous Abi-version
-            //        if (abiVersionIndex > 0)
-            //            abiVersionIndex--;
+                if (abi is not null && abi.AbiVersions.Any(av => av.Key <= globalSequence))
+                {
+                    // returns the index of the Abi matching the globalSequence or binary complement of the next item (negative)
+                    var abiVersionIndex = abi.AbiVersions.Keys.ToList().BinarySearch(globalSequence);
 
-            //        var abiVersionsArry = output.Value.AbiVersions.ToArray();
-            //        if (abiVersionIndex >= 0 && abiVersionsArry.Length > abiVersionIndex)
-            //            return (status.Found, abiVersionsArry[abiVersionIndex]);
-            //    }
-            //    return (false, new KeyValuePair<ulong, AssemblyWrapper>());
-            //}
-            return (false, default!);
+                    // if negative, revert the binary complement
+                    if (abiVersionIndex < 0)
+                        abiVersionIndex = ~abiVersionIndex;
+                    // we always want the previous Abi-version
+                    if (abiVersionIndex > 0)
+                        abiVersionIndex--;
+
+                    var abiVersionsArry = abi.AbiVersions.ToArray();
+                    if (abiVersionIndex >= 0 && abiVersionsArry.Length > abiVersionIndex)
+                        return (true, abiVersionsArry[abiVersionIndex]);
+                }
+            }
+
+            return (false, new KeyValuePair<ulong, AssemblyWrapper>());
         }
 
         public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetActiveAbiAssembly(Name account)
         {
-            //using (AbiReaderSessionReadDurationSummary.NewTimer())
-            //{
-            //    if (!_sessionPool.TryGet(out var session))
-            //        session = await _sessionPool.GetAsync().ConfigureAwait(false);
-            //    var (status, output) = (await session.ReadAsync(account.IntVal)).Complete();
-            //    _sessionPool.Return(session);
+            using var context = await _dbContextFactory.CreateDbContextAsync();
 
-            //    if (status.Found && output.Value.AbiVersions.Count > 0)
-            //    {
-            //        return (status.Found, output.Value.AbiVersions.Last());
-            //    }
-            //    return (false, new KeyValuePair<ulong, AssemblyWrapper>());
-            //}
-            return (false, default!);
+            if (context is not null)
+            {
+                var abi = await context.Abis.FirstOrDefaultAsync(a => a.Id == account.IntVal);
+
+                if (abi is not null && abi.AbiVersions.Count > 0)
+                    return (true, abi.AbiVersions.Last());
+            }
+            return (false, new KeyValuePair<ulong, AssemblyWrapper>());
         }
     }
 }
