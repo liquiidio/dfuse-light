@@ -1,4 +1,4 @@
-﻿using DeepReader.Apis.GraphQl.DataLoaders;
+﻿using DeepReader.Apis.GraphQl.DataLoaders.FasterDataLoaders;
 //using DeepReader.Storage;
 using DeepReader.Types.StorageTypes;
 

@@ -57,7 +57,7 @@ namespace DeepReader.Storage.TiDB
             return (false, null!);
         }
 
-        public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence, CancellationToken cancellationToken)
+        public async Task<(bool, KeyValuePair<ulong, AssemblyWrapper>)> TryGetAbiAssemblyByIdAndGlobalSequence(Name account, ulong globalSequence, CancellationToken cancellationToken = default)
         {
             using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 

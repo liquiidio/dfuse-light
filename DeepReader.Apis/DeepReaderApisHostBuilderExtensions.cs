@@ -1,6 +1,4 @@
-
-﻿using DeepReader.Apis.GraphQl.QueryTypes;
-using DeepReader.Apis.GraphQl.DataLoaders;
+using DeepReader.Apis.GraphQl.QueryTypes;
 using DeepReader.Apis.GraphQl.SubscriptionTypes;
 using DeepReader.Apis.JsonSourceGenerators;
 using DeepReader.Apis.Options;
@@ -14,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Prometheus;
+using HotChocolate.Execution.Configuration;
 
 namespace DeepReader.Apis
 {
@@ -53,9 +52,7 @@ namespace DeepReader.Apis
                         .AddSubscriptionType(s => s.Name("Subscription"))
                             .AddType<BlockSubscriptionType>()
                             .AddType<TransactionSubscriptionType>()
-                        .AddDataLoader<BlockByIdDataLoader>()
-                        .AddDataLoader<BlocksWithTracesByIdDataLoader>()
-                        .AddDataLoader<TransactionByIdDataLoader>();
+                        .AddCustomDataLoaders();
                     services
                         .AddHealthChecks()
                         .AddCheck<ReadCacheEnabledHealthCheck>("ReadCacheEnabled")
@@ -109,6 +106,27 @@ namespace DeepReader.Apis
                     });
                 });
             });
+            return builder;
+        }
+
+        public static IRequestExecutorBuilder AddCustomDataLoaders(this IRequestExecutorBuilder builder)
+        {
+            // TODO, move this to a configuration file
+            var usingTiDB = false;
+
+            if (usingTiDB)
+            {
+                builder.AddDataLoader<GraphQl.DataLoaders.TiDBDataLoaders.BlockByIdDataLoader>();
+                builder.AddDataLoader<GraphQl.DataLoaders.TiDBDataLoaders.BlocksWithTracesByIdDataLoader>();
+                builder.AddDataLoader<GraphQl.DataLoaders.TiDBDataLoaders.TransactionByIdDataLoader>();
+            }
+            else
+            {
+                builder.AddDataLoader<GraphQl.DataLoaders.FasterDataLoaders.BlockByIdDataLoader>();
+                builder.AddDataLoader<GraphQl.DataLoaders.FasterDataLoaders.BlocksWithTracesByIdDataLoader>();
+                builder.AddDataLoader<GraphQl.DataLoaders.FasterDataLoaders.TransactionByIdDataLoader>();
+            }
+
             return builder;
         }
     }

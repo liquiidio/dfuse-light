@@ -45,5 +45,12 @@ namespace DeepReader.Storage.TiDB
 
             modelBuilder.Entity<AbiCacheItem>().Property(a => a.AbiVersions).HasConversion<AbiVersionsConverter>();
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            // ERROR
+            // 'OnConfiguring' cannot be used to modify DbContextOptions when DbContext pooling is enabled.
+            //optionsBuilder.EnableSensitiveDataLogging();
+        }
     }
 }

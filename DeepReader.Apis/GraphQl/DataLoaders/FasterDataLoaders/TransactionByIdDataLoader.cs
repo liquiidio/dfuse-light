@@ -1,7 +1,7 @@
 ﻿using DeepReader.Storage;
 using DeepReader.Types.StorageTypes;
 
-namespace DeepReader.Apis.GraphQl.DataLoaders
+namespace DeepReader.Apis.GraphQl.DataLoaders.FasterDataLoaders
 {
     internal class TransactionByIdDataLoader : BatchDataLoader<string, TransactionTrace>
     {
