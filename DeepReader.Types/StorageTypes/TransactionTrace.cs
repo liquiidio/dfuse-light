@@ -8,6 +8,7 @@ public sealed class TransactionTrace : PooledObject<TransactionTrace>, IParentPo
     // SHA-256 (FIPS 180-4) of the FCBUFFER-encoded packed transaction
     [System.ComponentModel.DataAnnotations.Key]
     public TransactionId Id { get; set; } = Array.Empty<byte>();
+    public ulong TransactionNum { get; set; }
 
     public uint BlockNum { get; set; } = 0;
     // Status
@@ -23,6 +24,7 @@ public sealed class TransactionTrace : PooledObject<TransactionTrace>, IParentPo
     public List<ActionTrace> ActionTraces { get; set; } = new List<ActionTrace>();
 
     public ulong[] ActionTraceIds { get; set; } = Array.Empty<ulong>();
+
 
     public TransactionTrace()
     {

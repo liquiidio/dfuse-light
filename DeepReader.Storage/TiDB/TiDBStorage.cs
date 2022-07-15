@@ -36,8 +36,7 @@ namespace DeepReader.Storage.TiDB
 
         public async Task<(bool, TransactionTrace)> GetTransactionAsync(string transactionId, bool includeActionTraces = false)
         {
-            // Todo
-            return await _transactionRepository.TryGetTransactionTraceById(transactionId);
+            return await _transactionRepository.TryGetTransactionTraceById(transactionId, includeActionTraces);
         }
 
         public async Task StoreActionTraceAsync(ActionTrace actionTrace)

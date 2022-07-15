@@ -31,28 +31,24 @@ namespace DeepReader.Storage.TiDB
 
             Block? block = null;
 
-            //if (includeTransactionTraces && !includeActionTraces)
-            //{
-            //    // Return block with transactiontraces
-            //    block = await context.Blocks.Where(b => b.Number == blockNum).Include(b => b.Transactions).FirstOrDefaultAsync();
-
-            //    if (block is null)
-            //        return (false, null!);
-
-            //    return (true, block);
-            //}
-            //else if (includeTransactionTraces && includeActionTraces)
-            //{
-            //    // Return block with transaction traces and actiontraces
-            //    block = await context.Blocks.Where(b => b.Number == blockNum).Include(b => b.Transactions).FirstAsync();
-            //}
-            //else
-            //{
-            //    //return just the block;
-            //}
-
-            //block = await context.Blocks.Where(b => b.Number == blockNum).Include(b => b.Transactions).FirstOrDefaultAsync();
-            block = await context.Blocks.FirstOrDefaultAsync(b => b.Number == blockNum);
+            if (includeTransactionTraces && !includeActionTraces)
+            {
+                block = await context.Blocks
+                    .Include(b => b.Transactions)
+                    .FirstOrDefaultAsync(b => b.Number == blockNum);
+            }
+            else if (includeTransactionTraces && includeActionTraces)
+            {
+                block = await context.Blocks
+                    .Include(b => b.Transactions)
+                    .ThenInclude(t => t.ActionTraces)
+                    .FirstOrDefaultAsync(b => b.Number == blockNum);
+            }
+            else
+            {
+                block = await context.Blocks
+                    .FirstOrDefaultAsync(b => b.Number == blockNum);
+            }
 
             if (block is null)
                 return (false, null!);

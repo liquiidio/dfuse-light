@@ -42,7 +42,9 @@ namespace DeepReader.Storage.TiDB
             modelBuilder.Entity<TransactionTrace>().Ignore(t => t.ActionTraceIds);
 
             modelBuilder.Entity<ActionTrace>().HasKey(a => a.GlobalSequence);
-
+            modelBuilder.Entity<Block>().HasKey(b => b.Number);
+            modelBuilder.Entity<TransactionTrace>().HasKey(t => t.TransactionNum);
+            
             modelBuilder.Entity<AbiCacheItem>().Property(a => a.AbiVersions).HasConversion<AbiVersionsConverter>();
         }
 

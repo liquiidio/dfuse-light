@@ -34,13 +34,25 @@ namespace DeepReader.Storage.TiDB
             }
         }
 
-        public async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId, CancellationToken cancellationToken = default)
+        public async Task<(bool, TransactionTrace)> TryGetTransactionTraceById(Types.Eosio.Chain.TransactionId transactionId, bool includeActionTraces, CancellationToken cancellationToken = default)
         {
             using var context = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
             if (context is not null)
             {
-                var transaction = await context.TransactionTraces.FirstOrDefaultAsync(t => t.Id == transactionId);
+                TransactionTrace? transaction = null;
+
+                if (includeActionTraces)
+                {
+                    transaction = await context.TransactionTraces
+                        .Include(t => t.ActionTraces)
+                        .FirstOrDefaultAsync(t => t.Id == transactionId);
+                }
+                else
+                {
+                    transaction = await context.TransactionTraces
+                        .FirstOrDefaultAsync(t => t.Id == transactionId);
+                }
 
                 if (transaction is not null)
                     return (true, transaction);

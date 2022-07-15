@@ -14,6 +14,21 @@ namespace DeepReader.TiDB.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "Abis",
+                columns: table => new
+                {
+                    Id = table.Column<ulong>(type: "bigint unsigned", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    AbiVersions = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Abis", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Action",
                 columns: table => new
                 {
@@ -124,8 +139,9 @@ namespace DeepReader.TiDB.Migrations
                 name: "Blocks",
                 columns: table => new
                 {
-                    Id = table.Column<byte[]>(type: "varbinary(3072)", nullable: false),
-                    Number = table.Column<uint>(type: "int unsigned", nullable: false),
+                    Number = table.Column<uint>(type: "int unsigned", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<byte[]>(type: "longblob", nullable: true),
                     Timestamp = table.Column<uint>(type: "int unsigned", nullable: false),
                     Producer = table.Column<ulong>(type: "bigint unsigned", nullable: false),
                     Confirmed = table.Column<ushort>(type: "smallint unsigned", nullable: false),
@@ -139,7 +155,7 @@ namespace DeepReader.TiDB.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Blocks", x => x.Id);
+                    table.PrimaryKey("PK_Blocks", x => x.Number);
                     table.ForeignKey(
                         name: "FK_Blocks_ProducerSchedule_NewProducersId",
                         column: x => x.NewProducersId,
@@ -174,22 +190,24 @@ namespace DeepReader.TiDB.Migrations
                 name: "TransactionTraces",
                 columns: table => new
                 {
-                    Id = table.Column<byte[]>(type: "varbinary(3072)", nullable: false),
+                    TransactionNum = table.Column<ulong>(type: "bigint unsigned", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<byte[]>(type: "longblob", nullable: true),
                     BlockNum = table.Column<uint>(type: "int unsigned", nullable: false),
                     ReceiptId = table.Column<ulong>(type: "bigint unsigned", nullable: false),
                     Elapsed = table.Column<long>(type: "bigint", nullable: false),
                     NetUsage = table.Column<ulong>(type: "bigint unsigned", nullable: false),
                     Scheduled = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    BlockId = table.Column<byte[]>(type: "varbinary(3072)", nullable: true)
+                    BlockNumber = table.Column<uint>(type: "int unsigned", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TransactionTraces", x => x.Id);
+                    table.PrimaryKey("PK_TransactionTraces", x => x.TransactionNum);
                     table.ForeignKey(
-                        name: "FK_TransactionTraces_Blocks_BlockId",
-                        column: x => x.BlockId,
+                        name: "FK_TransactionTraces_Blocks_BlockNumber",
+                        column: x => x.BlockNumber,
                         principalTable: "Blocks",
-                        principalColumn: "Id");
+                        principalColumn: "Number");
                     table.ForeignKey(
                         name: "FK_TransactionTraces_TransactionReceiptHeader_ReceiptId",
                         column: x => x.ReceiptId,
@@ -216,7 +234,7 @@ namespace DeepReader.TiDB.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     IsNotify = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     CreatorActionId = table.Column<ulong>(type: "bigint unsigned", nullable: true),
-                    TransactionTraceId = table.Column<byte[]>(type: "varbinary(3072)", nullable: true)
+                    TransactionTraceTransactionNum = table.Column<ulong>(type: "bigint unsigned", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -239,10 +257,10 @@ namespace DeepReader.TiDB.Migrations
                         principalTable: "ActionTraces",
                         principalColumn: "GlobalSequence");
                     table.ForeignKey(
-                        name: "FK_ActionTraces_TransactionTraces_TransactionTraceId",
-                        column: x => x.TransactionTraceId,
+                        name: "FK_ActionTraces_TransactionTraces_TransactionTraceTransactionNum",
+                        column: x => x.TransactionTraceTransactionNum,
                         principalTable: "TransactionTraces",
-                        principalColumn: "Id");
+                        principalColumn: "TransactionNum");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -337,9 +355,9 @@ namespace DeepReader.TiDB.Migrations
                 column: "ReceiptId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ActionTraces_TransactionTraceId",
+                name: "IX_ActionTraces_TransactionTraceTransactionNum",
                 table: "ActionTraces",
-                column: "TransactionTraceId");
+                column: "TransactionTraceTransactionNum");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Blocks_NewProducersId",
@@ -377,9 +395,9 @@ namespace DeepReader.TiDB.Migrations
                 column: "ActionReceiptId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TransactionTraces_BlockId",
+                name: "IX_TransactionTraces_BlockNumber",
                 table: "TransactionTraces",
-                column: "BlockId");
+                column: "BlockNumber");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransactionTraces_ReceiptId",
@@ -389,6 +407,9 @@ namespace DeepReader.TiDB.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Abis");
+
             migrationBuilder.DropTable(
                 name: "DbOp");
 

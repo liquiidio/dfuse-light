@@ -15,6 +15,7 @@ namespace DeepReader.Types.StorageTypes
             }
             set
             {
+                Receipt.GlobalSequence = value;
             }
         }
 

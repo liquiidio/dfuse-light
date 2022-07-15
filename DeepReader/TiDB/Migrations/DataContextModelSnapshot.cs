@@ -295,8 +295,8 @@ namespace DeepReader.TiDB.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<byte[]>("TransactionTraceId")
-                        .HasColumnType("varbinary(3072)");
+                    b.Property<ulong?>("TransactionTraceTransactionNum")
+                        .HasColumnType("bigint unsigned");
 
                     b.HasKey("GlobalSequence");
 
@@ -306,15 +306,16 @@ namespace DeepReader.TiDB.Migrations
 
                     b.HasIndex("ReceiptId");
 
-                    b.HasIndex("TransactionTraceId");
+                    b.HasIndex("TransactionTraceTransactionNum");
 
                     b.ToTable("ActionTraces");
                 });
 
             modelBuilder.Entity("DeepReader.Types.StorageTypes.Block", b =>
                 {
-                    b.Property<byte[]>("Id")
-                        .HasColumnType("varbinary(3072)");
+                    b.Property<uint>("Number")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned");
 
                     b.Property<byte[]>("ActionMroot")
                         .IsRequired()
@@ -323,11 +324,11 @@ namespace DeepReader.TiDB.Migrations
                     b.Property<ushort>("Confirmed")
                         .HasColumnType("smallint unsigned");
 
+                    b.Property<byte[]>("Id")
+                        .HasColumnType("longblob");
+
                     b.Property<ulong?>("NewProducersId")
                         .HasColumnType("bigint unsigned");
-
-                    b.Property<uint>("Number")
-                        .HasColumnType("int unsigned");
 
                     b.Property<byte[]>("Previous")
                         .IsRequired()
@@ -350,7 +351,7 @@ namespace DeepReader.TiDB.Migrations
                         .IsRequired()
                         .HasColumnType("longblob");
 
-                    b.HasKey("Id");
+                    b.HasKey("Number");
 
                     b.HasIndex("NewProducersId");
 
@@ -359,17 +360,21 @@ namespace DeepReader.TiDB.Migrations
 
             modelBuilder.Entity("DeepReader.Types.StorageTypes.TransactionTrace", b =>
                 {
-                    b.Property<byte[]>("Id")
-                        .HasColumnType("varbinary(3072)");
-
-                    b.Property<byte[]>("BlockId")
-                        .HasColumnType("varbinary(3072)");
+                    b.Property<ulong>("TransactionNum")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint unsigned");
 
                     b.Property<uint>("BlockNum")
                         .HasColumnType("int unsigned");
 
+                    b.Property<uint?>("BlockNumber")
+                        .HasColumnType("int unsigned");
+
                     b.Property<long>("Elapsed")
                         .HasColumnType("bigint");
+
+                    b.Property<byte[]>("Id")
+                        .HasColumnType("longblob");
 
                     b.Property<ulong>("NetUsage")
                         .HasColumnType("bigint unsigned");
@@ -380,9 +385,9 @@ namespace DeepReader.TiDB.Migrations
                     b.Property<bool>("Scheduled")
                         .HasColumnType("tinyint(1)");
 
-                    b.HasKey("Id");
+                    b.HasKey("TransactionNum");
 
-                    b.HasIndex("BlockId");
+                    b.HasIndex("BlockNumber");
 
                     b.HasIndex("ReceiptId");
 
@@ -472,7 +477,7 @@ namespace DeepReader.TiDB.Migrations
 
                     b.HasOne("DeepReader.Types.StorageTypes.TransactionTrace", null)
                         .WithMany("ActionTraces")
-                        .HasForeignKey("TransactionTraceId");
+                        .HasForeignKey("TransactionTraceTransactionNum");
 
                     b.Navigation("Act");
 
@@ -494,7 +499,7 @@ namespace DeepReader.TiDB.Migrations
                 {
                     b.HasOne("DeepReader.Types.StorageTypes.Block", null)
                         .WithMany("Transactions")
-                        .HasForeignKey("BlockId");
+                        .HasForeignKey("BlockNumber");
 
                     b.HasOne("DeepReader.Types.Eosio.Chain.TransactionReceiptHeader", "Receipt")
                         .WithMany()
