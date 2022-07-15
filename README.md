@@ -1,5 +1,5 @@
 # dfuse-light
-High-performance streaming- and history-solution for EOSIO-based chains leveraging deep-mind-loggging while reducing the overhead of hosting dfuse or firehose
+High-performance streaming- and history-solution for EOSIO-based chains leveraging deep-mind-logging while reducing the overhead of hosting dfuse or firehose
 
 ## Description
 dfuse-light reads and deserializes deep-mind logs (actions, traces, deltas, permission-operations, limit-ops etc.) and re-constructs eosio-blocks similar to dfuse.
